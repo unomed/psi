@@ -1,0 +1,39 @@
+
+export type DiscFactorType = "D" | "I" | "S" | "C";
+
+export interface DiscFactor {
+  type: DiscFactorType;
+  name: string;
+  description: string;
+}
+
+export interface DiscQuestion {
+  id: string;
+  text: string;
+  targetFactor: DiscFactorType;
+  weight: number;
+}
+
+export interface ChecklistTemplate {
+  id: string;
+  title: string;
+  description: string;
+  type: "disc" | "custom";
+  questions: DiscQuestion[];
+  createdAt: Date;
+}
+
+export interface ChecklistResult {
+  id: string;
+  templateId: string;
+  employeeId?: string;
+  employeeName?: string; // For demonstration purposes
+  results: {
+    D: number;
+    I: number;
+    S: number;
+    C: number;
+  };
+  dominantFactor: DiscFactorType;
+  completedAt: Date;
+}
