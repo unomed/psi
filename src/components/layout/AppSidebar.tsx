@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import {
   BarChart3,
   Building2,
-  Checklist,
+  ClipboardCheck, // Changed from Checklist
   ClipboardList,
   FileText,
   FolderKanban,
@@ -54,7 +54,7 @@ const menuItems = [
   },
   {
     title: "Checklists",
-    icon: Checklist,
+    icon: ClipboardCheck, // Changed from Checklist
     path: "/checklists",
   },
   {

@@ -1,5 +1,5 @@
 
-import { Checklist } from "lucide-react";
+import { ClipboardCheck } from "lucide-react"; // Changed from Checklist
 
 export default function Checklists() {
   return (
@@ -13,7 +13,7 @@ export default function Checklists() {
       
       <div className="flex items-center justify-center h-64 border rounded-lg">
         <div className="text-center">
-          <Checklist className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <ClipboardCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" /> {/* Changed from Checklist */}
           <h3 className="text-lg font-medium">Gestão de Checklists</h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-md">
             Crie e gerencie modelos de avaliação baseados em metodologias reconhecidas,
