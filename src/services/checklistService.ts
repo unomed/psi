@@ -51,7 +51,10 @@ export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "i
     throw templateError;
   }
 
-  const templateId = templateData.id;
+  const templateId = templateData?.id;
+  if (!templateId) {
+    throw new Error("Failed to get template ID after insertion");
+  }
 
   // Then, insert all questions
   const questionsToInsert = template.questions.map((q, index) => ({
@@ -94,7 +97,7 @@ export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | 
     throw error;
   }
 
-  return data.id;
+  return data?.id || "";
 }
 
 // Fetch all assessment results from Supabase
