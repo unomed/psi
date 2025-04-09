@@ -1,15 +1,11 @@
 
 import { useState } from "react";
-import { ClipboardCheck, PlusCircle, ClipboardList } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
-import { ChecklistTemplateForm } from "@/components/checklists/ChecklistTemplateForm";
-import { ChecklistTemplateCard } from "@/components/checklists/ChecklistTemplateCard";
-import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
-import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
+import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
 
 // Mock initial checklist data
 const initialChecklists: ChecklistTemplate[] = [
@@ -150,144 +146,31 @@ export default function Checklists() {
         </Button>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="templates">
-            <ClipboardCheck className="h-4 w-4 mr-2" />
-            Modelos
-          </TabsTrigger>
-          <TabsTrigger value="results">
-            <ClipboardList className="h-4 w-4 mr-2" />
-            Resultados
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="templates" className="mt-6">
-          {checklists.length === 0 ? (
-            <div className="flex items-center justify-center h-64 border rounded-lg">
-              <div className="text-center">
-                <ClipboardCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">Nenhum modelo cadastrado</h3>
-                <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                  Cadastre modelos de checklist para avaliação psicossocial baseados em metodologias
-                  como DISC para identificação de riscos e compatibilidade de perfis.
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => setIsFormDialogOpen(true)}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Criar Modelo
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {checklists.map((template) => (
-                <ChecklistTemplateCard 
-                  key={template.id} 
-                  template={template}
-                  onEdit={handleEditTemplate}
-                  onTakeAssessment={handleStartAssessment}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="results" className="mt-6">
-          {results.length === 0 ? (
-            <div className="flex items-center justify-center h-64 border rounded-lg">
-              <div className="text-center">
-                <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">Nenhum resultado registrado</h3>
-                <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                  Realize avaliações utilizando os modelos de checklist cadastrados para visualizar resultados
-                  e relatórios de perfil comportamental.
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => setActiveTab("templates")}
-                >
-                  Ir para Modelos
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {results.map((result) => {
-                const template = checklists.find(t => t.id === result.templateId);
-                return (
-                  <div 
-                    key={result.id} 
-                    className="flex justify-between items-center p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
-                    onClick={() => handleViewResult(result)}
-                  >
-                    <div>
-                      <h3 className="font-medium">{template?.title || "Avaliação"}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {result.employeeName || "Anônimo"} - Perfil dominante: {result.dominantFactor}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      Ver Detalhes
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      <ChecklistTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        checklists={checklists}
+        results={results}
+        onEditTemplate={handleEditTemplate}
+        onStartAssessment={handleStartAssessment}
+        onViewResult={handleViewResult}
+        onCreateTemplate={() => setIsFormDialogOpen(true)}
+      />
       
-      {/* Dialog for creating a new checklist template */}
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Criar Modelo de Checklist</DialogTitle>
-          </DialogHeader>
-          <ChecklistTemplateForm onSubmit={handleCreateTemplate} />
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialog for taking an assessment */}
-      <Dialog 
-        open={isAssessmentDialogOpen && selectedTemplate !== null} 
-        onOpenChange={setIsAssessmentDialogOpen}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{selectedTemplate?.title}</DialogTitle>
-          </DialogHeader>
-          {selectedTemplate && (
-            <DiscAssessmentForm 
-              template={selectedTemplate}
-              onSubmit={handleSubmitAssessment}
-              onCancel={handleCloseAssessment}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialog for displaying results */}
-      <Dialog 
-        open={isResultDialogOpen && selectedResult !== null} 
-        onOpenChange={setIsResultDialogOpen}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Resultado da Avaliação</DialogTitle>
-          </DialogHeader>
-          {selectedResult && (
-            <DiscResultDisplay 
-              result={selectedResult}
-              onClose={handleCloseResult}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <ChecklistDialogs
+        isFormDialogOpen={isFormDialogOpen}
+        setIsFormDialogOpen={setIsFormDialogOpen}
+        isAssessmentDialogOpen={isAssessmentDialogOpen}
+        setIsAssessmentDialogOpen={setIsAssessmentDialogOpen}
+        isResultDialogOpen={isResultDialogOpen}
+        setIsResultDialogOpen={setIsResultDialogOpen}
+        selectedTemplate={selectedTemplate}
+        selectedResult={selectedResult}
+        onSubmitTemplate={handleCreateTemplate}
+        onSubmitAssessment={handleSubmitAssessment}
+        onCloseAssessment={handleCloseAssessment}
+        onCloseResult={handleCloseResult}
+      />
     </div>
   );
 }
