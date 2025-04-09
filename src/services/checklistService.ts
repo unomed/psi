@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, ChecklistResult, DiscQuestion } from "@/types/checklist";
+import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType } from "@/types/checklist";
+import { Json } from "@/integrations/supabase/types";
 
 // Fetch all checklist templates from Supabase
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
@@ -23,7 +24,7 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       questions: (template.questions || []).map(q => ({
         id: q.id,
         text: q.question_text,
-        targetFactor: q.target_factor as any,
+        targetFactor: q.target_factor as DiscFactorType,
         weight: q.weight || 1
       })),
       createdAt: new Date(template.created_at)
@@ -111,14 +112,25 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
     throw error;
   }
 
-  // Map the Supabase data to our application types
+  // Map the Supabase data to our application types with proper type handling
   return (data || []).map(result => {
+    // Ensure the factors_scores is in the expected format
+    const factorScores = result.factors_scores as { D: number; I: number; S: number; C: number; } || { D: 0, I: 0, S: 0, C: 0 };
+    
+    // Make sure we have all required properties
+    const discResults = {
+      D: typeof factorScores.D === 'number' ? factorScores.D : 0,
+      I: typeof factorScores.I === 'number' ? factorScores.I : 0,
+      S: typeof factorScores.S === 'number' ? factorScores.S : 0,
+      C: typeof factorScores.C === 'number' ? factorScores.C : 0
+    };
+
     return {
       id: result.id,
       templateId: result.template_id,
       employeeName: result.employee_name || "Anônimo",
-      results: result.factors_scores || { D: 0, I: 0, S: 0, C: 0 },
-      dominantFactor: result.dominant_factor as any || "D",
+      results: discResults,
+      dominantFactor: (result.dominant_factor as DiscFactorType) || "D",
       completedAt: new Date(result.completed_at)
     };
   });
