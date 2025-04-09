@@ -1,1 +1,25 @@
+
+# A string used to distinguish different Supabase projects on the same host. Defaults to the project ID.
 project_id = "ngpenivrpznqycgkibrs"
+
+# The port to use for the API URL.
+api_port = 54321
+
+# The port to use for the Auth URL.
+auth_port = 54321
+
+# The port to use for the Storage URL.
+storage_port = 54321
+
+# The port to use for the Realtime URL.
+realtime_port = 54321
+
+# The port to use for the Studio URL.
+studio_port = 54321
+
+# Email testing
+[email_testing]
+enable_email_testing = true
+
+[functions.send-assessment-email]
+verify_jwt = true

@@ -37,3 +37,16 @@ export interface ChecklistResult {
   dominantFactor: DiscFactorType;
   completedAt: Date;
 }
+
+export type AssessmentStatus = "scheduled" | "sent" | "completed";
+
+export interface ScheduledAssessment {
+  id: string;
+  employeeId: string;
+  templateId: string;
+  scheduledDate: Date;
+  sentAt: Date | null;
+  linkUrl: string;
+  status: AssessmentStatus;
+  completedAt: Date | null;
+}

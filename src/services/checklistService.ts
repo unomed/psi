@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType } from "@/types/checklist";
+import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment } from "@/types/checklist";
 import { Json } from "@/integrations/supabase/types";
 
 // Fetch all checklist templates from Supabase
@@ -101,6 +101,27 @@ export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | 
   return data?.id || "";
 }
 
+// Save a scheduled assessment to Supabase
+export async function saveScheduledAssessment(assessment: Omit<ScheduledAssessment, "id">): Promise<string> {
+  // In a real app, this would save to the assessment_schedules table
+  
+  // Mock for now, in a real app this would be a supabase insert
+  console.log("Saving scheduled assessment:", assessment);
+  
+  // Return a mock ID
+  return `sched-${Date.now()}`;
+}
+
+// Generate a unique assessment link
+export function generateAssessmentLink(templateId: string, employeeId: string): string {
+  // In a real app, this would generate a unique token and save it to the database
+  // Then return a link with the token
+  
+  // For now, just return a mock link
+  const token = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  return `${window.location.origin}/avaliacao/${token}`;
+}
+
 // Fetch all assessment results from Supabase
 export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
   const { data, error } = await supabase
@@ -115,21 +136,25 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
   // Map the Supabase data to our application types with proper type handling
   return (data || []).map(result => {
     // Ensure the factors_scores is in the expected format
-    const factorScores = result.factors_scores as { D: number; I: number; S: number; C: number; } || { D: 0, I: 0, S: 0, C: 0 };
+    const factorScoresRaw = result.factors_scores as Json | null;
+    let factorScores = { D: 0, I: 0, S: 0, C: 0 };
     
-    // Make sure we have all required properties
-    const discResults = {
-      D: typeof factorScores.D === 'number' ? factorScores.D : 0,
-      I: typeof factorScores.I === 'number' ? factorScores.I : 0,
-      S: typeof factorScores.S === 'number' ? factorScores.S : 0,
-      C: typeof factorScores.C === 'number' ? factorScores.C : 0
-    };
+    // Make sure we have all required properties and they are numbers
+    if (factorScoresRaw && typeof factorScoresRaw === 'object' && factorScoresRaw !== null) {
+      const rawScores = factorScoresRaw as Record<string, unknown>;
+      
+      // Safely convert each property to a number
+      if ('D' in rawScores && rawScores.D !== null) factorScores.D = Number(rawScores.D) || 0;
+      if ('I' in rawScores && rawScores.I !== null) factorScores.I = Number(rawScores.I) || 0;
+      if ('S' in rawScores && rawScores.S !== null) factorScores.S = Number(rawScores.S) || 0;
+      if ('C' in rawScores && rawScores.C !== null) factorScores.C = Number(rawScores.C) || 0;
+    }
 
     return {
       id: result.id,
       templateId: result.template_id,
       employeeName: result.employee_name || "Anônimo",
-      results: discResults,
+      results: factorScores,
       dominantFactor: (result.dominant_factor as DiscFactorType) || "D",
       completedAt: new Date(result.completed_at)
     };
