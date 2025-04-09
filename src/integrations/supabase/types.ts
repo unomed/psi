@@ -9,7 +9,172 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      assessment_responses: {
+        Row: {
+          classification:
+            | Database["public"]["Enums"]["result_classification"]
+            | null
+          completed_at: string
+          created_by: string | null
+          dominant_factor: string | null
+          employee_id: string | null
+          employee_name: string | null
+          factors_scores: Json | null
+          id: string
+          normalized_score: number | null
+          notes: string | null
+          percentile: number | null
+          raw_score: number | null
+          response_data: Json
+          stanine: number | null
+          template_id: string
+          tscore: number | null
+        }
+        Insert: {
+          classification?:
+            | Database["public"]["Enums"]["result_classification"]
+            | null
+          completed_at?: string
+          created_by?: string | null
+          dominant_factor?: string | null
+          employee_id?: string | null
+          employee_name?: string | null
+          factors_scores?: Json | null
+          id?: string
+          normalized_score?: number | null
+          notes?: string | null
+          percentile?: number | null
+          raw_score?: number | null
+          response_data: Json
+          stanine?: number | null
+          template_id: string
+          tscore?: number | null
+        }
+        Update: {
+          classification?:
+            | Database["public"]["Enums"]["result_classification"]
+            | null
+          completed_at?: string
+          created_by?: string | null
+          dominant_factor?: string | null
+          employee_id?: string | null
+          employee_name?: string | null
+          factors_scores?: Json | null
+          id?: string
+          normalized_score?: number | null
+          notes?: string | null
+          percentile?: number | null
+          raw_score?: number | null
+          response_data?: Json
+          stanine?: number | null
+          template_id?: string
+          tscore?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_responses_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklist_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cutoff_scores: Json | null
+          description: string | null
+          estimated_time_minutes: number | null
+          id: string
+          instructions: string | null
+          interpretation_guide: string | null
+          is_active: boolean
+          max_score: number | null
+          scale_type: Database["public"]["Enums"]["scale_type"]
+          title: string
+          type: Database["public"]["Enums"]["checklist_type"]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cutoff_scores?: Json | null
+          description?: string | null
+          estimated_time_minutes?: number | null
+          id?: string
+          instructions?: string | null
+          interpretation_guide?: string | null
+          is_active?: boolean
+          max_score?: number | null
+          scale_type: Database["public"]["Enums"]["scale_type"]
+          title: string
+          type: Database["public"]["Enums"]["checklist_type"]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cutoff_scores?: Json | null
+          description?: string | null
+          estimated_time_minutes?: number | null
+          id?: string
+          instructions?: string | null
+          interpretation_guide?: string | null
+          is_active?: boolean
+          max_score?: number | null
+          scale_type?: Database["public"]["Enums"]["scale_type"]
+          title?: string
+          type?: Database["public"]["Enums"]["checklist_type"]
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          created_at: string
+          id: string
+          order_number: number
+          question_text: string
+          reverse_scored: boolean | null
+          target_factor: string | null
+          template_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_number: number
+          question_text: string
+          reverse_scored?: boolean | null
+          target_factor?: string | null
+          template_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_number?: number
+          question_text?: string
+          reverse_scored?: boolean | null
+          target_factor?: string | null
+          template_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +183,34 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      checklist_type:
+        | "srq20"
+        | "phq9"
+        | "gad7"
+        | "mbi"
+        | "audit"
+        | "pss"
+        | "copsoq"
+        | "jcq"
+        | "eri"
+        | "disc"
+        | "custom"
+      result_classification:
+        | "normal"
+        | "mild"
+        | "moderate"
+        | "severe"
+        | "critical"
+      scale_type:
+        | "likert5"
+        | "likert7"
+        | "binary"
+        | "range10"
+        | "frequency"
+        | "stanine"
+        | "percentile"
+        | "tscore"
+        | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +325,38 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      checklist_type: [
+        "srq20",
+        "phq9",
+        "gad7",
+        "mbi",
+        "audit",
+        "pss",
+        "copsoq",
+        "jcq",
+        "eri",
+        "disc",
+        "custom",
+      ],
+      result_classification: [
+        "normal",
+        "mild",
+        "moderate",
+        "severe",
+        "critical",
+      ],
+      scale_type: [
+        "likert5",
+        "likert7",
+        "binary",
+        "range10",
+        "frequency",
+        "stanine",
+        "percentile",
+        "tscore",
+        "custom",
+      ],
+    },
   },
 } as const

@@ -1,76 +1,15 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
-
-// Mock initial checklist data
-const initialChecklists: ChecklistTemplate[] = [
-  {
-    id: "disc-leadership",
-    title: "Avaliação DISC para Liderança",
-    description: "Avaliação de perfil comportamental para identificação de estilos de liderança e tomada de decisão",
-    type: "disc",
-    questions: [
-      {
-        id: "q1",
-        text: "Prefiro tomar decisões rápidas e ser direto(a) ao comunicar",
-        targetFactor: "D",
-        weight: 2
-      },
-      {
-        id: "q2",
-        text: "Tenho facilidade em inspirar e motivar os outros",
-        targetFactor: "I",
-        weight: 2
-      },
-      {
-        id: "q3",
-        text: "Prefiro ouvir todas as opiniões antes de tomar decisões importantes",
-        targetFactor: "S",
-        weight: 2
-      },
-      {
-        id: "q4",
-        text: "Gosto de analisar todos os detalhes e dados antes de agir",
-        targetFactor: "C",
-        weight: 2
-      },
-      {
-        id: "q5",
-        text: "Frequentemente assumo a liderança em projetos e discussões",
-        targetFactor: "D",
-        weight: 3
-      },
-      {
-        id: "q6",
-        text: "Sou bom em construir relacionamentos e fazer networking",
-        targetFactor: "I",
-        weight: 3
-      },
-      {
-        id: "q7",
-        text: "Prefiro trabalhar em ambientes previsíveis e estruturados",
-        targetFactor: "S",
-        weight: 3
-      },
-      {
-        id: "q8",
-        text: "Sigo rigorosamente regras e procedimentos estabelecidos",
-        targetFactor: "C",
-        weight: 3
-      }
-    ],
-    createdAt: new Date(2023, 6, 15)
-  }
-];
+import { fetchChecklistTemplates, fetchAssessmentResults, saveChecklistTemplate, saveAssessmentResult } from "@/services/checklistService";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Checklists() {
-  const [checklists, setChecklists] = useState<ChecklistTemplate[]>(initialChecklists);
-  const [results, setResults] = useState<ChecklistResult[]>([]);
   const [activeTab, setActiveTab] = useState("templates");
   
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -80,16 +19,35 @@ export default function Checklists() {
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
 
-  const handleCreateTemplate = (data: Omit<ChecklistTemplate, "id" | "createdAt">) => {
-    const newTemplate = {
-      ...data,
-      id: `template-${Date.now()}`,
-      createdAt: new Date()
-    };
-    
-    setChecklists([...checklists, newTemplate]);
-    setIsFormDialogOpen(false);
-    toast.success("Modelo de checklist criado com sucesso!");
+  // Use TanStack Query to fetch checklists and results
+  const { 
+    data: checklists = [], 
+    isLoading: isLoadingChecklists,
+    refetch: refetchChecklists
+  } = useQuery({
+    queryKey: ['checklists'],
+    queryFn: fetchChecklistTemplates
+  });
+
+  const { 
+    data: results = [], 
+    isLoading: isLoadingResults,
+    refetch: refetchResults
+  } = useQuery({
+    queryKey: ['assessmentResults'],
+    queryFn: fetchAssessmentResults
+  });
+
+  const handleCreateTemplate = async (data: Omit<ChecklistTemplate, "id" | "createdAt">) => {
+    try {
+      await saveChecklistTemplate(data);
+      setIsFormDialogOpen(false);
+      toast.success("Modelo de checklist criado com sucesso!");
+      refetchChecklists();
+    } catch (error) {
+      console.error("Error creating template:", error);
+      toast.error("Erro ao criar modelo de checklist.");
+    }
   };
 
   const handleEditTemplate = (template: ChecklistTemplate) => {
@@ -102,18 +60,29 @@ export default function Checklists() {
     setIsAssessmentDialogOpen(true);
   };
 
-  const handleSubmitAssessment = (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
-    const newResult = {
-      ...resultData,
-      id: `result-${Date.now()}`,
-      completedAt: new Date()
-    };
-    
-    setResults([...results, newResult]);
-    setIsAssessmentDialogOpen(false);
-    setSelectedResult(newResult);
-    setIsResultDialogOpen(true);
-    toast.success("Avaliação concluída com sucesso!");
+  const handleSubmitAssessment = async (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
+    try {
+      await saveAssessmentResult(resultData);
+      setIsAssessmentDialogOpen(false);
+      
+      // Find the result in the updated results list
+      refetchResults().then(() => {
+        // After refetching, show the results dialog with the latest assessment
+        // This is a simplification - in a real app you'd want to get the specific result
+        const newResult = {
+          ...resultData,
+          id: `temp-${Date.now()}`, // Temporary ID until we refresh
+          completedAt: new Date()
+        };
+        setSelectedResult(newResult);
+        setIsResultDialogOpen(true);
+      });
+      
+      toast.success("Avaliação concluída com sucesso!");
+    } catch (error) {
+      console.error("Error submitting assessment:", error);
+      toast.error("Erro ao submeter avaliação.");
+    }
   };
 
   const handleCloseAssessment = () => {
@@ -146,16 +115,22 @@ export default function Checklists() {
         </Button>
       </div>
       
-      <ChecklistTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        checklists={checklists}
-        results={results}
-        onEditTemplate={handleEditTemplate}
-        onStartAssessment={handleStartAssessment}
-        onViewResult={handleViewResult}
-        onCreateTemplate={() => setIsFormDialogOpen(true)}
-      />
+      {isLoadingChecklists || isLoadingResults ? (
+        <div className="flex justify-center p-8">
+          <p>Carregando...</p>
+        </div>
+      ) : (
+        <ChecklistTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          checklists={checklists}
+          results={results}
+          onEditTemplate={handleEditTemplate}
+          onStartAssessment={handleStartAssessment}
+          onViewResult={handleViewResult}
+          onCreateTemplate={() => setIsFormDialogOpen(true)}
+        />
+      )}
       
       <ChecklistDialogs
         isFormDialogOpen={isFormDialogOpen}
