@@ -1,19 +1,18 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
-import { fetchChecklistTemplates, fetchAssessmentResults, saveChecklistTemplate, saveAssessmentResult } from "@/services/checklistService";
+import { fetchChecklistTemplates, fetchAssessmentResults, saveChecklistTemplate } from "@/services/checklistService";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Checklists() {
   const [activeTab, setActiveTab] = useState("templates");
   
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
-  const [isAssessmentDialogOpen, setIsAssessmentDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
@@ -55,49 +54,14 @@ export default function Checklists() {
     toast.info("Edição de checklist será implementada em breve!");
   };
 
-  const handleStartAssessment = (template: ChecklistTemplate) => {
-    setSelectedTemplate(template);
-    setIsAssessmentDialogOpen(true);
-  };
-
-  const handleSubmitAssessment = async (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
-    try {
-      await saveAssessmentResult(resultData);
-      setIsAssessmentDialogOpen(false);
-      
-      // Find the result in the updated results list
-      refetchResults().then(() => {
-        // After refetching, show the results dialog with the latest assessment
-        // This is a simplification - in a real app you'd want to get the specific result
-        const newResult = {
-          ...resultData,
-          id: `temp-${Date.now()}`, // Temporary ID until we refresh
-          completedAt: new Date()
-        };
-        setSelectedResult(newResult);
-        setIsResultDialogOpen(true);
-      });
-      
-      toast.success("Avaliação concluída com sucesso!");
-    } catch (error) {
-      console.error("Error submitting assessment:", error);
-      toast.error("Erro ao submeter avaliação.");
-    }
-  };
-
-  const handleCloseAssessment = () => {
-    setIsAssessmentDialogOpen(false);
-    setSelectedTemplate(null);
+  const handleViewResult = (result: ChecklistResult) => {
+    setSelectedResult(result);
+    setIsResultDialogOpen(true);
   };
 
   const handleCloseResult = () => {
     setIsResultDialogOpen(false);
     setSelectedResult(null);
-  };
-
-  const handleViewResult = (result: ChecklistResult) => {
-    setSelectedResult(result);
-    setIsResultDialogOpen(true);
   };
 
   return (
@@ -126,7 +90,7 @@ export default function Checklists() {
           checklists={checklists}
           results={results}
           onEditTemplate={handleEditTemplate}
-          onStartAssessment={handleStartAssessment}
+          onStartAssessment={() => {}} // Empty function as we're not using this feature
           onViewResult={handleViewResult}
           onCreateTemplate={() => setIsFormDialogOpen(true)}
         />
@@ -135,15 +99,15 @@ export default function Checklists() {
       <ChecklistDialogs
         isFormDialogOpen={isFormDialogOpen}
         setIsFormDialogOpen={setIsFormDialogOpen}
-        isAssessmentDialogOpen={isAssessmentDialogOpen}
-        setIsAssessmentDialogOpen={setIsAssessmentDialogOpen}
+        isAssessmentDialogOpen={false} // We're not using this dialog
+        setIsAssessmentDialogOpen={() => {}} // Empty function as we're not using this feature
         isResultDialogOpen={isResultDialogOpen}
         setIsResultDialogOpen={setIsResultDialogOpen}
         selectedTemplate={selectedTemplate}
         selectedResult={selectedResult}
         onSubmitTemplate={handleCreateTemplate}
-        onSubmitAssessment={handleSubmitAssessment}
-        onCloseAssessment={handleCloseAssessment}
+        onSubmitAssessment={() => {}} // Empty function as we're not using this feature
+        onCloseAssessment={() => {}} // Empty function as we're not using this feature
         onCloseResult={handleCloseResult}
       />
     </div>

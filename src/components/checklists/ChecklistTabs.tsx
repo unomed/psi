@@ -1,10 +1,22 @@
 
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, ClipboardList } from "lucide-react";
-import { ChecklistTemplateCard } from "@/components/checklists/ChecklistTemplateCard";
+import { ClipboardCheck, ClipboardList, Pencil } from "lucide-react";
 import { ChecklistEmptyState } from "@/components/checklists/ChecklistEmptyState";
 import { ChecklistResultItem } from "@/components/checklists/ChecklistResultItem";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface ChecklistTabsProps {
   activeTab: string;
@@ -47,15 +59,62 @@ export function ChecklistTabs({
             onCreateTemplate={onCreateTemplate} 
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {checklists.map((template) => (
-              <ChecklistTemplateCard 
-                key={template.id} 
-                template={template}
-                onEdit={onEditTemplate}
-                onTakeAssessment={onStartAssessment}
-              />
-            ))}
+          <div className="rounded-md border">
+            <Table>
+              <TableCaption>Lista de modelos de checklist disponíveis</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Fatores DISC</TableHead>
+                  <TableHead>Criado em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {checklists.map((template) => {
+                  const dFactorCount = template.questions.filter(q => q.targetFactor === "D").length;
+                  const iFactorCount = template.questions.filter(q => q.targetFactor === "I").length;
+                  const sFactorCount = template.questions.filter(q => q.targetFactor === "S").length;
+                  const cFactorCount = template.questions.filter(q => q.targetFactor === "C").length;
+                  
+                  return (
+                    <TableRow key={template.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col">
+                          <span>{template.title}</span>
+                          {template.description && (
+                            <span className="text-xs text-muted-foreground">{template.description}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={template.type === "disc" ? "default" : "outline"}>
+                          {template.type === "disc" ? "DISC" : "Personalizado"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="bg-red-50">D: {dFactorCount}</Badge>
+                          <Badge variant="outline" className="bg-yellow-50">I: {iFactorCount}</Badge>
+                          <Badge variant="outline" className="bg-green-50">S: {sFactorCount}</Badge>
+                          <Badge variant="outline" className="bg-blue-50">C: {cFactorCount}</Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {format(template.createdAt, "dd/MM/yyyy", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => onEditTemplate(template)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Editar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
         )}
       </TabsContent>
