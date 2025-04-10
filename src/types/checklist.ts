@@ -39,6 +39,7 @@ export interface ChecklistResult {
 }
 
 export type AssessmentStatus = "scheduled" | "sent" | "completed";
+export type RecurrenceType = "none" | "monthly" | "semiannual" | "annual";
 
 export interface ScheduledAssessment {
   id: string;
@@ -49,4 +50,7 @@ export interface ScheduledAssessment {
   linkUrl: string;
   status: AssessmentStatus;
   completedAt: Date | null;
+  recurrenceType?: RecurrenceType;
+  nextScheduledDate?: Date | null;
+  phoneNumber?: string;
 }

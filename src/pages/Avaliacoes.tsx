@@ -4,14 +4,17 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { fetchChecklistTemplates, saveScheduledAssessment } from "@/services/checklistService";
-import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, AssessmentStatus } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, AssessmentStatus, RecurrenceType } from "@/types/checklist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
-// Import our new components
+// Import our components
 import { AssessmentSelectionForm, mockEmployees } from "@/components/assessments/AssessmentSelectionForm";
 import { ScheduledAssessmentsList } from "@/components/assessments/ScheduledAssessmentsList";
-import { ScheduleAssessmentDialog } from "@/components/assessments/ScheduleAssessmentDialog";
+import { ScheduleRecurringAssessmentDialog } from "@/components/assessments/ScheduleRecurringAssessmentDialog";
 import { GenerateLinkDialog } from "@/components/assessments/GenerateLinkDialog";
+import { ShareAssessmentDialog } from "@/components/assessments/ShareAssessmentDialog";
 import { AssessmentDialogs } from "@/components/assessments/AssessmentDialogs";
 import { 
   generateAssessmentLink, 
@@ -29,7 +32,10 @@ const mockScheduledAssessments: ScheduledAssessment[] = [
     sentAt: new Date("2025-04-10"),
     linkUrl: "https://example.com/assessment/link1",
     status: "sent",
-    completedAt: null
+    completedAt: null,
+    recurrenceType: "monthly",
+    nextScheduledDate: new Date("2025-05-15"),
+    phoneNumber: "(11) 98765-4321"
   },
   {
     id: "sched-2",
@@ -39,7 +45,9 @@ const mockScheduledAssessments: ScheduledAssessment[] = [
     sentAt: null,
     linkUrl: "",
     status: "scheduled",
-    completedAt: null
+    completedAt: null,
+    recurrenceType: "none",
+    nextScheduledDate: null
   }
 ];
 
@@ -52,10 +60,13 @@ export default function Avaliacoes() {
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+
   const [assessmentResult, setAssessmentResult] = useState<ChecklistResult | null>(null);
   const [scheduledAssessments, setScheduledAssessments] = useState<ScheduledAssessment[]>(mockScheduledAssessments);
   const [generatedLink, setGeneratedLink] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<string>("nova");
+  const [activeTab, setActiveTab] = useState<string>("agendadas");
+  const [selectedAssessment, setSelectedAssessment] = useState<ScheduledAssessment | null>(null);
 
   // Fetch checklist templates
   const { data: templates = [], isLoading } = useQuery({
@@ -84,6 +95,10 @@ export default function Avaliacoes() {
     setIsAssessmentDialogOpen(true);
   };
 
+  const handleNewAssessment = () => {
+    setActiveTab("nova");
+  };
+
   const handleScheduleAssessment = () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist para agendar a avaliação.");
@@ -105,7 +120,29 @@ export default function Avaliacoes() {
     setIsLinkDialogOpen(true);
   };
 
-  const handleSaveSchedule = async () => {
+  const calculateNextScheduledDate = (currentDate: Date, recurrenceType: RecurrenceType): Date | null => {
+    if (recurrenceType === "none") return null;
+    
+    const nextDate = new Date(currentDate);
+    
+    switch (recurrenceType) {
+      case "monthly":
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        break;
+      case "semiannual":
+        nextDate.setMonth(nextDate.getMonth() + 6);
+        break;
+      case "annual":
+        nextDate.setFullYear(nextDate.getFullYear() + 1);
+        break;
+      default:
+        return null;
+    }
+    
+    return nextDate;
+  };
+
+  const handleSaveSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
     if (!selectedEmployee || !selectedTemplate || !scheduledDate) {
       toast.error("Preencha todos os campos obrigatórios.");
       return;
@@ -119,6 +156,8 @@ export default function Avaliacoes() {
         return;
       }
       
+      const nextDate = calculateNextScheduledDate(scheduledDate, recurrenceType);
+      
       const newScheduledAssessment: Omit<ScheduledAssessment, "id"> = {
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
@@ -126,7 +165,10 @@ export default function Avaliacoes() {
         sentAt: null,
         linkUrl: "",
         status: "scheduled",
-        completedAt: null
+        completedAt: null,
+        recurrenceType: recurrenceType,
+        nextScheduledDate: nextDate,
+        phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined
       };
       
       // In a real app, this would save to the database
@@ -140,6 +182,7 @@ export default function Avaliacoes() {
       setScheduledAssessments([...scheduledAssessments, assessmentWithId]);
       setIsScheduleDialogOpen(false);
       setScheduledDate(undefined);
+      setActiveTab("agendadas");
       toast.success("Avaliação agendada com sucesso!");
     } catch (error) {
       console.error("Erro ao agendar avaliação:", error);
@@ -163,6 +206,14 @@ export default function Avaliacoes() {
     } catch (error) {
       console.error("Erro ao enviar email:", error);
       toast.error("Erro ao enviar email. Tente novamente mais tarde.");
+    }
+  };
+
+  const handleShareAssessment = (assessmentId: string) => {
+    const assessment = scheduledAssessments.find(a => a.id === assessmentId);
+    if (assessment) {
+      setSelectedAssessment(assessment);
+      setIsShareDialogOpen(true);
     }
   };
 
@@ -192,18 +243,39 @@ export default function Avaliacoes() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Avaliações</h1>
-        <p className="text-muted-foreground mt-2">
-          Aplicação e registro de avaliações psicossociais individuais e coletivas.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Avaliações</h1>
+          <p className="text-muted-foreground mt-2">
+            Aplicação e registro de avaliações psicossociais individuais e coletivas.
+          </p>
+        </div>
+        <Button onClick={handleNewAssessment}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Nova Avaliação
+        </Button>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="nova">Nova Avaliação</TabsTrigger>
           <TabsTrigger value="agendadas">Avaliações Agendadas</TabsTrigger>
+          <TabsTrigger value="nova">Nova Avaliação</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="agendadas" className="space-y-4">
+          <Card className="p-6">
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold">Avaliações Agendadas</h2>
+              
+              <ScheduledAssessmentsList
+                scheduledAssessments={scheduledAssessments}
+                onSendEmail={handleSendEmail}
+                onShareAssessment={handleShareAssessment}
+                templates={templates}
+              />
+            </div>
+          </Card>
+        </TabsContent>
         
         <TabsContent value="nova" className="space-y-4">
           <Card className="p-6">
@@ -218,20 +290,6 @@ export default function Avaliacoes() {
               onEmployeeSelect={handleEmployeeChange}
               onTemplateSelect={handleTemplateSelect}
             />
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="agendadas" className="space-y-4">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Avaliações Agendadas</h2>
-              
-              <ScheduledAssessmentsList
-                scheduledAssessments={scheduledAssessments}
-                onSendEmail={handleSendEmail}
-                templates={templates}
-              />
-            </div>
           </Card>
         </TabsContent>
       </Tabs>
@@ -250,7 +308,7 @@ export default function Avaliacoes() {
       />
       
       {/* Schedule Dialog */}
-      <ScheduleAssessmentDialog
+      <ScheduleRecurringAssessmentDialog
         isOpen={isScheduleDialogOpen}
         onClose={() => setIsScheduleDialogOpen(false)}
         selectedEmployeeId={selectedEmployee}
@@ -267,6 +325,14 @@ export default function Avaliacoes() {
         selectedEmployeeId={selectedEmployee}
         selectedTemplate={selectedTemplate}
         generatedLink={generatedLink}
+      />
+      
+      {/* Share Dialog */}
+      <ShareAssessmentDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        assessment={selectedAssessment}
+        templates={templates}
       />
     </div>
   );
