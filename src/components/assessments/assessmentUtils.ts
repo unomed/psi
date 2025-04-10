@@ -1,0 +1,71 @@
+
+import { ScheduledAssessment, AssessmentStatus } from "@/types/checklist";
+import { mockEmployees } from "./AssessmentSelectionForm";
+
+// Helper function to update a scheduled assessment
+export const updateScheduledAssessment = (
+  assessments: ScheduledAssessment[],
+  assessmentId: string,
+  updates: Partial<ScheduledAssessment>
+): ScheduledAssessment[] => {
+  return assessments.map(a => 
+    a.id === assessmentId 
+      ? { ...a, ...updates } 
+      : a
+  );
+};
+
+// Helper function to generate a link for an assessment
+export const generateAssessmentLink = (templateId: string, employeeId: string | null): string => {
+  // In a real app, this would generate a unique token and save it to the database
+  // Then return a link with the token
+  
+  // For now, just return a mock link
+  const token = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  return `${window.location.origin}/avaliacao/${token}`;
+};
+
+// Helper function to get employee information
+export const getEmployeeInfo = (employeeId: string | null) => {
+  if (!employeeId) {
+    return { name: "", email: "" };
+  }
+  
+  const employee = mockEmployees.find(emp => emp.id === employeeId);
+  
+  return {
+    name: employee?.name || "",
+    email: employee?.email || ""
+  };
+};
+
+// Helper function to send assessment email
+export const sendAssessmentEmail = async (
+  assessmentId: string, 
+  assessments: ScheduledAssessment[]
+): Promise<ScheduledAssessment[]> => {
+  try {
+    // Find the scheduled assessment
+    const assessment = assessments.find(a => a.id === assessmentId);
+    if (!assessment) {
+      throw new Error("Avaliação não encontrada.");
+    }
+    
+    // In a real app, this would generate a unique link and send an email
+    const link = `https://example.com/assessment/${assessment.id}`;
+    
+    // Update the scheduled assessment with the link and sent date
+    return updateScheduledAssessment(
+      assessments,
+      assessmentId,
+      {
+        sentAt: new Date(),
+        linkUrl: link,
+        status: "sent" as AssessmentStatus
+      }
+    );
+  } catch (error) {
+    console.error("Erro ao enviar email:", error);
+    throw error;
+  }
+};
