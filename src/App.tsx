@@ -15,6 +15,7 @@ import Avaliacoes from "./pages/Avaliacoes";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
+import AssessmentPage from "./pages/AssessmentPage";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,8 @@ const App = () => (
               <Configuracoes />
             </MainLayout>
           } />
+          {/* Public assessment route - accessible without login */}
+          <Route path="/avaliacao/:token" element={<AssessmentPage />} />
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>

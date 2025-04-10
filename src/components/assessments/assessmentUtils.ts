@@ -75,7 +75,7 @@ export const sendAssessmentEmail = async (
     }
     
     // In a real app, this would generate a unique link and send an email
-    const link = `https://example.com/assessment/${assessment.id}`;
+    const link = generateAssessmentLink(assessment.templateId, assessment.employeeId);
     
     // Update the scheduled assessment with the link and sent date
     return updateScheduledAssessment(
