@@ -19,7 +19,7 @@ import { fetchChecklistTemplates, saveScheduledAssessment, generateAssessmentLin
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
 import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
-import { ChecklistResult, ChecklistTemplate, ScheduledAssessment } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, AssessmentStatus } from "@/types/checklist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -239,7 +239,7 @@ export default function Avaliacoes() {
               ...a, 
               sentAt: new Date(), 
               linkUrl: link,
-              status: "sent" 
+              status: "sent" as AssessmentStatus // Explicitly cast to AssessmentStatus
             } 
           : a
       );
