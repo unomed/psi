@@ -92,3 +92,42 @@ export const sendAssessmentEmail = async (
     throw error;
   }
 };
+
+// Types for email templates
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  description?: string;
+}
+
+// Function to apply template variables
+export const applyTemplateVariables = (
+  template: string, 
+  variables: { [key: string]: string }
+): string => {
+  let result = template;
+  
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replace(new RegExp(`{${key}}`, 'g'), value);
+  }
+  
+  return result;
+};
+
+// Function to get an email template and fill in the variables
+export const getFilledEmailTemplate = (
+  templateId: string,
+  variables: { [key: string]: string },
+  templates: EmailTemplate[]
+): { subject: string; body: string } | null => {
+  const template = templates.find(t => t.id === templateId);
+  
+  if (!template) return null;
+  
+  return {
+    subject: applyTemplateVariables(template.subject, variables),
+    body: applyTemplateVariables(template.body, variables)
+  };
+};
