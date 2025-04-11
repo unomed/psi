@@ -112,6 +112,7 @@ export function DiscAssessmentForm({
                 totalSteps={template.questions.length}
                 selectedValue={responses[currentQuestion.id]?.toString()}
                 onResponseChange={handleResponseChange}
+                scaleType={template.scaleType}
               />
             )
           ) : (

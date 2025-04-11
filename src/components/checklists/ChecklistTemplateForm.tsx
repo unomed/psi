@@ -17,10 +17,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { DiscFactorType, DiscQuestion, ChecklistTemplate } from "@/types/checklist";
+import { DiscFactorType, DiscQuestion, ChecklistTemplate, ScaleType } from "@/types/checklist";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ScaleTypeSelector } from "./ScaleTypeSelector";
 
 interface ChecklistTemplateFormProps {
   onSubmit: (data: Omit<ChecklistTemplate, "id" | "createdAt">) => void;
@@ -31,6 +32,7 @@ export function ChecklistTemplateForm({ onSubmit }: ChecklistTemplateFormProps) 
   const [questionText, setQuestionText] = useState("");
   const [targetFactor, setTargetFactor] = useState<DiscFactorType>("D");
   const [weight, setWeight] = useState(1);
+  const [scaleType, setScaleType] = useState<ScaleType>("likert5");
 
   const form = useForm({
     defaultValues: {
@@ -79,6 +81,7 @@ export function ChecklistTemplateForm({ onSubmit }: ChecklistTemplateFormProps) 
     onSubmit({
       ...data,
       questions: questionsWithIds,
+      scaleType,
     });
   });
 
@@ -125,32 +128,36 @@ export function ChecklistTemplateForm({ onSubmit }: ChecklistTemplateFormProps) 
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tipo de Avaliação</FormLabel>
-              <FormControl>
-                <RadioGroup 
-                  defaultValue={field.value} 
-                  onValueChange={field.onChange}
-                  className="flex space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="disc" id="disc-type" />
-                    <Label htmlFor="disc-type">DISC</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="custom" id="custom-type" />
-                    <Label htmlFor="custom-type">Personalizado</Label>
-                  </div>
-                </RadioGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Avaliação</FormLabel>
+                <FormControl>
+                  <RadioGroup 
+                    defaultValue={field.value} 
+                    onValueChange={field.onChange}
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="disc" id="disc-type" />
+                      <Label htmlFor="disc-type">DISC</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="custom" id="custom-type" />
+                      <Label htmlFor="custom-type">Personalizado</Label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <ScaleTypeSelector value={scaleType} onChange={setScaleType} />
+        </div>
 
         <div className="space-y-4">
           <div className="font-medium text-sm">Questões</div>

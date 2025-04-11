@@ -14,6 +14,8 @@ export interface DiscQuestion {
   weight: number;
 }
 
+export type ScaleType = "likert5" | "yesno" | "agree3" | "custom";
+
 export interface ChecklistTemplate {
   id: string;
   title: string;
@@ -21,6 +23,7 @@ export interface ChecklistTemplate {
   type: "disc" | "custom";
   questions: DiscQuestion[];
   createdAt: Date;
+  scaleType?: ScaleType; // Novo campo para o tipo de escala
 }
 
 export interface ChecklistResult {

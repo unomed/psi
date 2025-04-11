@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment } from "@/types/checklist";
+import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment, ScaleType } from "@/types/checklist";
 import { Json } from "@/integrations/supabase/types";
 
 // Fetch all checklist templates from Supabase
@@ -20,7 +20,8 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       id: template.id,
       title: template.title,
       description: template.description || "",
-      type: template.type as "disc" | "custom", // We'll need to expand this as we add more types
+      type: template.type as "disc" | "custom", 
+      scaleType: template.scale_type as ScaleType || "likert5", // Adicionar o tipo de escala
       questions: (template.questions || []).map(q => ({
         id: q.id,
         text: q.question_text,
@@ -41,7 +42,7 @@ export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "i
       title: template.title,
       description: template.description,
       type: template.type,
-      scale_type: template.type === 'disc' ? 'likert5' : 'custom',
+      scale_type: template.scaleType || "likert5", // Salvar o tipo de escala
       is_active: true
     })
     .select()

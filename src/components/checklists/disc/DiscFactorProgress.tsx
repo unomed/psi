@@ -9,6 +9,9 @@ interface DiscFactorProgressProps {
 }
 
 export function DiscFactorProgress({ factor, percentage }: DiscFactorProgressProps) {
+  // Garantir que o percentual está limitado entre 0 e 100
+  const normalizedPercentage = Math.max(0, Math.min(100, percentage));
+  
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
@@ -18,10 +21,10 @@ export function DiscFactorProgress({ factor, percentage }: DiscFactorProgressPro
           {factor === "S" && "Estabilidade (S)"}
           {factor === "C" && "Conformidade (C)"}
         </span>
-        <span>{percentage}%</span>
+        <span>{normalizedPercentage}%</span>
       </div>
       <Progress 
-        value={percentage} 
+        value={normalizedPercentage} 
         className="h-2 bg-gray-200" 
         indicatorClassName={getFactorProgressColor(factor)} 
       />
