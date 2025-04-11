@@ -144,6 +144,12 @@ export default function AssessmentPage() {
     }
   };
 
+  // Add a function to handle closing the results
+  const handleCloseResults = () => {
+    // Navigate back to the home page or reset the assessment
+    window.location.href = "/";
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -211,7 +217,10 @@ export default function AssessmentPage() {
               {result && (
                 <div className="mt-6">
                   <h3 className="text-lg font-medium mb-4">Seus Resultados:</h3>
-                  <DiscResultDisplay result={result} />
+                  <DiscResultDisplay 
+                    result={result} 
+                    onClose={handleCloseResults} // Add the onClose prop here
+                  />
                 </div>
               )}
               
