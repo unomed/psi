@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment, ScaleType } from "@/types/checklist";
+import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment, ScaleType, scaleTypeToDbScaleType } from "@/types/checklist";
 import { Json } from "@/integrations/supabase/types";
 
 // Fetch all checklist templates from Supabase
@@ -21,7 +21,7 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       title: template.title,
       description: template.description || "",
       type: template.type as "disc" | "custom", 
-      scaleType: template.scale_type as ScaleType || "likert5", // Adicionar o tipo de escala
+      scaleType: mapDbScaleToAppScale(template.scale_type), // Convert DB scale type to app scale type
       questions: (template.questions || []).map(q => ({
         id: q.id,
         text: q.question_text,
@@ -33,6 +33,19 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
   });
 }
 
+// Helper function to map database scale types to application scale types
+function mapDbScaleToAppScale(dbScale: string): ScaleType {
+  switch(dbScale) {
+    case "likert5": return "likert5";
+    case "binary": return "yesno";
+    case "custom": 
+      // For custom, we need to check if it's our "agree3" or generic custom
+      // For now, we'll just return "custom", but in a real app you might store metadata
+      return "custom";
+    default: return "likert5";
+  }
+}
+
 // Save a new checklist template to Supabase
 export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "id" | "createdAt">): Promise<string> {
   // First, insert the template
@@ -42,7 +55,7 @@ export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "i
       title: template.title,
       description: template.description,
       type: template.type,
-      scale_type: template.scaleType || "likert5", // Salvar o tipo de escala
+      scale_type: scaleTypeToDbScaleType(template.scaleType || "likert5"), // Convert app scale type to DB scale type
       is_active: true
     })
     .select()

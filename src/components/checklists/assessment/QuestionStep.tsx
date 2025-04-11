@@ -107,24 +107,24 @@ export function QuestionStep({
             className="space-y-3"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="1" id="r1" />
-              <Label htmlFor="r1">Discordo totalmente</Label>
+              <RadioGroupItem value="1" id="r1c" />
+              <Label htmlFor="r1c">Discordo totalmente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="2" id="r2" />
-              <Label htmlFor="r2">Discordo parcialmente</Label>
+              <RadioGroupItem value="2" id="r2c" />
+              <Label htmlFor="r2c">Discordo parcialmente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="3" id="r3" />
-              <Label htmlFor="r3">Neutro</Label>
+              <RadioGroupItem value="3" id="r3c" />
+              <Label htmlFor="r3c">Neutro</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="4" id="r4" />
-              <Label htmlFor="r4">Concordo parcialmente</Label>
+              <RadioGroupItem value="4" id="r4c" />
+              <Label htmlFor="r4c">Concordo parcialmente</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="5" id="r5" />
-              <Label htmlFor="r5">Concordo totalmente</Label>
+              <RadioGroupItem value="5" id="r5c" />
+              <Label htmlFor="r5c">Concordo totalmente</Label>
             </div>
           </RadioGroup>
         </div>
