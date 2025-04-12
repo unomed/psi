@@ -19,7 +19,7 @@ interface ChecklistBasicInfoProps {
   form: UseFormReturn<{
     title: string;
     description: string;
-    type: "disc" | "custom";
+    type: "disc";
   }, any, undefined>;
   scaleType: ScaleType;
   onScaleTypeChange: (value: ScaleType) => void;
@@ -81,8 +81,8 @@ export function ChecklistBasicInfo({
                     <Label htmlFor="disc-type">DISC</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="custom" id="custom-type" />
-                    <Label htmlFor="custom-type">Personalizado</Label>
+                    <RadioGroupItem value="custom" id="custom-type" disabled />
+                    <Label htmlFor="custom-type" className="text-muted-foreground">Personalizado</Label>
                   </div>
                 </RadioGroup>
               </FormControl>
