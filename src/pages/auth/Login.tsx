@@ -36,6 +36,12 @@ export default function Login() {
     setIsLoading(false);
   }
 
+  // Helper function to set test credentials
+  const setTestCredentials = (email: string, password: string) => {
+    form.setValue('email', email);
+    form.setValue('password', password);
+  };
+
   return (
     <AuthLayout
       title="Login"
@@ -109,7 +115,7 @@ export default function Login() {
             variant="outline" 
             type="button" 
             disabled={isLoading || loading}
-            onClick={() => form.setValue('email', 'superadmin@test.com') & form.setValue('password', 'super123')}
+            onClick={() => setTestCredentials('superadmin@test.com', 'super123')}
           >
             Super Admin
           </Button>
@@ -117,7 +123,7 @@ export default function Login() {
             variant="outline" 
             type="button" 
             disabled={isLoading || loading}
-            onClick={() => form.setValue('email', 'admin@company.com') & form.setValue('password', 'admin123')}
+            onClick={() => setTestCredentials('admin@company.com', 'admin123')}
           >
             Admin da Empresa
           </Button>
@@ -125,7 +131,7 @@ export default function Login() {
             variant="outline" 
             type="button" 
             disabled={isLoading || loading}
-            onClick={() => form.setValue('email', 'evaluator@company.com') & form.setValue('password', 'eval123')}
+            onClick={() => setTestCredentials('evaluator@company.com', 'eval123')}
           >
             Avaliador
           </Button>
