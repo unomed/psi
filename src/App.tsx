@@ -35,7 +35,7 @@ const App = () => (
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/register" element={<Register />} />
             
-            {/* Protected routes */}
+            {/* Protected routes - accessible by all authenticated users */}
             <Route path="/" element={
               <RouteGuard>
                 <MainLayout>
@@ -43,34 +43,38 @@ const App = () => (
                 </MainLayout>
               </RouteGuard>
             } />
+            
+            {/* Routes accessible only by superadmin and admin */}
             <Route path="/empresas" element={
-              <RouteGuard>
+              <RouteGuard allowedRoles={['superadmin', 'admin']}>
                 <MainLayout>
                   <Empresas />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/funcionarios" element={
-              <RouteGuard>
+              <RouteGuard allowedRoles={['superadmin', 'admin']}>
                 <MainLayout>
                   <Funcionarios />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/setores" element={
-              <RouteGuard>
+              <RouteGuard allowedRoles={['superadmin', 'admin']}>
                 <MainLayout>
                   <Setores />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/funcoes" element={
-              <RouteGuard>
+              <RouteGuard allowedRoles={['superadmin', 'admin']}>
                 <MainLayout>
                   <Funcoes />
                 </MainLayout>
               </RouteGuard>
             } />
+            
+            {/* Routes accessible by all authenticated users */}
             <Route path="/checklists" element={
               <RouteGuard>
                 <MainLayout>
@@ -85,15 +89,19 @@ const App = () => (
                 </MainLayout>
               </RouteGuard>
             } />
+            
+            {/* Routes accessible only by superadmin and admin */}
             <Route path="/relatorios" element={
-              <RouteGuard>
+              <RouteGuard allowedRoles={['superadmin', 'admin']}>
                 <MainLayout>
                   <Relatorios />
                 </MainLayout>
               </RouteGuard>
             } />
+            
+            {/* Routes accessible only by superadmin */}
             <Route path="/configuracoes" element={
-              <RouteGuard>
+              <RouteGuard allowedRoles={['superadmin']}>
                 <MainLayout>
                   <Configuracoes />
                 </MainLayout>

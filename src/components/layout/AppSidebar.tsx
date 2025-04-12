@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import {
   BarChart3,
   Building2,
-  ClipboardCheck, // Changed from Checklist
+  ClipboardCheck,
   ClipboardList,
   FileText,
   FolderKanban,
@@ -25,59 +25,75 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserProfileMenu } from "./UserProfileMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Menu items with their icons and routes
+// Menu items with their icons, routes and allowed roles
 const menuItems = [
   {
     title: "Dashboard",
     icon: BarChart3,
     path: "/",
+    roles: ["superadmin", "admin", "evaluator"] // Todos podem acessar
   },
   {
     title: "Empresas",
     icon: Building2,
     path: "/empresas",
+    roles: ["superadmin", "admin"] // Apenas superadmin e admin
   },
   {
     title: "Funcionários",
     icon: Users,
     path: "/funcionarios",
+    roles: ["superadmin", "admin"] // Apenas superadmin e admin
   },
   {
     title: "Setores",
     icon: FolderKanban,
     path: "/setores",
+    roles: ["superadmin", "admin"] // Apenas superadmin e admin
   },
   {
     title: "Funções",
     icon: UserRound,
     path: "/funcoes",
+    roles: ["superadmin", "admin"] // Apenas superadmin e admin
   },
   {
     title: "Checklists",
-    icon: ClipboardCheck, // Changed from Checklist
+    icon: ClipboardCheck,
     path: "/checklists",
+    roles: ["superadmin", "admin", "evaluator"] // Todos podem acessar
   },
   {
     title: "Avaliações",
     icon: ClipboardList,
     path: "/avaliacoes",
+    roles: ["superadmin", "admin", "evaluator"] // Todos podem acessar
   },
   {
     title: "Relatórios",
     icon: FileText,
     path: "/relatorios",
+    roles: ["superadmin", "admin"] // Apenas superadmin e admin
   },
   {
     title: "Configurações",
     icon: Settings,
     path: "/configuracoes",
+    roles: ["superadmin"] // Apenas superadmin
   },
 ];
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { userRole } = useAuth();
+
+  // Filtrar itens de menu com base na função do usuário
+  const filteredMenuItems = menuItems.filter(item => 
+    userRole && item.roles.includes(userRole)
+  );
 
   return (
     <Sidebar className="border-r">
@@ -96,7 +112,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {filteredMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     onClick={() => navigate(item.path)}
