@@ -24,6 +24,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { UserProfileMenu } from "./UserProfileMenu";
 
 // Menu items with their icons and routes
 const menuItems = [
@@ -90,8 +91,8 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
+        <SidebarGroup className="flex-1">
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -112,6 +113,8 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
+        <UserProfileMenu />
       </SidebarContent>
     </Sidebar>
   );
