@@ -22,11 +22,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(false);
   const navigate = useNavigate();
 
   // Função para buscar o papel do usuário
   const fetchUserRole = async (userId: string) => {
     try {
+      console.log("Fetching user role for:", userId);
+      setRoleLoading(true);
+      
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -35,28 +39,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Erro ao buscar função do usuário:', error);
+        // Se não encontrar um papel, definir como usuário normal
+        setUserRole('user');
         return;
       }
 
       if (data) {
+        console.log("User role data:", data);
         setUserRole(data.role);
+      } else {
+        // Definir um papel padrão
+        setUserRole('user');
       }
     } catch (error) {
       console.error('Erro ao buscar função do usuário:', error);
+      // Definir um papel padrão em caso de erro
+      setUserRole('user');
+    } finally {
+      setRoleLoading(false);
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+    
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("Auth state change:", event);
+        
+        if (!mounted) return;
+        
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
-          await fetchUserRole(currentSession.user.id);
+          if (mounted) {
+            // Usar setTimeout para evitar chamadas aninhadas à API Supabase
+            setTimeout(() => {
+              if (mounted) {
+                fetchUserRole(currentSession.user.id);
+              }
+            }, 0);
+          }
         } else {
-          setUserRole(null);
+          if (mounted) setUserRole(null);
         }
         
         if (event === 'SIGNED_IN') {
@@ -74,21 +101,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        await fetchUserRole(currentSession.user.id);
+    const checkSession = async () => {
+      try {
+        console.log("Checking for existing session");
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        console.log("Session check result:", !!currentSession);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          await fetchUserRole(currentSession.user.id);
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        if (mounted) setLoading(false);
       }
-      
-      setLoading(false);
-    });
+    };
+
+    checkSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
+
+  // Considerar o aplicativo como carregando se estivermos buscando a função do usuário
+  const isLoading = loading || roleLoading;
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -159,7 +202,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, signIn, signUp, signOut, loading, userRole }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      signIn, 
+      signUp, 
+      signOut, 
+      loading: isLoading, 
+      userRole 
+    }}>
       {children}
     </AuthContext.Provider>
   );

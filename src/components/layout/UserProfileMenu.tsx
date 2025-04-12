@@ -18,6 +18,8 @@ export function UserProfileMenu() {
 
   // Get role display text and color
   const getRoleDisplay = () => {
+    if (!userRole) return { text: 'Usuário', variant: 'outline' };
+    
     switch(userRole) {
       case 'superadmin':
         return { text: 'Super Admin', variant: 'destructive' };
@@ -39,11 +41,9 @@ export function UserProfileMenu() {
       </Avatar>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{user.email}</p>
-        {userRole && (
-          <Badge variant={roleDisplay.variant as any} className="mt-1">
-            {roleDisplay.text}
-          </Badge>
-        )}
+        <Badge variant={roleDisplay.variant as any} className="mt-1">
+          {roleDisplay.text}
+        </Badge>
       </div>
       <Button variant="ghost" size="icon" onClick={signOut}>
         <LogOut className="h-4 w-4" />

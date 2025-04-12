@@ -11,6 +11,9 @@ export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
   const { user, loading, userRole } = useAuth();
   const location = useLocation();
 
+  // Para debug
+  console.log("RouteGuard - Loading:", loading, "User:", !!user, "UserRole:", userRole);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -23,10 +26,14 @@ export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Se allowedRoles estiver definido, verifique se o usuário tem uma função permitida
+  // Verificação de permissão de função apenas se allowedRoles estiver definido
   if (allowedRoles && allowedRoles.length > 0) {
-    if (!userRole || !allowedRoles.includes(userRole)) {
-      // Redirecionar para a página de acesso negado ou para o dashboard
+    const hasRole = userRole && allowedRoles.includes(userRole);
+    
+    console.log("RouteGuard - Role check:", { allowedRoles, userRole, hasRole });
+    
+    if (!hasRole) {
+      // Redirecionar para a página inicial (dashboard)
       return <Navigate to="/" replace />;
     }
   }
