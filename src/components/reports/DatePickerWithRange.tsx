@@ -12,10 +12,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Dispatch, SetStateAction } from "react";
 
 interface DatePickerWithRangeProps {
   dateRange: DateRange;
-  setDateRange: (range: DateRange) => void;
+  setDateRange: Dispatch<SetStateAction<DateRange>>;
   className?: string;
 }
 
@@ -56,13 +57,11 @@ export function DatePickerWithRange({
             initialFocus
             mode="range"
             defaultMonth={dateRange.from}
-            selected={{
-              from: dateRange.from,
-              to: dateRange.to,
-            }}
-            onSelect={setDateRange}
+            selected={dateRange}
+            onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
             numberOfMonths={2}
             locale={ptBR}
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

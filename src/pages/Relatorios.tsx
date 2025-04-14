@@ -9,9 +9,13 @@ import { IndividualReports } from "@/components/reports/IndividualReports";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { FileText, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DateRange } from "react-day-picker";
 
 export default function Relatorios() {
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined, to: Date | undefined }>({ from: undefined, to: undefined });
+  const [dateRange, setDateRange] = useState<DateRange>({ 
+    from: undefined, 
+    to: undefined 
+  });
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   

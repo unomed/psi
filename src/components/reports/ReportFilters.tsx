@@ -1,14 +1,14 @@
 
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateRange } from "react-day-picker";
 import { DatePickerWithRange } from "./DatePickerWithRange";
+import { Dispatch, SetStateAction } from "react";
 
 interface ReportFiltersProps {
   dateRange: DateRange;
-  setDateRange: (range: DateRange) => void;
+  setDateRange: Dispatch<SetStateAction<DateRange>>;
   selectedSector: string;
   setSelectedSector: (sector: string) => void;
   selectedRole: string;
