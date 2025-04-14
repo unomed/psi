@@ -13,6 +13,7 @@ import { AssessmentDialogs } from "@/components/assessments/AssessmentDialogs";
 import { ScheduleRecurringAssessmentDialog } from "@/components/assessments/ScheduleRecurringAssessmentDialog";
 import { GenerateLinkDialog } from "@/components/assessments/GenerateLinkDialog";
 import { ShareAssessmentDialog } from "@/components/assessments/ShareAssessmentDialog";
+import { NewAssessmentDialog } from "@/components/assessments/NewAssessmentDialog";
 
 export function AssessmentHandler() {
   const {
@@ -32,6 +33,8 @@ export function AssessmentHandler() {
     setIsLinkDialogOpen,
     isShareDialogOpen,
     setIsShareDialogOpen,
+    isNewAssessmentDialogOpen,
+    setIsNewAssessmentDialogOpen,
     assessmentResult,
     setAssessmentResult,
     scheduledAssessments,
@@ -63,17 +66,10 @@ export function AssessmentHandler() {
     }
   };
 
-  const handleStartAssessment = () => {
-    if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de checklist para iniciar a avaliação.");
-      return;
-    }
-    
-    setIsAssessmentDialogOpen(true);
-  };
-
   const handleNewAssessment = () => {
-    setActiveTab("nova");
+    setSelectedEmployee(null);
+    setSelectedTemplate(null);
+    setIsNewAssessmentDialogOpen(true);
   };
 
   const handleScheduleAssessment = () => {
@@ -129,6 +125,19 @@ export function AssessmentHandler() {
     return getEmployeeInfo(selectedEmployee).name;
   };
 
+  const handleSendEmailToEmployee = () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist para enviar o email.");
+      return;
+    }
+    
+    // Here we'd typically create a scheduled assessment and then send an email
+    // For this example, we'll just show a success toast
+    toast.success(`Email enviado para ${getSelectedEmployeeName()}`);
+    setIsNewAssessmentDialogOpen(false);
+    setActiveTab("agendadas");
+  };
+
   return (
     <div className="space-y-8">
       <AssessmentActions onNewAssessment={handleNewAssessment} />
@@ -137,17 +146,23 @@ export function AssessmentHandler() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         scheduledAssessments={scheduledAssessments}
+        onSendEmail={handleSendEmail}
+        onShareAssessment={handleShareAssessment}
+        templates={templates}
+      />
+      
+      {/* New Assessment Dialog */}
+      <NewAssessmentDialog
+        isOpen={isNewAssessmentDialogOpen}
+        onClose={() => setIsNewAssessmentDialogOpen(false)}
         selectedEmployee={selectedEmployee}
         selectedTemplate={selectedTemplate}
         templates={templates}
         isTemplatesLoading={isLoading}
-        onStartAssessment={handleStartAssessment}
         onScheduleAssessment={handleScheduleAssessment}
         onGenerateLink={handleGenerateLink}
         onEmployeeSelect={handleEmployeeChange}
         onTemplateSelect={handleTemplateSelect}
-        onSendEmail={handleSendEmail}
-        onShareAssessment={handleShareAssessment}
       />
       
       {/* Assessment Dialogs */}

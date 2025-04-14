@@ -32,6 +32,19 @@ const mockScheduledAssessments: ScheduledAssessment[] = [
     completedAt: null,
     recurrenceType: "none",
     nextScheduledDate: null
+  },
+  {
+    id: "sched-3",
+    employeeId: "emp-3",
+    templateId: "template-1",
+    scheduledDate: new Date("2025-03-15"),
+    sentAt: new Date("2025-03-10"),
+    linkUrl: "https://example.com/assessment/link3",
+    status: "completed",
+    completedAt: new Date("2025-03-18"),
+    recurrenceType: "monthly",
+    nextScheduledDate: new Date("2025-04-15"),
+    phoneNumber: "(11) 98765-4322"
   }
 ];
 
@@ -45,6 +58,7 @@ export function useAssessmentState() {
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isNewAssessmentDialogOpen, setIsNewAssessmentDialogOpen] = useState(false);
 
   const [assessmentResult, setAssessmentResult] = useState<ChecklistResult | null>(null);
   const [scheduledAssessments, setScheduledAssessments] = useState<ScheduledAssessment[]>(mockScheduledAssessments);
@@ -113,6 +127,7 @@ export function useAssessmentState() {
       
       setScheduledAssessments([...scheduledAssessments, assessmentWithId]);
       setIsScheduleDialogOpen(false);
+      setIsNewAssessmentDialogOpen(false);
       setScheduledDate(undefined);
       setActiveTab("agendadas");
       toast.success("Avaliação agendada com sucesso!");
@@ -159,6 +174,8 @@ export function useAssessmentState() {
     setIsLinkDialogOpen,
     isShareDialogOpen,
     setIsShareDialogOpen,
+    isNewAssessmentDialogOpen,
+    setIsNewAssessmentDialogOpen,
     assessmentResult,
     setAssessmentResult,
     scheduledAssessments,
