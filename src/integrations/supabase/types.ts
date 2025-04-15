@@ -82,15 +82,18 @@ export type Database = {
       }
       checklist_templates: {
         Row: {
+          company_id: string | null
           created_at: string
           created_by: string | null
           cutoff_scores: Json | null
+          derived_from_id: string | null
           description: string | null
           estimated_time_minutes: number | null
           id: string
           instructions: string | null
           interpretation_guide: string | null
           is_active: boolean
+          is_standard: boolean | null
           max_score: number | null
           scale_type: Database["public"]["Enums"]["scale_type"]
           title: string
@@ -99,15 +102,18 @@ export type Database = {
           version: number
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           created_by?: string | null
           cutoff_scores?: Json | null
+          derived_from_id?: string | null
           description?: string | null
           estimated_time_minutes?: number | null
           id?: string
           instructions?: string | null
           interpretation_guide?: string | null
           is_active?: boolean
+          is_standard?: boolean | null
           max_score?: number | null
           scale_type: Database["public"]["Enums"]["scale_type"]
           title: string
@@ -116,15 +122,18 @@ export type Database = {
           version?: number
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           created_by?: string | null
           cutoff_scores?: Json | null
+          derived_from_id?: string | null
           description?: string | null
           estimated_time_minutes?: number | null
           id?: string
           instructions?: string | null
           interpretation_guide?: string | null
           is_active?: boolean
+          is_standard?: boolean | null
           max_score?: number | null
           scale_type?: Database["public"]["Enums"]["scale_type"]
           title?: string
@@ -132,7 +141,15 @@ export type Database = {
           updated_at?: string
           version?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "checklist_templates_derived_from_id_fkey"
+            columns: ["derived_from_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -216,6 +233,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      copy_template_for_company: {
+        Args: { template_id: string; company_id: string; new_title?: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _user_id: string

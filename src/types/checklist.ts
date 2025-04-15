@@ -1,4 +1,3 @@
-
 export type DiscFactorType = "D" | "I" | "S" | "C";
 
 export interface DiscFactor {
@@ -39,6 +38,9 @@ export interface ChecklistTemplate {
   questions: DiscQuestion[];
   createdAt: Date;
   scaleType?: ScaleType;
+  isStandard?: boolean;
+  companyId?: string | null;
+  derivedFromId?: string | null;
 }
 
 export interface ChecklistResult {

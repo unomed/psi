@@ -1,24 +1,23 @@
 
 import { useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
-import { fetchChecklistTemplates, fetchAssessmentResults, saveChecklistTemplate } from "@/services/checklistService";
+import { fetchChecklistTemplates, fetchAssessmentResults, saveChecklistTemplate, copyTemplateForCompany } from "@/services/checklistService";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Checklists() {
+  const { user, hasRole } = useAuth();
   const [activeTab, setActiveTab] = useState("templates");
-  
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
-  
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
 
-  // Use TanStack Query to fetch checklists and results
   const { 
     data: checklists = [], 
     isLoading: isLoadingChecklists,
@@ -39,7 +38,8 @@ export default function Checklists() {
 
   const handleCreateTemplate = async (data: Omit<ChecklistTemplate, "id" | "createdAt">) => {
     try {
-      await saveChecklistTemplate(data);
+      const isSuperAdmin = await hasRole('superadmin');
+      await saveChecklistTemplate(data, isSuperAdmin);
       setIsFormDialogOpen(false);
       toast.success("Modelo de checklist criado com sucesso!");
       refetchChecklists();
@@ -49,7 +49,37 @@ export default function Checklists() {
     }
   };
 
-  const handleEditTemplate = (template: ChecklistTemplate) => {
+  const handleCopyTemplate = async (template: ChecklistTemplate) => {
+    if (!user?.id) {
+      toast.error("Você precisa estar logado para copiar um modelo.");
+      return;
+    }
+
+    try {
+      await copyTemplateForCompany(
+        template.id, 
+        user.id, 
+        `Cópia de ${template.title}`
+      );
+      toast.success("Modelo copiado com sucesso!");
+      refetchChecklists();
+    } catch (error) {
+      console.error("Error copying template:", error);
+      toast.error("Erro ao copiar modelo.");
+    }
+  };
+
+  const handleEditTemplate = async (template: ChecklistTemplate) => {
+    if (template.isStandard && !(await hasRole('superadmin'))) {
+      toast.error("Apenas superadmins podem editar modelos padrão.");
+      return;
+    }
+    
+    if (template.companyId && template.companyId !== user?.id) {
+      toast.error("Você só pode editar seus próprios modelos.");
+      return;
+    }
+
     // For demonstration, we'll just show a toast
     toast.info("Edição de checklist será implementada em breve!");
   };
@@ -57,11 +87,6 @@ export default function Checklists() {
   const handleViewResult = (result: ChecklistResult) => {
     setSelectedResult(result);
     setIsResultDialogOpen(true);
-  };
-
-  const handleCloseResult = () => {
-    setIsResultDialogOpen(false);
-    setSelectedResult(null);
   };
 
   return (
@@ -73,6 +98,7 @@ export default function Checklists() {
             Modelos de avaliação psicossocial e questionários para identificação de riscos.
           </p>
         </div>
+        {/* Only show create button for superadmins or when creating company-specific templates */}
         <Button onClick={() => setIsFormDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Checklist
@@ -90,6 +116,7 @@ export default function Checklists() {
           checklists={checklists}
           results={results}
           onEditTemplate={handleEditTemplate}
+          onCopyTemplate={handleCopyTemplate}
           onStartAssessment={() => {}} // Empty function as we're not using this feature
           onViewResult={handleViewResult}
           onCreateTemplate={() => setIsFormDialogOpen(true)}
@@ -99,16 +126,19 @@ export default function Checklists() {
       <ChecklistDialogs
         isFormDialogOpen={isFormDialogOpen}
         setIsFormDialogOpen={setIsFormDialogOpen}
-        isAssessmentDialogOpen={false} // We're not using this dialog
-        setIsAssessmentDialogOpen={() => {}} // Empty function as we're not using this feature
+        isAssessmentDialogOpen={false}
+        setIsAssessmentDialogOpen={() => {}}
         isResultDialogOpen={isResultDialogOpen}
         setIsResultDialogOpen={setIsResultDialogOpen}
         selectedTemplate={selectedTemplate}
         selectedResult={selectedResult}
         onSubmitTemplate={handleCreateTemplate}
-        onSubmitAssessment={() => {}} // Empty function as we're not using this feature
-        onCloseAssessment={() => {}} // Empty function as we're not using this feature
-        onCloseResult={handleCloseResult}
+        onSubmitAssessment={() => {}}
+        onCloseAssessment={() => {}}
+        onCloseResult={() => {
+          setIsResultDialogOpen(false);
+          setSelectedResult(null);
+        }}
       />
     </div>
   );

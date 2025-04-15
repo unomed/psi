@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment, ScaleType, scaleTypeToDbScaleType } from "@/types/checklist";
 import { Json } from "@/integrations/supabase/types";
@@ -7,56 +6,48 @@ import { Json } from "@/integrations/supabase/types";
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
   const { data, error } = await supabase
     .from('checklist_templates')
-    .select('*, questions(*)');
+    .select('*, questions(*)')
+    .order('created_at', { ascending: false });
   
   if (error) {
     console.error("Error fetching checklist templates:", error);
     throw error;
   }
 
-  // Map the Supabase data to our application types
-  return (data || []).map(template => {
-    return {
-      id: template.id,
-      title: template.title,
-      description: template.description || "",
-      type: template.type as "disc" | "custom", 
-      scaleType: mapDbScaleToAppScale(template.scale_type), // Convert DB scale type to app scale type
-      questions: (template.questions || []).map(q => ({
-        id: q.id,
-        text: q.question_text,
-        targetFactor: q.target_factor as DiscFactorType,
-        weight: q.weight || 1
-      })),
-      createdAt: new Date(template.created_at)
-    };
-  });
-}
-
-// Helper function to map database scale types to application scale types
-function mapDbScaleToAppScale(dbScale: string): ScaleType {
-  switch(dbScale) {
-    case "likert5": return "likert5";
-    case "binary": return "yesno";
-    case "custom": 
-      // For custom, we need to check if it's our "agree3" or generic custom
-      // For now, we'll just return "custom", but in a real app you might store metadata
-      return "custom";
-    default: return "likert5";
-  }
+  return (data || []).map(template => ({
+    id: template.id,
+    title: template.title,
+    description: template.description || "",
+    type: template.type as "disc" | "custom",
+    scaleType: mapDbScaleToAppScale(template.scale_type),
+    isStandard: template.is_standard || false,
+    companyId: template.company_id,
+    derivedFromId: template.derived_from_id,
+    questions: (template.questions || []).map(q => ({
+      id: q.id,
+      text: q.question_text,
+      targetFactor: q.target_factor as DiscFactorType,
+      weight: q.weight || 1
+    })),
+    createdAt: new Date(template.created_at)
+  }));
 }
 
 // Save a new checklist template to Supabase
-export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "id" | "createdAt">): Promise<string> {
-  // First, insert the template
+export async function saveChecklistTemplate(
+  template: Omit<ChecklistTemplate, "id" | "createdAt">, 
+  isStandard: boolean = false
+): Promise<string> {
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
     .insert({
       title: template.title,
       description: template.description,
       type: template.type,
-      scale_type: scaleTypeToDbScaleType(template.scaleType || "likert5"), // Convert app scale type to DB scale type
-      is_active: true
+      scale_type: scaleTypeToDbScaleType(template.scaleType || "likert5"),
+      is_active: true,
+      is_standard: isStandard,
+      company_id: isStandard ? null : template.companyId
     })
     .select()
     .single();
@@ -71,7 +62,6 @@ export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "i
     throw new Error("Failed to get template ID after insertion");
   }
 
-  // Then, insert all questions
   const questionsToInsert = template.questions.map((q, index) => ({
     template_id: templateId,
     question_text: q.text,
@@ -90,6 +80,38 @@ export async function saveChecklistTemplate(template: Omit<ChecklistTemplate, "i
   }
 
   return templateId;
+}
+
+// Copy a template for a company
+export async function copyTemplateForCompany(
+  templateId: string, 
+  companyId: string, 
+  newTitle?: string
+): Promise<string> {
+  const { data, error } = await supabase
+    .rpc('copy_template_for_company', {
+      template_id: templateId,
+      company_id: companyId,
+      new_title: newTitle
+    });
+
+  if (error) {
+    console.error("Error copying template:", error);
+    throw error;
+  }
+
+  return data;
+}
+
+// Helper function to map database scale types to application scale types
+function mapDbScaleToAppScale(dbScale: string): ScaleType {
+  switch(dbScale) {
+    case "likert5": return "likert5";
+    case "binary": return "yesno";
+    case "custom": 
+      return "custom";
+    default: return "likert5";
+  }
 }
 
 // Save an assessment result to Supabase
