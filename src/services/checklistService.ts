@@ -1,5 +1,32 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, DiscQuestion, scaleTypeToDbScaleType } from "@/types/checklist";
+import { 
+  ChecklistTemplate, 
+  ChecklistResult, 
+  DiscQuestion, 
+  DiscFactorType,
+  ScaleType,
+  scaleTypeToDbScaleType 
+} from "@/types/checklist";
+import { Database } from "@/integrations/supabase/types";
+
+// Define types from Supabase that we need
+type Json = Database["public"]["Tables"]["assessment_responses"]["Row"]["factors_scores"];
+
+// Type for scheduled assessment that was missing
+export interface ScheduledAssessment {
+  id: string;
+  employeeId: string;
+  templateId: string;
+  scheduledDate: Date;
+  sentAt: Date | null;
+  linkUrl: string;
+  status: "scheduled" | "sent" | "completed";
+  completedAt: Date | null;
+  recurrenceType?: "none" | "monthly" | "semiannual" | "annual";
+  nextScheduledDate?: Date | null;
+  phoneNumber?: string;
+}
 
 // Fetch all checklist templates from Supabase
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
