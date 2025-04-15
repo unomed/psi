@@ -24,6 +24,7 @@ export default function Checklists() {
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const { 
     data: checklists = [], 
@@ -56,7 +57,13 @@ export default function Checklists() {
     }
   };
 
-  const handleEditTemplate = async (template: ChecklistTemplate) => {
+  const handleEditTemplate = (template: ChecklistTemplate) => {
+    setSelectedTemplate(template);
+    setIsEditing(true);
+    setIsFormDialogOpen(true);
+  };
+
+  const handleUpdateTemplate = async (template: ChecklistTemplate) => {
     if (template.isStandard && !(await hasRole('superadmin'))) {
       toast.error("Apenas superadmins podem editar modelos padrão.");
       return;
@@ -69,6 +76,9 @@ export default function Checklists() {
 
     try {
       await updateChecklistTemplate(template.id, template);
+      setIsFormDialogOpen(false);
+      setIsEditing(false);
+      setSelectedTemplate(null);
       toast.success("Modelo de checklist atualizado com sucesso!");
       refetchChecklists();
     } catch (error) {
@@ -123,6 +133,12 @@ export default function Checklists() {
     setIsResultDialogOpen(true);
   };
 
+  const handleCloseFormDialog = () => {
+    setIsFormDialogOpen(false);
+    setIsEditing(false);
+    setSelectedTemplate(null);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -132,7 +148,11 @@ export default function Checklists() {
             Modelos de avaliação psicossocial e questionários para identificação de riscos.
           </p>
         </div>
-        <Button onClick={() => setIsFormDialogOpen(true)}>
+        <Button onClick={() => {
+          setIsEditing(false);
+          setSelectedTemplate(null);
+          setIsFormDialogOpen(true);
+        }}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Checklist
         </Button>
@@ -153,26 +173,31 @@ export default function Checklists() {
           onCopyTemplate={handleCopyTemplate}
           onStartAssessment={() => {}} // Empty function as we're not using this feature
           onViewResult={handleViewResult}
-          onCreateTemplate={() => setIsFormDialogOpen(true)}
+          onCreateTemplate={() => {
+            setIsEditing(false);
+            setSelectedTemplate(null);
+            setIsFormDialogOpen(true);
+          }}
         />
       )}
       
       <ChecklistDialogs
         isFormDialogOpen={isFormDialogOpen}
-        setIsFormDialogOpen={setIsFormDialogOpen}
+        setIsFormDialogOpen={handleCloseFormDialog}
         isAssessmentDialogOpen={false}
         setIsAssessmentDialogOpen={() => {}}
         isResultDialogOpen={isResultDialogOpen}
         setIsResultDialogOpen={setIsResultDialogOpen}
         selectedTemplate={selectedTemplate}
         selectedResult={selectedResult}
-        onSubmitTemplate={handleCreateTemplate}
+        onSubmitTemplate={isEditing ? handleUpdateTemplate : handleCreateTemplate}
         onSubmitAssessment={() => {}}
         onCloseAssessment={() => {}}
         onCloseResult={() => {
           setIsResultDialogOpen(false);
           setSelectedResult(null);
         }}
+        isEditing={isEditing}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -10,20 +10,49 @@ import { ChecklistBasicInfo } from "./form/ChecklistBasicInfo";
 import { toast } from "sonner";
 
 interface ChecklistTemplateFormProps {
-  onSubmit: (data: Omit<ChecklistTemplate, "id" | "createdAt">) => void;
+  onSubmit: (data: Omit<ChecklistTemplate, "id" | "createdAt"> | ChecklistTemplate) => void;
+  existingTemplate?: ChecklistTemplate;
+  isEditing?: boolean;
 }
 
-export function ChecklistTemplateForm({ onSubmit }: ChecklistTemplateFormProps) {
+export function ChecklistTemplateForm({ 
+  onSubmit, 
+  existingTemplate, 
+  isEditing = false 
+}: ChecklistTemplateFormProps) {
   const [questions, setQuestions] = useState<Omit<DiscQuestion, "id">[]>([]);
-  const [scaleType, setScaleType] = useState<ScaleType>("likert5");
+  const [scaleType, setScaleType] = useState<ScaleType>(existingTemplate?.scaleType || "likert5");
 
   const form = useForm({
     defaultValues: {
-      title: "",
-      description: "",
-      type: "disc" as const,
+      title: existingTemplate?.title || "",
+      description: existingTemplate?.description || "",
+      type: existingTemplate?.type || "disc" as const,
     },
   });
+
+  // Load existing data when editing
+  useEffect(() => {
+    if (existingTemplate) {
+      form.reset({
+        title: existingTemplate.title,
+        description: existingTemplate.description || "",
+        type: existingTemplate.type,
+      });
+      
+      setScaleType(existingTemplate.scaleType || "likert5");
+      
+      // Convert questions to the format needed for the form
+      if (existingTemplate.questions) {
+        const formattedQuestions = existingTemplate.questions.map(q => ({
+          text: q.text,
+          targetFactor: q.targetFactor,
+          weight: q.weight,
+        }));
+        setQuestions(formattedQuestions);
+      }
+    }
+  }, [existingTemplate, form]);
 
   const handleAddQuestion = (question: Omit<DiscQuestion, "id">) => {
     setQuestions([...questions, question]);
@@ -47,11 +76,22 @@ export function ChecklistTemplateForm({ onSubmit }: ChecklistTemplateFormProps) 
       id: `q-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
     }));
 
-    onSubmit({
-      ...data,
-      questions: questionsWithIds,
-      scaleType,
-    });
+    if (isEditing && existingTemplate) {
+      // Update the existing template
+      onSubmit({
+        ...existingTemplate,
+        ...data,
+        questions: questionsWithIds,
+        scaleType,
+      });
+    } else {
+      // Create a new template
+      onSubmit({
+        ...data,
+        questions: questionsWithIds,
+        scaleType,
+      });
+    }
   });
 
   return (
@@ -74,7 +114,9 @@ export function ChecklistTemplateForm({ onSubmit }: ChecklistTemplateFormProps) 
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit">Criar Checklist</Button>
+          <Button type="submit">
+            {isEditing ? "Atualizar Checklist" : "Criar Checklist"}
+          </Button>
         </div>
       </form>
     </Form>
