@@ -1,9 +1,9 @@
 
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, ClipboardList, Pencil, Copy } from "lucide-react";
 import { ChecklistEmptyState } from "@/components/checklists/ChecklistEmptyState";
 import { ChecklistResultItem } from "@/components/checklists/ChecklistResultItem";
+import { ClipboardCheck, ClipboardList, Pencil, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -17,6 +17,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ChecklistTabsProps {
   activeTab: string;
@@ -24,6 +35,7 @@ interface ChecklistTabsProps {
   checklists: ChecklistTemplate[];
   results: ChecklistResult[];
   onEditTemplate: (template: ChecklistTemplate) => void;
+  onDeleteTemplate: (template: ChecklistTemplate) => void;
   onCopyTemplate: (template: ChecklistTemplate) => void;
   onStartAssessment: (template: ChecklistTemplate) => void;
   onViewResult: (result: ChecklistResult) => void;
@@ -36,6 +48,7 @@ export function ChecklistTabs({
   checklists,
   results,
   onEditTemplate,
+  onDeleteTemplate,
   onCopyTemplate,
   onStartAssessment,
   onViewResult,
@@ -116,6 +129,28 @@ export function ChecklistTabs({
                             <Copy className="h-4 w-4 mr-2" />
                             Copiar
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Tem certeza que deseja excluir este modelo?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta ação não pode ser desfeita. Todos os dados relacionados a este modelo de checklist serão permanentemente removidos.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDeleteTemplate(template)}>
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>

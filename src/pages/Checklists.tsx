@@ -1,12 +1,19 @@
 
 import { useState } from "react";
-import { PlusCircle, Copy } from "lucide-react";
+import { PlusCircle, Copy, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
-import { fetchChecklistTemplates, fetchAssessmentResults, saveChecklistTemplate, copyTemplateForCompany } from "@/services/checklistService";
+import { 
+  fetchChecklistTemplates, 
+  fetchAssessmentResults, 
+  saveChecklistTemplate, 
+  copyTemplateForCompany,
+  updateChecklistTemplate,
+  deleteChecklistTemplate
+} from "@/services/checklistService";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -49,6 +56,48 @@ export default function Checklists() {
     }
   };
 
+  const handleEditTemplate = async (template: ChecklistTemplate) => {
+    if (template.isStandard && !(await hasRole('superadmin'))) {
+      toast.error("Apenas superadmins podem editar modelos padrão.");
+      return;
+    }
+    
+    if (template.companyId && template.companyId !== user?.id) {
+      toast.error("Você só pode editar seus próprios modelos.");
+      return;
+    }
+
+    try {
+      await updateChecklistTemplate(template.id, template);
+      toast.success("Modelo de checklist atualizado com sucesso!");
+      refetchChecklists();
+    } catch (error) {
+      console.error("Error updating template:", error);
+      toast.error("Erro ao atualizar modelo de checklist.");
+    }
+  };
+
+  const handleDeleteTemplate = async (template: ChecklistTemplate) => {
+    if (template.isStandard && !(await hasRole('superadmin'))) {
+      toast.error("Apenas superadmins podem excluir modelos padrão.");
+      return;
+    }
+    
+    if (template.companyId && template.companyId !== user?.id) {
+      toast.error("Você só pode excluir seus próprios modelos.");
+      return;
+    }
+
+    try {
+      await deleteChecklistTemplate(template.id);
+      toast.success("Modelo de checklist excluído com sucesso!");
+      refetchChecklists();
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      toast.error("Erro ao excluir modelo de checklist.");
+    }
+  };
+
   const handleCopyTemplate = async (template: ChecklistTemplate) => {
     if (!user?.id) {
       toast.error("Você precisa estar logado para copiar um modelo.");
@@ -69,21 +118,6 @@ export default function Checklists() {
     }
   };
 
-  const handleEditTemplate = async (template: ChecklistTemplate) => {
-    if (template.isStandard && !(await hasRole('superadmin'))) {
-      toast.error("Apenas superadmins podem editar modelos padrão.");
-      return;
-    }
-    
-    if (template.companyId && template.companyId !== user?.id) {
-      toast.error("Você só pode editar seus próprios modelos.");
-      return;
-    }
-
-    // For demonstration, we'll just show a toast
-    toast.info("Edição de checklist será implementada em breve!");
-  };
-
   const handleViewResult = (result: ChecklistResult) => {
     setSelectedResult(result);
     setIsResultDialogOpen(true);
@@ -98,7 +132,6 @@ export default function Checklists() {
             Modelos de avaliação psicossocial e questionários para identificação de riscos.
           </p>
         </div>
-        {/* Only show create button for superadmins or when creating company-specific templates */}
         <Button onClick={() => setIsFormDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Checklist
@@ -116,6 +149,7 @@ export default function Checklists() {
           checklists={checklists}
           results={results}
           onEditTemplate={handleEditTemplate}
+          onDeleteTemplate={handleDeleteTemplate}
           onCopyTemplate={handleCopyTemplate}
           onStartAssessment={() => {}} // Empty function as we're not using this feature
           onViewResult={handleViewResult}

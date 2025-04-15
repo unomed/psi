@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, ChecklistResult, DiscQuestion, DiscFactorType, ScheduledAssessment, ScaleType, scaleTypeToDbScaleType } from "@/types/checklist";
-import { Json } from "@/integrations/supabase/types";
+import { ChecklistTemplate, DiscQuestion, scaleTypeToDbScaleType } from "@/types/checklist";
 
 // Fetch all checklist templates from Supabase
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
@@ -195,4 +194,93 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
       completedAt: new Date(result.completed_at)
     };
   });
+}
+
+// New method to update an existing checklist template
+export async function updateChecklistTemplate(
+  templateId: string, 
+  template: Partial<ChecklistTemplate>
+): Promise<string> {
+  // Prepare the update object, converting scale type if needed
+  const updateData = {
+    ...template,
+    scale_type: template.scaleType ? scaleTypeToDbScaleType(template.scaleType) : undefined,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from('checklist_templates')
+    .update(updateData)
+    .eq('id', templateId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating checklist template:", error);
+    throw error;
+  }
+
+  // If questions were updated, handle that separately
+  if (template.questions) {
+    await updateTemplateQuestions(templateId, template.questions);
+  }
+
+  return data.id;
+}
+
+// Helper function to update questions for a template
+async function updateTemplateQuestions(templateId: string, questions: DiscQuestion[]) {
+  // First, delete existing questions
+  const { error: deleteError } = await supabase
+    .from('questions')
+    .delete()
+    .eq('template_id', templateId);
+
+  if (deleteError) {
+    console.error("Error deleting existing questions:", deleteError);
+    throw deleteError;
+  }
+
+  // Then insert new questions
+  const questionsToInsert = questions.map((q, index) => ({
+    template_id: templateId,
+    question_text: q.text,
+    order_number: index + 1,
+    target_factor: q.targetFactor,
+    weight: q.weight
+  }));
+
+  const { error: insertError } = await supabase
+    .from('questions')
+    .insert(questionsToInsert);
+
+  if (insertError) {
+    console.error("Error inserting new questions:", insertError);
+    throw insertError;
+  }
+}
+
+// Method to delete a checklist template
+export async function deleteChecklistTemplate(templateId: string): Promise<void> {
+  // First, delete associated questions
+  const { error: questionsDeleteError } = await supabase
+    .from('questions')
+    .delete()
+    .eq('template_id', templateId);
+
+  if (questionsDeleteError) {
+    console.error("Error deleting template questions:", questionsDeleteError);
+    throw questionsDeleteError;
+  }
+
+  // Then delete the template itself
+  const { error: templateDeleteError } = await supabase
+    .from('checklist_templates')
+    .delete()
+    .eq('id', templateId);
+
+  if (templateDeleteError) {
+    console.error("Error deleting checklist template:", templateDeleteError);
+    throw templateDeleteError;
+  }
 }
