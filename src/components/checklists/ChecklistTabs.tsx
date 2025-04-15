@@ -1,7 +1,7 @@
 
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ClipboardCheck, ClipboardList, Pencil } from "lucide-react";
+import { ClipboardCheck, ClipboardList, Pencil, Copy } from "lucide-react";
 import { ChecklistEmptyState } from "@/components/checklists/ChecklistEmptyState";
 import { ChecklistResultItem } from "@/components/checklists/ChecklistResultItem";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ interface ChecklistTabsProps {
   checklists: ChecklistTemplate[];
   results: ChecklistResult[];
   onEditTemplate: (template: ChecklistTemplate) => void;
+  onCopyTemplate: (template: ChecklistTemplate) => void;
   onStartAssessment: (template: ChecklistTemplate) => void;
   onViewResult: (result: ChecklistResult) => void;
   onCreateTemplate: () => void;
@@ -35,6 +36,7 @@ export function ChecklistTabs({
   checklists,
   results,
   onEditTemplate,
+  onCopyTemplate,
   onStartAssessment,
   onViewResult,
   onCreateTemplate
@@ -105,10 +107,16 @@ export function ChecklistTabs({
                         {format(template.createdAt, "dd/MM/yyyy", { locale: ptBR })}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => onEditTemplate(template)}>
-                          <Pencil className="h-4 w-4 mr-2" />
-                          Editar
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => onEditTemplate(template)}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Editar
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => onCopyTemplate(template)}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Copiar
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
