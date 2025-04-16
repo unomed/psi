@@ -1,11 +1,9 @@
-
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { ClipboardList, Mail, Link, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { ScheduledAssessment } from "@/types/checklist";
-import { mockEmployees } from "./AssessmentSelectionForm";
 import {
   Table,
   TableBody,
@@ -19,7 +17,7 @@ interface ScheduledAssessmentsListProps {
   scheduledAssessments: ScheduledAssessment[];
   onSendEmail: (assessmentId: string) => void;
   onShareAssessment: (assessmentId: string) => void;
-  templates: any[]; // Using any for simplicity, should be replaced with proper type
+  templates: any[];
 }
 
 export function ScheduledAssessmentsList({ 
@@ -30,8 +28,7 @@ export function ScheduledAssessmentsList({
 }: ScheduledAssessmentsListProps) {
   
   const getEmployeeName = (employeeId: string) => {
-    const employee = mockEmployees.find(emp => emp.id === employeeId);
-    return employee?.name || "Desconhecido";
+    return employeeId;
   };
 
   const getTemplateName = (templateId: string) => {

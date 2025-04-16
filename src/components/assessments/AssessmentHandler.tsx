@@ -1,8 +1,7 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChecklistResult } from "@/types/checklist";
-import { fetchChecklistTemplates } from "@/services/checklistService";
+import { fetchChecklistTemplates, saveScheduledAssessment } from "@/services/checklistService";
 import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
 import { useAssessmentState } from "@/hooks/useAssessmentState";
 
@@ -87,7 +86,6 @@ export function AssessmentHandler() {
       return;
     }
     
-    // In a real app, this would generate a unique link with a token in the database
     const newLink = generateAssessmentLink(selectedTemplate.id, selectedEmployee);
     setGeneratedLink(newLink);
     setIsLinkDialogOpen(true);
@@ -102,7 +100,6 @@ export function AssessmentHandler() {
   };
 
   const handleSubmitAssessment = (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
-    // In a real app, this would save the assessment to the database
     const mockResult: ChecklistResult = {
       ...resultData,
       id: `result-${Date.now()}`,
@@ -125,15 +122,38 @@ export function AssessmentHandler() {
     return getEmployeeInfo(selectedEmployee).name;
   };
 
+  const handleSaveAssessment = async () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist.");
+      return;
+    }
+
+    try {
+      await saveScheduledAssessment({
+        employeeId: selectedEmployee,
+        templateId: selectedTemplate.id,
+        scheduledDate: new Date(),
+        status: "scheduled",
+        sentAt: null,
+        completedAt: null,
+        linkUrl: "",
+        recurrenceType: "none"
+      });
+      
+      toast.success("Avaliação salva com sucesso!");
+    } catch (error) {
+      console.error("Error saving assessment:", error);
+      toast.error("Erro ao salvar avaliação.");
+    }
+  };
+
   const handleSendEmailToEmployee = () => {
     if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de checklist para enviar o email.");
+      toast.error("Selecione um funcionário e um modelo de checklist.");
       return;
     }
     
-    // Here we'd typically create a scheduled assessment and then send an email
-    // For this example, we'll just show a success toast
-    toast.success(`Email enviado para ${getSelectedEmployeeName()}`);
+    handleSendEmail(selectedEmployee);
     setIsNewAssessmentDialogOpen(false);
     setActiveTab("agendadas");
   };
@@ -151,7 +171,6 @@ export function AssessmentHandler() {
         templates={templates}
       />
       
-      {/* New Assessment Dialog */}
       <NewAssessmentDialog
         isOpen={isNewAssessmentDialogOpen}
         onClose={() => setIsNewAssessmentDialogOpen(false)}
@@ -161,11 +180,12 @@ export function AssessmentHandler() {
         isTemplatesLoading={isLoading}
         onScheduleAssessment={handleScheduleAssessment}
         onGenerateLink={handleGenerateLink}
+        onSendEmail={handleSendEmailToEmployee}
         onEmployeeSelect={handleEmployeeChange}
         onTemplateSelect={handleTemplateSelect}
+        onSave={handleSaveAssessment}
       />
       
-      {/* Assessment Dialogs */}
       <AssessmentDialogs
         isAssessmentDialogOpen={isAssessmentDialogOpen}
         onAssessmentDialogClose={() => setIsAssessmentDialogOpen(false)}
@@ -178,7 +198,6 @@ export function AssessmentHandler() {
         employeeName={getSelectedEmployeeName()}
       />
       
-      {/* Schedule Dialog */}
       <ScheduleRecurringAssessmentDialog
         isOpen={isScheduleDialogOpen}
         onClose={() => setIsScheduleDialogOpen(false)}
@@ -189,7 +208,6 @@ export function AssessmentHandler() {
         onSave={handleSaveSchedule}
       />
       
-      {/* Link Dialog */}
       <GenerateLinkDialog
         isOpen={isLinkDialogOpen}
         onClose={() => setIsLinkDialogOpen(false)}
@@ -198,7 +216,6 @@ export function AssessmentHandler() {
         generatedLink={generatedLink}
       />
       
-      {/* Share Dialog */}
       <ShareAssessmentDialog
         isOpen={isShareDialogOpen}
         onClose={() => setIsShareDialogOpen(false)}
