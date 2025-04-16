@@ -210,6 +210,59 @@ export type Database = {
           },
         ]
       }
+      scheduled_assessments: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          link_url: string | null
+          next_scheduled_date: string | null
+          phone_number: string | null
+          recurrence_type: string | null
+          scheduled_date: string
+          sent_at: string | null
+          status: string
+          template_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          link_url?: string | null
+          next_scheduled_date?: string | null
+          phone_number?: string | null
+          recurrence_type?: string | null
+          scheduled_date: string
+          sent_at?: string | null
+          status: string
+          template_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          link_url?: string | null
+          next_scheduled_date?: string | null
+          phone_number?: string | null
+          recurrence_type?: string | null
+          scheduled_date?: string
+          sent_at?: string | null
+          status?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_assessments_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
