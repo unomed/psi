@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 interface ChecklistTemplateFormProps {
   onSubmit: (data: Omit<ChecklistTemplate, "id" | "createdAt"> | ChecklistTemplate) => void;
-  existingTemplate?: ChecklistTemplate;
+  existingTemplate?: ChecklistTemplate | null;
   isEditing?: boolean;
 }
 

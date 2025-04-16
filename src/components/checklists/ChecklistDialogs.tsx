@@ -67,7 +67,7 @@ export function ChecklistDialogs({
               <DiscAssessmentForm
                 template={selectedTemplate}
                 onSubmit={onSubmitAssessment}
-                onClose={onCloseAssessment}
+                onCancel={onCloseAssessment}
               />
             )}
           </div>
@@ -81,7 +81,7 @@ export function ChecklistDialogs({
             <DialogTitle>Resultado da Avaliação</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            {selectedResult && <DiscResultDisplay result={selectedResult} />}
+            {selectedResult && <DiscResultDisplay result={selectedResult} onClose={onCloseResult} />}
           </div>
           <div className="flex justify-end">
             <button

@@ -19,7 +19,7 @@ interface ChecklistBasicInfoProps {
   form: UseFormReturn<{
     title: string;
     description: string;
-    type: "disc";
+    type: "disc" | "custom";
   }, any, undefined>;
   scaleType: ScaleType;
   onScaleTypeChange: (value: ScaleType) => void;
