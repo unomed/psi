@@ -5,27 +5,13 @@ import {
   DiscQuestion, 
   DiscFactorType,
   ScaleType,
-  scaleTypeToDbScaleType 
+  scaleTypeToDbScaleType,
+  ScheduledAssessment
 } from "@/types/checklist";
 import { Database } from "@/integrations/supabase/types";
 
 // Define types from Supabase that we need
 type Json = Database["public"]["Tables"]["assessment_responses"]["Row"]["factors_scores"];
-
-// Type for scheduled assessment that was missing
-export interface ScheduledAssessment {
-  id: string;
-  employeeId: string;
-  templateId: string;
-  scheduledDate: Date;
-  sentAt: Date | null;
-  linkUrl: string;
-  status: "scheduled" | "sent" | "completed";
-  completedAt: Date | null;
-  recurrenceType?: "none" | "monthly" | "semiannual" | "annual";
-  nextScheduledDate?: Date | null;
-  phoneNumber?: string;
-}
 
 // Fetch all checklist templates from Supabase
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
@@ -160,17 +146,6 @@ export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | 
   }
 
   return data?.id || "";
-}
-
-// Save a scheduled assessment to Supabase
-export async function saveScheduledAssessment(assessment: Omit<ScheduledAssessment, "id">): Promise<string> {
-  // In a real app, this would save to the assessment_schedules table
-  
-  // Mock for now, in a real app this would be a supabase insert
-  console.log("Saving scheduled assessment:", assessment);
-  
-  // Return a mock ID
-  return `sched-${Date.now()}`;
 }
 
 // Generate a unique assessment link
@@ -311,6 +286,7 @@ export async function deleteChecklistTemplate(templateId: string): Promise<void>
   }
 }
 
+// Fetch scheduled assessments from Supabase
 export async function fetchScheduledAssessments(): Promise<ScheduledAssessment[]> {
   const { data, error } = await supabase
     .from('scheduled_assessments')
@@ -323,16 +299,23 @@ export async function fetchScheduledAssessments(): Promise<ScheduledAssessment[]
   }
 
   return data.map(assessment => ({
-    ...assessment,
+    id: assessment.id,
+    employeeId: assessment.employee_id,
+    templateId: assessment.template_id,
     scheduledDate: new Date(assessment.scheduled_date),
     sentAt: assessment.sent_at ? new Date(assessment.sent_at) : null,
     completedAt: assessment.completed_at ? new Date(assessment.completed_at) : null,
-    nextScheduledDate: assessment.next_scheduled_date ? new Date(assessment.next_scheduled_date) : null
+    nextScheduledDate: assessment.next_scheduled_date ? new Date(assessment.next_scheduled_date) : null,
+    linkUrl: assessment.link_url || "",
+    status: assessment.status as "scheduled" | "sent" | "completed",
+    recurrenceType: assessment.recurrence_type as "none" | "monthly" | "semiannual" | "annual" | undefined,
+    phoneNumber: assessment.phone_number
   }));
 }
 
+// Save a scheduled assessment to Supabase
 export async function saveScheduledAssessment(
-  assessment: Omit<ScheduledAssessment, "id" | "sentAt" | "completedAt" | "created_at">
+  assessment: Omit<ScheduledAssessment, "id">
 ): Promise<string> {
   const { data, error } = await supabase
     .from('scheduled_assessments')
@@ -344,7 +327,9 @@ export async function saveScheduledAssessment(
       recurrence_type: assessment.recurrenceType,
       next_scheduled_date: assessment.nextScheduledDate?.toISOString(),
       phone_number: assessment.phoneNumber,
-      link_url: assessment.linkUrl
+      link_url: assessment.linkUrl,
+      sent_at: assessment.sentAt?.toISOString(),
+      completed_at: assessment.completedAt?.toISOString()
     })
     .select()
     .single();
@@ -357,6 +342,7 @@ export async function saveScheduledAssessment(
   return data.id;
 }
 
+// Send assessment email
 export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
   // This would integrate with your email service
   // For now, we'll just update the status

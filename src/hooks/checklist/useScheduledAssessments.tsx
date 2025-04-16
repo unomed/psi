@@ -33,7 +33,11 @@ export function useScheduledAssessments() {
         scheduledDate,
         status: "scheduled",
         recurrenceType,
-        phoneNumber
+        phoneNumber,
+        // Add the missing required properties
+        sentAt: null,
+        completedAt: null,
+        linkUrl: ""
       });
       
       toast.success("Avaliação agendada com sucesso!");
