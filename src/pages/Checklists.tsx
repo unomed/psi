@@ -41,6 +41,25 @@ export default function Checklists() {
     setIsResultDialogOpen(true);
   };
 
+  const handleSubmitTemplate = async (templateData: Omit<ChecklistTemplate, "id" | "createdAt"> | ChecklistTemplate) => {
+    let success = false;
+    
+    if (isEditing && selectedTemplate) {
+      // Make sure we're passing the full template with ID to update function
+      const updatedTemplate = {
+        ...selectedTemplate,
+        ...(templateData as Omit<ChecklistTemplate, "id" | "createdAt">)
+      };
+      success = await handleUpdateTemplate(updatedTemplate);
+    } else {
+      success = await handleCreateTemplate(templateData as Omit<ChecklistTemplate, "id" | "createdAt">);
+    }
+    
+    if (success) {
+      handleCloseFormDialog();
+    }
+  };
+
   return (
     <div className="space-y-8">
       <ChecklistHeader 
@@ -83,7 +102,7 @@ export default function Checklists() {
         setIsResultDialogOpen={setIsResultDialogOpen}
         selectedTemplate={selectedTemplate}
         selectedResult={selectedResult}
-        onSubmitTemplate={isEditing ? handleUpdateTemplate : handleCreateTemplate}
+        onSubmitTemplate={handleSubmitTemplate}
         onSubmitAssessment={() => {}}
         onCloseAssessment={() => {}}
         onCloseResult={() => {
