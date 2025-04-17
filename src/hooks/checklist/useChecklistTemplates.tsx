@@ -49,7 +49,16 @@ export function useChecklistTemplates() {
     }
 
     try {
-      await updateChecklistTemplate(template.id, template);
+      console.log("Atualizando template:", template);
+      // Usando apenas o ID e os campos a serem atualizados
+      const result = await updateChecklistTemplate(template.id, {
+        title: template.title,
+        description: template.description,
+        type: template.type,
+        scaleType: template.scaleType,
+        questions: template.questions
+      });
+      
       toast.success("Modelo de checklist atualizado com sucesso!");
       refetchChecklists();
       return true;

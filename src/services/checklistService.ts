@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { 
   ChecklistTemplate, 
@@ -58,7 +59,7 @@ export async function saveChecklistTemplate(
       scale_type: scaleTypeToDbScaleType(template.scaleType || "likert5"),
       is_active: true,
       is_standard: isStandard,
-      company_id: isStandard ? null : template.companyId
+      company_id: template.companyId
     })
     .select()
     .single();
@@ -203,11 +204,20 @@ export async function updateChecklistTemplate(
   template: Partial<ChecklistTemplate>
 ): Promise<string> {
   // Prepare the update object, converting scale type if needed
+  // Remove properties that don't exist in the database schema
+  const { companyId, createdAt, isStandard, questions, scaleType, ...otherProps } = template;
+  
+  // Prepare valid update data
   const updateData = {
-    ...template,
-    scale_type: template.scaleType ? scaleTypeToDbScaleType(template.scaleType) : undefined,
+    ...otherProps,
+    scale_type: scaleType ? scaleTypeToDbScaleType(scaleType) : undefined,
+    is_standard: isStandard,
+    company_id: companyId,
     updated_at: new Date().toISOString()
   };
+
+  // Log para debug
+  console.log("Template update data:", updateData);
 
   const { data, error } = await supabase
     .from('checklist_templates')
@@ -222,8 +232,8 @@ export async function updateChecklistTemplate(
   }
 
   // If questions were updated, handle that separately
-  if (template.questions) {
-    await updateTemplateQuestions(templateId, template.questions);
+  if (questions) {
+    await updateTemplateQuestions(templateId, questions);
   }
 
   return data.id;
