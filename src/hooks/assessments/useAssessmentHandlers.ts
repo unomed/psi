@@ -1,36 +1,47 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ChecklistResult, ChecklistTemplate, RecurrenceType } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate, RecurrenceType, ScheduledAssessment } from "@/types/checklist";
 import { saveScheduledAssessment } from "@/services/checklistService";
 import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
-import { mockEmployees } from "@/components/assessments/AssessmentSelectionForm";
+import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
+import { getSelectedEmployeeName, handleSaveAssessment as saveAssessment, createGeneratedLink, calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
 
 export function useAssessmentHandlers({
   selectedEmployee,
   selectedTemplate,
+  setSelectedEmployee,
+  setSelectedTemplate,
   setIsAssessmentDialogOpen,
   setIsResultDialogOpen,
   setIsScheduleDialogOpen,
   setIsLinkDialogOpen,
+  setIsShareDialogOpen,
   setIsNewAssessmentDialogOpen,
   setAssessmentResult,
   setGeneratedLink,
   setActiveTab,
   scheduledDate,
+  setScheduledDate,
+  setSelectedAssessment,
   handleSendEmail
 }: {
   selectedEmployee: string | null;
   selectedTemplate: ChecklistTemplate | null;
+  setSelectedEmployee: (employee: string | null) => void;
+  setSelectedTemplate: (template: ChecklistTemplate | null) => void;
   setIsAssessmentDialogOpen: (isOpen: boolean) => void;
   setIsResultDialogOpen: (isOpen: boolean) => void;
   setIsScheduleDialogOpen: (isOpen: boolean) => void;
   setIsLinkDialogOpen: (isOpen: boolean) => void;
+  setIsShareDialogOpen: (isOpen: boolean) => void;
   setIsNewAssessmentDialogOpen: (isOpen: boolean) => void;
   setAssessmentResult: (result: ChecklistResult | null) => void;
   setGeneratedLink: (link: string) => void;
   setActiveTab: (tab: string) => void;
   scheduledDate: Date | undefined;
+  setScheduledDate: (date: Date | undefined) => void;
+  setSelectedAssessment: (assessment: ScheduledAssessment | null) => void;
   handleSendEmail: (employeeId: string) => void;
 }) {
   const handleNewAssessment = () => {
@@ -54,7 +65,7 @@ export function useAssessmentHandlers({
       return;
     }
     
-    const newLink = generateAssessmentLink(selectedTemplate.id, selectedEmployee);
+    const newLink = createGeneratedLink(selectedTemplate.id, selectedEmployee);
     setGeneratedLink(newLink);
     setIsLinkDialogOpen(true);
   };
@@ -86,14 +97,10 @@ export function useAssessmentHandlers({
     setAssessmentResult(null);
   };
 
-  const getSelectedEmployeeName = () => {
-    return getEmployeeInfo(selectedEmployee).name;
-  };
-
   const handleSaveAssessment = async () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
-      return;
+      return false;
     }
 
     try {
@@ -109,9 +116,11 @@ export function useAssessmentHandlers({
       });
       
       toast.success("Avaliação salva com sucesso!");
+      return true;
     } catch (error) {
       console.error("Error saving assessment:", error);
       toast.error("Erro ao salvar avaliação.");
+      return false;
     }
   };
 
@@ -127,25 +136,7 @@ export function useAssessmentHandlers({
   };
 
   const calculateNextScheduledDate = (currentDate: Date, recurrenceType: RecurrenceType): Date | null => {
-    if (recurrenceType === "none") return null;
-    
-    const nextDate = new Date(currentDate);
-    
-    switch (recurrenceType) {
-      case "monthly":
-        nextDate.setMonth(nextDate.getMonth() + 1);
-        break;
-      case "semiannual":
-        nextDate.setMonth(nextDate.getMonth() + 6);
-        break;
-      case "annual":
-        nextDate.setFullYear(nextDate.getFullYear() + 1);
-        break;
-      default:
-        return null;
-    }
-    
-    return nextDate;
+    return calcNextDate(currentDate, recurrenceType);
   };
 
   const handleSaveSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
@@ -192,7 +183,7 @@ export function useAssessmentHandlers({
   };
 
   // For TypeScript to be happy, we need a scheduledAssessments variable even though it's not used directly
-  const scheduledAssessments = [];
+  const scheduledAssessments: ScheduledAssessment[] = [];
 
   return {
     handleNewAssessment,
