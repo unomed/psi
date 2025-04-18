@@ -1,10 +1,12 @@
 
 import { useState } from "react";
-import { PlusCircle, Building2, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CompanyForm } from "@/components/forms/CompanyForm";
-import { CompanyCard, CompanyData } from "@/components/companies/CompanyCard";
+import { DataTable } from "@/components/ui/data-table";
+import { columns } from "@/components/companies/columns";
+import type { CompanyData } from "@/components/companies/CompanyCard";
 import { useCompanies } from "@/hooks/useCompanies";
 import {
   AlertDialog,
@@ -56,23 +58,10 @@ export default function Empresas() {
     }
   };
 
-  const openEditDialog = (company: CompanyData) => {
-    setSelectedCompany(company);
-    setIsEditDialogOpen(true);
+  const handleView = (company: CompanyData) => {
+    // Implement view functionality if needed
+    console.log("View company:", company);
   };
-
-  const openDeleteDialog = (company: CompanyData) => {
-    setSelectedCompany(company);
-    setIsDeleteDialogOpen(true);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">
@@ -109,29 +98,22 @@ export default function Empresas() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {companies.map((company) => (
-            <div key={company.id} className="relative group">
-              <CompanyCard company={company} />
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => openEditDialog(company)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => openDeleteDialog(company)}
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <DataTable 
+          columns={columns} 
+          data={companies}
+          isLoading={isLoading}
+          meta={{
+            onEdit: (company: CompanyData) => {
+              setSelectedCompany(company);
+              setIsEditDialogOpen(true);
+            },
+            onDelete: (company: CompanyData) => {
+              setSelectedCompany(company);
+              setIsDeleteDialogOpen(true);
+            },
+            onView: handleView,
+          }}
+        />
       )}
 
       {/* Create Dialog */}
