@@ -32,8 +32,9 @@ export const useCompanies = () => {
         contactName: company.contact_name,
         contactEmail: company.contact_email,
         contactPhone: company.contact_phone,
-        // Set notes to undefined if it doesn't exist in the database
-        notes: company.notes || undefined
+        // Since 'notes' might not be a field in the database type,
+        // we need to use a type assertion to handle it
+        notes: (company as any).notes || undefined
       })) as CompanyData[];
     },
   });
@@ -77,7 +78,8 @@ export const useCompanies = () => {
         contactName: data.contact_name,
         contactEmail: data.contact_email,
         contactPhone: data.contact_phone,
-        notes: data.notes || undefined
+        // Use type assertion here as well
+        notes: (data as any).notes || undefined
       } as CompanyData;
     },
     onSuccess: () => {
