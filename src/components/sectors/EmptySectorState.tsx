@@ -1,45 +1,34 @@
 
-import { Building2, FolderKanban, PlusCircle } from "lucide-react";
+import { FolderKanban, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EmptySectorStateProps {
-  noCompanySelected: boolean;
+  noCompanySelected?: boolean;
   onAddClick: () => void;
 }
 
-export function EmptySectorState({ noCompanySelected, onAddClick }: EmptySectorStateProps) {
-  if (noCompanySelected) {
-    return (
-      <div className="flex items-center justify-center h-64 border rounded-lg">
-        <div className="text-center">
-          <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium">Selecione uma empresa</h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-md">
-            Para visualizar e gerenciar setores, selecione uma empresa no menu acima.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+export function EmptySectorState({ noCompanySelected = false, onAddClick }: EmptySectorStateProps) {
   return (
-    <div className="flex items-center justify-center h-64 border rounded-lg">
-      <div className="text-center">
-        <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">Nenhum setor cadastrado</h3>
-        <p className="mt-2 text-sm text-muted-foreground max-w-md">
-          Cadastre os setores da empresa para mapear riscos psicossociais 
-          específicos e registrar incidentes relacionados.
-        </p>
-        <Button 
-          variant="outline" 
-          className="mt-4"
-          onClick={onAddClick}
-        >
+    <div className="flex flex-col items-center justify-center border rounded-lg p-8 h-64">
+      <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
+      <h3 className="text-lg font-medium">
+        {noCompanySelected 
+          ? "Selecione uma empresa"
+          : "Nenhum setor encontrado"
+        }
+      </h3>
+      <p className="text-sm text-muted-foreground text-center max-w-md mt-2">
+        {noCompanySelected
+          ? "Selecione uma empresa para visualizar e gerenciar seus setores"
+          : "Os setores ajudam a organizar e avaliar diferentes áreas da empresa."
+        }
+      </p>
+      {!noCompanySelected && (
+        <Button onClick={onAddClick} variant="outline" className="mt-4">
           <PlusCircle className="mr-2 h-4 w-4" />
           Cadastrar Setor
         </Button>
-      </div>
+      )}
     </div>
   );
 }
