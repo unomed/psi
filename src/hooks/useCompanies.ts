@@ -32,7 +32,8 @@ export const useCompanies = () => {
         contactName: company.contact_name,
         contactEmail: company.contact_email,
         contactPhone: company.contact_phone,
-        notes: company.notes
+        // Set notes to undefined if it doesn't exist in the database
+        notes: company.notes || undefined
       })) as CompanyData[];
     },
   });
@@ -52,6 +53,8 @@ export const useCompanies = () => {
             contact_name: newCompany.contactName,
             contact_email: newCompany.contactEmail,
             contact_phone: newCompany.contactPhone,
+            // Only include notes if it exists in the new company data
+            ...(newCompany.notes && { notes: newCompany.notes })
           },
         ])
         .select()
@@ -74,6 +77,7 @@ export const useCompanies = () => {
         contactName: data.contact_name,
         contactEmail: data.contact_email,
         contactPhone: data.contact_phone,
+        notes: data.notes || undefined
       } as CompanyData;
     },
     onSuccess: () => {
