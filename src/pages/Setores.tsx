@@ -1,71 +1,48 @@
-
 import { useState } from "react";
 import { FolderKanban, PlusCircle, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SectorForm } from "@/components/sectors/SectorForm";
-import { SectorCard, SectorData } from "@/components/sectors/SectorCard";
-import { CompanyData } from "@/components/companies/CompanyCard";
+import { SectorCard } from "@/components/sectors/SectorCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// Mock data for companies (in a real app, this would come from a database)
-const mockCompanies: CompanyData[] = [
-  {
-    id: "company-1",
-    name: "Empresa ABC Ltda",
-    cnpj: "12.345.678/0001-90",
-    address: "Rua Principal, 123",
-    city: "São Paulo",
-    state: "SP",
-    industry: "Tecnologia da Informação",
-    contactName: "João Silva",
-    contactEmail: "joao.silva@abc.com",
-    contactPhone: "(11) 98765-4321"
-  },
-  {
-    id: "company-2",
-    name: "Indústria XYZ S.A.",
-    cnpj: "98.765.432/0001-10",
-    address: "Av. Industrial, 456",
-    city: "Belo Horizonte",
-    state: "MG",
-    industry: "Manufatura",
-    contactName: "Maria Oliveira",
-    contactEmail: "maria.o@xyz.com.br",
-    contactPhone: "(31) 91234-5678"
-  }
-];
+import { useCompanies } from "@/hooks/useCompanies";
+import { useSectors } from "@/hooks/useSectors";
 
 export default function Setores() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [sectors, setSectors] = useState<SectorData[]>([]);
+  const { companies } = useCompanies();
+  const { sectors, isLoading, createSector } = useSectors();
 
   const filteredSectors = selectedCompany 
     ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
 
-  const handleAddSector = (data: Omit<SectorData, "id" | "companyId">) => {
+  const handleAddSector = async (data: Omit<SectorData, "id" | "companyId">) => {
     if (!selectedCompany) {
-      toast.error("Selecione uma empresa antes de adicionar um setor");
+      toast.error("Selecione uma empresa");
       return;
     }
     
-    const newSector = {
-      ...data,
-      id: `sector-${Date.now()}`,
-      companyId: selectedCompany
-    };
-    
-    setSectors([...sectors, newSector]);
-    setIsDialogOpen(false);
-    toast.success("Setor cadastrado com sucesso!");
+    try {
+      await createSector.mutateAsync({
+        ...data,
+        companyId: selectedCompany
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating sector:", error);
+    }
   };
 
-  const handleCompanyChange = (companyId: string) => {
-    setSelectedCompany(companyId);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

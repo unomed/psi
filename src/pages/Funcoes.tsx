@@ -1,80 +1,28 @@
-
 import { useState } from "react";
 import { UserRound, PlusCircle, Building2, FolderKanban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CompanyData } from "@/components/companies/CompanyCard";
-import { SectorData } from "@/components/sectors/SectorCard";
-import { RoleCard, RoleData } from "@/components/roles/RoleCard";
+import { RoleCard } from "@/components/roles/RoleCard";
 import { RoleForm } from "@/components/roles/RoleForm";
-
-// Mock data for companies (in a real app, this would come from a database)
-const mockCompanies: CompanyData[] = [
-  {
-    id: "company-1",
-    name: "Empresa ABC Ltda",
-    cnpj: "12.345.678/0001-90",
-    address: "Rua Principal, 123",
-    city: "São Paulo",
-    state: "SP",
-    industry: "Tecnologia da Informação",
-    contactName: "João Silva",
-    contactEmail: "joao.silva@abc.com",
-    contactPhone: "(11) 98765-4321"
-  },
-  {
-    id: "company-2",
-    name: "Indústria XYZ S.A.",
-    cnpj: "98.765.432/0001-10",
-    address: "Av. Industrial, 456",
-    city: "Belo Horizonte",
-    state: "MG",
-    industry: "Manufatura",
-    contactName: "Maria Oliveira",
-    contactEmail: "maria.o@xyz.com.br",
-    contactPhone: "(31) 91234-5678"
-  }
-];
-
-// Mock data for sectors (in a real app, this would come from a database)
-const mockSectors: SectorData[] = [
-  {
-    id: "sector-1",
-    name: "Desenvolvimento",
-    description: "Equipe de desenvolvimento de software",
-    location: "2º andar",
-    riskLevel: "Médio",
-    companyId: "company-1"
-  },
-  {
-    id: "sector-2",
-    name: "Suporte",
-    description: "Suporte técnico ao cliente",
-    location: "Térreo",
-    riskLevel: "Baixo",
-    companyId: "company-1"
-  },
-  {
-    id: "sector-3",
-    name: "Produção",
-    description: "Linha de produção principal",
-    location: "Galpão 3",
-    riskLevel: "Alto",
-    companyId: "company-2"
-  }
-];
+import { useCompanies } from "@/hooks/useCompanies";
+import { useSectors } from "@/hooks/useSectors";
+import { useRoles } from "@/hooks/useRoles";
+import { toast } from "sonner";
+import type { RoleData } from "@/components/roles/RoleCard";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [roles, setRoles] = useState<RoleData[]>([]);
+  
+  const { companies } = useCompanies();
+  const { sectors } = useSectors();
+  const { roles, isLoading, createRole } = useRoles();
 
   // Filter sectors based on selected company
   const filteredSectors = selectedCompany 
-    ? mockSectors.filter(sector => sector.companyId === selectedCompany)
+    ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
 
   // Filter roles based on selected company and sector
@@ -82,32 +30,31 @@ export default function Funcoes() {
     ? roles.filter(role => role.sectorId === selectedSector && role.companyId === selectedCompany)
     : [];
 
-  const handleAddRole = (data: Omit<RoleData, "id" | "companyId" | "sectorId">) => {
+  const handleAddRole = async (data: Omit<RoleData, "id" | "companyId" | "sectorId">) => {
     if (!selectedCompany || !selectedSector) {
-      toast.error("Selecione uma empresa e um setor antes de adicionar uma função");
+      toast.error("Selecione uma empresa e um setor");
       return;
     }
     
-    const newRole = {
-      ...data,
-      id: `role-${Date.now()}`,
-      companyId: selectedCompany,
-      sectorId: selectedSector
-    };
-    
-    setRoles([...roles, newRole]);
-    setIsDialogOpen(false);
-    toast.success("Função cadastrada com sucesso!");
+    try {
+      await createRole.mutateAsync({
+        ...data,
+        companyId: selectedCompany,
+        sectorId: selectedSector
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating role:", error);
+    }
   };
 
-  const handleCompanyChange = (companyId: string) => {
-    setSelectedCompany(companyId);
-    setSelectedSector(null); // Reset sector selection when company changes
-  };
-
-  const handleSectorChange = (sectorId: string) => {
-    setSelectedSector(sectorId);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -127,12 +74,12 @@ export default function Funcoes() {
       <div className="flex items-center space-x-4 mb-6">
         <div className="space-y-4 w-full md:w-auto md:space-y-0 md:space-x-4 md:flex md:items-center">
           <div className="w-full md:w-64">
-            <Select onValueChange={handleCompanyChange} value={selectedCompany || undefined}>
+            <Select onValueChange={(companyId) => setSelectedCompany(companyId)} value={selectedCompany || undefined}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma empresa" />
               </SelectTrigger>
               <SelectContent>
-                {mockCompanies.map((company) => (
+                {companies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
                     {company.name}
                   </SelectItem>
@@ -143,7 +90,7 @@ export default function Funcoes() {
           
           {selectedCompany && (
             <div className="w-full md:w-64">
-              <Select onValueChange={handleSectorChange} value={selectedSector || undefined}>
+              <Select onValueChange={(sectorId) => setSelectedSector(sectorId)} value={selectedSector || undefined}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um setor" />
                 </SelectTrigger>
