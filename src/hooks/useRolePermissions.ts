@@ -5,8 +5,14 @@ import { AppRole } from '@/types';
 export function useRolePermissions() {
   const hasRole = async (role: AppRole): Promise<boolean> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
       const { data, error } = await supabase
-        .rpc('has_role', { _user_id: supabase.auth.getUser(), _role: role });
+        .rpc('has_role', { 
+          _user_id: user.id, 
+          _role: role 
+        });
         
       if (error) {
         console.error('Error checking role:', error);

@@ -42,11 +42,12 @@ export function useAuthActions() {
       }
       
       if (authData.user && role) {
+        // Use type assertion to match the expected type in the database
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
             user_id: authData.user.id,
-            role: role
+            role: role as "superadmin" | "admin" | "evaluator"
           });
           
         if (roleError) {

@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { User } from '@supabase/supabase-js';
 import { useAuth as useAuthContext } from '@/contexts/AuthContext';
 import { AppRole } from '@/types';
