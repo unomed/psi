@@ -20,7 +20,6 @@ export const useCompanies = () => {
         throw error;
       }
 
-      // Map the database fields to match the CompanyData interface
       return data.map(company => ({
         id: company.id,
         name: company.name,
@@ -32,9 +31,7 @@ export const useCompanies = () => {
         contactName: company.contact_name,
         contactEmail: company.contact_email,
         contactPhone: company.contact_phone,
-        // Since 'notes' might not be a field in the database type,
-        // we need to use a type assertion to handle it
-        notes: (company as any).notes || undefined
+        notes: company.notes
       })) as CompanyData[];
     },
   });
@@ -43,21 +40,18 @@ export const useCompanies = () => {
     mutationFn: async (newCompany: Omit<CompanyData, "id">) => {
       const { data, error } = await supabase
         .from("companies")
-        .insert([
-          {
-            name: newCompany.name,
-            cnpj: newCompany.cnpj,
-            address: newCompany.address,
-            city: newCompany.city,
-            state: newCompany.state,
-            industry: newCompany.industry,
-            contact_name: newCompany.contactName,
-            contact_email: newCompany.contactEmail,
-            contact_phone: newCompany.contactPhone,
-            // Only include notes if it exists in the new company data
-            ...(newCompany.notes && { notes: newCompany.notes })
-          },
-        ])
+        .insert([{
+          name: newCompany.name,
+          cnpj: newCompany.cnpj,
+          address: newCompany.address,
+          city: newCompany.city,
+          state: newCompany.state,
+          industry: newCompany.industry,
+          contact_name: newCompany.contactName,
+          contact_email: newCompany.contactEmail,
+          contact_phone: newCompany.contactPhone,
+          notes: newCompany.notes
+        }])
         .select()
         .single();
 
@@ -66,7 +60,6 @@ export const useCompanies = () => {
         throw error;
       }
 
-      // Map the response to match the CompanyData interface
       return {
         id: data.id,
         name: data.name,
@@ -78,18 +71,50 @@ export const useCompanies = () => {
         contactName: data.contact_name,
         contactEmail: data.contact_email,
         contactPhone: data.contact_phone,
-        // Use type assertion here as well
-        notes: (data as any).notes || undefined
+        notes: data.notes
       } as CompanyData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast.success("Empresa criada com sucesso!");
+    },
+  });
+
+  const updateCompany = useMutation({
+    mutationFn: async (company: CompanyData) => {
+      const { error } = await supabase
+        .from("companies")
+        .update({
+          name: company.name,
+          cnpj: company.cnpj,
+          address: company.address,
+          city: company.city,
+          state: company.state,
+          industry: company.industry,
+          contact_name: company.contactName,
+          contact_email: company.contactEmail,
+          contact_phone: company.contactPhone,
+          notes: company.notes
+        })
+        .eq("id", company.id);
+
+      if (error) {
+        toast.error("Erro ao atualizar empresa");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast.success("Empresa atualizada com sucesso!");
     },
   });
 
   const deleteCompany = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("companies").delete().eq("id", id);
+      const { error } = await supabase
+        .from("companies")
+        .delete()
+        .eq("id", id);
 
       if (error) {
         toast.error("Erro ao deletar empresa");
@@ -98,6 +123,7 @@ export const useCompanies = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
+      toast.success("Empresa removida com sucesso!");
     },
   });
 
@@ -105,6 +131,7 @@ export const useCompanies = () => {
     companies,
     isLoading,
     createCompany,
+    updateCompany,
     deleteCompany,
   };
 };
