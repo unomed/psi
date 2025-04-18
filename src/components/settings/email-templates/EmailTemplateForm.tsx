@@ -24,7 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { EmailTemplate } from "../types";
+import { EmailTemplate } from "./types"; // Changed import path
 
 const emailTemplateSchema = z.object({
   subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
