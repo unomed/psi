@@ -1,4 +1,3 @@
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Employee } from "@/types/employee";
 import { Button } from "@/components/ui/button";
@@ -54,11 +53,14 @@ export const columns: ColumnDef<Employee>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => console.log("Edit", employee)}>
               <Pencil className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={() => console.log("Delete", employee)}
+            >
               <Trash className="mr-2 h-4 w-4" />
               Excluir
             </DropdownMenuItem>

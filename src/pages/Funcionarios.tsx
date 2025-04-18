@@ -8,9 +8,11 @@ import { SectorSelector } from "@/components/assessments/selectors/SectorSelecto
 import { RoleSelector } from "@/components/assessments/selectors/RoleSelector";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/employees/columns";
+import { EmployeeForm } from "@/components/employees/EmployeeForm";
+import { EmployeeFormData } from "@/types/employee";
 
 export default function Funcionarios() {
-  const { employees, isLoading } = useEmployees();
+  const { employees, isLoading, createEmployee } = useEmployees();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -22,6 +24,11 @@ export default function Funcionarios() {
     if (selectedRole && employee.role_id !== selectedRole) return false;
     return true;
   });
+
+  const handleCreateEmployee = async (data: EmployeeFormData) => {
+    await createEmployee.mutateAsync(data);
+    setIsDialogOpen(false);
+  };
 
   return (
     <div className="space-y-8">
@@ -86,7 +93,10 @@ export default function Funcionarios() {
           <DialogHeader>
             <DialogTitle>Cadastro de Funcionário</DialogTitle>
           </DialogHeader>
-          {/* TODO: Implementar formulário de funcionário */}
+          <EmployeeForm
+            onSubmit={handleCreateEmployee}
+            onCancel={() => setIsDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>
