@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
+import type { RoleData } from "@/components/roles/RoleCard";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
