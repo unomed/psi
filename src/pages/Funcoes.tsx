@@ -36,7 +36,8 @@ export default function Funcoes() {
   }, [userRole]);
 
   const filteredRoles = roles?.filter(role => 
-    !selectedCompany || role.companyId === selectedCompany
+    (!selectedCompany || role.companyId === selectedCompany) &&
+    (!selectedSector || role.sectorId === selectedSector)
   );
 
   const handleCreateOrUpdateRole = async (values: any) => {
@@ -145,6 +146,7 @@ export default function Funcoes() {
           <RoleForm 
             onSubmit={handleCreateOrUpdateRole} 
             defaultValues={editingRole || undefined}
+            sectors={selectedCompany ? sectors?.filter(s => s.companyId === selectedCompany) || [] : []}
           />
         </DialogContent>
       </Dialog>

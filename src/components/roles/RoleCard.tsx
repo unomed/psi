@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,15 +41,30 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
   const getRiskLevelColor = (level?: string) => {
     if (!level) return "bg-gray-100 text-gray-800";
     
-    switch (level.toLowerCase()) {
-      case "alto":
+    switch (level) {
+      case "high":
         return "bg-red-100 text-red-800";
-      case "médio":
+      case "medium":
         return "bg-yellow-100 text-yellow-800";
-      case "baixo":
+      case "low":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getRiskLevelDisplay = (level?: string) => {
+    if (!level) return "Não definido";
+    
+    switch (level) {
+      case "high":
+        return "Alto";
+      case "medium":
+        return "Médio";
+      case "low":
+        return "Baixo";
+      default:
+        return level;
     }
   };
 
@@ -80,7 +96,7 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
         </div>
         {role.riskLevel && (
           <Badge className={`${getRiskLevelColor(role.riskLevel)} mt-1`} variant="outline">
-            Risco {role.riskLevel}
+            Risco {getRiskLevelDisplay(role.riskLevel)}
           </Badge>
         )}
       </CardHeader>

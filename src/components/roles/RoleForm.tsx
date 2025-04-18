@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BasicInfoFields } from "./form/BasicInfoFields";
 import { SkillsInput } from "./form/SkillsInput";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ const roleSchema = z.object({
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres").optional(),
   riskLevel: z.string().min(1, "O nível de risco é obrigatório"),
   requiredSkills: z.array(z.string()).min(1, "Adicione pelo menos uma habilidade"),
+  sectorId: z.string().optional().nullable(),
 });
 
 export type RoleFormValues = z.infer<typeof roleSchema>;
@@ -22,9 +24,10 @@ export type RoleFormValues = z.infer<typeof roleSchema>;
 interface RoleFormProps {
   onSubmit: (values: RoleFormValues) => void;
   defaultValues?: Partial<RoleFormValues>;
+  sectors: { id: string; name: string }[];
 }
 
-export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
+export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
   const [skills, setSkills] = React.useState<string[]>(defaultValues?.requiredSkills || []);
 
   const form = useForm<RoleFormValues>({
@@ -34,6 +37,7 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
       description: "",
       riskLevel: "",
       requiredSkills: [],
+      sectorId: null,
       ...defaultValues,
     },
   });
@@ -71,6 +75,36 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
       <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-4">
         <BasicInfoFields form={form} />
         
+        {sectors.length > 0 && (
+          <FormField
+            control={form.control}
+            name="sectorId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Setor</FormLabel>
+                <FormControl>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value || undefined}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um setor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sectors.map((sector) => (
+                        <SelectItem key={sector.id} value={sector.id}>
+                          {sector.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
         <SkillsInput 
           skills={skills}
           onAddSkill={handleAddSkill}
@@ -85,7 +119,19 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
             <FormItem>
               <FormLabel>Nível de Risco Psicossocial</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Baixo, Médio, Alto" {...field} />
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={field.value || undefined}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o nível de risco" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Baixo</SelectItem>
+                    <SelectItem value="medium">Médio</SelectItem>
+                    <SelectItem value="high">Alto</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
