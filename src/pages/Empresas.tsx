@@ -5,22 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CompanyForm } from "@/components/forms/CompanyForm";
 import { CompanyCard, CompanyData } from "@/components/companies/CompanyCard";
-import { toast } from "sonner";
+import { useCompanies } from "@/hooks/useCompanies";
 
 export default function Empresas() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [companies, setCompanies] = useState<CompanyData[]>([]);
+  const { companies, isLoading, createCompany } = useCompanies();
 
-  const handleAddCompany = (data: Omit<CompanyData, "id">) => {
-    const newCompany = {
-      ...data,
-      id: `company-${Date.now()}`,  // Simple ID generation for demonstration
-    };
-    
-    setCompanies([...companies, newCompany]);
-    setIsDialogOpen(false);
-    toast.success("Empresa cadastrada com sucesso!");
+  const handleAddCompany = async (data: Omit<CompanyData, "id">) => {
+    try {
+      await createCompany.mutateAsync(data);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error creating company:", error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -61,8 +67,8 @@ export default function Empresas() {
           {companies.map((company) => (
             <CompanyCard 
               key={company.id} 
-              company={company} 
-              onClick={() => toast.info("Edição de empresa será implementada em breve!")}
+              company={company}
+              onClick={() => {/* será implementado na próxima etapa */}}
             />
           ))}
         </div>
