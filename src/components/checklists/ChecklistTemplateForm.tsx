@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -28,7 +27,6 @@ import { Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 
-// Define a schema for the form
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
@@ -61,7 +59,6 @@ export function ChecklistTemplateForm({
   const { hasRole } = useAuth();
   const [canEditStandard, setCanEditStandard] = useState(false);
   
-  // Setup form with defaultValues or initialValues
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,7 +70,6 @@ export function ChecklistTemplateForm({
     }
   });
   
-  // Check if user can edit standard templates
   useEffect(() => {
     const checkPermissions = async () => {
       const isSuperAdmin = await hasRole('superadmin');
@@ -85,13 +81,11 @@ export function ChecklistTemplateForm({
   
   const handleSubmit = async (data: FormValues) => {
     try {
-      // Check if user is trying to edit a standard template
       if ((existingTemplate?.is_standard || defaultValues?.is_standard) && !canEditStandard) {
         toast.error("Apenas superadmins podem editar modelos padrão");
         return;
       }
       
-      // Check if user is an evaluator (they can't create/edit templates)
       const isEvaluator = await hasRole('evaluator');
       if (isEvaluator) {
         toast.error("Avaliadores não podem criar ou editar modelos de checklist");
