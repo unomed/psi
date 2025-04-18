@@ -11,6 +11,13 @@ interface NotificationSettings {
   deadline_alerts: boolean;
 }
 
+interface NotificationSettingsForm {
+  emailNotifications: boolean;
+  systemNotifications: boolean;
+  riskAlerts: boolean;
+  deadlineAlerts: boolean;
+}
+
 export function useNotificationSettings() {
   const queryClient = useQueryClient();
 
@@ -32,7 +39,14 @@ export function useNotificationSettings() {
   });
 
   const { mutate: updateSettings } = useMutation({
-    mutationFn: async (newSettings: Omit<NotificationSettings, 'id'>) => {
+    mutationFn: async (formValues: NotificationSettingsForm) => {
+      const newSettings = {
+        email_notifications: formValues.emailNotifications,
+        system_notifications: formValues.systemNotifications,
+        risk_alerts: formValues.riskAlerts,
+        deadline_alerts: formValues.deadlineAlerts
+      };
+
       const { data, error } = await supabase
         .from('notification_settings')
         .upsert({

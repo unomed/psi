@@ -3,12 +3,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+export type PeriodicityType = "monthly" | "quarterly" | "semiannual" | "annual";
+
 interface PeriodicitySettings {
   id: string;
-  default_periodicity: string;
-  risk_high_periodicity: string;
-  risk_medium_periodicity: string;
-  risk_low_periodicity: string;
+  default_periodicity: PeriodicityType;
+  risk_high_periodicity: PeriodicityType;
+  risk_medium_periodicity: PeriodicityType;
+  risk_low_periodicity: PeriodicityType;
+}
+
+interface PeriodicitySettingsForm {
+  defaultPeriodicity: PeriodicityType;
+  riskHighPeriodicity: PeriodicityType;
+  riskMediumPeriodicity: PeriodicityType;
+  riskLowPeriodicity: PeriodicityType;
 }
 
 export function usePeriodicitySettings() {
@@ -32,7 +41,14 @@ export function usePeriodicitySettings() {
   });
 
   const { mutate: updateSettings } = useMutation({
-    mutationFn: async (newSettings: Omit<PeriodicitySettings, 'id'>) => {
+    mutationFn: async (formValues: PeriodicitySettingsForm) => {
+      const newSettings = {
+        default_periodicity: formValues.defaultPeriodicity,
+        risk_high_periodicity: formValues.riskHighPeriodicity,
+        risk_medium_periodicity: formValues.riskMediumPeriodicity,
+        risk_low_periodicity: formValues.riskLowPeriodicity
+      };
+
       const { data, error } = await supabase
         .from('periodicity_settings')
         .upsert({
