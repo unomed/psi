@@ -17,7 +17,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => Promise<User | undefined>; // Changed return type to match implementation
   signOut: () => Promise<void>;
   loading: boolean;
   userRole: string | null;

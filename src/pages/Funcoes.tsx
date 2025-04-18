@@ -10,11 +10,16 @@ import { RoleCompanySelect } from "@/components/roles/RoleCompanySelect";
 import { useRoles } from "@/hooks/useRoles";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useCompanies } from "@/hooks/useCompanies";
+import { useSectors } from "@/hooks/useSectors";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const { roles, isLoading, createRole } = useRoles();
+  const { companies } = useCompanies();
+  const { sectors } = useSectors();
   const { hasRole, userRole } = useAuth();
   const [canCreateRoles, setCanCreateRoles] = useState(false);
   
@@ -74,8 +79,12 @@ export default function Funcoes() {
       </div>
 
       <RoleCompanySelect 
-        value={selectedCompany}
-        onChange={setSelectedCompany}
+        companies={companies || []}
+        sectors={sectors || []}
+        selectedCompany={selectedCompany}
+        selectedSector={selectedSector}
+        onCompanyChange={setSelectedCompany}
+        onSectorChange={setSelectedSector}
       />
 
       {isLoading ? (
