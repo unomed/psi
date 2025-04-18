@@ -13,7 +13,7 @@ interface PeriodicitySettings {
   risk_low_periodicity: PeriodicityType;
 }
 
-interface PeriodicitySettingsForm {
+export interface PeriodicitySettingsForm {
   defaultPeriodicity: PeriodicityType;
   riskHighPeriodicity: PeriodicityType;
   riskMediumPeriodicity: PeriodicityType;

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useNotificationSettings } from "@/hooks/settings/useNotificationSettings";
 
 export default function NotificationSettings() {
@@ -13,12 +13,21 @@ export default function NotificationSettings() {
   const [riskAlerts, setRiskAlerts] = useState(settings?.risk_alerts ?? true);
   const [deadlineAlerts, setDeadlineAlerts] = useState(settings?.deadline_alerts ?? true);
 
+  useEffect(() => {
+    if (settings) {
+      setEmailNotifications(settings.email_notifications);
+      setSystemNotifications(settings.system_notifications);
+      setRiskAlerts(settings.risk_alerts);
+      setDeadlineAlerts(settings.deadline_alerts);
+    }
+  }, [settings]);
+
   const handleSave = () => {
     updateSettings({
-      email_notifications: emailNotifications,
-      system_notifications: systemNotifications,
-      risk_alerts: riskAlerts,
-      deadline_alerts: deadlineAlerts
+      emailNotifications,
+      systemNotifications,
+      riskAlerts,
+      deadlineAlerts
     });
   };
 

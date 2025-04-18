@@ -11,7 +11,7 @@ interface NotificationSettings {
   deadline_alerts: boolean;
 }
 
-interface NotificationSettingsForm {
+export interface NotificationSettingsForm {
   emailNotifications: boolean;
   systemNotifications: boolean;
   riskAlerts: boolean;
