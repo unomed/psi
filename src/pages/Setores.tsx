@@ -1,14 +1,16 @@
 
 import { useState } from "react";
-import { FolderKanban, PlusCircle, Building2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SectorForm } from "@/components/sectors/SectorForm";
-import { SectorCard, type SectorData } from "@/components/sectors/SectorCard";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { SectorData } from "@/components/sectors/SectorCard";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
+import { EmptySectorState } from "@/components/sectors/EmptySectorState";
+import { SectorCompanySelect } from "@/components/sectors/SectorCompanySelect";
+import { SectorGrid } from "@/components/sectors/SectorGrid";
 
 export default function Setores() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -64,65 +66,27 @@ export default function Setores() {
         </Button>
       </div>
       
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="w-72">
-          <Select onValueChange={handleCompanyChange} value={selectedCompany || undefined}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              {companies.map((company) => (
-                <SelectItem key={company.id} value={company.id}>
-                  {company.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Selecione uma empresa para visualizar e gerenciar seus setores
-        </p>
-      </div>
+      <SectorCompanySelect 
+        companies={companies}
+        selectedCompany={selectedCompany}
+        onCompanyChange={handleCompanyChange}
+      />
       
       {selectedCompany && filteredSectors.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border rounded-lg">
-          <div className="text-center">
-            <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Nenhum setor cadastrado</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Cadastre os setores da empresa para mapear riscos psicossociais 
-              específicos e registrar incidentes relacionados.
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Cadastrar Setor
-            </Button>
-          </div>
-        </div>
+        <EmptySectorState 
+          noCompanySelected={!selectedCompany} 
+          onAddClick={() => setIsDialogOpen(true)}
+        />
       ) : !selectedCompany ? (
-        <div className="flex items-center justify-center h-64 border rounded-lg">
-          <div className="text-center">
-            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Selecione uma empresa</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Para visualizar e gerenciar setores, selecione uma empresa no menu acima.
-            </p>
-          </div>
-        </div>
+        <EmptySectorState 
+          noCompanySelected={true} 
+          onAddClick={() => setIsDialogOpen(true)}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSectors.map((sector) => (
-            <SectorCard 
-              key={sector.id} 
-              sector={sector} 
-              onClick={() => toast.info("Edição de setor será implementada em breve!")}
-            />
-          ))}
-        </div>
+        <SectorGrid 
+          sectors={filteredSectors}
+          onSectorClick={() => toast.info("Edição de setor será implementada em breve!")}
+        />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
