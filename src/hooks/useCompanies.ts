@@ -20,7 +20,20 @@ export const useCompanies = () => {
         throw error;
       }
 
-      return data as CompanyData[];
+      // Map the database fields to match the CompanyData interface
+      return data.map(company => ({
+        id: company.id,
+        name: company.name,
+        cnpj: company.cnpj,
+        address: company.address,
+        city: company.city,
+        state: company.state,
+        industry: company.industry,
+        contactName: company.contact_name,
+        contactEmail: company.contact_email,
+        contactPhone: company.contact_phone,
+        notes: company.notes
+      })) as CompanyData[];
     },
   });
 
@@ -49,7 +62,19 @@ export const useCompanies = () => {
         throw error;
       }
 
-      return data;
+      // Map the response to match the CompanyData interface
+      return {
+        id: data.id,
+        name: data.name,
+        cnpj: data.cnpj,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        industry: data.industry,
+        contactName: data.contact_name,
+        contactEmail: data.contact_email,
+        contactPhone: data.contact_phone,
+      } as CompanyData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
