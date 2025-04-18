@@ -1,9 +1,11 @@
 
-import { Settings, Mail, Bell, Shield, Calendar, Gauge } from "lucide-react";
+import { Settings, Mail, Bell, Shield, Calendar, Gauge, Users } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import EmailTemplateSettings from "@/components/settings/EmailTemplateSettings";
+import NotificationSettings from "@/components/settings/NotificationSettings";
 import { AssessmentCriteriaSettings } from "@/components/settings/AssessmentCriteriaSettings";
+import EmailTemplateSettings from "@/components/settings/EmailTemplateSettings";
+import PeriodicitySettings from "@/components/settings/PeriodicitySettings";
+import UserManagementSettings from "@/components/settings/UserManagementSettings";
 
 export default function Configuracoes() {
   return (
@@ -16,7 +18,7 @@ export default function Configuracoes() {
       </div>
       
       <Tabs defaultValue="assessment-criteria" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full max-w-4xl mb-8">
+        <TabsList className="grid grid-cols-6 w-full max-w-4xl mb-8">
           <TabsTrigger value="assessment-criteria">
             <Gauge className="mr-2 h-4 w-4" />
             Critérios de Avaliação
@@ -37,6 +39,10 @@ export default function Configuracoes() {
             <Shield className="mr-2 h-4 w-4" />
             Permissões
           </TabsTrigger>
+          <TabsTrigger value="users">
+            <Users className="mr-2 h-4 w-4" />
+            Usuários
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="assessment-criteria">
@@ -48,43 +54,11 @@ export default function Configuracoes() {
         </TabsContent>
         
         <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações de Notificações</CardTitle>
-              <CardDescription>
-                Configure alertas e notificações do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-64 flex items-center justify-center">
-              <div className="text-center">
-                <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">Configurações de Notificações</h3>
-                <p className="mt-2 text-sm text-muted-foreground max-w-md">
-                  Configure quando e como notificações devem ser enviadas para os usuários do sistema.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <NotificationSettings />
         </TabsContent>
         
         <TabsContent value="recurrence">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações de Periodicidade</CardTitle>
-              <CardDescription>
-                Configure os períodos padrão para avaliações recorrentes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-64 flex items-center justify-center">
-              <div className="text-center">
-                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">Configurações de Periodicidade</h3>
-                <p className="mt-2 text-sm text-muted-foreground max-w-md">
-                  Configure os períodos padrão para avaliações recorrentes e lembretes.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <PeriodicitySettings />
         </TabsContent>
         
         <TabsContent value="permissions">
@@ -105,6 +79,10 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserManagementSettings />
         </TabsContent>
       </Tabs>
     </div>
