@@ -1,8 +1,9 @@
 
-import { Settings, Mail, Bell, Shield, Calendar } from "lucide-react";
+import { Settings, Mail, Bell, Shield, Calendar, Gauge } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import EmailTemplateSettings from "@/components/settings/EmailTemplateSettings";
+import { AssessmentCriteriaSettings } from "@/components/settings/AssessmentCriteriaSettings";
 
 export default function Configuracoes() {
   return (
@@ -14,8 +15,12 @@ export default function Configuracoes() {
         </p>
       </div>
       
-      <Tabs defaultValue="email-templates" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-3xl mb-8">
+      <Tabs defaultValue="assessment-criteria" className="w-full">
+        <TabsList className="grid grid-cols-5 w-full max-w-4xl mb-8">
+          <TabsTrigger value="assessment-criteria">
+            <Gauge className="mr-2 h-4 w-4" />
+            Critérios de Avaliação
+          </TabsTrigger>
           <TabsTrigger value="email-templates">
             <Mail className="mr-2 h-4 w-4" />
             Emails
@@ -34,6 +39,10 @@ export default function Configuracoes() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="assessment-criteria">
+          <AssessmentCriteriaSettings />
+        </TabsContent>
+        
         <TabsContent value="email-templates">
           <EmailTemplateSettings />
         </TabsContent>
