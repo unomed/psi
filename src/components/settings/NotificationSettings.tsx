@@ -1,16 +1,26 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useNotificationSettings } from "@/hooks/settings/useNotificationSettings";
 
 export default function NotificationSettings() {
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [systemNotifications, setSystemNotifications] = useState(true);
-  const [riskAlerts, setRiskAlerts] = useState(true);
-  const [deadlineAlerts, setDeadlineAlerts] = useState(true);
+  const { settings, isLoading, updateSettings } = useNotificationSettings();
+  const [emailNotifications, setEmailNotifications] = useState(settings?.email_notifications ?? true);
+  const [systemNotifications, setSystemNotifications] = useState(settings?.system_notifications ?? true);
+  const [riskAlerts, setRiskAlerts] = useState(settings?.risk_alerts ?? true);
+  const [deadlineAlerts, setDeadlineAlerts] = useState(settings?.deadline_alerts ?? true);
+
+  const handleSave = () => {
+    updateSettings({
+      email_notifications: emailNotifications,
+      system_notifications: systemNotifications,
+      risk_alerts: riskAlerts,
+      deadline_alerts: deadlineAlerts
+    });
+  };
 
   return (
     <Card>
@@ -57,7 +67,7 @@ export default function NotificationSettings() {
           />
         </div>
 
-        <Button className="w-full">Salvar Configurações</Button>
+        <Button onClick={handleSave} className="w-full">Salvar Configurações</Button>
       </CardContent>
     </Card>
   );

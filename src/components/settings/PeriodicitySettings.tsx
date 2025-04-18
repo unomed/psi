@@ -1,4 +1,4 @@
-
+import { usePeriodicitySettings } from "@/hooks/settings/usePeriodicitySettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -15,18 +15,24 @@ const formSchema = z.object({
 });
 
 export default function PeriodicitySettings() {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const { settings, isLoading, updateSettings } = usePeriodicitySettings();
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      defaultPeriodicity: "annual",
-      riskHighPeriodicity: "quarterly",
-      riskMediumPeriodicity: "semiannual",
-      riskLowPeriodicity: "annual",
-    },
+      defaultPeriodicity: settings?.default_periodicity || "annual",
+      riskHighPeriodicity: settings?.risk_high_periodicity || "quarterly",
+      riskMediumPeriodicity: settings?.risk_medium_periodicity || "semiannual",
+      riskLowPeriodicity: settings?.risk_low_periodicity || "annual",
+    }
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    updateSettings({
+      default_periodicity: values.defaultPeriodicity,
+      risk_high_periodicity: values.riskHighPeriodicity,
+      risk_medium_periodicity: values.riskMediumPeriodicity,
+      risk_low_periodicity: values.riskLowPeriodicity
+    });
   }
 
   return (

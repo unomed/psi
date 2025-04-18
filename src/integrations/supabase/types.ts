@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      assessment_criteria_settings: {
+        Row: {
+          company_risk_calculation_type: string | null
+          created_at: string
+          days_before_reminder_sent: number | null
+          default_recurrence_type: string
+          enable_recurrence_reminders: boolean | null
+          id: string
+          low_risk_threshold: number | null
+          medium_risk_threshold: number | null
+          minimum_employee_percentage: number | null
+          notify_managers_on_high_risk: boolean | null
+          prioritize_high_risk_roles: boolean | null
+          reassessment_max_days: number | null
+          require_all_roles: boolean | null
+          require_all_sectors: boolean | null
+          require_reassessment_for_high_risk: boolean | null
+          sector_risk_calculation_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_risk_calculation_type?: string | null
+          created_at?: string
+          days_before_reminder_sent?: number | null
+          default_recurrence_type: string
+          enable_recurrence_reminders?: boolean | null
+          id?: string
+          low_risk_threshold?: number | null
+          medium_risk_threshold?: number | null
+          minimum_employee_percentage?: number | null
+          notify_managers_on_high_risk?: boolean | null
+          prioritize_high_risk_roles?: boolean | null
+          reassessment_max_days?: number | null
+          require_all_roles?: boolean | null
+          require_all_sectors?: boolean | null
+          require_reassessment_for_high_risk?: boolean | null
+          sector_risk_calculation_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_risk_calculation_type?: string | null
+          created_at?: string
+          days_before_reminder_sent?: number | null
+          default_recurrence_type?: string
+          enable_recurrence_reminders?: boolean | null
+          id?: string
+          low_risk_threshold?: number | null
+          medium_risk_threshold?: number | null
+          minimum_employee_percentage?: number | null
+          notify_managers_on_high_risk?: boolean | null
+          prioritize_high_risk_roles?: boolean | null
+          reassessment_max_days?: number | null
+          require_all_roles?: boolean | null
+          require_all_sectors?: boolean | null
+          require_reassessment_for_high_risk?: boolean | null
+          sector_risk_calculation_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       assessment_responses: {
         Row: {
           classification:
@@ -205,6 +265,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_server_settings: {
+        Row: {
+          created_at: string
+          id: string
+          password: string
+          sender_email: string
+          sender_name: string
+          smtp_port: number
+          smtp_server: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password: string
+          sender_email: string
+          sender_name: string
+          smtp_port: number
+          smtp_server: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password?: string
+          sender_email?: string
+          sender_name?: string
+          smtp_port?: number
+          smtp_server?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           body: string
@@ -316,6 +412,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_settings: {
+        Row: {
+          created_at: string
+          deadline_alerts: boolean | null
+          email_notifications: boolean | null
+          id: string
+          risk_alerts: boolean | null
+          system_notifications: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deadline_alerts?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          risk_alerts?: boolean | null
+          system_notifications?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deadline_alerts?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          risk_alerts?: boolean | null
+          system_notifications?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      periodicity_settings: {
+        Row: {
+          created_at: string
+          default_periodicity: string
+          id: string
+          risk_high_periodicity: string
+          risk_low_periodicity: string
+          risk_medium_periodicity: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_periodicity: string
+          id?: string
+          risk_high_periodicity: string
+          risk_low_periodicity: string
+          risk_medium_periodicity: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_periodicity?: string
+          id?: string
+          risk_high_periodicity?: string
+          risk_low_periodicity?: string
+          risk_medium_periodicity?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

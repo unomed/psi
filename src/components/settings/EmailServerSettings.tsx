@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -23,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useEmailServerSettings } from "@/hooks/settings/useEmailServerSettings";
 
 const emailServerSchema = z.object({
   smtpServer: z.string().min(1, "O servidor SMTP é obrigatório"),
@@ -36,23 +36,27 @@ const emailServerSchema = z.object({
 type EmailServerFormValues = z.infer<typeof emailServerSchema>;
 
 export default function EmailServerSettings() {
+  const { settings, isLoading, updateSettings } = useEmailServerSettings();
   const form = useForm<EmailServerFormValues>({
     resolver: zodResolver(emailServerSchema),
     defaultValues: {
-      smtpServer: "",
-      smtpPort: "587",
-      username: "",
-      password: "",
-      senderEmail: "",
-      senderName: ""
+      smtpServer: settings?.smtp_server || "",
+      smtpPort: settings?.smtp_port?.toString() || "587",
+      username: settings?.username || "",
+      password: settings?.password || "",
+      senderEmail: settings?.sender_email || "",
+      senderName: settings?.sender_name || ""
     }
   });
 
   const onSubmit = (data: EmailServerFormValues) => {
-    console.log(data);
-    toast({
-      title: "Configurações salvas",
-      description: "As configurações do servidor de email foram atualizadas.",
+    updateSettings({
+      smtp_server: data.smtpServer,
+      smtp_port: parseInt(data.smtpPort),
+      username: data.username,
+      password: data.password,
+      sender_email: data.senderEmail,
+      sender_name: data.senderName
     });
   };
 
