@@ -20,7 +20,11 @@ export function BasicInfoFields({ form }: BasicInfoFieldsProps) {
           <FormItem>
             <FormLabel>Nome da Função</FormLabel>
             <FormControl>
-              <Input placeholder="Ex: Operador de Máquina, Analista de RH, Técnico de Segurança" {...field} />
+              <Input 
+                placeholder="Ex: Operador de Máquina, Analista de RH, Técnico de Segurança" 
+                {...field}
+                className={form.formState.errors.name ? "border-destructive" : ""}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -36,7 +40,7 @@ export function BasicInfoFields({ form }: BasicInfoFieldsProps) {
             <FormControl>
               <Textarea 
                 placeholder="Descreva as atividades e responsabilidades desta função" 
-                className="min-h-[100px]"
+                className={cn("min-h-[100px]", form.formState.errors.description && "border-destructive")}
                 {...field} 
               />
             </FormControl>

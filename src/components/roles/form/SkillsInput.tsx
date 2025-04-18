@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { FormLabel } from "@/components/ui/form";
@@ -17,9 +16,10 @@ interface SkillsInputProps {
   skills: string[];
   onAddSkill: (skill: string) => void;
   onRemoveSkill: (skill: string) => void;
+  error?: string;
 }
 
-export function SkillsInput({ skills, onAddSkill, onRemoveSkill }: SkillsInputProps) {
+export function SkillsInput({ skills, onAddSkill, onRemoveSkill, error }: SkillsInputProps) {
   const [skillInput, setSkillInput] = React.useState("");
   const [suggestedSkills, setSuggestedSkills] = React.useState<string[]>([]);
 
@@ -70,8 +70,11 @@ export function SkillsInput({ skills, onAddSkill, onRemoveSkill }: SkillsInputPr
           value={skillInput}
           onChange={handleSkillInputChange}
           onKeyDown={handleKeyDown}
-          className="mb-1"
+          className={cn("mb-1", error && "border-destructive")}
         />
+        {error && (
+          <span className="text-sm text-destructive">{error}</span>
+        )}
         {suggestedSkills.length > 0 && (
           <div className="absolute z-10 bg-popover border rounded-md shadow-md p-2 w-full max-h-60 overflow-y-auto">
             {suggestedSkills.map((skill) => (

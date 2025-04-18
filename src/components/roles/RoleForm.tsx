@@ -8,12 +8,13 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { BasicInfoFields } from "./form/BasicInfoFields";
 import { SkillsInput } from "./form/SkillsInput";
+import { toast } from "sonner";
 
 const roleSchema = z.object({
-  name: z.string().min(2, "O nome da função é obrigatório"),
-  description: z.string().optional(),
-  riskLevel: z.string().optional(),
-  requiredSkills: z.array(z.string()).optional(),
+  name: z.string().min(2, "O nome da função deve ter pelo menos 2 caracteres"),
+  description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres").optional(),
+  riskLevel: z.string().min(1, "O nível de risco é obrigatório"),
+  requiredSkills: z.array(z.string()).min(1, "Adicione pelo menos uma habilidade"),
 });
 
 export type RoleFormValues = z.infer<typeof roleSchema>;
@@ -37,11 +38,16 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
     },
   });
 
-  const handleSubmitForm = (data: RoleFormValues) => {
-    onSubmit({
-      ...data,
-      requiredSkills: skills,
-    });
+  const handleSubmitForm = async (data: RoleFormValues) => {
+    try {
+      await onSubmit({
+        ...data,
+        requiredSkills: skills,
+      });
+    } catch (error) {
+      toast.error("Erro ao salvar função. Tente novamente.");
+      console.error("Error submitting role form:", error);
+    }
   };
 
   const handleAddSkill = (skill: string) => {
@@ -49,6 +55,7 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
       const newSkills = [...skills, skill.trim()];
       setSkills(newSkills);
       form.setValue("requiredSkills", newSkills);
+      form.trigger("requiredSkills");
     }
   };
 
@@ -56,6 +63,7 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
     const newSkills = skills.filter(skill => skill !== skillToRemove);
     setSkills(newSkills);
     form.setValue("requiredSkills", newSkills);
+    form.trigger("requiredSkills");
   };
 
   return (
@@ -67,6 +75,7 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
           skills={skills}
           onAddSkill={handleAddSkill}
           onRemoveSkill={handleRemoveSkill}
+          error={form.formState.errors.requiredSkills?.message}
         />
 
         <FormField
@@ -84,7 +93,12 @@ export function RoleForm({ onSubmit, defaultValues }: RoleFormProps) {
         />
 
         <div className="flex justify-end">
-          <Button type="submit">Salvar Função</Button>
+          <Button 
+            type="submit" 
+            disabled={form.formState.isSubmitting}
+          >
+            Salvar Função
+          </Button>
         </div>
       </form>
     </Form>
