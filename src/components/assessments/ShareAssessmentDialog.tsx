@@ -12,7 +12,7 @@ import {
   DialogDescription, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { ChecklistTemplate, ScheduledAssessment } from "@/types/checklist";
+import { ChecklistTemplate, ScheduledAssessment } from "@/types";
 import { mockEmployees } from "./AssessmentSelectionForm";
 
 interface ShareAssessmentDialogProps {

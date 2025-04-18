@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Download } from "lucide-react";
 import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
-import { ChecklistResult } from "@/types/checklist";
+import { ChecklistResult } from "@/types";
 
 interface IndividualReportsProps {
   filters: {

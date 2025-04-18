@@ -1,7 +1,7 @@
 
 import { useAssessmentHandlers } from "@/hooks/assessments/useAssessmentHandlers";
 import { useAssessmentDialogs } from "@/hooks/assessments/useAssessmentDialogs";
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 import { NewAssessmentDialog } from "@/components/assessments/NewAssessmentDialog";
 import { AssessmentDialogs } from "@/components/assessments/AssessmentDialogs";
 import { ScheduleRecurringAssessmentDialog } from "@/components/assessments/ScheduleRecurringAssessmentDialog";

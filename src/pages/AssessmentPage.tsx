@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
-import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
+import { ChecklistTemplate, ChecklistResult } from "@/types";
 import { toast } from "sonner";
 import { AssessmentError } from "@/components/assessments/AssessmentError";
 import { AssessmentLoading } from "@/components/assessments/AssessmentLoading";

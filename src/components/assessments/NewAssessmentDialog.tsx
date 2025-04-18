@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CalendarClock, Link2, Mail, Save } from "lucide-react";
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 import { CompanySelector } from "./selectors/CompanySelector";
 import { SectorSelector } from "./selectors/SectorSelector";
 import { RoleSelector } from "./selectors/RoleSelector";

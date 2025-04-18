@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 import { createGeneratedLink } from "@/services/assessmentHandlerService";
 
 export function useLinkOperations({

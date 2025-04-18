@@ -2,7 +2,7 @@
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
 import { useScheduleOperations } from "./useScheduleOperations";
-import { ScheduledAssessment, ChecklistTemplate, ChecklistResult } from "@/types/checklist";
+import { ScheduledAssessment, ChecklistTemplate, ChecklistResult } from "@/types";
 import { createAssessmentResult, getSelectedEmployeeName as getEmployeeName } from "@/services/assessmentHandlerService";
 import { toast } from "sonner";
 import { handleSaveAssessment as saveAssessment } from "@/services/assessmentHandlerService";

@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RecurrenceType, ChecklistTemplate } from "@/types/checklist";
+import { RecurrenceType, ChecklistTemplate } from "@/types";
 import { mockEmployees } from "./AssessmentSelectionForm";
 
 interface ScheduleRecurringAssessmentDialogProps {

@@ -1,5 +1,4 @@
-
-import { ScheduledAssessment, AssessmentStatus, RecurrenceType } from "@/types/checklist";
+import { ScheduledAssessment, AssessmentStatus, RecurrenceType, EmailTemplate } from "@/types";
 import { mockEmployees } from "./AssessmentSelectionForm";
 
 // Helper function to update a scheduled assessment
