@@ -1,6 +1,7 @@
 
 import type { RoleData } from "./RoleCard";
-import { RoleCard } from "./RoleCard";
+import { DataTable } from "@/components/ui/data-table";
+import { columns } from "./columns";
 
 interface RoleGridProps {
   roles: RoleData[];
@@ -11,15 +12,15 @@ interface RoleGridProps {
 
 export function RoleGrid({ roles, onEdit, onDelete, canEdit = true }: RoleGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {roles.map((role) => (
-        <RoleCard 
-          key={role.id} 
-          role={role} 
-          onEdit={canEdit ? onEdit : undefined}
-          onDelete={canEdit ? onDelete : undefined}
-        />
-      ))}
-    </div>
+    <DataTable 
+      columns={columns} 
+      data={roles}
+      meta={{
+        onEdit: onEdit || (() => {}),
+        onDelete: onDelete || (() => {}),
+        onView: () => {},
+        canEdit,
+      }}
+    />
   );
 }

@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DataTable } from "@/components/ui/data-table";
 import { RoleForm } from "@/components/roles/RoleForm";
-import { RoleGrid } from "@/components/roles/RoleGrid";
-import { EmptyRoleState } from "@/components/roles/EmptyRoleState";
 import { RoleCompanySelect } from "@/components/roles/RoleCompanySelect";
 import { useRoles } from "@/hooks/useRoles";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import type { RoleData } from "@/components/roles/RoleCard";
+import { columns } from "@/components/roles/columns";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -21,8 +22,9 @@ export default function Funcoes() {
   const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles();
   const { companies } = useCompanies();
   const { sectors } = useSectors();
-  const { hasRole, userRole } = useAuth();
+  const { userRole } = useAuth();
   const [canCreateRoles, setCanCreateRoles] = useState(false);
+  const [viewingRole, setViewingRole] = useState<RoleData | null>(null);
   
   useEffect(() => {
     const checkPermissions = async () => {
@@ -71,11 +73,6 @@ export default function Funcoes() {
     }
   };
 
-  const handleEditRole = (role: RoleData) => {
-    setEditingRole(role);
-    setIsDialogOpen(true);
-  };
-
   const handleDeleteRole = async (role: RoleData) => {
     if (confirm("Tem certeza que deseja excluir esta função?")) {
       try {
@@ -115,26 +112,20 @@ export default function Funcoes() {
         onSectorChange={setSelectedSector}
       />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      ) : filteredRoles && filteredRoles.length > 0 ? (
-        <RoleGrid 
-          roles={filteredRoles}
-          onEdit={handleEditRole}
-          onDelete={handleDeleteRole}
-          canEdit={canCreateRoles}
-        />
-      ) : (
-        <EmptyRoleState 
-          onCreateClick={() => {
-            setEditingRole(null);
+      <DataTable 
+        columns={columns} 
+        data={filteredRoles || []}
+        isLoading={isLoading}
+        meta={{
+          onEdit: (role) => {
+            setEditingRole(role);
             setIsDialogOpen(true);
-          }}
-          canCreate={canCreateRoles}
-        />
-      )}
+          },
+          onDelete: handleDeleteRole,
+          onView: (role) => setViewingRole(role),
+          canEdit: canCreateRoles,
+        }}
+      />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">
@@ -148,6 +139,53 @@ export default function Funcoes() {
           />
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!viewingRole} onOpenChange={() => setViewingRole(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Função</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold">Nome</h3>
+              <p>{viewingRole?.name}</p>
+            </div>
+            {viewingRole?.description && (
+              <div>
+                <h3 className="font-semibold">Descrição</h3>
+                <p>{viewingRole.description}</p>
+              </div>
+            )}
+            <div>
+              <h3 className="font-semibold">Nível de Risco</h3>
+              <p>{viewingRole?.riskLevel ? getRiskLevelDisplay(viewingRole.riskLevel) : "Não definido"}</p>
+            </div>
+            {viewingRole?.requiredSkills && viewingRole.requiredSkills.length > 0 && (
+              <div>
+                <h3 className="font-semibold">Habilidades Requeridas</h3>
+                <ul className="list-disc pl-4">
+                  {viewingRole.requiredSkills.map((skill, index) => (
+                    <li key={index}>{skill}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+function getRiskLevelDisplay(level: string) {
+  switch (level) {
+    case "high":
+      return "Alto";
+    case "medium":
+      return "Médio";
+    case "low":
+      return "Baixo";
+    default:
+      return level;
+  }
 }
