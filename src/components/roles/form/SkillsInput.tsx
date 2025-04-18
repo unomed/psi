@@ -1,9 +1,11 @@
+
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { FormLabel } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const commonSkillOptions = [
   "Atenção", "Foco", "Comprometimento", "Trabalho em equipe", 

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { UseFormReturn } from "react-hook-form";
 import type { RoleFormValues } from "../RoleForm";
+import { cn } from "@/lib/utils";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<RoleFormValues>;
