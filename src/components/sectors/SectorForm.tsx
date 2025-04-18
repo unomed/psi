@@ -4,14 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -95,10 +88,13 @@ export function SectorForm({ onSubmit, defaultValues }: SectorFormProps) {
           name="riskLevel"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nível de Risco Inicial</FormLabel>
+              <FormLabel>Nível de Risco (será calculado após avaliações)</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Baixo, Médio, Alto" {...field} />
+                <Input placeholder="Será definido após avaliações do setor" {...field} />
               </FormControl>
+              <p className="text-sm text-muted-foreground">
+                O nível de risco será automaticamente calculado após a conclusão das avaliações do setor.
+              </p>
               <FormMessage />
             </FormItem>
           )}

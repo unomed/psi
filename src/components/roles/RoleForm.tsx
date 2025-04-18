@@ -1,11 +1,9 @@
-
 import * as React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BasicInfoFields } from "./form/BasicInfoFields";
 import { SkillsInput } from "./form/SkillsInput";
@@ -14,7 +12,7 @@ import { toast } from "sonner";
 const roleSchema = z.object({
   name: z.string().min(2, "O nome da função deve ter pelo menos 2 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres").optional(),
-  riskLevel: z.string().min(1, "O nível de risco é obrigatório"),
+  riskLevel: z.string().optional().nullable(),
   requiredSkills: z.array(z.string()).min(1, "Adicione pelo menos uma habilidade"),
   sectorId: z.string().optional().nullable(),
 });
@@ -117,14 +115,14 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
           name="riskLevel"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nível de Risco Psicossocial</FormLabel>
+              <FormLabel>Nível de Risco (será calculado após avaliações)</FormLabel>
               <FormControl>
                 <Select 
                   onValueChange={field.onChange} 
                   value={field.value || undefined}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione o nível de risco" />
+                    <SelectValue placeholder="Será definido após avaliações" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Baixo</SelectItem>
@@ -139,10 +137,7 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
         />
 
         <div className="flex justify-end">
-          <Button 
-            type="submit" 
-            disabled={form.formState.isSubmitting}
-          >
+          <Button type="submit">
             Salvar Função
           </Button>
         </div>
