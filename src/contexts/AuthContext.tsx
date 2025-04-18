@@ -1,5 +1,5 @@
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
   // Fetch user role when session changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       fetchUserRoleAndCompanies(user.id);
     }

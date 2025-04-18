@@ -1,9 +1,7 @@
 
 import { User } from '@supabase/supabase-js';
 import { useAuth as useAuthContext } from '@/contexts/AuthContext';
-
-// Use a specific type for roles matching the Supabase enum
-type AppRole = 'superadmin' | 'admin' | 'evaluator';
+import { AppRole } from '@/types';
 
 interface DirectAuthContextType {
   user: User | null;
