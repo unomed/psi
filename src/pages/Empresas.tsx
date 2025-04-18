@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PlusCircle, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ export default function Empresas() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   
   const { companies, isLoading, createCompany, updateCompany, deleteCompany } = useCompanies();
@@ -59,8 +59,8 @@ export default function Empresas() {
   };
 
   const handleView = (company: CompanyData) => {
-    // Implement view functionality if needed
-    console.log("View company:", company);
+    setSelectedCompany(company);
+    setIsViewDialogOpen(true);
   };
 
   return (
@@ -143,6 +143,64 @@ export default function Empresas() {
               onSubmit={handleEdit} 
               defaultValues={selectedCompany}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Empresa</DialogTitle>
+            <DialogDescription>
+              Visualize os dados completos da empresa.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedCompany && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Nome</h3>
+                <p>{selectedCompany.name}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">CNPJ</h3>
+                <p>{selectedCompany.cnpj}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Endereço</h3>
+                <p>{selectedCompany.address}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Cidade</h3>
+                <p>{selectedCompany.city}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Estado</h3>
+                <p>{selectedCompany.state}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Setor</h3>
+                <p>{selectedCompany.industry || "Não informado"}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Nome do Contato</h3>
+                <p>{selectedCompany.contactName}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Email do Contato</h3>
+                <p>{selectedCompany.contactEmail}</p>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-medium text-muted-foreground">Telefone do Contato</h3>
+                <p>{selectedCompany.contactPhone}</p>
+              </div>
+              {selectedCompany.notes && (
+                <div className="col-span-2 space-y-1">
+                  <h3 className="font-medium text-muted-foreground">Observações</h3>
+                  <p>{selectedCompany.notes}</p>
+                </div>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>
