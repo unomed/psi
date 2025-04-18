@@ -31,7 +31,7 @@ export const useCompanies = () => {
         contactName: company.contact_name,
         contactEmail: company.contact_email,
         contactPhone: company.contact_phone,
-        notes: company.notes
+        notes: company.notes || "" // Provide a default empty string if notes is undefined
       })) as CompanyData[];
     },
   });
@@ -49,8 +49,8 @@ export const useCompanies = () => {
           industry: newCompany.industry,
           contact_name: newCompany.contactName,
           contact_email: newCompany.contactEmail,
-          contact_phone: newCompany.contactPhone,
-          notes: newCompany.notes
+          contact_phone: newCompany.contactPhone
+          // Don't include notes as it doesn't exist in the database
         }])
         .select()
         .single();
@@ -71,7 +71,7 @@ export const useCompanies = () => {
         contactName: data.contact_name,
         contactEmail: data.contact_email,
         contactPhone: data.contact_phone,
-        notes: data.notes
+        notes: data.notes || "" // Provide a default empty string if notes is undefined
       } as CompanyData;
     },
     onSuccess: () => {
@@ -93,8 +93,8 @@ export const useCompanies = () => {
           industry: company.industry,
           contact_name: company.contactName,
           contact_email: company.contactEmail,
-          contact_phone: company.contactPhone,
-          notes: company.notes
+          contact_phone: company.contactPhone
+          // Don't include notes as it doesn't exist in the database
         })
         .eq("id", company.id);
 
