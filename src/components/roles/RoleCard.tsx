@@ -52,6 +52,12 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
     }
   };
 
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(role);
+    }
+  };
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
@@ -65,7 +71,7 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
                 </Button>
               )}
               {onDelete && (
-                <Button variant="ghost" size="icon" onClick={() => onDelete(role)}>
+                <Button variant="ghost" size="icon" onClick={handleDelete}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}

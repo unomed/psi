@@ -15,9 +15,10 @@ import { useSectors } from "@/hooks/useSectors";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<RoleData | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const { roles, isLoading, createRole } = useRoles();
+  const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles();
   const { companies } = useCompanies();
   const { sectors } = useSectors();
   const { hasRole, userRole } = useAuth();
@@ -37,10 +38,10 @@ export default function Funcoes() {
     !selectedCompany || role.companyId === selectedCompany
   );
 
-  const handleCreateRole = async (values) => {
+  const handleCreateOrUpdateRole = async (values: any) => {
     try {
       if (!canCreateRoles) {
-        toast.error("Você não tem permissão para criar funções");
+        toast.error("Você não tem permissão para gerenciar funções");
         return;
       }
       
@@ -49,15 +50,39 @@ export default function Funcoes() {
         return;
       }
 
-      await createRole.mutateAsync({
-        ...values,
-        companyId: selectedCompany,
-        sectorId: values.sectorId || null,
-      });
+      if (editingRole) {
+        await updateRole.mutateAsync({
+          ...editingRole,
+          ...values,
+          sectorId: values.sectorId || null,
+        });
+      } else {
+        await createRole.mutateAsync({
+          ...values,
+          companyId: selectedCompany,
+          sectorId: values.sectorId || null,
+        });
+      }
 
       setIsDialogOpen(false);
+      setEditingRole(null);
     } catch (error) {
-      console.error("Error creating role:", error);
+      console.error("Error managing role:", error);
+    }
+  };
+
+  const handleEditRole = (role: RoleData) => {
+    setEditingRole(role);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteRole = async (role: RoleData) => {
+    if (confirm("Tem certeza que deseja excluir esta função?")) {
+      try {
+        await deleteRole.mutateAsync(role.id);
+      } catch (error) {
+        console.error("Error deleting role:", error);
+      }
     }
   };
 
@@ -71,7 +96,10 @@ export default function Funcoes() {
           </p>
         </div>
         {canCreateRoles && (
-          <Button onClick={() => setIsDialogOpen(true)}>
+          <Button onClick={() => {
+            setEditingRole(null);
+            setIsDialogOpen(true);
+          }}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Nova Função
           </Button>
@@ -94,11 +122,16 @@ export default function Funcoes() {
       ) : filteredRoles && filteredRoles.length > 0 ? (
         <RoleGrid 
           roles={filteredRoles}
+          onEdit={handleEditRole}
+          onDelete={handleDeleteRole}
           canEdit={canCreateRoles}
         />
       ) : (
         <EmptyRoleState 
-          onCreateClick={() => canCreateRoles && setIsDialogOpen(true)}
+          onCreateClick={() => {
+            setEditingRole(null);
+            setIsDialogOpen(true);
+          }}
           canCreate={canCreateRoles}
         />
       )}
@@ -106,9 +139,12 @@ export default function Funcoes() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Nova Função</DialogTitle>
+            <DialogTitle>{editingRole ? 'Editar Função' : 'Nova Função'}</DialogTitle>
           </DialogHeader>
-          <RoleForm onSubmit={handleCreateRole} />
+          <RoleForm 
+            onSubmit={handleCreateOrUpdateRole} 
+            defaultValues={editingRole || undefined}
+          />
         </DialogContent>
       </Dialog>
     </div>

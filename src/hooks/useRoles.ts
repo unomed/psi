@@ -68,6 +68,30 @@ export const useRoles = () => {
     },
   });
 
+  const updateRole = useMutation({
+    mutationFn: async (role: RoleData) => {
+      const { error } = await supabase
+        .from("roles")
+        .update({
+          name: role.name,
+          description: role.description,
+          sector_id: role.sectorId,
+          required_skills: role.requiredSkills,
+          risk_level: role.riskLevel
+        })
+        .eq("id", role.id);
+
+      if (error) {
+        toast.error("Erro ao atualizar função");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+      toast.success("Função atualizada com sucesso!");
+    },
+  });
+
   const deleteRole = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -90,6 +114,7 @@ export const useRoles = () => {
     roles,
     isLoading,
     createRole,
+    updateRole,
     deleteRole,
   };
 };
