@@ -2,9 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { SectorData } from "@/components/sectors/SectorCard";
+import type { SectorData } from "@/components/sectors/columns";
 
-export const useSectors = () => {
+export function useSectors() {
   const queryClient = useQueryClient();
 
   const { data: sectors = [], isLoading } = useQuery({
@@ -12,7 +12,15 @@ export const useSectors = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sectors")
-        .select("*")
+        .select(`
+          id,
+          name,
+          description,
+          location,
+          risk_level,
+          responsible_name,
+          company_id
+        `)
         .order("name");
 
       if (error) {
@@ -26,6 +34,7 @@ export const useSectors = () => {
         description: sector.description,
         location: sector.location,
         riskLevel: sector.risk_level,
+        responsibleName: sector.responsible_name,
         companyId: sector.company_id
       })) as SectorData[];
     },
@@ -40,6 +49,7 @@ export const useSectors = () => {
           description: newSector.description,
           location: newSector.location,
           risk_level: newSector.riskLevel,
+          responsible_name: newSector.responsibleName,
           company_id: newSector.companyId
         }])
         .select()
@@ -56,12 +66,38 @@ export const useSectors = () => {
         description: data.description,
         location: data.location,
         riskLevel: data.risk_level,
+        responsibleName: data.responsible_name,
         companyId: data.company_id
       } as SectorData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sectors"] });
       toast.success("Setor criado com sucesso!");
+    },
+  });
+
+  const updateSector = useMutation({
+    mutationFn: async (sector: SectorData) => {
+      const { error } = await supabase
+        .from("sectors")
+        .update({
+          name: sector.name,
+          description: sector.description,
+          location: sector.location,
+          risk_level: sector.riskLevel,
+          responsible_name: sector.responsibleName,
+          company_id: sector.companyId
+        })
+        .eq("id", sector.id);
+
+      if (error) {
+        toast.error("Erro ao atualizar setor");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sectors"] });
+      toast.success("Setor atualizado com sucesso!");
     },
   });
 
@@ -87,6 +123,7 @@ export const useSectors = () => {
     sectors,
     isLoading,
     createSector,
+    updateSector,
     deleteSector,
   };
-};
+}
