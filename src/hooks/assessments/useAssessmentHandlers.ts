@@ -44,6 +44,9 @@ export function useAssessmentHandlers({
   setSelectedAssessment: (assessment: ScheduledAssessment | null) => void;
   handleSendEmail: (employeeId: string) => void;
 }) {
+  // Mock data for example (in a real app, you'd fetch this from the server)
+  const scheduledAssessments: ScheduledAssessment[] = [];
+
   const handleNewAssessment = () => {
     setSelectedEmployee(null);
     setSelectedTemplate(null);
@@ -181,9 +184,6 @@ export function useAssessmentHandlers({
       toast.error("Erro ao agendar avaliação. Tente novamente mais tarde.");
     }
   };
-
-  // For TypeScript to be happy, we need a scheduledAssessments variable even though it's not used directly
-  const scheduledAssessments: ScheduledAssessment[] = [];
 
   return {
     handleNewAssessment,

@@ -5,6 +5,7 @@ import { fetchChecklistTemplates } from "@/services/checklistService";
 import { useAssessmentState } from "@/hooks/useAssessmentState";
 import { useAssessmentDialogs } from "@/hooks/assessments/useAssessmentDialogs";
 import { useAssessmentSelection } from "@/hooks/assessments/useAssessmentSelection";
+import { useAssessmentHandlers } from "@/hooks/assessments/useAssessmentHandlers";
 
 // Components
 import { AssessmentActions } from "@/components/assessments/AssessmentActions";
@@ -60,7 +61,7 @@ export function AssessmentHandler() {
     queryFn: fetchChecklistTemplates
   });
 
-  // Import handlers
+  // Import the hooks directly instead of using our own custom function
   const {
     handleNewAssessment,
     handleScheduleAssessment,
@@ -72,86 +73,27 @@ export function AssessmentHandler() {
     handleSaveAssessment,
     handleSendEmailToEmployee,
     handleSaveSchedule
-  } = useHandlers();
+  } = useAssessmentHandlers({
+    selectedEmployee,
+    selectedTemplate,
+    setSelectedEmployee,
+    setSelectedTemplate,
+    setIsAssessmentDialogOpen,
+    setIsResultDialogOpen,
+    setIsScheduleDialogOpen,
+    setIsLinkDialogOpen,
+    setIsShareDialogOpen,
+    setIsNewAssessmentDialogOpen,
+    setAssessmentResult,
+    setGeneratedLink,
+    setActiveTab,
+    scheduledDate,
+    setScheduledDate,
+    setSelectedAssessment,
+    handleSendEmail
+  });
 
-  // Custom hook to use the handlers but avoid circular dependencies
-  function useHandlers() {
-    const { handleSendEmail } = useAssessmentState();
-    
-    // Import the useAssessmentHandlers hook
-    const handlers = {
-      handleNewAssessment: () => {
-        setSelectedEmployee(null);
-        setSelectedTemplate(null);
-        setIsNewAssessmentDialogOpen(true);
-      },
-      
-      handleScheduleAssessment: () => {
-        if (!selectedEmployee || !selectedTemplate) {
-          return;
-        }
-        setIsScheduleDialogOpen(true);
-      },
-      
-      handleGenerateLink: () => {
-        if (!selectedEmployee || !selectedTemplate) {
-          return;
-        }
-        const link = `${window.location.origin}/avaliacao/${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-        setGeneratedLink(link);
-        setIsLinkDialogOpen(true);
-      },
-      
-      handleShareAssessment: (assessmentId: string) => {
-        const assessment = scheduledAssessments.find(a => a.id === assessmentId);
-        if (assessment) {
-          setSelectedAssessment(assessment);
-          setIsShareDialogOpen(true);
-        }
-      },
-      
-      handleSubmitAssessment: (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
-        const result = {
-          ...resultData,
-          id: `result-${Date.now()}`,
-          completedAt: new Date()
-        };
-        setAssessmentResult(result);
-        setIsAssessmentDialogOpen(false);
-        setIsResultDialogOpen(true);
-      },
-      
-      handleCloseResult: () => {
-        setIsResultDialogOpen(false);
-        setAssessmentResult(null);
-      },
-      
-      getSelectedEmployeeName: () => {
-        if (!selectedEmployee) return "";
-        const mockEmployees = [{id: "emp-1", name: "John Doe"}]; // Simplified for the handler
-        return mockEmployees.find(e => e.id === selectedEmployee)?.name || "";
-      },
-      
-      handleSaveAssessment,
-      
-      handleSendEmailToEmployee: () => {
-        if (!selectedEmployee) return;
-        handleSendEmail(selectedEmployee);
-        setIsNewAssessmentDialogOpen(false);
-        setActiveTab("agendadas");
-      },
-      
-      handleSaveSchedule: (recurrenceType, phoneNumber) => {
-        saveSchedule(recurrenceType, phoneNumber);
-        setIsScheduleDialogOpen(false);
-        setIsNewAssessmentDialogOpen(false);
-      }
-    };
-    
-    return handlers;
-  }
-
-  // Handlers
+  // Handlers for UI events
   const handleEmployeeChange = (value: string) => {
     setSelectedEmployee(value);
   };
