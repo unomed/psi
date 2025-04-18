@@ -1,27 +1,21 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-
-// Import the AppRole type to ensure consistency
-type AppRole = 'superadmin' | 'admin' | 'evaluator';
-
-interface CompanyAccess {
-  companyId: string;
-  companyName: string;
-}
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useAuthActions } from '@/hooks/useAuthActions';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { AppRole } from '@/types';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => Promise<User | undefined>; // Changed return type to match implementation
+  signUp: (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => Promise<User | undefined>;
   signOut: () => Promise<void>;
   loading: boolean;
   userRole: string | null;
-  userCompanies: CompanyAccess[];
+  userCompanies: { companyId: string; companyName: string; }[];
   hasRole: (role: AppRole) => Promise<boolean>;
   hasCompanyAccess: (companyId: string) => Promise<boolean>;
 }
@@ -29,303 +23,35 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userCompanies, setUserCompanies] = useState<CompanyAccess[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [roleLoading, setRoleLoading] = useState(false);
-  const navigate = useNavigate();
+  const { session, user, loading } = useAuthSession();
+  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies } = useUserRole();
+  const { signIn, signUp, signOut } = useAuthActions();
+  const { hasRole, hasCompanyAccess } = useRolePermissions();
 
-  // Function to check if user has a specific role
-  const hasRole = async (role: AppRole): Promise<boolean> => {
-    try {
-      if (!user) return false;
-      
-      const { data, error } = await supabase
-        .rpc('has_role', { _user_id: user.id, _role: role });
-        
-      if (error) {
-        console.error('Error checking role:', error);
-        return false;
-      }
-      
-      return data || false;
-    } catch (error) {
-      console.error('Error checking role:', error);
-      return false;
+  // Fetch user role when session changes
+  React.useEffect(() => {
+    if (user) {
+      fetchUserRoleAndCompanies(user.id);
     }
-  };
+  }, [user]);
 
-  // Function to check if user has access to a specific company
-  const hasCompanyAccess = async (companyId: string): Promise<boolean> => {
-    try {
-      if (!user) return false;
-      
-      // Superadmins have access to all companies
-      const isSuperadmin = await hasRole('superadmin');
-      if (isSuperadmin) return true;
-      
-      // For non-superadmins, check if they have access to this company in our local state
-      return userCompanies.some(company => company.companyId === companyId);
-    } catch (error) {
-      console.error('Error checking company access:', error);
-      return false;
-    }
-  };
-
-  // Fetch user role and companies they have access to
-  const fetchUserRoleAndCompanies = async (userId: string) => {
-    try {
-      console.log("Fetching user role and companies for:", userId);
-      setRoleLoading(true);
-      
-      // Fetch user role
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-
-      if (roleError && roleError.code !== 'PGRST116') {
-        console.error('Error fetching user role:', roleError);
-        setUserRole('user');
-      } else if (roleData) {
-        console.log("User role data:", roleData);
-        setUserRole(roleData.role);
-      } else {
-        setUserRole('user');
-      }
-      
-      // For non-superadmins, we won't fetch companies yet because we need to create the company_users table
-      // Once the table is created, this code will work
-      if (roleData?.role === 'superadmin') {
-        // Superadmins need to fetch all companies
-        const { data: allCompanies, error: allCompaniesError } = await supabase
-          .from('companies')
-          .select('id, name');
-          
-        if (allCompaniesError) {
-          console.error('Error fetching all companies:', allCompaniesError);
-        } else if (allCompanies) {
-          const formattedCompanies = allCompanies.map(company => ({
-            companyId: company.id,
-            companyName: company.name
-          }));
-          setUserCompanies(formattedCompanies);
-        }
-      } else {
-        // For now, other users won't have company access until we create the company_users table
-        setUserCompanies([]);
-      }
-    } catch (error) {
-      console.error('Error fetching user role and companies:', error);
-    } finally {
-      setRoleLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let mounted = true;
-    let initialSessionChecked = false;
-    
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("Auth state change:", event);
-        
-        if (!mounted) return;
-        
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        if (currentSession?.user) {
-          if (mounted) {
-            // Use setTimeout to avoid nested calls to Supabase API
-            setTimeout(() => {
-              if (mounted) {
-                fetchUserRoleAndCompanies(currentSession.user.id);
-              }
-            }, 0);
-          }
-        } else {
-          if (mounted) {
-            setUserRole(null);
-            setUserCompanies([]);
-          }
-        }
-        
-        // Mostrar mensagens de toast apenas em eventos específicos e apenas uma vez
-        if (event === 'SIGNED_IN' && !initialSessionChecked) {
-          toast({
-            title: "Login realizado com sucesso",
-            description: "Bem-vindo de volta!"
-          });
-        } else if (event === 'SIGNED_OUT') {
-          toast({
-            title: "Logout realizado com sucesso",
-            description: "Até breve!"
-          });
-        }
-      }
-    );
-
-    // Then check for existing session
-    const checkSession = async () => {
-      try {
-        console.log("Checking for existing session");
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-        
-        console.log("Session check result:", !!currentSession);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        initialSessionChecked = true;
-        
-        if (currentSession?.user) {
-          await fetchUserRoleAndCompanies(currentSession.user.id);
-        }
-      } catch (error) {
-        console.error("Error checking session:", error);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    checkSession();
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Consider the app as loading if we're fetching the user role
   const isLoading = loading || roleLoading;
 
-  const signIn = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        throw error;
-      }
-      
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        title: "Erro ao fazer login",
-        description: error.message || "Verifique suas credenciais e tente novamente",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signUp = async (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => {
-    try {
-      setLoading(true);
-      
-      // First create the user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
-      });
-      
-      if (authError) {
-        throw authError;
-      }
-      
-      // If role is specified, assign it to the user
-      if (authData.user && role) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: authData.user.id,
-            role: role
-          });
-          
-        if (roleError) {
-          console.error("Error assigning role:", roleError);
-          // Don't throw here, continue with the process
-        }
-        
-        // For now, we won't insert into company_users until we create the table
-        // Once the table is created, we can uncomment this code
-        /*
-        if (companyId && role !== 'superadmin') {
-          const { error: companyError } = await supabase
-            .from('company_users')
-            .insert({
-              user_id: authData.user.id,
-              company_id: companyId
-            });
-            
-          if (companyError) {
-            console.error("Error assigning company:", companyError);
-            // Don't throw here, continue with the process
-          }
-        }
-        */
-      }
-      
-      toast({
-        title: "Cadastro realizado com sucesso",
-        description: "O usuário já pode fazer login com suas credenciais"
-      });
-      
-      // For admin user creation, don't navigate away
-      if (!role) {
-        navigate('/auth/login');
-      }
-      
-      return authData.user;
-    } catch (error: any) {
-      toast({
-        title: "Erro ao criar conta",
-        description: error.message || "Verifique os dados informados e tente novamente",
-        variant: "destructive"
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/auth/login');
-    } catch (error: any) {
-      toast({
-        title: "Erro ao fazer logout",
-        description: error.message || "Tente novamente mais tarde",
-        variant: "destructive"
-      });
-    }
+  const value = {
+    session,
+    user,
+    signIn,
+    signUp,
+    signOut,
+    loading: isLoading,
+    userRole,
+    userCompanies,
+    hasRole,
+    hasCompanyAccess,
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      session, 
-      user, 
-      signIn, 
-      signUp, 
-      signOut, 
-      loading: isLoading, 
-      userRole,
-      userCompanies,
-      hasRole,
-      hasCompanyAccess
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
