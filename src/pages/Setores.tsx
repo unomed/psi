@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { FolderKanban, PlusCircle, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SectorForm } from "@/components/sectors/SectorForm";
-import { SectorCard } from "@/components/sectors/SectorCard";
+import { SectorCard, type SectorData } from "@/components/sectors/SectorCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
@@ -18,6 +19,10 @@ export default function Setores() {
   const filteredSectors = selectedCompany 
     ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
+
+  const handleCompanyChange = (value: string) => {
+    setSelectedCompany(value);
+  };
 
   const handleAddSector = async (data: Omit<SectorData, "id" | "companyId">) => {
     if (!selectedCompany) {
@@ -66,7 +71,7 @@ export default function Setores() {
               <SelectValue placeholder="Selecione uma empresa" />
             </SelectTrigger>
             <SelectContent>
-              {mockCompanies.map((company) => (
+              {companies.map((company) => (
                 <SelectItem key={company.id} value={company.id}>
                   {company.name}
                 </SelectItem>
