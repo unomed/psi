@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -66,7 +65,24 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
   });
 
   const handleSubmit = (values: z.infer<typeof employeeFormSchema>) => {
-    onSubmit(values);
+    const employeeData: EmployeeFormData = {
+      name: values.name,
+      cpf: values.cpf,
+      email: values.email || undefined,
+      phone: values.phone || undefined,
+      birth_date: values.birth_date ? values.birth_date.toISOString() : undefined,
+      gender: values.gender || undefined,
+      address: values.address || undefined,
+      start_date: values.start_date.toISOString(),
+      status: values.status,
+      special_conditions: values.special_conditions || undefined,
+      photo_url: values.photo_url || undefined,
+      company_id: values.company_id,
+      sector_id: values.sector_id,
+      role_id: values.role_id,
+    };
+    
+    onSubmit(employeeData);
   };
 
   return (
