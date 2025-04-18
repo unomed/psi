@@ -1,6 +1,7 @@
 
 import { Settings, Mail, Bell, Shield, Calendar, Gauge, Users } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import NotificationSettings from "@/components/settings/NotificationSettings";
 import { AssessmentCriteriaSettings } from "@/components/settings/AssessmentCriteriaSettings";
 import EmailTemplateSettings from "@/components/settings/EmailTemplateSettings";
