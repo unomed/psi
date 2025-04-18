@@ -21,18 +21,21 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   isLoading?: boolean;
+  meta?: Record<string, any>;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   isLoading,
+  meta,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    meta,
   });
 
   if (isLoading) {

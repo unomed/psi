@@ -18,7 +18,7 @@ export function RoleGrid({ roles, onEdit, onDelete, canEdit = true }: RoleGridPr
       meta={{
         onEdit: onEdit || (() => {}),
         onDelete: onDelete || (() => {}),
-        onView: () => {},
+        onView: (role: RoleData) => {},
         canEdit,
       }}
     />
