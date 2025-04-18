@@ -43,7 +43,13 @@ export default function PeriodicitySettings() {
   }, [settings, form]);
 
   function onSubmit(values: FormValues) {
-    updateSettings(values);
+    // Ensure all required properties are present
+    updateSettings({
+      defaultPeriodicity: values.defaultPeriodicity,
+      riskHighPeriodicity: values.riskHighPeriodicity,
+      riskMediumPeriodicity: values.riskMediumPeriodicity,
+      riskLowPeriodicity: values.riskLowPeriodicity
+    });
   }
 
   return (
