@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -92,9 +92,9 @@ export default function Funcoes() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Funções</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Funções Organizacionais</h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie funções, habilidades e perfis de risco psicossocial.
+            Gerencie as funções, habilidades e perfis de risco psicossocial da sua empresa.
           </p>
         </div>
         {canCreateRoles && (
