@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ export default function Funcoes() {
   const [canCreateRoles, setCanCreateRoles] = useState(false);
   
   useEffect(() => {
-    // Check if user can create roles (superadmin or admin)
     const checkPermissions = async () => {
       const isSuperAdminOrAdmin = userRole === 'superadmin' || userRole === 'admin';
       setCanCreateRoles(isSuperAdminOrAdmin);
