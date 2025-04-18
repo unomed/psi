@@ -142,7 +142,7 @@ export function AssessmentHandler() {
         assessmentResult={assessmentResult}
         onSubmitAssessment={handleSubmitAssessment}
         onCloseResult={handleCloseResult}
-        employeeName={getSelectedEmployeeName()}
+        employeeName={getSelectedEmployeeName(selectedEmployee)}
       />
       
       <ScheduleRecurringAssessmentDialog

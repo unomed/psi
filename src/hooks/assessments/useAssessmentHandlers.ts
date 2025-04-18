@@ -5,7 +5,7 @@ import { ChecklistResult, ChecklistTemplate, RecurrenceType, ScheduledAssessment
 import { saveScheduledAssessment } from "@/services/checklistService";
 import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
 import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
-import { getSelectedEmployeeName, handleSaveAssessment as saveAssessment, createGeneratedLink, calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
+import { getSelectedEmployeeName as getEmployeeName, handleSaveAssessment as saveAssessment, createGeneratedLink, calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
 
 export function useAssessmentHandlers({
   selectedEmployee,
@@ -98,6 +98,11 @@ export function useAssessmentHandlers({
   const handleCloseResult = () => {
     setIsResultDialogOpen(false);
     setAssessmentResult(null);
+  };
+
+  // Use the imported function but make it available with a simpler name
+  const getSelectedEmployeeName = (employeeId: string | null) => {
+    return getEmployeeName(employeeId);
   };
 
   const handleSaveAssessment = async () => {
