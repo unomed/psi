@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { mockCompanies } from "../mock/assessmentMockData";
+import { useCompanies } from "@/hooks/useCompanies";
 
 interface CompanySelectorProps {
   selectedCompany: string | null;
@@ -15,15 +15,21 @@ interface CompanySelectorProps {
 }
 
 export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySelectorProps) {
+  const { companies, isLoading } = useCompanies();
+
   return (
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>
-      <Select onValueChange={onCompanyChange} value={selectedCompany || undefined}>
+      <Select 
+        onValueChange={onCompanyChange} 
+        value={selectedCompany || undefined}
+        disabled={isLoading}
+      >
         <SelectTrigger id="company">
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
-          {mockCompanies.map((company) => (
+          {companies.map((company) => (
             <SelectItem key={company.id} value={company.id}>
               {company.name}
             </SelectItem>

@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { mockRoles } from "../mock/assessmentMockData";
+import { useRoles } from "@/hooks/useRoles";
 
 interface RoleSelectorProps {
   selectedSector: string | null;
@@ -20,8 +20,10 @@ export function RoleSelector({
   selectedRole, 
   onRoleChange 
 }: RoleSelectorProps) {
+  const { roles, isLoading } = useRoles();
+
   const filteredRoles = selectedSector 
-    ? mockRoles.filter(role => role.sectorId === selectedSector)
+    ? roles.filter(role => role.sectorId === selectedSector)
     : [];
 
   return (
@@ -30,7 +32,7 @@ export function RoleSelector({
       <Select 
         onValueChange={onRoleChange} 
         value={selectedRole || undefined}
-        disabled={!selectedSector}
+        disabled={!selectedSector || isLoading}
       >
         <SelectTrigger id="role">
           <SelectValue placeholder={selectedSector ? "Selecione uma função" : "Primeiro selecione um setor"} />

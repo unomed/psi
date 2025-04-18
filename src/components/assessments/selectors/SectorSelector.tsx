@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { mockSectors } from "../mock/assessmentMockData";
+import { useSectors } from "@/hooks/useSectors";
 
 interface SectorSelectorProps {
   selectedCompany: string | null;
@@ -20,8 +20,10 @@ export function SectorSelector({
   selectedSector, 
   onSectorChange 
 }: SectorSelectorProps) {
+  const { sectors, isLoading } = useSectors();
+
   const filteredSectors = selectedCompany 
-    ? mockSectors.filter(sector => sector.companyId === selectedCompany)
+    ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
 
   return (
@@ -30,7 +32,7 @@ export function SectorSelector({
       <Select 
         onValueChange={onSectorChange} 
         value={selectedSector || undefined}
-        disabled={!selectedCompany}
+        disabled={!selectedCompany || isLoading}
       >
         <SelectTrigger id="sector">
           <SelectValue placeholder={selectedCompany ? "Selecione um setor" : "Primeiro selecione uma empresa"} />
