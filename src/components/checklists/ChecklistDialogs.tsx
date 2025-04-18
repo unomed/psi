@@ -51,6 +51,7 @@ export function ChecklistDialogs({
               onSubmit={onSubmitTemplate} 
               existingTemplate={selectedTemplate}
               isEditing={isEditing}
+              onCancel={() => setIsFormDialogOpen(false)}
             />
           </div>
         </DialogContent>

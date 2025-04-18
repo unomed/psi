@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isSuperadmin = await hasRole('superadmin');
       if (isSuperadmin) return true;
       
-      // For non-superadmins, check company_users table
+      // For non-superadmins, check if they have access to this company in our local state
       return userCompanies.some(company => company.companyId === companyId);
     } catch (error) {
       console.error('Error checking company access:', error);
@@ -97,26 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserRole('user');
       }
       
-      // For non-superadmins, fetch companies they have access to
-      if (roleData?.role !== 'superadmin') {
-        const { data: companies, error: companiesError } = await supabase
-          .from('company_users')
-          .select(`
-            company_id,
-            companies:company_id (name)
-          `)
-          .eq('user_id', userId);
-        
-        if (companiesError) {
-          console.error('Error fetching user companies:', companiesError);
-        } else if (companies) {
-          const formattedCompanies = companies.map(item => ({
-            companyId: item.company_id,
-            companyName: item.companies?.name || 'Unknown Company'
-          }));
-          setUserCompanies(formattedCompanies);
-        }
-      } else {
+      // For non-superadmins, we won't fetch companies yet because we need to create the company_users table
+      // Once the table is created, this code will work
+      if (roleData?.role === 'superadmin') {
         // Superadmins need to fetch all companies
         const { data: allCompanies, error: allCompaniesError } = await supabase
           .from('companies')
@@ -131,6 +114,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }));
           setUserCompanies(formattedCompanies);
         }
+      } else {
+        // For now, other users won't have company access until we create the company_users table
+        setUserCompanies([]);
       }
     } catch (error) {
       console.error('Error fetching user role and companies:', error);
@@ -269,8 +255,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Don't throw here, continue with the process
         }
         
-        // If company_id is provided and the role is not superadmin,
-        // create entry in company_users table
+        // For now, we won't insert into company_users until we create the table
+        // Once the table is created, we can uncomment this code
+        /*
         if (companyId && role !== 'superadmin') {
           const { error: companyError } = await supabase
             .from('company_users')
@@ -284,6 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Don't throw here, continue with the process
           }
         }
+        */
       }
       
       toast({

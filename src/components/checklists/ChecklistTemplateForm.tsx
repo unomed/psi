@@ -1,6 +1,10 @@
+
 import { useState, useEffect } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import {
   Form,
@@ -24,26 +28,49 @@ import { Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 
+// Define a schema for the form
+const formSchema = z.object({
+  title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
+  description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
+  type: z.enum(["disc", "custom"]),
+  scaleType: z.enum(["binary", "likert", "numeric"]),
+  questions: z.array(z.object({
+    id: z.string(),
+    text: z.string().min(1, "A pergunta não pode estar vazia"),
+    type: z.string()
+  })).min(1, "Adicione pelo menos uma pergunta")
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 interface ChecklistTemplateFormProps {
   defaultValues?: any;
   onSubmit: (values: any) => void;
   onCancel: () => void;
+  existingTemplate?: any;
+  isEditing?: boolean;
 }
 
 export function ChecklistTemplateForm({ 
   defaultValues, 
   onSubmit, 
-  onCancel 
-}) {
+  onCancel,
+  existingTemplate,
+  isEditing = false
+}: ChecklistTemplateFormProps) {
   const { hasRole } = useAuth();
   const [canEditStandard, setCanEditStandard] = useState(false);
-  const [form, setForm] = useState({
-    title: defaultValues?.title || '',
-    description: defaultValues?.description || '',
-    type: defaultValues?.type || 'safety',
-    scaleType: defaultValues?.scaleType || 'binary',
-    questions: defaultValues?.questions || [],
-    is_standard: defaultValues?.is_standard || false,
+  
+  // Setup form with defaultValues or initialValues
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: defaultValues?.title || existingTemplate?.title || '',
+      description: defaultValues?.description || existingTemplate?.description || '',
+      type: defaultValues?.type || existingTemplate?.type || 'disc',
+      scaleType: defaultValues?.scaleType || existingTemplate?.scaleType || 'binary',
+      questions: defaultValues?.questions || existingTemplate?.questions || [],
+    }
   });
   
   // Check if user can edit standard templates
@@ -56,11 +83,10 @@ export function ChecklistTemplateForm({
     checkPermissions();
   }, [hasRole]);
   
-  // Add this at the beginning of your handleSubmit function
-  const handleSubmit = async (data) => {
+  const handleSubmit = async (data: FormValues) => {
     try {
       // Check if user is trying to edit a standard template
-      if (defaultValues?.is_standard && !canEditStandard) {
+      if ((existingTemplate?.is_standard || defaultValues?.is_standard) && !canEditStandard) {
         toast.error("Apenas superadmins podem editar modelos padrão");
         return;
       }
@@ -72,154 +98,161 @@ export function ChecklistTemplateForm({
         return;
       }
       
-      onSubmit(form);
+      onSubmit(data);
       
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Erro ao salvar checklist");
     }
   };
-  
-  const handleAddQuestion = () => {
-    setForm({
-      ...form,
-      questions: [...form.questions, { id: uuidv4(), text: '', type: 'text' }]
-    });
-  };
-
-  const handleQuestionChange = (id: string, field: string, value: string) => {
-    const updatedQuestions = form.questions.map(question => {
-      if (question.id === id) {
-        return { ...question, [field]: value };
-      }
-      return question;
-    });
-    setForm({ ...form, questions: updatedQuestions });
-  };
-
-  const handleDeleteQuestion = (id: string) => {
-    const updatedQuestions = form.questions.filter(question => question.id !== id);
-    setForm({ ...form, questions: updatedQuestions });
-  };
 
   return (
-    <Form>
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit(form);
-      }} className="space-y-4">
-        <FormField>
-          <FormItem>
-            <FormLabel>Título</FormLabel>
-            <FormControl>
-              <Input 
-                placeholder="Ex: Checklist de Segurança do Trabalho" 
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Título</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="Ex: Checklist de Segurança do Trabalho" 
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <FormField>
-          <FormItem>
-            <FormLabel>Descrição</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Descreva o objetivo e o escopo deste checklist" 
-                className="min-h-[100px]"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        </FormField>
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrição</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Descreva o objetivo e o escopo deste checklist" 
+                  className="min-h-[100px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField>
-            <FormItem>
-              <FormLabel>Tipo</FormLabel>
-              <Select value={form.type} onValueChange={(value) => setForm({ ...form, type: value })}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="safety">Segurança</SelectItem>
-                  <SelectItem value="ergonomics">Ergonomia</SelectItem>
-                  <SelectItem value="psychosocial">Psicossocial</SelectItem>
-                  <SelectItem value="environmental">Ambiental</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="disc">DISC</SelectItem>
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          <FormField>
-            <FormItem>
-              <FormLabel>Escala</FormLabel>
-              <Select value={form.scaleType} onValueChange={(value) => setForm({ ...form, scaleType: value })}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a escala" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="binary">Sim/Não</SelectItem>
-                  <SelectItem value="likert">Likert (1-5)</SelectItem>
-                  <SelectItem value="numeric">Numérico</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          </FormField>
+          <FormField
+            control={form.control}
+            name="scaleType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Escala</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a escala" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="binary">Sim/Não</SelectItem>
+                    <SelectItem value="likert">Likert (1-5)</SelectItem>
+                    <SelectItem value="numeric">Numérico</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <FormField>
-          <FormItem>
-            <FormLabel>Perguntas</FormLabel>
-            <FormDescription>
-              Adicione as perguntas do seu checklist.
-            </FormDescription>
-            <FormControl>
-              <Accordion type="multiple" className="w-full">
-                {form.questions.map((question, index) => (
-                  <AccordionItem value={question.id} key={question.id}>
-                    <AccordionTrigger>
-                      {index + 1}. {question.text || "Nova Pergunta"}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid grid-cols-1 gap-2">
-                        <Input
-                          type="text"
-                          placeholder="Digite a pergunta"
-                          value={question.text}
-                          onChange={(e) => handleQuestionChange(question.id, 'text', e.target.value)}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteQuestion(question.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir Pergunta
-                        </Button>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </FormControl>
-            <FormMessage />
-            <Button type="button" variant="outline" onClick={handleAddQuestion} className="mt-2">
-              Adicionar Pergunta
-            </Button>
-          </FormItem>
-        </FormField>
+        <FormField
+          control={form.control}
+          name="questions"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Perguntas</FormLabel>
+              <FormDescription>
+                Adicione as perguntas do seu checklist.
+              </FormDescription>
+              <FormControl>
+                <div>
+                  <Accordion type="multiple" className="w-full">
+                    {field.value.map((question, index) => (
+                      <AccordionItem value={question.id} key={question.id}>
+                        <AccordionTrigger>
+                          {index + 1}. {question.text || "Nova Pergunta"}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="grid grid-cols-1 gap-2">
+                            <Input
+                              type="text"
+                              placeholder="Digite a pergunta"
+                              value={question.text}
+                              onChange={(e) => {
+                                const updatedQuestions = [...field.value];
+                                updatedQuestions[index].text = e.target.value;
+                                field.onChange(updatedQuestions);
+                              }}
+                            />
+                            <Button 
+                              type="button" 
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                const updatedQuestions = field.value.filter((_, i) => i !== index);
+                                field.onChange(updatedQuestions);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir Pergunta
+                            </Button>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              </FormControl>
+              <FormMessage />
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  field.onChange([...field.value, { id: uuidv4(), text: '', type: 'text' }]);
+                }} 
+                className="mt-2"
+              >
+                Adicionar Pergunta
+              </Button>
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-end gap-4">
           <Button type="button" variant="outline" onClick={onCancel}>
