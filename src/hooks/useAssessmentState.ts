@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types";
 import { toast } from "sonner";
 import { saveScheduledAssessment } from "@/services/checklistService";
 import { mockEmployees } from "@/components/assessments/AssessmentSelectionForm";

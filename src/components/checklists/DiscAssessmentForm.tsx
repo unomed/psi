@@ -5,7 +5,7 @@ import {
   ChecklistTemplate, 
   ChecklistResult, 
   DiscFactorType 
-} from "@/types/checklist";
+} from "@/types";
 import { QuestionStep } from "./assessment/QuestionStep";
 import { CompletionStep } from "./assessment/CompletionStep";
 import { AssessmentNavigation } from "./assessment/AssessmentNavigation";

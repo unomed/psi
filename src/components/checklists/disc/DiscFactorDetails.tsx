@@ -1,5 +1,5 @@
 
-import { DiscFactor } from "@/types/checklist";
+import { DiscFactor } from "@/types";
 import { DiscFactorCard } from "@/components/checklists/DiscFactorCard";
 import { discFactors } from "./DiscFactorsData";
 

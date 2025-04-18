@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScaleType } from "@/types/checklist";
+import { ScaleType } from "@/types";
 
 interface ScaleTypeSelectorProps {
   value: ScaleType;

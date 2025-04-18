@@ -1,4 +1,5 @@
-import { ScheduledAssessment, AssessmentStatus, RecurrenceType, EmailTemplate } from "@/types";
+
+import { ScheduledAssessment, AssessmentStatus, RecurrenceType } from "@/types";
 import { mockEmployees } from "./AssessmentSelectionForm";
 
 // Helper function to update a scheduled assessment
@@ -92,16 +93,8 @@ export const sendAssessmentEmail = async (
   }
 };
 
-// Types for email templates
-export interface EmailTemplate {
-  id: string;
-  name: string;
-  subject: string;
-  body: string;
-  description?: string;
-}
-
-// Function to apply template variables
+// Types for email templates (using the imported type instead of redefining)
+// Apply template variables
 export const applyTemplateVariables = (
   template: string, 
   variables: { [key: string]: string }
@@ -119,7 +112,7 @@ export const applyTemplateVariables = (
 export const getFilledEmailTemplate = (
   templateId: string,
   variables: { [key: string]: string },
-  templates: EmailTemplate[]
+  templates: import("@/types").EmailTemplate[]
 ): { subject: string; body: string } | null => {
   const template = templates.find(t => t.id === templateId);
   

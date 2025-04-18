@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { ScheduledAssessment } from "@/types/checklist";
+import { ScheduledAssessment } from "@/types";
 import { 
   fetchScheduledAssessments,
   saveScheduledAssessment,

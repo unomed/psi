@@ -2,7 +2,7 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DiscFactorType, DiscQuestion } from "@/types/checklist";
+import { DiscFactorType, DiscQuestion } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface QuestionListProps {

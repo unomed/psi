@@ -1,5 +1,4 @@
-
-import { DiscFactor, DiscFactorType } from "@/types/checklist";
+import { DiscFactor, DiscFactorType } from "@/types";
 
 // DISC factor explanations
 export const discFactors: Record<DiscFactorType, DiscFactor> = {

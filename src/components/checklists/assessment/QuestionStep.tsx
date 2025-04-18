@@ -1,10 +1,8 @@
-
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DiscQuestion } from "@/types/checklist";
+import { DiscQuestion, ScaleType } from "@/types";
 import { ProgressBar } from "./ProgressBar";
-import { ScaleType } from "@/types/checklist";
 
 interface QuestionStepProps {
   question: DiscQuestion;

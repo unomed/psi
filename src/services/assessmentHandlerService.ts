@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types";
 import { saveScheduledAssessment } from "@/services/checklistService";
 import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
 

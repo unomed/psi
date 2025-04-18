@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { DiscQuestion, ChecklistTemplate, ScaleType } from "@/types/checklist";
+import { DiscQuestion, ChecklistTemplate, ScaleType } from "@/types";
 import { QuestionForm } from "./form/QuestionForm";
 import { QuestionList } from "./form/QuestionList";
 import { ChecklistBasicInfo } from "./form/ChecklistBasicInfo";
@@ -71,7 +71,7 @@ export function ChecklistTemplateForm({
     }
 
     // Create unique IDs for each question
-    const questionsWithIds = questions.map((q) => ({
+    const questionsWithIds: DiscQuestion[] = questions.map((q) => ({
       ...q,
       id: `q-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
     }));

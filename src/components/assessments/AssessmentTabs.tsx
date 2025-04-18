@@ -1,7 +1,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { ChecklistTemplate, ScheduledAssessment } from "@/types/checklist";
+import { ChecklistTemplate, ScheduledAssessment } from "@/types";
 import { ScheduledAssessmentsList } from "@/components/assessments/ScheduledAssessmentsList";
 
 interface AssessmentTabsProps {

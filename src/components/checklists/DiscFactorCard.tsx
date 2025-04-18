@@ -1,6 +1,6 @@
 
 import { InfoIcon } from "lucide-react";
-import { DiscFactor } from "@/types/checklist";
+import { DiscFactor } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { getFactorBackgroundColor, getFactorColor } from "./disc/DiscFactorsData";

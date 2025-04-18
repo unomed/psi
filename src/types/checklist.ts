@@ -29,3 +29,8 @@ export interface ChecklistResult {
   dominantFactor: DiscFactorType;
   completedAt: Date;
 }
+
+// Re-export types from disc and scale that are used with checklist
+export type { DiscFactorType, DiscQuestion } from "./disc";
+export type { ScaleType } from "./scale";
+export { scaleTypeToDbScaleType } from "./scale";

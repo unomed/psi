@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChecklistResult, ChecklistTemplate, ScheduledAssessment } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate, ScheduledAssessment } from "@/types";
 
 export function useAssessmentDialogs() {
   const [isAssessmentDialogOpen, setIsAssessmentDialogOpen] = useState(false);

@@ -1,4 +1,3 @@
-
 import { 
   Form, 
   FormControl, 
@@ -13,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { UseFormReturn } from "react-hook-form";
 import { ScaleTypeSelector } from "@/components/checklists/ScaleTypeSelector";
-import { ScaleType } from "@/types/checklist";
+import { ScaleType } from "@/types";
 
 interface ChecklistBasicInfoProps {
   form: UseFormReturn<{

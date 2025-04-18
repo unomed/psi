@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { ChecklistTemplate, RecurrenceType } from "@/types/checklist";
+import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
 import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
 import { saveScheduledAssessment } from "@/services/checklistService";

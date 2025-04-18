@@ -8,7 +8,7 @@ import {
   ScaleType,
   scaleTypeToDbScaleType,
   ScheduledAssessment
-} from "@/types/checklist";
+} from "@/types";
 import { Database } from "@/integrations/supabase/types";
 
 // Define types from Supabase that we need
