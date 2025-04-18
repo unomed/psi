@@ -2,7 +2,10 @@
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
 import { useScheduleOperations } from "./useScheduleOperations";
-import { ScheduledAssessment, ChecklistTemplate } from "@/types/checklist";
+import { ScheduledAssessment, ChecklistTemplate, ChecklistResult } from "@/types/checklist";
+import { createAssessmentResult, getSelectedEmployeeName as getEmployeeName } from "@/services/assessmentHandlerService";
+import { toast } from "sonner";
+import { handleSaveAssessment as saveAssessment } from "@/services/assessmentHandlerService";
 
 export function useAssessmentHandlers({
   selectedEmployee,
@@ -76,12 +79,39 @@ export function useAssessmentHandlers({
     setAssessmentResult(null);
   };
 
+  // Add the missing functions
+  const handleSaveAssessment = async () => {
+    return await saveAssessment(selectedEmployee, selectedTemplate);
+  };
+
+  const handleSubmitAssessment = (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
+    try {
+      const result = createAssessmentResult(resultData);
+      setAssessmentResult(result);
+      setIsAssessmentDialogOpen(false);
+      setIsResultDialogOpen(true);
+      return result;
+    } catch (error) {
+      console.error("Error submitting assessment:", error);
+      toast.error("Erro ao enviar avaliação.");
+      return null;
+    }
+  };
+
+  const getSelectedEmployeeName = (employeeId: string | null) => {
+    return getEmployeeName(employeeId);
+  };
+
   return {
     ...basicActions,
     ...linkOperations,
     ...scheduleOperations,
     handleShareAssessment,
     handleCloseResult,
-    handleSendEmail
+    handleSendEmail,
+    // Add the missing functions to the return object
+    handleSaveAssessment,
+    handleSubmitAssessment,
+    getSelectedEmployeeName
   };
 }
