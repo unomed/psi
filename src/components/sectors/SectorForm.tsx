@@ -101,7 +101,9 @@ export function SectorForm({ onSubmit, defaultValues }: SectorFormProps) {
         />
 
         <div className="flex justify-end">
-          <Button type="submit">Salvar Setor</Button>
+          <Button type="submit">
+            Salvar Setor
+          </Button>
         </div>
       </form>
     </Form>
