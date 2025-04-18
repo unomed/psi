@@ -1,110 +1,105 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useCompanies } from "@/hooks/useCompanies";
-import { useSectors } from "@/hooks/useSectors";
-import { useRoles } from "@/hooks/useRoles";
-import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RoleForm } from "@/components/roles/RoleForm";
+import { RoleGrid } from "@/components/roles/RoleGrid";
 import { EmptyRoleState } from "@/components/roles/EmptyRoleState";
 import { RoleCompanySelect } from "@/components/roles/RoleCompanySelect";
-import { RoleGrid } from "@/components/roles/RoleGrid";
-import type { RoleData } from "@/components/roles/RoleCard";
+import { useRoles } from "@/hooks/useRoles";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  
-  const { companies } = useCompanies();
-  const { sectors } = useSectors();
   const { roles, isLoading, createRole } = useRoles();
-
-  // Filter roles based on selected company and sector
-  const filteredRoles = selectedSector 
-    ? roles.filter(role => role.sectorId === selectedSector && role.companyId === selectedCompany)
-    : [];
-
-  const handleAddRole = async (data: Omit<RoleData, "id" | "companyId" | "sectorId">) => {
-    if (!selectedCompany || !selectedSector) {
-      toast.error("Selecione uma empresa e um setor");
-      return;
-    }
+  const { hasRole, userRole } = useAuth();
+  const [canCreateRoles, setCanCreateRoles] = useState(false);
+  
+  useEffect(() => {
+    // Check if user can create roles (superadmin or admin)
+    const checkPermissions = async () => {
+      const isSuperAdminOrAdmin = userRole === 'superadmin' || userRole === 'admin';
+      setCanCreateRoles(isSuperAdminOrAdmin);
+    };
     
+    checkPermissions();
+  }, [userRole]);
+
+  const filteredRoles = roles?.filter(role => 
+    !selectedCompany || role.companyId === selectedCompany
+  );
+
+  const handleCreateRole = async (values) => {
     try {
+      if (!canCreateRoles) {
+        toast.error("Você não tem permissão para criar funções");
+        return;
+      }
+      
+      if (!selectedCompany) {
+        toast.error("Selecione uma empresa");
+        return;
+      }
+
       await createRole.mutateAsync({
-        ...data,
+        ...values,
         companyId: selectedCompany,
-        sectorId: selectedSector
+        sectorId: values.sectorId || null,
       });
+
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error creating role:", error);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Funções</h1>
           <p className="text-muted-foreground mt-2">
-            Descrições de funções e análise de riscos psicossociais associados.
+            Gerencie funções, habilidades e perfis de risco psicossocial.
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nova Função
-        </Button>
+        {canCreateRoles && (
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Nova Função
+          </Button>
+        )}
       </div>
-      
-      <RoleCompanySelect
-        companies={companies}
-        selectedCompany={selectedCompany}
-        selectedSector={selectedSector}
-        sectors={sectors}
-        onCompanyChange={setSelectedCompany}
-        onSectorChange={setSelectedSector}
+
+      <RoleCompanySelect 
+        value={selectedCompany}
+        onChange={setSelectedCompany}
       />
-      
-      {!selectedCompany || !selectedSector ? (
-        <EmptyRoleState 
-          noCompanySelected={!selectedCompany}
-          noSectorSelected={!selectedSector}
-          onAddClick={() => setIsDialogOpen(true)}
-        />
-      ) : filteredRoles.length === 0 ? (
-        <EmptyRoleState 
-          noCompanySelected={false}
-          noSectorSelected={false}
-          onAddClick={() => setIsDialogOpen(true)}
-        />
-      ) : (
+
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      ) : filteredRoles && filteredRoles.length > 0 ? (
         <RoleGrid 
           roles={filteredRoles}
-          onRoleClick={() => toast.info("Edição de função será implementada em breve!")}
+          canEdit={canCreateRoles}
+        />
+      ) : (
+        <EmptyRoleState 
+          onCreateClick={() => canCreateRoles && setIsDialogOpen(true)}
+          canCreate={canCreateRoles}
         />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Cadastro de Função</DialogTitle>
-            <DialogDescription>
-              Preencha os dados da função e as habilidades/competências necessárias.
-            </DialogDescription>
+            <DialogTitle>Nova Função</DialogTitle>
           </DialogHeader>
-          <RoleForm onSubmit={handleAddRole} />
+          <RoleForm onSubmit={handleCreateRole} />
         </DialogContent>
       </Dialog>
     </div>

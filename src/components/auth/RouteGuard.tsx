@@ -5,9 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 interface RouteGuardProps {
   children: React.ReactNode;
   allowedRoles?: string[];
+  requireCompanyAccess?: string;
 }
 
-export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
+export function RouteGuard({ children, allowedRoles, requireCompanyAccess }: RouteGuardProps) {
   const { user, loading, userRole } = useAuth();
   const location = useLocation();
 
@@ -26,17 +27,19 @@ export function RouteGuard({ children, allowedRoles }: RouteGuardProps) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Verificação de permissão de função apenas se allowedRoles estiver definido
+  // Role-based access check if allowedRoles is provided
   if (allowedRoles && allowedRoles.length > 0) {
     const hasRole = userRole && allowedRoles.includes(userRole);
     
     console.log("RouteGuard - Role check:", { allowedRoles, userRole, hasRole });
     
     if (!hasRole) {
-      // Redirecionar para a página inicial (dashboard)
+      // Redirect to the homepage (dashboard)
       return <Navigate to="/" replace />;
     }
   }
 
+  // Company-based access check will be added in component logic
+  
   return <>{children}</>;
 }
