@@ -8,10 +8,18 @@ export function useRolePermissions() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
+      // Use type assertion to match the database's expected type
+      const databaseRole = role === 'user' ? null : role as "superadmin" | "admin" | "evaluator";
+      
+      // If the requested role is 'user', we simply check if they're authenticated
+      if (role === 'user') {
+        return true; // All authenticated users have at least 'user' role
+      }
+      
       const { data, error } = await supabase
         .rpc('has_role', { 
           _user_id: user.id, 
-          _role: role 
+          _role: databaseRole 
         });
         
       if (error) {
