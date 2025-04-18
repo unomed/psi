@@ -1,14 +1,16 @@
+
 import { useState } from "react";
-import { UserRound, PlusCircle, Building2, FolderKanban } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RoleCard } from "@/components/roles/RoleCard";
-import { RoleForm } from "@/components/roles/RoleForm";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import { useRoles } from "@/hooks/useRoles";
 import { toast } from "sonner";
+import { RoleForm } from "@/components/roles/RoleForm";
+import { EmptyRoleState } from "@/components/roles/EmptyRoleState";
+import { RoleCompanySelect } from "@/components/roles/RoleCompanySelect";
+import { RoleGrid } from "@/components/roles/RoleGrid";
 import type { RoleData } from "@/components/roles/RoleCard";
 
 export default function Funcoes() {
@@ -19,11 +21,6 @@ export default function Funcoes() {
   const { companies } = useCompanies();
   const { sectors } = useSectors();
   const { roles, isLoading, createRole } = useRoles();
-
-  // Filter sectors based on selected company
-  const filteredSectors = selectedCompany 
-    ? sectors.filter(sector => sector.companyId === selectedCompany)
-    : [];
 
   // Filter roles based on selected company and sector
   const filteredRoles = selectedSector 
@@ -71,91 +68,32 @@ export default function Funcoes() {
         </Button>
       </div>
       
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="space-y-4 w-full md:w-auto md:space-y-0 md:space-x-4 md:flex md:items-center">
-          <div className="w-full md:w-64">
-            <Select onValueChange={(companyId) => setSelectedCompany(companyId)} value={selectedCompany || undefined}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma empresa" />
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {selectedCompany && (
-            <div className="w-full md:w-64">
-              <Select onValueChange={(sectorId) => setSelectedSector(sectorId)} value={selectedSector || undefined}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um setor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredSectors.map((sector) => (
-                    <SelectItem key={sector.id} value={sector.id}>
-                      {sector.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-      </div>
+      <RoleCompanySelect
+        companies={companies}
+        selectedCompany={selectedCompany}
+        selectedSector={selectedSector}
+        sectors={sectors}
+        onCompanyChange={setSelectedCompany}
+        onSectorChange={setSelectedSector}
+      />
       
-      {!selectedCompany ? (
-        <div className="flex items-center justify-center h-64 border rounded-lg">
-          <div className="text-center">
-            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Selecione uma empresa</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Para visualizar e gerenciar funções, primeiro selecione uma empresa no menu acima.
-            </p>
-          </div>
-        </div>
-      ) : !selectedSector ? (
-        <div className="flex items-center justify-center h-64 border rounded-lg">
-          <div className="text-center">
-            <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Selecione um setor</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Para visualizar e gerenciar funções, selecione um setor da empresa no menu acima.
-            </p>
-          </div>
-        </div>
+      {!selectedCompany || !selectedSector ? (
+        <EmptyRoleState 
+          noCompanySelected={!selectedCompany}
+          noSectorSelected={!selectedSector}
+          onAddClick={() => setIsDialogOpen(true)}
+        />
       ) : filteredRoles.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border rounded-lg">
-          <div className="text-center">
-            <UserRound className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Nenhuma função cadastrada</h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Cadastre as funções existentes neste setor com as habilidades requeridas
-              e riscos psicossociais associados.
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Cadastrar Função
-            </Button>
-          </div>
-        </div>
+        <EmptyRoleState 
+          noCompanySelected={false}
+          noSectorSelected={false}
+          onAddClick={() => setIsDialogOpen(true)}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRoles.map((role) => (
-            <RoleCard 
-              key={role.id} 
-              role={role} 
-              onClick={() => toast.info("Edição de função será implementada em breve!")}
-            />
-          ))}
-        </div>
+        <RoleGrid 
+          roles={filteredRoles}
+          onRoleClick={() => toast.info("Edição de função será implementada em breve!")}
+        />
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
