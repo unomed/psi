@@ -127,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let initialSessionChecked = false;
     
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -154,7 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
         
-        if (event === 'SIGNED_IN') {
+        // Mostrar mensagens de toast apenas em eventos específicos e apenas uma vez
+        if (event === 'SIGNED_IN' && !initialSessionChecked) {
           toast({
             title: "Login realizado com sucesso",
             description: "Bem-vindo de volta!"
@@ -179,6 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("Session check result:", !!currentSession);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+        initialSessionChecked = true;
         
         if (currentSession?.user) {
           await fetchUserRoleAndCompanies(currentSession.user.id);

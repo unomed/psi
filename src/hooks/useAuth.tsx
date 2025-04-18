@@ -1,6 +1,5 @@
 
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth as useAuthContext } from '@/contexts/AuthContext';
 
 // Use a specific type for roles matching the Supabase enum
