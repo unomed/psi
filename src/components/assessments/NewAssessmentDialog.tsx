@@ -41,23 +41,30 @@ export function NewAssessmentDialog({
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
   const [dateError, setDateError] = useState<boolean>(false);
 
-  // Get the employee's role risk level and corresponding periodicity
+  // Obter o nível de risco do funcionário e a periodicidade correspondente
   const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
   const suggestedPeriodicity = usePeriodicityForRisk(employeeRiskLevel);
   
-  // Add state for company, sector, and role selection
+  // Adicionar estado para empresa, setor e função
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-  // Reset date error when date changes
+  // Verificar e inicializar a data ao abrir o diálogo
+  useEffect(() => {
+    if (isOpen && !scheduledDate) {
+      setScheduledDate(new Date());
+    }
+  }, [isOpen]);
+
+  // Resetar erro de data quando a data muda
   useEffect(() => {
     if (scheduledDate) {
       setDateError(false);
     }
   }, [scheduledDate]);
 
-  // Handle company change
+  // Lidar com a mudança de empresa
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompany(companyId);
     setSelectedSector(null);
@@ -65,26 +72,29 @@ export function NewAssessmentDialog({
     onEmployeeSelect("");
   };
 
-  // Handle sector change
+  // Lidar com a mudança de setor
   const handleSectorChange = (sectorId: string) => {
     setSelectedSector(sectorId);
     setSelectedRole(null);
     onEmployeeSelect("");
   };
 
-  // Handle role change
+  // Lidar com a mudança de função
   const handleRoleChange = (roleId: string) => {
     setSelectedRole(roleId);
     onEmployeeSelect("");
   };
 
   const handleSave = async () => {
+    console.log("Tentando salvar com data:", scheduledDate);
+    
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de avaliação");
       return;
     }
 
     if (!scheduledDate) {
+      console.log("Data não selecionada, configurando erro");
       setDateError(true);
       toast.error("Selecione uma data para a avaliação");
       return;
@@ -96,7 +106,7 @@ export function NewAssessmentDialog({
     }
   };
 
-  // Reset all selections when dialog closes
+  // Resetar todas as seleções quando o diálogo fecha
   const handleClose = () => {
     setSelectedCompany(null);
     setSelectedSector(null);
@@ -139,8 +149,16 @@ export function NewAssessmentDialog({
               <Label htmlFor="scheduledDate">Data da Avaliação</Label>
               <DatePicker 
                 date={scheduledDate} 
-                onSelect={setScheduledDate} 
-                disabled={(date) => date < new Date()} 
+                onSelect={(date) => {
+                  console.log("Data selecionada:", date);
+                  setScheduledDate(date);
+                  if (date) setDateError(false);
+                }} 
+                disabled={(date) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return date < today;
+                }} 
                 allowInput={true}
               />
               {dateError && (
@@ -180,7 +198,7 @@ export function NewAssessmentDialog({
           <div className="flex justify-end">
             <Button
               onClick={handleSave}
-              disabled={!selectedEmployee || !selectedTemplate || !scheduledDate}
+              disabled={!selectedEmployee || !selectedTemplate}
             >
               <Save className="mr-2 h-4 w-4" />
               Salvar Avaliação

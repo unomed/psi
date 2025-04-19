@@ -24,21 +24,30 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
   const [inputValue, setInputValue] = React.useState(date ? format(date, 'dd/MM/yyyy') : '');
   const [isOpen, setIsOpen] = React.useState(false);
 
+  // Garantir que a data inicial seja definida corretamente
+  React.useEffect(() => {
+    if (date) {
+      setInputValue(format(date, 'dd/MM/yyyy'));
+    } else {
+      setInputValue('');
+    }
+  }, [date]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
     
-    // Try to parse the date from the input
+    // Tentar analisar a data do input
     const parts = value.split('/');
     if (parts.length === 3) {
       const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in Date
+      const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado em Date
       const year = parseInt(parts[2], 10);
       
       if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
         const parsedDate = new Date(year, month, day);
         
-        // Check if it's a valid date (some combinations like 31/02/2023 would create a valid Date object but with wrong month)
+        // Verificar se é uma data válida
         if (
           parsedDate.getDate() === day &&
           parsedDate.getMonth() === month &&
@@ -60,14 +69,6 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
     }
     setIsOpen(false);
   };
-
-  React.useEffect(() => {
-    if (date) {
-      setInputValue(format(date, 'dd/MM/yyyy'));
-    } else {
-      setInputValue('');
-    }
-  }, [date]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

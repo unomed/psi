@@ -17,13 +17,30 @@ export function useAssessmentSaveOperations() {
     recurrenceType: RecurrenceType,
     phoneNumber: string = ""
   ) => {
+    // Validação detalhada com logs para depuração
+    console.log("Salvando agendamento:", {
+      selectedEmployee,
+      templateId: selectedTemplate?.id,
+      scheduledDate,
+      recurrenceType
+    });
+    
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo.");
       return null;
     }
     
+    // Verificação mais rigorosa da data
     if (!scheduledDate) {
+      console.error("Data de agendamento ausente ou inválida");
       toast.error("Selecione uma data para a avaliação.");
+      return null;
+    }
+    
+    // Verificar se a data é válida (não é um objeto Date inválido)
+    if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
+      console.error("Data inválida detectada:", scheduledDate);
+      toast.error("A data selecionada é inválida. Por favor, selecione novamente.");
       return null;
     }
     
@@ -35,6 +52,7 @@ export function useAssessmentSaveOperations() {
       }
       
       const nextDate = calculateNextScheduledDate(scheduledDate, recurrenceType);
+      console.log("Próxima data calculada:", nextDate);
       
       const newScheduledAssessment: Omit<ScheduledAssessment, "id"> = {
         employeeId: selectedEmployee,
@@ -50,6 +68,7 @@ export function useAssessmentSaveOperations() {
       };
       
       const savedId = await saveScheduledAssessment(newScheduledAssessment);
+      console.log("Avaliação salva com ID:", savedId);
       
       const assessmentWithId: ScheduledAssessment = {
         ...newScheduledAssessment,
