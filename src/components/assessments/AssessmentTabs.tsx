@@ -42,20 +42,19 @@ export function AssessmentTabs() {
 
       // Transform the data to match our ScheduledAssessment type
       return data.map(item => {
-        // Safely extract employee data with null safety
-        const employeeInfo = item.employees && 
-          typeof item.employees === 'object' && 
-          !('error' in item.employees) ? 
-          {
-            name: item.employees.name ?? 'Funcionário não encontrado',
-            email: item.employees.email ?? '',
-            phone: item.employees.phone ?? ''
-          } : 
-          {
-            name: 'Funcionário não encontrado',
-            email: '',
-            phone: ''
-          };
+        // Create a default empty employee object for safe access
+        const employeeInfo = {
+          name: 'Funcionário não encontrado',
+          email: '',
+          phone: ''
+        };
+
+        // Only try to extract employee data if it exists and is an object
+        if (item.employees && typeof item.employees === 'object') {
+          employeeInfo.name = item.employees.name || 'Funcionário não encontrado';
+          employeeInfo.email = item.employees.email || '';
+          employeeInfo.phone = item.employees.phone || '';
+        }
 
         return {
           id: item.id,
