@@ -1,6 +1,7 @@
 
 import { getPeriodicitySettings } from "@/utils/assessmentUtils";
 import { useQuery } from "@tanstack/react-query";
+import { useEmployees } from "@/hooks/useEmployees";
 
 export function useAssessmentEmployeeOperations() {
   const { data: periodicitySettings } = useQuery({
@@ -8,9 +9,13 @@ export function useAssessmentEmployeeOperations() {
     queryFn: getPeriodicitySettings
   });
 
+  const { employees } = useEmployees();
+
   const getSelectedEmployeeName = (employeeId: string | null) => {
-    // TODO: Implement actual employee name lookup
-    return "TODO";
+    if (!employeeId) return "";
+    
+    const employee = employees?.find(emp => emp.id === employeeId);
+    return employee?.name || "Funcionário não encontrado";
   };
 
   return {

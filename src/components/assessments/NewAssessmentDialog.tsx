@@ -9,6 +9,7 @@ import { SectorSelector } from "./selectors/SectorSelector";
 import { RoleSelector } from "./selectors/RoleSelector";
 import { EmployeeSelector } from "./selectors/EmployeeSelector";
 import { TemplateSelector } from "./selectors/TemplateSelector";
+import { toast } from "sonner";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ interface NewAssessmentDialogProps {
   onSendEmail: () => void;
   onEmployeeSelect: (employeeId: string) => void;
   onTemplateSelect: (templateId: string) => void;
-  onSave: () => Promise<boolean> | boolean; // Modified to return boolean
+  onSave: () => Promise<boolean> | boolean; // Returns boolean
 }
 
 export function NewAssessmentDialog({
@@ -66,13 +67,20 @@ export function NewAssessmentDialog({
   };
 
   const handleSave = async () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist.");
+      return;
+    }
+    
     try {
       const result = await onSave();
       if (result) {
         setIsSaved(true);
+        toast.success("Avaliação salva com sucesso!");
       }
     } catch (error) {
       console.error("Error saving assessment:", error);
+      toast.error("Erro ao salvar avaliação");
     }
   };
 
@@ -149,7 +157,10 @@ export function NewAssessmentDialog({
               <>
                 <Button
                   variant="outline"
-                  onClick={onGenerateLink}
+                  onClick={() => {
+                    onGenerateLink();
+                    handleClose();
+                  }}
                 >
                   <Link2 className="mr-2 h-4 w-4" />
                   Gerar Link
@@ -157,14 +168,20 @@ export function NewAssessmentDialog({
                 
                 <Button
                   variant="outline"
-                  onClick={onScheduleAssessment}
+                  onClick={() => {
+                    onScheduleAssessment();
+                    handleClose();
+                  }}
                 >
                   <CalendarClock className="mr-2 h-4 w-4" />
                   Agendar
                 </Button>
                 
                 <Button
-                  onClick={onSendEmail}
+                  onClick={() => {
+                    onSendEmail();
+                    handleClose();
+                  }}
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Enviar por Email

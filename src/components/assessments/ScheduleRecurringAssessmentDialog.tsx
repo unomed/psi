@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RecurrenceType, ChecklistTemplate } from "@/types";
-import { mockEmployees } from "./AssessmentSelectionForm";
+import { useEmployees } from "@/hooks/useEmployees";
+import { toast } from "sonner";
 
 interface ScheduleRecurringAssessmentDialogProps {
   isOpen: boolean;
@@ -43,20 +44,20 @@ export function ScheduleRecurringAssessmentDialog({
 }: ScheduleRecurringAssessmentDialogProps) {
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const { employees, isLoading } = useEmployees();
   
-  const getSelectedEmployeeName = () => {
-    if (!selectedEmployeeId) return "";
-    const employee = mockEmployees.find(emp => emp.id === selectedEmployeeId);
-    return employee?.name || "";
+  const getSelectedEmployee = () => {
+    if (!selectedEmployeeId) return null;
+    return employees?.find(emp => emp.id === selectedEmployeeId) || null;
   };
 
-  const getSelectedEmployeeEmail = () => {
-    if (!selectedEmployeeId) return "";
-    const employee = mockEmployees.find(emp => emp.id === selectedEmployeeId);
-    return employee?.email || "";
-  };
+  const selectedEmployee = getSelectedEmployee();
 
   const handleSave = () => {
+    if (!selectedEmployee) {
+      toast.error("Funcionário não encontrado");
+      return;
+    }
     onSave(recurrenceType, phoneNumber);
   };
 
@@ -91,11 +92,23 @@ export function ScheduleRecurringAssessmentDialog({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Funcionário</Label>
-            <p className="text-sm">{getSelectedEmployeeName()}</p>
+            {isLoading ? (
+              <p className="text-sm">Carregando...</p>
+            ) : selectedEmployee ? (
+              <p className="text-sm">{selectedEmployee.name}</p>
+            ) : (
+              <p className="text-sm text-destructive">Funcionário não encontrado</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Email</Label>
-            <p className="text-sm">{getSelectedEmployeeEmail()}</p>
+            {isLoading ? (
+              <p className="text-sm">Carregando...</p> 
+            ) : selectedEmployee ? (
+              <p className="text-sm">{selectedEmployee.email || "Não informado"}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">-</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Modelo de Checklist</Label>
