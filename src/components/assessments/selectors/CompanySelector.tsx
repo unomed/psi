@@ -25,7 +25,7 @@ interface CompanySelectorProps {
 
 export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySelectorProps) {
   const [open, setOpen] = useState(false);
-  const { companies, isLoading } = useCompanies();
+  const { companies = [], isLoading } = useCompanies();
   
   const selectedCompanyName = companies.find(
     company => company.id === selectedCompany

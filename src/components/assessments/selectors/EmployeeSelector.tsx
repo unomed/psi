@@ -20,10 +20,10 @@ export function EmployeeSelector({
   selectedEmployee, 
   onEmployeeChange 
 }: EmployeeSelectorProps) {
-  const { employees, isLoading } = useEmployees();
+  const { employees = [], isLoading } = useEmployees();
 
   const filteredEmployees = selectedRole 
-    ? employees?.filter(employee => employee.role_id === selectedRole) || []
+    ? employees.filter(employee => employee.role_id === selectedRole)
     : [];
 
   return (

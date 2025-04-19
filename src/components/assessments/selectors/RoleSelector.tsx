@@ -30,7 +30,7 @@ export function RoleSelector({
   onRoleChange 
 }: RoleSelectorProps) {
   const [open, setOpen] = useState(false);
-  const { roles, isLoading } = useRoles();
+  const { roles = [], isLoading } = useRoles();
 
   const filteredRoles = selectedSector 
     ? roles.filter(role => role.sectorId === selectedSector)

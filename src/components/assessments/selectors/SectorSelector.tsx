@@ -30,7 +30,7 @@ export function SectorSelector({
   onSectorChange 
 }: SectorSelectorProps) {
   const [open, setOpen] = useState(false);
-  const { sectors, isLoading } = useSectors();
+  const { sectors = [], isLoading } = useSectors();
 
   const filteredSectors = selectedCompany 
     ? sectors.filter(sector => sector.companyId === selectedCompany)
