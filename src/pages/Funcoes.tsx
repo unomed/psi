@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,10 @@ import { columns } from "@/components/roles/columns";
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleData | null>(null);
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
+    const saved = localStorage.getItem('selectedCompany');
+    return saved || null;
+  });
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles();
   const { companies } = useCompanies();
@@ -83,6 +85,16 @@ export default function Funcoes() {
     }
   };
 
+  const handleCompanyChange = (value: string) => {
+    setSelectedCompany(value);
+    setSelectedSector(null);
+    localStorage.setItem('selectedCompany', value);
+  };
+
+  useEffect(() => {
+    setSelectedSector(null);
+  }, [selectedCompany]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -108,7 +120,7 @@ export default function Funcoes() {
         sectors={sectors || []}
         selectedCompany={selectedCompany}
         selectedSector={selectedSector}
-        onCompanyChange={setSelectedCompany}
+        onCompanyChange={handleCompanyChange}
         onSectorChange={setSelectedSector}
       />
 

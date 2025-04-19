@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,7 +15,10 @@ import { SectorTable } from "@/components/sectors/SectorTable";
 export default function Setores() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
+    const saved = localStorage.getItem('selectedCompany');
+    return saved || null;
+  });
   const [sectorToDelete, setSectorToDelete] = useState<SectorData | null>(null);
   const [sectorToEdit, setSectorToEdit] = useState<SectorData | null>(null);
   
@@ -29,6 +31,7 @@ export default function Setores() {
 
   const handleCompanyChange = (value: string) => {
     setSelectedCompany(value);
+    localStorage.setItem('selectedCompany', value);
   };
 
   const handleAddSector = async (data: Omit<SectorData, "id">) => {

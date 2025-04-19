@@ -28,7 +28,10 @@ export function RoleCompanySelect({
     <div className="flex items-center space-x-4 mb-6">
       <div className="space-y-4 w-full md:w-auto md:space-y-0 md:space-x-4 md:flex md:items-center">
         <div className="w-full md:w-64">
-          <Select onValueChange={onCompanyChange} value={selectedCompany || undefined}>
+          <Select 
+            onValueChange={onCompanyChange} 
+            value={selectedCompany || undefined}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Selecione uma empresa" />
             </SelectTrigger>
@@ -44,7 +47,10 @@ export function RoleCompanySelect({
         
         {selectedCompany && (
           <div className="w-full md:w-64">
-            <Select onValueChange={onSectorChange} value={selectedSector || undefined}>
+            <Select 
+              onValueChange={onSectorChange} 
+              value={selectedSector || undefined}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um setor" />
               </SelectTrigger>
