@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useEmployees } from "@/hooks/useEmployees";
 import { DataTable } from "@/components/ui/data-table";
@@ -21,11 +22,10 @@ export default function Funcionarios() {
   const filteredEmployees = employees?.filter(employee => {
     const searchLower = searchTerm.toLowerCase();
     const matchesName = employee.name.toLowerCase().includes(searchLower);
-    const matchesCompany = employee.company?.name?.toLowerCase().includes(searchLower);
-    const matchesSector = employee.sector?.name?.toLowerCase().includes(searchLower);
-    const matchesRole = employee.role?.name?.toLowerCase().includes(searchLower);
+    const matchesCpf = employee.cpf.toLowerCase().includes(searchLower);
+    const matchesEmail = employee.email?.toLowerCase().includes(searchLower) || false;
     
-    return matchesName || matchesCompany || matchesSector || matchesRole;
+    return matchesName || matchesCpf || matchesEmail;
   });
 
   const handleCreate = async (data: EmployeeFormData) => {

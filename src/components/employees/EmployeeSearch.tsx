@@ -17,7 +17,7 @@ export function EmployeeSearch({ search, onSearchChange }: EmployeeSearchProps) 
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             id="search"
-            placeholder="Buscar por nome, empresa, setor ou função..."
+            placeholder="Buscar por nome, CPF ou email..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-8"
