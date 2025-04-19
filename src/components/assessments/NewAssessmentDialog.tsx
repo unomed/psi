@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -34,6 +34,32 @@ export function NewAssessmentDialog({
 }: NewAssessmentDialogProps) {
   const { employees } = useEmployees();
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
+  
+  // Add state for company, sector, and role selection
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  // Handle company change
+  const handleCompanyChange = (companyId: string) => {
+    setSelectedCompany(companyId);
+    setSelectedSector(null); // Reset sector when company changes
+    setSelectedRole(null); // Reset role when company changes
+    onEmployeeSelect(""); // Reset employee when company changes
+  };
+
+  // Handle sector change
+  const handleSectorChange = (sectorId: string) => {
+    setSelectedSector(sectorId);
+    setSelectedRole(null); // Reset role when sector changes
+    onEmployeeSelect(""); // Reset employee when sector changes
+  };
+
+  // Handle role change
+  const handleRoleChange = (roleId: string) => {
+    setSelectedRole(roleId);
+    onEmployeeSelect(""); // Reset employee when role changes
+  };
 
   const handleSave = async () => {
     if (!selectedEmployee || !selectedTemplate) {
@@ -70,8 +96,16 @@ export function NewAssessmentDialog({
     }
   };
 
+  // Reset all selections when dialog closes
+  const handleClose = () => {
+    setSelectedCompany(null);
+    setSelectedSector(null);
+    setSelectedRole(null);
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Avaliação</DialogTitle>
@@ -88,12 +122,12 @@ export function NewAssessmentDialog({
             onTemplateSelect={onTemplateSelect}
             templates={templates}
             isTemplatesLoading={isTemplatesLoading}
-            selectedCompany={null}
-            selectedSector={null}
-            selectedRole={null}
-            onCompanyChange={() => {}}
-            onSectorChange={() => {}}
-            onRoleChange={() => {}}
+            selectedCompany={selectedCompany}
+            selectedSector={selectedSector}
+            selectedRole={selectedRole}
+            onCompanyChange={handleCompanyChange}
+            onSectorChange={handleSectorChange}
+            onRoleChange={handleRoleChange}
             onNext={handleSave}
           />
 
