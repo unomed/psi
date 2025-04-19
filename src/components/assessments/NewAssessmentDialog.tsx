@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
+import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
 import { useEmployees } from "@/hooks/useEmployees";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -42,16 +41,13 @@ export function NewAssessmentDialog({
   const [dateError, setDateError] = useState<boolean>(false);
   const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
 
-  // Obter o nível de risco do funcionário e a periodicidade correspondente
   const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
   const suggestedPeriodicity = usePeriodicityForRisk(employeeRiskLevel);
   
-  // Adicionar estado para empresa, setor e função
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-  // Verificar e inicializar a data ao abrir o diálogo
   useEffect(() => {
     if (isOpen) {
       const today = new Date();
@@ -59,14 +55,12 @@ export function NewAssessmentDialog({
       setScheduledDate(today);
       setDateError(false);
       
-      // Se tiver um nível de risco e periodicidade sugerida, defina como padrão
       if (suggestedPeriodicity && suggestedPeriodicity !== 'none') {
         setRecurrenceType(suggestedPeriodicity as RecurrenceType);
       }
     }
   }, [isOpen, suggestedPeriodicity]);
 
-  // Verificar compatibilidade entre data e recorrência
   useEffect(() => {
     if (recurrenceType !== 'none' && !scheduledDate) {
       setShowRecurrenceWarning(true);
@@ -75,14 +69,12 @@ export function NewAssessmentDialog({
     }
   }, [recurrenceType, scheduledDate]);
 
-  // Resetar erro de data quando a data muda
   useEffect(() => {
     if (scheduledDate) {
       setDateError(false);
     }
   }, [scheduledDate]);
 
-  // Lidar com a mudança de empresa
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompany(companyId);
     setSelectedSector(null);
@@ -90,20 +82,17 @@ export function NewAssessmentDialog({
     onEmployeeSelect("");
   };
 
-  // Lidar com a mudança de setor
   const handleSectorChange = (sectorId: string) => {
     setSelectedSector(sectorId);
     setSelectedRole(null);
     onEmployeeSelect("");
   };
 
-  // Lidar com a mudança de função
   const handleRoleChange = (roleId: string) => {
     setSelectedRole(roleId);
     onEmployeeSelect("");
   };
 
-  // Lidar com a mudança de periodicidade
   const handleRecurrenceChange = (value: string) => {
     setRecurrenceType(value as RecurrenceType);
     
@@ -129,7 +118,6 @@ export function NewAssessmentDialog({
       return;
     }
 
-    // Validação adicional para garantir que a data é válida
     if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
       console.error("Data inválida detectada:", scheduledDate);
       setDateError(true);
@@ -137,7 +125,6 @@ export function NewAssessmentDialog({
       return;
     }
 
-    // Verificar se a periodicidade é válida quando selecionada
     if (recurrenceType !== 'none') {
       console.log("Verificando periodicidade:", recurrenceType);
     }
@@ -148,7 +135,6 @@ export function NewAssessmentDialog({
     }
   };
 
-  // Resetar todas as seleções quando o diálogo fecha
   const handleClose = () => {
     setSelectedCompany(null);
     setSelectedSector(null);
@@ -158,7 +144,6 @@ export function NewAssessmentDialog({
     onClose();
   };
 
-  // Formatar data para exibição
   const formatDateForDisplay = (date: Date | undefined): string => {
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
       return 'Data não selecionada';

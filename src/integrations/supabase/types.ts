@@ -826,7 +826,9 @@ export type Database = {
     }
     Functions: {
       copy_template_for_company: {
-        Args: { template_id: string; company_id: string; new_title?: string }
+        Args:
+          | Record<PropertyKey, never>
+          | { template_id: string; company_id: string; new_title?: string }
         Returns: string
       }
       has_role: {
