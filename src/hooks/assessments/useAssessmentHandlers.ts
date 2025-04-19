@@ -107,9 +107,23 @@ export function useAssessmentHandlers({
 
       console.log("Funcionário encontrado na tabela employees:", employeeData[0]);
 
-      // Tentar salvar na tabela scheduled_assessments como alternativa 
-      // (contornando o problema de restrição de chave estrangeira)
-      try {
+      // Agora tenta salvar diretamente na tabela assessment_responses
+      const { data, error } = await supabase
+        .from('assessment_responses')
+        .insert({
+          template_id: selectedTemplate.id,
+          employee_id: selectedEmployee,
+          employee_name: employeeData[0].name,
+          response_data: {}, // Objeto vazio para atender à restrição de não nulo
+          completed_at: new Date().toISOString()
+        })
+        .select();
+
+      if (error) {
+        console.error("Erro ao salvar em assessment_responses:", error);
+        toast.error(`Erro ao salvar avaliação: ${error.message}`);
+        
+        // Se falhar, tenta salvar como avaliação agendada como fallback
         const { data: scheduledData, error: scheduledError } = await supabase
           .from('scheduled_assessments')
           .insert({
@@ -124,19 +138,19 @@ export function useAssessmentHandlers({
 
         if (scheduledError) {
           console.error("Erro ao salvar em scheduled_assessments:", scheduledError);
-          toast.error(`Erro ao salvar avaliação como agendada: ${scheduledError.message}`);
+          toast.error(`Não foi possível salvar a avaliação: ${scheduledError.message}`);
           return false;
         }
 
-        console.log("Avaliação salva como agendada com sucesso:", scheduledData);
+        console.log("Avaliação salva como agendada (fallback):", scheduledData);
         toast.success("Avaliação salva com sucesso!");
-        toast.info("Nota: Devido a uma limitação no banco de dados, a avaliação foi salva como uma avaliação agendada e completada.");
+        toast.info("A avaliação foi salva como agendada devido a uma limitação temporária.");
         return true;
-      } catch (scheduledSaveError) {
-        console.error("Erro inesperado ao salvar em scheduled_assessments:", scheduledSaveError);
-        toast.error("Erro inesperado ao salvar avaliação.");
-        return false;
       }
+
+      console.log("Avaliação salva com sucesso em assessment_responses:", data);
+      toast.success("Avaliação salva com sucesso!");
+      return true;
     } catch (error) {
       console.error("Erro geral:", error);
       toast.error("Erro ao salvar avaliação.");
