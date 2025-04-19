@@ -22,7 +22,7 @@ interface NewAssessmentDialogProps {
   onSendEmail: () => void;
   onEmployeeSelect: (employeeId: string) => void;
   onTemplateSelect: (templateId: string) => void;
-  onSave: () => void;
+  onSave: () => Promise<boolean> | boolean; // Modified to return boolean
 }
 
 export function NewAssessmentDialog({
@@ -66,9 +66,13 @@ export function NewAssessmentDialog({
   };
 
   const handleSave = async () => {
-    const success = await onSave();
-    if (success) {
-      setIsSaved(true);
+    try {
+      const result = await onSave();
+      if (result) {
+        setIsSaved(true);
+      }
+    } catch (error) {
+      console.error("Error saving assessment:", error);
     }
   };
 
