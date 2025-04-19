@@ -1,19 +1,16 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Calendar, Link, Mail, Share2 } from "lucide-react";
+import { Calendar, Link, Mail } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ScheduledAssessment, ChecklistTemplate } from "@/types";
+import { ScheduledAssessment } from "@/types";
+import { useAssessmentEmployeeOperations } from "@/hooks/assessments/operations/useAssessmentEmployeeOperations";
 
 interface AssessmentTabsProps {
-  activeTab: string;
-  onTabChange: (value: string) => void;
   scheduledAssessments: ScheduledAssessment[];
-  templates: ChecklistTemplate[];
   onSendEmail: (assessmentId: string) => void;
-  onShareAssessment: (assessmentId: string) => void;
   onScheduleAssessment: (employeeId: string, templateId: string) => void;
   onGenerateLink: (employeeId: string, templateId: string) => void;
 }
@@ -21,10 +18,11 @@ interface AssessmentTabsProps {
 export function AssessmentTabs({
   scheduledAssessments,
   onSendEmail,
-  onShareAssessment,
   onScheduleAssessment,
   onGenerateLink,
 }: AssessmentTabsProps) {
+  const { getEmployeeEmail, getEmployeePhone, getSelectedEmployeeName } = useAssessmentEmployeeOperations();
+
   return (
     <Card className="p-6">
       <div className="space-y-6">
@@ -45,9 +43,9 @@ export function AssessmentTabs({
             <TableBody>
               {scheduledAssessments.map((assessment) => (
                 <TableRow key={assessment.id}>
-                  <TableCell>{assessment.employees?.name || "Não encontrado"}</TableCell>
-                  <TableCell>{assessment.employees?.email || "Não informado"}</TableCell>
-                  <TableCell>{assessment.employees?.phone || assessment.phoneNumber || "Não informado"}</TableCell>
+                  <TableCell>{getSelectedEmployeeName(assessment.employeeId)}</TableCell>
+                  <TableCell>{getEmployeeEmail(assessment.employeeId)}</TableCell>
+                  <TableCell>{getEmployeePhone(assessment.employeeId) || assessment.phoneNumber}</TableCell>
                   <TableCell>
                     {format(new Date(assessment.scheduledDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                   </TableCell>
@@ -89,16 +87,6 @@ export function AssessmentTabs({
                       >
                         <Mail className="h-4 w-4" />
                       </Button>
-                      {assessment.status === 'sent' && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Compartilhar"
-                          onClick={() => onShareAssessment(assessment.id)}
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      )}
                     </div>
                   </TableCell>
                 </TableRow>
