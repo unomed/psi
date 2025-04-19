@@ -14,43 +14,28 @@ export function AssessmentDateSection({
   onDateSelect,
   dateError
 }: AssessmentDateSectionProps) {
-  // Log para verificação de data
   useEffect(() => {
     console.log("Estado atual da data:", scheduledDate, 
       scheduledDate instanceof Date ? "É uma data válida" : "Não é uma data válida",
-      scheduledDate instanceof Date && !isNaN(scheduledDate.getTime()) ? "Data válida" : "Data inválida",
-      "Timestamp:", scheduledDate?.getTime?.());
+      scheduledDate instanceof Date ? `Timestamp: ${scheduledDate.getTime()}` : "");
   }, [scheduledDate]);
 
-  // Helper para verificar se a data é válida
-  const isValidDate = (date: any): boolean => {
-    return date instanceof Date && !isNaN(date.getTime());
-  };
-
   const formatDateForDisplay = (date: Date | undefined): string => {
-    if (!date || !isValidDate(date)) {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
       return 'Data não selecionada';
     }
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    return date.toLocaleDateString('pt-BR');
   };
 
   const handleDateChange = (date: Date | undefined) => {
-    console.log("Data selecionada em AssessmentDateSection:", date, 
-      date instanceof Date ? "É objeto Date" : "Não é objeto Date",
-      date instanceof Date ? `Timestamp: ${date.getTime()}` : "");
-    
-    // Garantir que sempre passamos uma data válida ou undefined explícito
-    if (date && isValidDate(date)) {
+    // Garantir que a data é válida antes de atualizar o estado
+    if (date && date instanceof Date && !isNaN(date.getTime())) {
       // Criar uma nova instância de Date para evitar problemas de referência
-      const newDate = new Date(date.getTime());
-      console.log("Nova data criada:", newDate, "Timestamp:", newDate.getTime());
-      onDateSelect(newDate);
+      const safeDate = new Date(date.getTime());
+      console.log("Nova data válida selecionada:", safeDate, "Timestamp:", safeDate.getTime());
+      onDateSelect(safeDate);
     } else {
-      console.log("Data inválida ou undefined, definindo como undefined");
+      console.log("Data inválida ou undefined detectada");
       onDateSelect(undefined);
     }
   };
@@ -76,14 +61,9 @@ export function AssessmentDateSection({
         </p>
       )}
       
-      {scheduledDate && isValidDate(scheduledDate) && !dateError && (
+      {scheduledDate && !dateError && (
         <p className="text-xs text-muted-foreground">
           Data selecionada: {formatDateForDisplay(scheduledDate)}
-        </p>
-      )}
-      {(!scheduledDate || !isValidDate(scheduledDate)) && !dateError && (
-        <p className="text-xs text-muted-foreground">
-          Selecione a data em que a avaliação será realizada.
         </p>
       )}
     </div>

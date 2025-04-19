@@ -38,19 +38,12 @@ export function useAssessmentSaveOperations() {
     }
     
     // Validação rigorosa da data
-    if (!scheduledDate) {
-      console.error("Data de agendamento ausente");
-      toast.error("Selecione uma data para a avaliação.");
-      return null;
-    }
-    
-    // Verificar se a data é válida (não é um objeto Date inválido)
-    if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
+    if (!scheduledDate || !(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
       console.error("Data inválida detectada:", scheduledDate, 
         "instanceof Date:", scheduledDate instanceof Date, 
-        "isNaN check:", isNaN(scheduledDate instanceof Date ? scheduledDate.getTime() : NaN),
+        "isNaN check:", scheduledDate instanceof Date ? isNaN(scheduledDate.getTime()) : "N/A",
         "Timestamp:", scheduledDate instanceof Date ? scheduledDate.getTime() : "N/A");
-      toast.error("A data selecionada é inválida. Por favor, selecione novamente.");
+      toast.error("Selecione uma data válida para a avaliação.");
       return null;
     }
     
@@ -59,13 +52,6 @@ export function useAssessmentSaveOperations() {
       if (!employee) {
         toast.error("Funcionário não encontrado.");
         return null;
-      }
-      
-      // Log para periodicidade
-      if (recurrenceType === "none") {
-        console.log("Avaliação sem recorrência");
-      } else {
-        console.log(`Recorrência definida como: ${recurrenceType}`);
       }
       
       // Calcular próxima data se houver recorrência
@@ -96,7 +82,7 @@ export function useAssessmentSaveOperations() {
       // Atualizar estado local
       const assessmentWithId: ScheduledAssessment = {
         ...newScheduledAssessment,
-        id: savedId || `sched-${Date.now()}`
+        id: savedId
       };
       
       setScheduledAssessments([...scheduledAssessments, assessmentWithId]);
