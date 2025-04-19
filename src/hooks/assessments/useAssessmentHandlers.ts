@@ -81,6 +81,28 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
+  // Add missing function definitions
+  const handleStartAssessment = () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist.");
+      return;
+    }
+    
+    setIsAssessmentDialogOpen(true);
+  };
+
+  const handleScheduleNewAssessment = (employeeId: string, templateId: string) => {
+    setSelectedEmployee(employeeId);
+    setSelectedTemplate({ id: templateId } as ChecklistTemplate);
+    setIsScheduleDialogOpen(true);
+  };
+
+  const handleShareAssessment = (assessmentId: string) => {
+    const assessment = { id: assessmentId } as ScheduledAssessment;
+    setSelectedAssessment(assessment);
+    setIsShareDialogOpen(true);
+  };
+
   const handleSaveAssessment = async () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
@@ -139,7 +161,7 @@ export function useAssessmentHandlers({
     ...scheduleOperations,
     handleShareAssessment,
     handleCloseResult,
-    handleGenerateLink,
+    handleGenerateLink: linkOperations.handleGenerateLink,
     handleSendEmail,
     handleSaveAssessment,
     handleSubmitAssessment,
