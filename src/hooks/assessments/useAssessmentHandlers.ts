@@ -88,10 +88,16 @@ export function useAssessmentHandlers({
       return false;
     }
 
+    if (!scheduledDate) {
+      toast.error("Selecione uma data para a avaliação.");
+      return false;
+    }
+
     try {
       // Exibir informações de diagnóstico para debug
       console.log("Tentando salvar avaliação para employee_id:", selectedEmployee);
       console.log("Tipo de employee_id:", typeof selectedEmployee);
+      console.log("Data agendada:", scheduledDate);
 
       // Verificar se o funcionário existe na tabela employees
       const { data: employeeData, error: employeeError } = await supabase
@@ -107,49 +113,26 @@ export function useAssessmentHandlers({
 
       console.log("Funcionário encontrado na tabela employees:", employeeData[0]);
 
-      // Agora tenta salvar diretamente na tabela assessment_responses
-      const { data, error } = await supabase
-        .from('assessment_responses')
+      // Salvar como avaliação agendada (scheduled_assessments)
+      const { data: scheduledData, error: scheduledError } = await supabase
+        .from('scheduled_assessments')
         .insert({
-          template_id: selectedTemplate.id,
           employee_id: selectedEmployee,
-          employee_name: employeeData[0].name,
-          response_data: {}, // Objeto vazio para atender à restrição de não nulo
-          completed_at: new Date().toISOString()
+          template_id: selectedTemplate.id,
+          scheduled_date: scheduledDate.toISOString(),
+          status: 'scheduled',
+          recurrence_type: 'none'
         })
         .select();
 
-      if (error) {
-        console.error("Erro ao salvar em assessment_responses:", error);
-        toast.error(`Erro ao salvar avaliação: ${error.message}`);
-        
-        // Se falhar, tenta salvar como avaliação agendada como fallback
-        const { data: scheduledData, error: scheduledError } = await supabase
-          .from('scheduled_assessments')
-          .insert({
-            employee_id: selectedEmployee,
-            template_id: selectedTemplate.id,
-            scheduled_date: new Date().toISOString(),
-            status: 'completed',
-            completed_at: new Date().toISOString(),
-            recurrence_type: 'none'
-          })
-          .select();
-
-        if (scheduledError) {
-          console.error("Erro ao salvar em scheduled_assessments:", scheduledError);
-          toast.error(`Não foi possível salvar a avaliação: ${scheduledError.message}`);
-          return false;
-        }
-
-        console.log("Avaliação salva como agendada (fallback):", scheduledData);
-        toast.success("Avaliação salva com sucesso!");
-        toast.info("A avaliação foi salva como agendada devido a uma limitação temporária.");
-        return true;
+      if (scheduledError) {
+        console.error("Erro ao salvar em scheduled_assessments:", scheduledError);
+        toast.error(`Erro ao agendar avaliação: ${scheduledError.message}`);
+        return false;
       }
 
-      console.log("Avaliação salva com sucesso em assessment_responses:", data);
-      toast.success("Avaliação salva com sucesso!");
+      console.log("Avaliação agendada com sucesso:", scheduledData);
+      toast.success("Avaliação agendada com sucesso!");
       return true;
     } catch (error) {
       console.error("Erro geral:", error);

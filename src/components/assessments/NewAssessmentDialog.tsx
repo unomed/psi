@@ -5,6 +5,8 @@ import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
 import { useEmployees } from "@/hooks/useEmployees";
 import { ChecklistTemplate } from "@/types";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";  
+import { Label } from "@/components/ui/label";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,6 +35,7 @@ export function NewAssessmentDialog({
 }: NewAssessmentDialogProps) {
   const { employees } = useEmployees();
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
   
   // Add state for company, sector, and role selection
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
@@ -66,7 +69,13 @@ export function NewAssessmentDialog({
       return;
     }
 
+    if (!scheduledDate) {
+      toast.error("Selecione uma data para a avaliação");
+      return;
+    }
+
     console.log("Tentando salvar com employee_id:", selectedEmployee);
+    console.log("Data agendada:", scheduledDate);
     if (selectedEmployeeData) {
       console.log("Dados do funcionário encontrados na UI:", selectedEmployeeData);
     } else {
@@ -84,6 +93,7 @@ export function NewAssessmentDialog({
     setSelectedCompany(null);
     setSelectedSector(null);
     setSelectedRole(null);
+    setScheduledDate(new Date());
     onClose();
   };
 
@@ -114,10 +124,24 @@ export function NewAssessmentDialog({
             onNext={handleSave}
           />
 
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="scheduledDate">Data da Avaliação</Label>
+              <DatePicker 
+                date={scheduledDate} 
+                onSelect={setScheduledDate} 
+                disabled={(date) => date < new Date()} 
+              />
+              <p className="text-xs text-muted-foreground">
+                Selecione a data em que a avaliação será realizada.
+              </p>
+            </div>
+          </div>
+
           <div className="flex justify-end">
             <Button
               onClick={handleSave}
-              disabled={!selectedEmployee || !selectedTemplate}
+              disabled={!selectedEmployee || !selectedTemplate || !scheduledDate}
             >
               <Save className="mr-2 h-4 w-4" />
               Salvar Avaliação
