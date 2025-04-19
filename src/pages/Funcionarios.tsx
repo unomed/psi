@@ -7,7 +7,6 @@ import { EmptyEmployeeState } from "@/components/employees/EmptyEmployeeState";
 import { EmployeeHeader } from "@/components/employees/EmployeeHeader";
 import { EmployeeDialogs } from "@/components/employees/dialogs/EmployeeDialogs";
 import { EmployeeSearch } from "@/components/employees/EmployeeSearch";
-import { EmployeeFilters } from "@/components/employees/EmployeeFilters";
 
 export default function Funcionarios() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -16,20 +15,12 @@ export default function Funcionarios() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   
   const { employees, isLoading, createEmployee, updateEmployee, deleteEmployee } = useEmployees();
 
-  const filteredEmployees = employees?.filter(employee => {
-    const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCompany = !selectedCompany || employee.company_id === selectedCompany;
-    const matchesSector = !selectedSector || employee.sector_id === selectedSector;
-    const matchesRole = !selectedRole || employee.role_id === selectedRole;
-    
-    return matchesSearch && matchesCompany && matchesSector && matchesRole;
-  });
+  const filteredEmployees = employees?.filter(employee => 
+    employee.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleCreate = async (data: EmployeeFormData) => {
     try {
@@ -70,11 +61,6 @@ export default function Funcionarios() {
         <EmployeeSearch 
           search={searchTerm}
           onSearchChange={setSearchTerm}
-        />
-        <EmployeeFilters
-          onCompanyChange={setSelectedCompany}
-          onSectorChange={setSelectedSector}
-          onRoleChange={setSelectedRole}
         />
       </div>
 
