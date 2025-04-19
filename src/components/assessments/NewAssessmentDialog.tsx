@@ -1,11 +1,10 @@
 
-import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
-import { SchedulingDetailsTab } from "./scheduling/SchedulingDetailsTab";
 import { useEmployees } from "@/hooks/useEmployees";
-import { ChecklistTemplate, RecurrenceType } from "@/types";
+import { ChecklistTemplate } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -14,9 +13,6 @@ interface NewAssessmentDialogProps {
   selectedTemplate: ChecklistTemplate | null;
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
-  onScheduleAssessment: (recurrenceType: RecurrenceType, phoneNumber: string) => void;
-  onGenerateLink: () => void;
-  onSendEmail: () => void;
   onEmployeeSelect: (employeeId: string) => void;
   onTemplateSelect: (templateId: string) => void;
   onSave: () => Promise<boolean> | boolean;
@@ -29,84 +25,61 @@ export function NewAssessmentDialog({
   selectedTemplate,
   templates,
   isTemplatesLoading,
-  onScheduleAssessment,
-  onGenerateLink,
-  onSendEmail,
   onEmployeeSelect,
   onTemplateSelect,
   onSave
 }: NewAssessmentDialogProps) {
-  const [activeTab, setActiveTab] = useState("selection");
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [scheduledDate, setScheduledDate] = useState<Date>();
   
   const { employees } = useEmployees();
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
 
-  const handleSchedule = (recurrenceType: RecurrenceType, phoneNumber: string) => {
-    onScheduleAssessment(recurrenceType, phoneNumber);
-    onClose();
-  };
-
-  const handleClose = () => {
-    setActiveTab("selection");
-    setSelectedCompany(null);
-    setSelectedSector(null);
-    setSelectedRole(null);
-    setScheduledDate(undefined);
-    onClose();
+  const handleSave = async () => {
+    const saved = await onSave();
+    if (saved) {
+      onClose();
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Avaliação</DialogTitle>
           <DialogDescription>
-            Selecione o funcionário e o modelo de avaliação para começar.
+            Selecione o funcionário e o modelo de avaliação para criar uma nova avaliação.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="selection">Seleção</TabsTrigger>
-            <TabsTrigger value="scheduling" disabled={!selectedEmployee || !selectedTemplate}>
-              Agendamento
-            </TabsTrigger>
-          </TabsList>
+        <div className="space-y-6">
+          <AssessmentSelectionTab
+            selectedCompany={selectedCompany}
+            selectedSector={selectedSector}
+            selectedRole={selectedRole}
+            selectedEmployee={selectedEmployee}
+            selectedTemplate={selectedTemplate}
+            onCompanyChange={setSelectedCompany}
+            onSectorChange={setSelectedSector}
+            onRoleChange={setSelectedRole}
+            onEmployeeChange={onEmployeeSelect}
+            onTemplateSelect={onTemplateSelect}
+            templates={templates}
+            isTemplatesLoading={isTemplatesLoading}
+            onNext={handleSave}
+          />
 
-          <TabsContent value="selection">
-            <AssessmentSelectionTab
-              selectedCompany={selectedCompany}
-              selectedSector={selectedSector}
-              selectedRole={selectedRole}
-              selectedEmployee={selectedEmployee}
-              selectedTemplate={selectedTemplate}
-              onCompanyChange={setSelectedCompany}
-              onSectorChange={setSelectedSector}
-              onRoleChange={setSelectedRole}
-              onEmployeeChange={onEmployeeSelect}
-              onTemplateSelect={onTemplateSelect}
-              onNext={() => setActiveTab("scheduling")}
-              templates={templates}
-              isTemplatesLoading={isTemplatesLoading}
-            />
-          </TabsContent>
-
-          <TabsContent value="scheduling">
-            <SchedulingDetailsTab
-              employeeName={selectedEmployeeData?.name || "Funcionário não encontrado"}
-              employeeEmail={selectedEmployeeData?.email}
-              templateTitle={selectedTemplate?.title}
-              scheduledDate={scheduledDate}
-              onDateSelect={setScheduledDate}
-              onBack={() => setActiveTab("selection")}
-              onSchedule={handleSchedule}
-            />
-          </TabsContent>
-        </Tabs>
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSave}
+              disabled={!selectedEmployee || !selectedTemplate}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Salvar Avaliação
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
