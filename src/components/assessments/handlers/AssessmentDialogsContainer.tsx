@@ -58,9 +58,6 @@ export function AssessmentDialogsContainer({
         selectedTemplate={data.selectedTemplate}
         templates={data.templates}
         isTemplatesLoading={data.isTemplatesLoading}
-        onScheduleAssessment={handlers.handleScheduleAssessment}
-        onGenerateLink={handlers.handleGenerateLink}
-        onSendEmail={handlers.handleSendEmailToEmployee}
         onEmployeeSelect={onEmployeeChange}
         onTemplateSelect={onTemplateSelect}
         onSave={handlers.handleSaveAssessment}
