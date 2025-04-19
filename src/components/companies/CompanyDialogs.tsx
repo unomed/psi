@@ -1,6 +1,7 @@
 
 import { CompanyData } from "./CompanyCard";
 import { CompanyForm } from "@/components/forms/CompanyForm";
+import { CompanyViewDialog } from "./CompanyViewDialog";
 import {
   Dialog,
   DialogContent,
@@ -79,62 +80,11 @@ export function CompanyDialogs({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Empresa</DialogTitle>
-            <DialogDescription>
-              Visualize os dados completos da empresa.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedCompany && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Nome</h3>
-                <p>{selectedCompany.name}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">CNPJ</h3>
-                <p>{selectedCompany.cnpj}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Endereço</h3>
-                <p>{selectedCompany.address}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Cidade</h3>
-                <p>{selectedCompany.city}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Estado</h3>
-                <p>{selectedCompany.state}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Setor</h3>
-                <p>{selectedCompany.industry || "Não informado"}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Nome do Contato</h3>
-                <p>{selectedCompany.contactName}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Email do Contato</h3>
-                <p>{selectedCompany.contactEmail}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Telefone do Contato</h3>
-                <p>{selectedCompany.contactPhone}</p>
-              </div>
-              {selectedCompany.notes && (
-                <div className="col-span-2 space-y-1">
-                  <h3 className="font-medium text-muted-foreground">Observações</h3>
-                  <p>{selectedCompany.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <CompanyViewDialog
+        isOpen={isViewDialogOpen}
+        onOpenChange={setIsViewDialogOpen}
+        company={selectedCompany}
+      />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
