@@ -98,9 +98,10 @@ export function AssessmentTabs() {
 
           // Only try to extract employee data if it exists and is an object
           if (item.employees && typeof item.employees === 'object') {
-            employeeInfo.name = item.employees.name || 'Funcionário não encontrado';
-            employeeInfo.email = item.employees.email || '';
-            employeeInfo.phone = item.employees.phone || '';
+            const employee = item.employees as { name?: string; email?: string; phone?: string };
+            employeeInfo.name = employee.name || 'Funcionário não encontrado';
+            employeeInfo.email = employee.email || '';
+            employeeInfo.phone = employee.phone || '';
           }
 
           return {
