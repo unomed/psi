@@ -32,8 +32,8 @@ export function EmploymentFields({
   onSectorChange,
 }: EmploymentFieldsProps) {
   const { companies, isLoading: isLoadingCompanies } = useCompanies();
-  const { sectors, isLoading: isLoadingSectors } = useSectors(selectedCompany);
-  const { roles, isLoading: isLoadingRoles } = useRoles(selectedSector);
+  const { sectors, isLoading: isLoadingSectors } = useSectors();
+  const { roles, isLoading: isLoadingRoles } = useRoles();
   
   const [companyOptions, setCompanyOptions] = useState<Option[]>([]);
   const [sectorOptions, setSectorOptions] = useState<Option[]>([]);
@@ -53,9 +53,12 @@ export function EmploymentFields({
 
   // Atualiza as opções de setores
   useEffect(() => {
-    if (sectors) {
+    if (sectors && selectedCompany) {
+      const filteredSectors = sectors.filter(
+        (sector) => sector.companyId === selectedCompany
+      );
       setSectorOptions(
-        sectors.map((sector) => ({
+        filteredSectors.map((sector) => ({
           value: sector.id,
           label: sector.name,
         }))
@@ -63,13 +66,16 @@ export function EmploymentFields({
     } else {
       setSectorOptions([]);
     }
-  }, [sectors]);
+  }, [sectors, selectedCompany]);
 
   // Atualiza as opções de funções
   useEffect(() => {
-    if (roles) {
+    if (roles && selectedSector) {
+      const filteredRoles = roles.filter(
+        (role) => role.sectorId === selectedSector
+      );
       setRoleOptions(
-        roles.map((role) => ({
+        filteredRoles.map((role) => ({
           value: role.id,
           label: role.name,
         }))
@@ -77,7 +83,7 @@ export function EmploymentFields({
     } else {
       setRoleOptions([]);
     }
-  }, [roles]);
+  }, [roles, selectedSector]);
 
   // Quando a empresa muda, atualiza o callback
   const handleCompanyChange = (value: string) => {
@@ -102,7 +108,7 @@ export function EmploymentFields({
             <FormItem className="flex flex-col">
               <FormLabel>Data de Admissão</FormLabel>
               <DatePicker
-                selected={field.value}
+                date={field.value}
                 onSelect={field.onChange}
               />
               <FormMessage />
