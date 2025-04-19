@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useRoles } from "@/hooks/useRoles";
 import {
   Select,
   SelectContent,
@@ -8,15 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
-// Mock data
-const ROLES = [
-  { id: "role-1", sectorId: "sector-1", name: "Gerente Administrativo" },
-  { id: "role-2", sectorId: "sector-1", name: "Assistente Administrativo" },
-  { id: "role-3", sectorId: "sector-2", name: "Operador de Máquinas" },
-  { id: "role-4", sectorId: "sector-3", name: "Vendedor" },
-  { id: "role-5", sectorId: "sector-4", name: "Analista Financeiro" },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface RoleSelectorProps {
   selectedSector: string | null;
@@ -29,15 +22,21 @@ export function RoleSelector({
   selectedRole,
   onRoleChange,
 }: RoleSelectorProps) {
+  const { roles, isLoading } = useRoles();
+
   // Filter roles by sector
   const filteredRoles = selectedSector
-    ? ROLES.filter(role => role.sectorId === selectedSector)
+    ? roles.filter(role => role.sectorId === selectedSector)
     : [];
-    
-  // Ensure we always have at least one item to select with a non-empty string value
-  const roles = filteredRoles.length > 0 
-    ? filteredRoles 
-    : [{ id: "no-role", name: "Nenhuma função encontrada" }];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Label>Função</Label>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -51,7 +50,7 @@ export function RoleSelector({
           <SelectValue placeholder="Selecione uma função" />
         </SelectTrigger>
         <SelectContent>
-          {roles.map((role) => (
+          {filteredRoles.map((role) => (
             <SelectItem key={role.id} value={role.id}>
               {role.name}
             </SelectItem>

@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useCompanies } from "@/hooks/useCompanies";
 import {
   Select,
   SelectContent,
@@ -8,13 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
-// Mock data - this will need to be replaced with real data fetched from the database
-const COMPANIES = [
-  { id: "comp-1", name: "Empresa A" },
-  { id: "comp-2", name: "Empresa B" },
-  { id: "comp-3", name: "Empresa C" },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CompanySelectorProps {
   selectedCompany: string | null;
@@ -25,9 +20,17 @@ export function CompanySelector({
   selectedCompany,
   onCompanyChange,
 }: CompanySelectorProps) {
-  // Ensure we always have at least one item to select with a non-empty string value
-  const companies = COMPANIES.length > 0 ? COMPANIES : [{ id: "no-company", name: "Nenhuma empresa encontrada" }];
+  const { companies, isLoading } = useCompanies();
   
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Label>Empresa</Label>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>

@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useSectors } from "@/hooks/useSectors";
 import {
   Select,
   SelectContent,
@@ -8,14 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-
-// Mock data - this will need to be replaced with real data
-const SECTORS = [
-  { id: "sector-1", companyId: "comp-1", name: "Administrativo" },
-  { id: "sector-2", companyId: "comp-1", name: "Operacional" },
-  { id: "sector-3", companyId: "comp-2", name: "Comercial" },
-  { id: "sector-4", companyId: "comp-2", name: "Financeiro" },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SectorSelectorProps {
   selectedCompany: string | null;
@@ -28,15 +22,21 @@ export function SectorSelector({
   selectedSector,
   onSectorChange,
 }: SectorSelectorProps) {
+  const { sectors, isLoading } = useSectors();
+  
   // Filter sectors by company
   const filteredSectors = selectedCompany
-    ? SECTORS.filter(sector => sector.companyId === selectedCompany)
+    ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
-    
-  // Ensure we always have at least one item to select with a non-empty string value
-  const sectors = filteredSectors.length > 0 
-    ? filteredSectors 
-    : [{ id: "no-sector", name: "Nenhum setor encontrado" }];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Label>Setor</Label>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -50,7 +50,7 @@ export function SectorSelector({
           <SelectValue placeholder="Selecione um setor" />
         </SelectTrigger>
         <SelectContent>
-          {sectors.map((sector) => (
+          {filteredSectors.map((sector) => (
             <SelectItem key={sector.id} value={sector.id}>
               {sector.name}
             </SelectItem>

@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useEmployees } from "@/hooks/useEmployees";
 import {
   Select,
   SelectContent,
@@ -8,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { mockEmployees } from "../mock/assessmentMockData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EmployeeSelectorProps {
   selectedRole: string | null;
@@ -21,15 +22,21 @@ export function EmployeeSelector({
   selectedEmployee,
   onEmployeeChange,
 }: EmployeeSelectorProps) {
+  const { employees, isLoading } = useEmployees();
+
   // Filter employees by role
   const filteredEmployees = selectedRole
-    ? mockEmployees.filter(emp => emp.role_id === selectedRole)
+    ? employees.filter(emp => emp.role_id === selectedRole)
     : [];
-    
-  // Ensure we always have at least one item to select with a non-empty string value
-  const employees = filteredEmployees.length > 0 
-    ? filteredEmployees 
-    : [{ id: "no-employee", name: "Nenhum funcionário encontrado", email: "", role_id: "" }];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Label>Funcionário</Label>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -43,7 +50,7 @@ export function EmployeeSelector({
           <SelectValue placeholder="Selecione um funcionário" />
         </SelectTrigger>
         <SelectContent>
-          {employees.map((employee) => (
+          {filteredEmployees.map((employee) => (
             <SelectItem key={employee.id} value={employee.id}>
               {employee.name}
             </SelectItem>
