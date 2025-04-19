@@ -32,7 +32,15 @@ export function AssessmentPeriodicitySection({
       return value as RecurrenceType;
     }
     // Valor padrão se não for válido
+    console.log("Valor de recorrência inválido detectado:", value, "usando 'none' como padrão");
     return 'none';
+  };
+
+  const handleRecurrenceChange = (value: string) => {
+    console.log("AssessmentPeriodicitySection: Mudança de periodicidade:", value);
+    const safeValue = safeRecurrenceType(value);
+    console.log("AssessmentPeriodicitySection: Valor seguro de periodicidade:", safeValue);
+    onRecurrenceChange(safeValue);
   };
 
   return (
@@ -40,7 +48,7 @@ export function AssessmentPeriodicitySection({
       <Label htmlFor="recurrence">Periodicidade</Label>
       <Select 
         value={recurrenceType} 
-        onValueChange={(value) => onRecurrenceChange(safeRecurrenceType(value))}
+        onValueChange={handleRecurrenceChange}
       >
         <SelectTrigger>
           <SelectValue placeholder="Selecione o tipo de recorrência" />

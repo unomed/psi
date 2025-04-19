@@ -25,7 +25,8 @@ export function useAssessmentSaveOperations() {
         date: scheduledDate.toISOString(),
         valid: scheduledDate instanceof Date && !isNaN(scheduledDate.getTime()),
         toString: String(scheduledDate),
-        typeof: typeof scheduledDate
+        typeof: typeof scheduledDate,
+        timestamp: scheduledDate.getTime()
       } : 'undefined',
       recurrenceType
     });
@@ -47,7 +48,8 @@ export function useAssessmentSaveOperations() {
     if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
       console.error("Data inválida detectada:", scheduledDate, 
         "instanceof Date:", scheduledDate instanceof Date, 
-        "isNaN check:", isNaN(scheduledDate instanceof Date ? scheduledDate.getTime() : NaN));
+        "isNaN check:", isNaN(scheduledDate instanceof Date ? scheduledDate.getTime() : NaN),
+        "Timestamp:", scheduledDate instanceof Date ? scheduledDate.getTime() : "N/A");
       toast.error("A data selecionada é inválida. Por favor, selecione novamente.");
       return null;
     }
