@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
@@ -10,6 +11,7 @@ import { Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { usePeriodicityForRisk } from "@/hooks/usePeriodicityForRisk";
+import { isValidDate, createSafeDate } from "@/utils/dateUtils";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -20,7 +22,7 @@ interface NewAssessmentDialogProps {
   isTemplatesLoading: boolean;
   onEmployeeSelect: (employeeId: string) => void;
   onTemplateSelect: (templateId: string) => void;
-  onSave: () => Promise<boolean> | boolean;
+  onSave: (date?: Date) => Promise<boolean> | boolean;
 }
 
 export function NewAssessmentDialog({
@@ -40,6 +42,7 @@ export function NewAssessmentDialog({
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
   const [dateError, setDateError] = useState<boolean>(false);
   const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
+  const [attemptedSave, setAttemptedSave] = useState<boolean>(false);
 
   const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
   const suggestedPeriodicity = usePeriodicityForRisk(employeeRiskLevel);
@@ -50,10 +53,12 @@ export function NewAssessmentDialog({
 
   useEffect(() => {
     if (isOpen) {
-      const today = new Date();
-      console.log("Inicializando data com:", today);
+      // Criar uma nova instância segura de Date para inicialização
+      const today = createSafeDate(new Date());
+      console.log("Inicializando data com:", today, "Timestamp:", today.getTime());
       setScheduledDate(today);
       setDateError(false);
+      setAttemptedSave(false);
       
       if (suggestedPeriodicity && suggestedPeriodicity !== 'none') {
         setRecurrenceType(suggestedPeriodicity as RecurrenceType);
@@ -69,11 +74,16 @@ export function NewAssessmentDialog({
     }
   }, [recurrenceType, scheduledDate]);
 
+  // Este useEffect garante que o erro de data seja removido quando uma data válida for selecionada
   useEffect(() => {
-    if (scheduledDate) {
+    if (scheduledDate && isValidDate(scheduledDate)) {
+      console.log("Data válida detectada, removendo erro:", scheduledDate);
       setDateError(false);
+    } else if (attemptedSave && !scheduledDate) {
+      // Apenas mostra erro se já tentou salvar e não tem data
+      setDateError(true);
     }
-  }, [scheduledDate]);
+  }, [scheduledDate, attemptedSave]);
 
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompany(companyId);
@@ -103,8 +113,25 @@ export function NewAssessmentDialog({
     }
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    console.log("NewAssessmentDialog: Data selecionada:", date,
+      date instanceof Date ? `Timestamp: ${date.getTime()}` : "");
+    
+    // Usar a função createSafeDate para garantir uma instância segura da data
+    if (date && isValidDate(date)) {
+      const safeDate = createSafeDate(date);
+      console.log("Nova data segura criada:", safeDate, "Timestamp:", safeDate.getTime());
+      setScheduledDate(safeDate);
+    } else {
+      setScheduledDate(undefined);
+    }
+  };
+
   const handleSave = async () => {
-    console.log("Tentando salvar com data:", scheduledDate);
+    setAttemptedSave(true);
+    
+    console.log("NewAssessmentDialog: Tentando salvar com data:", scheduledDate,
+      scheduledDate instanceof Date ? `Timestamp: ${scheduledDate.getTime()}` : "");
     
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de avaliação");
@@ -118,7 +145,7 @@ export function NewAssessmentDialog({
       return;
     }
 
-    if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
+    if (!isValidDate(scheduledDate)) {
       console.error("Data inválida detectada:", scheduledDate);
       setDateError(true);
       toast.error("A data selecionada é inválida. Por favor, selecione novamente.");
@@ -129,9 +156,18 @@ export function NewAssessmentDialog({
       console.log("Verificando periodicidade:", recurrenceType);
     }
 
-    const saved = await onSave();
-    if (saved) {
-      onClose();
+    // Passar explicitamente a data validada para a função onSave
+    const safeDate = createSafeDate(scheduledDate);
+    console.log("Salvando com data segura:", safeDate, "Timestamp:", safeDate.getTime());
+    
+    try {
+      const saved = await onSave(safeDate);
+      if (saved) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      toast.error("Ocorreu um erro ao salvar a avaliação");
     }
   };
 
@@ -141,11 +177,12 @@ export function NewAssessmentDialog({
     setSelectedRole(null);
     setDateError(false);
     setShowRecurrenceWarning(false);
+    setAttemptedSave(false);
     onClose();
   };
 
   const formatDateForDisplay = (date: Date | undefined): string => {
-    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    if (!date || !isValidDate(date)) {
       return 'Data não selecionada';
     }
     return date.toLocaleDateString('pt-BR', {
@@ -189,20 +226,7 @@ export function NewAssessmentDialog({
               </Label>
               <DatePicker 
                 date={scheduledDate} 
-                onSelect={(date) => {
-                  console.log("Data selecionada:", date);
-                  setScheduledDate(date);
-                  if (date) {
-                    setDateError(false);
-                    if (recurrenceType !== 'none') {
-                      setShowRecurrenceWarning(false);
-                    }
-                  } else {
-                    if (recurrenceType !== 'none') {
-                      setShowRecurrenceWarning(true);
-                    }
-                  }
-                }} 
+                onSelect={handleDateSelect} 
                 disabled={(date) => {
                   const today = new Date();
                   today.setHours(0, 0, 0, 0);

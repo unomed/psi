@@ -8,6 +8,7 @@ import { useAssessmentSaveOperations } from "./operations/useAssessmentSaveOpera
 import { useAssessmentCreation } from "./operations/useAssessmentCreation";
 import { useAssessmentScheduling } from "./operations/useAssessmentScheduling";
 import { ScheduledAssessment, ChecklistTemplate } from "@/types";
+import { isValidDate, createSafeDate } from "@/utils/dateUtils";
 
 export function useAssessmentHandlers({
   selectedEmployee,
@@ -94,7 +95,25 @@ export function useAssessmentHandlers({
     handleCloseResult,
     handleGenerateLink: linkOperations.handleGenerateLink,
     handleSendEmail,
-    handleSaveAssessment: () => handleSaveAssessment(selectedEmployee, selectedTemplate, scheduledDate),
+    handleSaveAssessment: (date?: Date) => {
+      // Realizar validação adicional da data antes de salvar
+      let dateToUse: Date | undefined;
+      
+      if (date && isValidDate(date)) {
+        // Criar uma nova instância segura da data fornecida
+        dateToUse = createSafeDate(date);
+        console.log("useAssessmentHandlers: Usando data fornecida:", dateToUse);
+      } else if (scheduledDate && isValidDate(scheduledDate)) {
+        // Criar uma nova instância segura da data do estado
+        dateToUse = createSafeDate(scheduledDate);
+        console.log("useAssessmentHandlers: Usando data do estado:", dateToUse);
+      } else {
+        console.log("useAssessmentHandlers: Nenhuma data válida disponível");
+        dateToUse = undefined;
+      }
+      
+      return handleSaveAssessment(selectedEmployee, selectedTemplate, dateToUse);
+    },
     handleSubmitAssessment,
     getSelectedEmployeeName,
     handleScheduleNewAssessment: (employeeId: string, templateId: string) => 

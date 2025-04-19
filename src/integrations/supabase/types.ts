@@ -562,6 +562,30 @@ export type Database = {
         }
         Relationships: []
       }
+      permission_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          permissions: Json
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permissions: Json
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permissions?: Json
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -802,6 +826,135 @@ export type Database = {
         }
         Relationships: []
       }
+      user_companies: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_permissions: {
+        Row: {
+          create_assessments: boolean | null
+          create_checklists: boolean | null
+          create_companies: boolean | null
+          create_employees: boolean | null
+          create_functions: boolean | null
+          create_sectors: boolean | null
+          created_at: string | null
+          delete_assessments: boolean | null
+          delete_checklists: boolean | null
+          delete_companies: boolean | null
+          delete_employees: boolean | null
+          delete_functions: boolean | null
+          delete_sectors: boolean | null
+          edit_assessments: boolean | null
+          edit_checklists: boolean | null
+          edit_companies: boolean | null
+          edit_employees: boolean | null
+          edit_functions: boolean | null
+          edit_sectors: boolean | null
+          edit_settings: boolean | null
+          export_reports: boolean | null
+          id: string
+          updated_at: string | null
+          user_id: string
+          view_assessments: boolean | null
+          view_checklists: boolean | null
+          view_companies: boolean | null
+          view_dashboard: boolean | null
+          view_employees: boolean | null
+          view_functions: boolean | null
+          view_reports: boolean | null
+          view_sectors: boolean | null
+          view_settings: boolean | null
+        }
+        Insert: {
+          create_assessments?: boolean | null
+          create_checklists?: boolean | null
+          create_companies?: boolean | null
+          create_employees?: boolean | null
+          create_functions?: boolean | null
+          create_sectors?: boolean | null
+          created_at?: string | null
+          delete_assessments?: boolean | null
+          delete_checklists?: boolean | null
+          delete_companies?: boolean | null
+          delete_employees?: boolean | null
+          delete_functions?: boolean | null
+          delete_sectors?: boolean | null
+          edit_assessments?: boolean | null
+          edit_checklists?: boolean | null
+          edit_companies?: boolean | null
+          edit_employees?: boolean | null
+          edit_functions?: boolean | null
+          edit_sectors?: boolean | null
+          edit_settings?: boolean | null
+          export_reports?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          view_assessments?: boolean | null
+          view_checklists?: boolean | null
+          view_companies?: boolean | null
+          view_dashboard?: boolean | null
+          view_employees?: boolean | null
+          view_functions?: boolean | null
+          view_reports?: boolean | null
+          view_sectors?: boolean | null
+          view_settings?: boolean | null
+        }
+        Update: {
+          create_assessments?: boolean | null
+          create_checklists?: boolean | null
+          create_companies?: boolean | null
+          create_employees?: boolean | null
+          create_functions?: boolean | null
+          create_sectors?: boolean | null
+          created_at?: string | null
+          delete_assessments?: boolean | null
+          delete_checklists?: boolean | null
+          delete_companies?: boolean | null
+          delete_employees?: boolean | null
+          delete_functions?: boolean | null
+          delete_sectors?: boolean | null
+          edit_assessments?: boolean | null
+          edit_checklists?: boolean | null
+          edit_companies?: boolean | null
+          edit_employees?: boolean | null
+          edit_functions?: boolean | null
+          edit_sectors?: boolean | null
+          edit_settings?: boolean | null
+          export_reports?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          view_assessments?: boolean | null
+          view_checklists?: boolean | null
+          view_companies?: boolean | null
+          view_dashboard?: boolean | null
+          view_employees?: boolean | null
+          view_functions?: boolean | null
+          view_reports?: boolean | null
+          view_sectors?: boolean | null
+          view_settings?: boolean | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -822,14 +975,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_with_emails: {
+        Row: {
+          email: string | null
+          id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      check_company_access: {
+        Args: { user_id: string; company_id: string }
+        Returns: boolean
+      }
       copy_template_for_company: {
         Args:
           | Record<PropertyKey, never>
           | { template_id: string; company_id: string; new_title?: string }
         Returns: string
+      }
+      get_user_emails: {
+        Args: { user_ids: string[] }
+        Returns: {
+          id: string
+          email: string
+        }[]
       }
       has_role: {
         Args: {
