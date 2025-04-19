@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { RecurrenceType, ScheduledAssessment, AssessmentStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +48,7 @@ export function useScheduledAssessments() {
           name: item.employees.name || 'Funcionário',
           email: item.employees.email || '',
           phone: item.employees.phone || ''
-        } : undefined,
+        } : null,
         checklist_templates: item.checklist_templates
       }));
     }

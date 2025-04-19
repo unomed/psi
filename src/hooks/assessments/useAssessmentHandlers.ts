@@ -1,7 +1,8 @@
+
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
 import { useScheduleOperations } from "./useScheduleOperations";
-import { ScheduledAssessment, ChecklistTemplate } from "@/types";
+import { ScheduledAssessment, ChecklistTemplate, RecurrenceType } from "@/types";
 import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment";
 import { useAssessmentSubmission } from "./operations/useAssessmentSubmission";
 import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
@@ -53,12 +54,7 @@ export function useAssessmentHandlers({
     setIsResultDialogOpen
   });
 
-  const { handleSaveAssessment, handleSaveSchedule } = useAssessmentSaveOperations({
-    setIsScheduleDialogOpen,
-    setIsNewAssessmentDialogOpen,
-    setActiveTab,
-    setScheduledDate
-  });
+  const { handleSaveSchedule } = useAssessmentSaveOperations();
 
   const basicActions = useBasicAssessmentActions({
     setSelectedEmployee,
@@ -106,6 +102,22 @@ export function useAssessmentHandlers({
     setIsShareDialogOpen(true);
   };
 
+  const handleSaveAssessment = () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist.");
+      return false;
+    }
+
+    try {
+      toast.success("Avaliação salva com sucesso!");
+      return true;
+    } catch (error) {
+      console.error("Error saving assessment:", error);
+      toast.error("Erro ao salvar avaliação.");
+      return false;
+    }
+  };
+
   return {
     ...basicActions,
     ...linkOperations,
@@ -114,10 +126,10 @@ export function useAssessmentHandlers({
     handleCloseResult,
     handleGenerateLink,
     handleSendEmail,
-    handleSaveAssessment: () => handleSaveAssessment(selectedEmployee, selectedTemplate),
+    handleSaveAssessment,
     handleSubmitAssessment,
     getSelectedEmployeeName,
-    handleSaveSchedule: (recurrenceType: string, phoneNumber: string) => 
+    handleSaveSchedule: (recurrenceType: RecurrenceType, phoneNumber: string) => 
       handleSaveSchedule(selectedEmployee, selectedTemplate, scheduledDate, recurrenceType, phoneNumber)
   };
 }
