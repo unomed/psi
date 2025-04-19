@@ -35,14 +35,14 @@ export function EmployeeSelector({
       <Label htmlFor="employee">Funcionário</Label>
       <Select 
         onValueChange={onEmployeeChange} 
-        value={selectedEmployee || undefined}
+        value={selectedEmployee || ""}
         disabled={!selectedRole || isLoading}
       >
         <SelectTrigger id="employee">
           <SelectValue placeholder={selectedRole ? "Selecione um funcionário" : "Primeiro selecione uma função"} />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees.length > 0 ? (
+          {filteredEmployees && filteredEmployees.length > 0 ? (
             filteredEmployees.map((employee) => (
               <SelectItem key={employee.id} value={employee.id}>
                 {employee.name}

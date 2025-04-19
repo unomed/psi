@@ -60,16 +60,16 @@ export function RoleSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
+        <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput placeholder="Buscar função..." />
             <CommandEmpty>Nenhuma função encontrada.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredRoles.length > 0 ? (
+              {filteredRoles && filteredRoles.length > 0 ? (
                 filteredRoles.map((role) => (
                   <CommandItem
                     key={role.id}
-                    value={role.id}
+                    value={role.name || role.id}
                     onSelect={() => {
                       onRoleChange(role.id);
                       setOpen(false);
@@ -85,7 +85,7 @@ export function RoleSelector({
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled value="no-role">
+                <CommandItem disabled value="no-roles">
                   Nenhuma função disponível
                 </CommandItem>
               )}

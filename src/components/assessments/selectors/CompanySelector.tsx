@@ -55,11 +55,11 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
             <CommandInput placeholder="Buscar empresa..." />
             <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {companiesList.length > 0 ? (
+              {companiesList && companiesList.length > 0 ? (
                 companiesList.map((company) => (
                   <CommandItem
                     key={company.id}
-                    value={company.name}
+                    value={company.name || company.id}
                     onSelect={() => {
                       onCompanyChange(company.id);
                       setOpen(false);

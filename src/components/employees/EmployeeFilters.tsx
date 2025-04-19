@@ -20,6 +20,8 @@ export function EmployeeFilters({
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const handleCompanyChange = (companyId: string) => {
+    if (companyId === selectedCompany) return;
+    
     setSelectedCompany(companyId);
     setSelectedSector(null);
     setSelectedRole(null);
@@ -29,6 +31,8 @@ export function EmployeeFilters({
   };
 
   const handleSectorChange = (sectorId: string) => {
+    if (sectorId === selectedSector) return;
+    
     setSelectedSector(sectorId);
     setSelectedRole(null);
     onSectorChange(sectorId);
@@ -36,6 +40,8 @@ export function EmployeeFilters({
   };
 
   const handleRoleChange = (roleId: string) => {
+    if (roleId === selectedRole) return;
+    
     setSelectedRole(roleId);
     onRoleChange(roleId);
   };

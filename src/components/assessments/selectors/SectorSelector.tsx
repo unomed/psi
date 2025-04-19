@@ -60,16 +60,16 @@ export function SectorSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
+        <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput placeholder="Buscar setor..." />
             <CommandEmpty>Nenhum setor encontrado.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredSectors.length > 0 ? (
+              {filteredSectors && filteredSectors.length > 0 ? (
                 filteredSectors.map((sector) => (
                   <CommandItem
                     key={sector.id}
-                    value={sector.id}
+                    value={sector.name || sector.id}
                     onSelect={() => {
                       onSectorChange(sector.id);
                       setOpen(false);
@@ -85,7 +85,7 @@ export function SectorSelector({
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled value="no-sector">
+                <CommandItem disabled value="no-sectors">
                   Nenhum setor disponível
                 </CommandItem>
               )}
