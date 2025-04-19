@@ -1,9 +1,11 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { fetchChecklistTemplates } from "@/services/checklistService";
 import { useAssessmentState } from "@/hooks/useAssessmentState";
 import { useAssessmentDialogs } from "@/hooks/assessments/useAssessmentDialogs";
 import { useAssessmentSelection } from "@/hooks/assessments/useAssessmentSelection";
 import { useAssessmentHandlers } from "@/hooks/assessments/useAssessmentHandlers";
+import { AssessmentErrorBoundary } from "@/components/assessments/error-boundary/AssessmentErrorBoundary";
 
 // Components
 import { AssessmentActions } from "@/components/assessments/AssessmentActions";
@@ -61,25 +63,25 @@ export function AssessmentHandlerRoot() {
   };
 
   return (
-    <div className="space-y-8">
-      <AssessmentActions onNewAssessment={handlers.handleNewAssessment} />
-      
-      <AssessmentTabs />
-      
-      <AssessmentDialogsContainer
-        dialogState={dialogState}
-        handlers={handlers}
-        data={{
-          selectedEmployee,
-          selectedTemplate,
-          templates,
-          isTemplatesLoading: isLoading,
-          scheduledDate
-        }}
-        onEmployeeChange={handleEmployeeChange}
-        onTemplateSelect={handleTemplateSelect}
-        onDateSelect={setScheduledDate}
-      />
-    </div>
+    <AssessmentErrorBoundary>
+      <div className="space-y-8">
+        <AssessmentActions onNewAssessment={handlers.handleNewAssessment} />
+        <AssessmentTabs />
+        <AssessmentDialogsContainer
+          dialogState={dialogState}
+          handlers={handlers}
+          data={{
+            selectedEmployee,
+            selectedTemplate,
+            templates,
+            isTemplatesLoading: isLoading,
+            scheduledDate
+          }}
+          onEmployeeChange={handleEmployeeChange}
+          onTemplateSelect={handleTemplateSelect}
+          onDateSelect={setScheduledDate}
+        />
+      </div>
+    </AssessmentErrorBoundary>
   );
 }
