@@ -20,7 +20,7 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
     if (isSettingsRoute && !isOpen) {
       setIsOpen(true);
     }
-  }, [isSettingsRoute]);
+  }, [isSettingsRoute, isOpen]);
   
   const filteredSettingsItems = settingsMenuItems.filter(item => 
     userRole && item.roles.includes(userRole)
