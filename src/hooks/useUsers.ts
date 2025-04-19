@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,7 +35,6 @@ export function useUsers() {
         throw rolesError;
       }
 
-      // Fix: Use a simpler query for user companies to avoid relation errors
       const { data: userCompanies, error: companiesError } = await supabase
         .from('user_companies')
         .select('user_id, company_id');
@@ -46,7 +44,6 @@ export function useUsers() {
         throw companiesError;
       }
 
-      // Get all company names in a separate query
       const { data: companies, error: companyNamesError } = await supabase
         .from('companies')
         .select('id, name');
@@ -59,12 +56,10 @@ export function useUsers() {
       return profiles.map(profile => {
         const userRole = userRoles.find(r => r.user_id === profile.id);
         
-        // Get company IDs for this user
         const userCompanyIds = userCompanies
           .filter(uc => uc.user_id === profile.id)
           .map(uc => uc.company_id);
         
-        // Get company names from the IDs
         const companyNames = companies
           .filter(c => userCompanyIds.includes(c.id))
           .map(c => c.name);
@@ -72,8 +67,6 @@ export function useUsers() {
         return {
           id: profile.id,
           email: profile.email || '',
-          // Fix: The profiles_with_emails view might not have full_name property
-          // Set a default empty string if full_name is not present
           full_name: (profile as any).full_name || '',
           role: userRole?.role || 'user',
           companies: companyNames
@@ -84,15 +77,11 @@ export function useUsers() {
 
   const updateUserRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
-      // Fix: Only allow valid database roles (not 'user')
-      // Cast role to database accepted types and exclude 'user'
       let dbRole: "superadmin" | "admin" | "evaluator";
       
-      // Convert role string to appropriate database role
       if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
         dbRole = role as "superadmin" | "admin" | "evaluator";
       } else {
-        // Default to 'evaluator' if an invalid role is provided
         dbRole = 'evaluator';
         toast.warning('Função inválida, usando "evaluator" como padrão');
       }

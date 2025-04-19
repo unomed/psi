@@ -1,0 +1,47 @@
+
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { UserTableRow } from "./UserTableRow";
+import { User } from "@/hooks/useUsers";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+interface UserTableProps {
+  users: User[];
+  onEditUser: (userId: string) => void;
+  onDeleteUser: (userId: string) => void;
+}
+
+export function UserTable({ users, onEditUser, onDeleteUser }: UserTableProps) {
+  if (!users?.length) {
+    return (
+      <Alert>
+        <AlertDescription>
+          Nenhum usuário encontrado.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Nome</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Perfil</TableHead>
+          <TableHead>Empresas</TableHead>
+          <TableHead className="text-right">Ações</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {users.map((user) => (
+          <UserTableRow
+            key={user.id}
+            user={user}
+            onEdit={onEditUser}
+            onDelete={onDeleteUser}
+          />
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
