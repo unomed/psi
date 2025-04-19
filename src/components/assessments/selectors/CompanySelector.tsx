@@ -75,7 +75,9 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled>Nenhuma empresa disponível</CommandItem>
+                <CommandItem disabled value="no-company">
+                  Nenhuma empresa disponível
+                </CommandItem>
               )}
             </CommandGroup>
           </Command>
