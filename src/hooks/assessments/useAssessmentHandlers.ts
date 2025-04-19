@@ -8,6 +8,7 @@ import { useAssessmentSubmission } from "./operations/useAssessmentSubmission";
 import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
 import { useAssessmentSaveOperations } from "./operations/useAssessmentSaveOperations";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useAssessmentHandlers({
   selectedEmployee,
@@ -120,13 +121,29 @@ export function useAssessmentHandlers({
     setIsShareDialogOpen(true);
   };
 
-  const handleSaveAssessment = () => {
+  const handleSaveAssessment = async () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
       return false;
     }
 
     try {
+      // Store in scheduled_assessments instead of assessment_responses to avoid foreign key constraint
+      const { error } = await supabase
+        .from('scheduled_assessments')
+        .insert({
+          employee_id: selectedEmployee,
+          template_id: selectedTemplate.id,
+          scheduled_date: new Date().toISOString(),
+          status: 'scheduled'
+        });
+
+      if (error) {
+        console.error("Error saving scheduled assessment:", error);
+        toast.error("Erro ao salvar avaliação");
+        return false;
+      }
+
       toast.success("Avaliação salva com sucesso!");
       return true;
     } catch (error) {

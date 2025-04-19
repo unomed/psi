@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types";
 import { saveScheduledAssessment } from "@/services/checklistService";
 import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const getSelectedEmployeeName = (selectedEmployee: string | null) => {
   return getEmployeeInfo(selectedEmployee).name;
@@ -18,6 +19,7 @@ export const handleSaveAssessment = async (
   }
 
   try {
+    // Create a scheduled assessment instead
     await saveScheduledAssessment({
       employeeId: selectedEmployee,
       templateId: selectedTemplate.id,

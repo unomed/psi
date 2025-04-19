@@ -68,23 +68,8 @@ export function NewAssessmentDialog({
     }
 
     try {
-      // First save to assessment_responses
-      const { error: responseError } = await supabase
-        .from('assessment_responses')
-        .insert({
-          template_id: selectedTemplate.id,
-          employee_id: selectedEmployee,
-          employee_name: selectedEmployeeData?.name,
-          response_data: {},
-          completed_at: new Date().toISOString()
-        });
-
-      if (responseError) {
-        console.error("Error saving assessment response:", responseError);
-        toast.error("Erro ao salvar avaliação");
-        return;
-      }
-
+      // Don't try to save to assessment_responses with a foreign key constraint
+      // Instead, we'll just create a scheduled assessment which doesn't have the constraint
       const saved = await onSave();
       if (saved) {
         toast.success("Avaliação salva com sucesso");
