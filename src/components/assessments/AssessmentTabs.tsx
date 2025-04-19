@@ -46,12 +46,15 @@ export function AssessmentTabs() {
         let employeeInfo = null;
         
         // Check if employees data exists and is not an error object
-        if (item.employees && typeof item.employees === 'object' && !('error' in item.employees)) {
-          employeeInfo = {
-            name: item.employees.name || 'Funcionário não encontrado',
-            email: item.employees.email || '',
-            phone: item.employees.phone || ''
-          };
+        if (item.employees && typeof item.employees === 'object') {
+          // Check if it's not an error object (doesn't have 'error' property)
+          if (!('error' in item.employees)) {
+            employeeInfo = {
+              name: item.employees?.name || 'Funcionário não encontrado',
+              email: item.employees?.email || '',
+              phone: item.employees?.phone || ''
+            };
+          }
         }
 
         return {
