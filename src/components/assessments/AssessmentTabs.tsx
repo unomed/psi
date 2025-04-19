@@ -41,19 +41,33 @@ export function AssessmentTabs() {
       }
 
       // Transform the data to match our ScheduledAssessment type
-      return data.map(item => ({
-        id: item.id,
-        employeeId: item.employee_id,
-        templateId: item.template_id,
-        scheduledDate: new Date(item.scheduled_date),
-        status: item.status,
-        sentAt: item.sent_at ? new Date(item.sent_at) : null,
-        completedAt: item.completed_at ? new Date(item.completed_at) : null,
-        phoneNumber: item.phone_number || undefined,
-        linkUrl: item.link_url || '',
-        employees: item.employees,
-        checklist_templates: item.checklist_templates
-      })) as ScheduledAssessment[];
+      return data.map(item => {
+        // Safely extract employee data, using optional chaining and nullish coalescing
+        let employeeInfo = null;
+        
+        // Check if employees data exists and is not an error object
+        if (item.employees && typeof item.employees === 'object' && !('error' in item.employees)) {
+          employeeInfo = {
+            name: item.employees.name || 'Funcionário não encontrado',
+            email: item.employees.email || '',
+            phone: item.employees.phone || ''
+          };
+        }
+
+        return {
+          id: item.id,
+          employeeId: item.employee_id,
+          templateId: item.template_id,
+          scheduledDate: new Date(item.scheduled_date),
+          status: item.status,
+          sentAt: item.sent_at ? new Date(item.sent_at) : null,
+          completedAt: item.completed_at ? new Date(item.completed_at) : null,
+          phoneNumber: item.phone_number || undefined,
+          linkUrl: item.link_url || '',
+          employees: employeeInfo,
+          checklist_templates: item.checklist_templates
+        } as ScheduledAssessment;
+      });
     }
   });
 
