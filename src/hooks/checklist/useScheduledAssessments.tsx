@@ -31,22 +31,29 @@ export function useScheduledAssessments() {
       if (error) throw error;
       
       // Transform the data to match our ScheduledAssessment type
-      return data.map(item => ({
-        id: item.id,
-        employeeId: item.employee_id,
-        templateId: item.template_id,
-        scheduledDate: new Date(item.scheduled_date),
-        sentAt: item.sent_at ? new Date(item.sent_at) : null,
-        linkUrl: item.link_url || "",
-        status: item.status,
-        completedAt: item.completed_at ? new Date(item.completed_at) : null,
-        recurrenceType: item.recurrence_type as RecurrenceType | undefined,
-        nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
-        phoneNumber: item.phone_number,
-        // Add employees and checklist_templates data for reference
-        employees: item.employees,
-        checklist_templates: item.checklist_templates
-      })) as ScheduledAssessment[];
+      return data.map(item => {
+        // Check if employees data is valid
+        const employeesData = item.employees && typeof item.employees === 'object' && !('error' in item.employees)
+          ? item.employees
+          : null;
+
+        return {
+          id: item.id,
+          employeeId: item.employee_id,
+          templateId: item.template_id,
+          scheduledDate: new Date(item.scheduled_date),
+          sentAt: item.sent_at ? new Date(item.sent_at) : null,
+          linkUrl: item.link_url || "",
+          status: item.status,
+          completedAt: item.completed_at ? new Date(item.completed_at) : null,
+          recurrenceType: item.recurrence_type as RecurrenceType | undefined,
+          nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+          phoneNumber: item.phone_number,
+          // Safely assign employees data
+          employees: employeesData,
+          checklist_templates: item.checklist_templates
+        };
+      }) as ScheduledAssessment[];
     }
   });
 

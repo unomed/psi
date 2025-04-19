@@ -16,12 +16,12 @@ export interface ScheduledAssessment {
   recurrenceType?: RecurrenceType;
   nextScheduledDate?: Date | null;
   phoneNumber?: string;
-  // Add these properties to support the data returned from the database
+  // Make employees optional and add possible error state
   employees?: {
     name: string;
     email: string;
     phone: string;
-  };
+  } | null;
   checklist_templates?: {
     title: string;
   };
