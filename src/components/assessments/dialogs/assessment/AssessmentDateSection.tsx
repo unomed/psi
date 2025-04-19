@@ -1,6 +1,7 @@
 
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
+import { useEffect } from "react";
 
 interface AssessmentDateSectionProps {
   scheduledDate: Date | undefined;
@@ -13,8 +14,20 @@ export function AssessmentDateSection({
   onDateSelect,
   dateError
 }: AssessmentDateSectionProps) {
+  // Log para verificação de data
+  useEffect(() => {
+    console.log("Estado atual da data:", scheduledDate, 
+      scheduledDate instanceof Date ? "É uma data válida" : "Não é uma data válida",
+      scheduledDate instanceof Date && !isNaN(scheduledDate.getTime()) ? "Data válida" : "Data inválida");
+  }, [scheduledDate]);
+
+  // Helper para verificar se a data é válida
+  const isValidDate = (date: any): boolean => {
+    return date instanceof Date && !isNaN(date.getTime());
+  };
+
   const formatDateForDisplay = (date: Date | undefined): string => {
-    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    if (!date || !isValidDate(date)) {
       return 'Data não selecionada';
     }
     return date.toLocaleDateString('pt-BR', {
@@ -24,6 +37,17 @@ export function AssessmentDateSection({
     });
   };
 
+  const handleDateChange = (date: Date | undefined) => {
+    console.log("Data selecionada em AssessmentDateSection:", date);
+    
+    // Garantir que sempre passamos uma data válida ou undefined explícito
+    if (date && isValidDate(date)) {
+      onDateSelect(date);
+    } else {
+      onDateSelect(undefined);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor="scheduledDate" className={dateError ? "text-red-500" : ""}>
@@ -31,10 +55,7 @@ export function AssessmentDateSection({
       </Label>
       <DatePicker 
         date={scheduledDate} 
-        onSelect={(date) => {
-          console.log("Data selecionada:", date);
-          onDateSelect(date);
-        }} 
+        onSelect={handleDateChange} 
         disabled={(date) => {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
@@ -48,12 +69,12 @@ export function AssessmentDateSection({
         </p>
       )}
       
-      {scheduledDate && !dateError && (
+      {scheduledDate && isValidDate(scheduledDate) && !dateError && (
         <p className="text-xs text-muted-foreground">
           Data selecionada: {formatDateForDisplay(scheduledDate)}
         </p>
       )}
-      {!scheduledDate && !dateError && (
+      {(!scheduledDate || !isValidDate(scheduledDate)) && !dateError && (
         <p className="text-xs text-muted-foreground">
           Selecione a data em que a avaliação será realizada.
         </p>

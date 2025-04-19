@@ -17,23 +17,26 @@ export function useAssessmentSaveOperations() {
     recurrenceType: RecurrenceType,
     phoneNumber: string = ""
   ) => {
-    // Log detalhado para depuração
+    // Validação detalhada com log
     console.log("Salvando agendamento:", {
       selectedEmployee,
       templateId: selectedTemplate?.id,
       scheduledDate: scheduledDate ? {
         date: scheduledDate.toISOString(),
-        valid: scheduledDate instanceof Date && !isNaN(scheduledDate.getTime())
+        valid: scheduledDate instanceof Date && !isNaN(scheduledDate.getTime()),
+        toString: String(scheduledDate),
+        typeof: typeof scheduledDate
       } : 'undefined',
       recurrenceType
     });
     
+    // Validação básica de parâmetros
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo.");
       return null;
     }
     
-    // Verificação mais rigorosa da data
+    // Validação rigorosa da data
     if (!scheduledDate) {
       console.error("Data de agendamento ausente");
       toast.error("Selecione uma data para a avaliação.");
@@ -42,7 +45,9 @@ export function useAssessmentSaveOperations() {
     
     // Verificar se a data é válida (não é um objeto Date inválido)
     if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
-      console.error("Data inválida detectada:", scheduledDate);
+      console.error("Data inválida detectada:", scheduledDate, 
+        "instanceof Date:", scheduledDate instanceof Date, 
+        "isNaN check:", isNaN(scheduledDate instanceof Date ? scheduledDate.getTime() : NaN));
       toast.error("A data selecionada é inválida. Por favor, selecione novamente.");
       return null;
     }
@@ -54,20 +59,21 @@ export function useAssessmentSaveOperations() {
         return null;
       }
       
-      // Verificar se temos uma recorrência selecionada
+      // Log para periodicidade
       if (recurrenceType === "none") {
         console.log("Avaliação sem recorrência");
       } else {
         console.log(`Recorrência definida como: ${recurrenceType}`);
       }
       
-      const nextDate = calculateNextScheduledDate(scheduledDate, recurrenceType);
+      // Calcular próxima data se houver recorrência
+      const nextDate = recurrenceType !== "none" 
+        ? calculateNextScheduledDate(scheduledDate, recurrenceType)
+        : null;
+        
       console.log("Próxima data calculada:", nextDate);
       
-      if (recurrenceType !== "none" && !nextDate) {
-        console.warn("Próxima data não calculada corretamente para recorrência:", recurrenceType);
-      }
-      
+      // Criar objeto de avaliação agendada
       const newScheduledAssessment: Omit<ScheduledAssessment, "id"> = {
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
@@ -81,9 +87,11 @@ export function useAssessmentSaveOperations() {
         phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined
       };
       
+      // Salvar no banco de dados
       const savedId = await saveScheduledAssessment(newScheduledAssessment);
       console.log("Avaliação salva com ID:", savedId);
       
+      // Atualizar estado local
       const assessmentWithId: ScheduledAssessment = {
         ...newScheduledAssessment,
         id: savedId || `sched-${Date.now()}`

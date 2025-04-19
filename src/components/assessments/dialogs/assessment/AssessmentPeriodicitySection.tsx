@@ -25,12 +25,22 @@ export function AssessmentPeriodicitySection({
   employeeRiskLevel,
   suggestedPeriodicity
 }: AssessmentPeriodicitySectionProps) {
+  // Helper para converter string para RecurrenceType com segurança
+  const safeRecurrenceType = (value: string): RecurrenceType => {
+    // Verificar se o valor está entre os tipos válidos de RecurrenceType
+    if (['none', 'monthly', 'semiannual', 'annual'].includes(value)) {
+      return value as RecurrenceType;
+    }
+    // Valor padrão se não for válido
+    return 'none';
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor="recurrence">Periodicidade</Label>
       <Select 
         value={recurrenceType} 
-        onValueChange={(value) => onRecurrenceChange(value as RecurrenceType)}
+        onValueChange={(value) => onRecurrenceChange(safeRecurrenceType(value))}
       >
         <SelectTrigger>
           <SelectValue placeholder="Selecione o tipo de recorrência" />
