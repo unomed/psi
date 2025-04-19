@@ -65,6 +65,7 @@ export function NewAssessmentDialog({
             onCompanyChange={() => {}}
             onSectorChange={() => {}}
             onRoleChange={() => {}}
+            onNext={handleSave} // Adding the missing onNext prop
           />
 
           <div className="flex justify-end">

@@ -76,6 +76,8 @@ export function AssessmentSelectionTab({
         />
       </div>
 
+      {/* Hide the Next button as per user request */}
+      {/*
       <div className="flex justify-end">
         <Button
           onClick={onNext}
@@ -85,6 +87,7 @@ export function AssessmentSelectionTab({
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
+      */}
     </div>
   );
 }
