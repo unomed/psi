@@ -32,7 +32,8 @@ export function RoleSelector({
   const [open, setOpen] = useState(false);
   const { roles = [], isLoading } = useRoles();
 
-  const filteredRoles = selectedSector 
+  // Ensure we're always working with an array and properly filtering
+  const filteredRoles = selectedSector && Array.isArray(roles)
     ? roles.filter(role => role.sectorId === selectedSector)
     : [];
 
@@ -61,23 +62,27 @@ export function RoleSelector({
             <CommandInput placeholder="Buscar função..." />
             <CommandEmpty>Nenhuma função encontrada.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredRoles.map((role) => (
-                <CommandItem
-                  key={role.id}
-                  onSelect={() => {
-                    onRoleChange(role.id);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedRole === role.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {role.name}
-                </CommandItem>
-              ))}
+              {filteredRoles.length > 0 ? (
+                filteredRoles.map((role) => (
+                  <CommandItem
+                    key={role.id}
+                    onSelect={() => {
+                      onRoleChange(role.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedRole === role.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {role.name}
+                  </CommandItem>
+                ))
+              ) : (
+                <CommandItem disabled>Nenhuma função disponível</CommandItem>
+              )}
             </CommandGroup>
           </Command>
         </PopoverContent>

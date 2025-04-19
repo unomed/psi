@@ -27,7 +27,10 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
   const [open, setOpen] = useState(false);
   const { companies = [], isLoading } = useCompanies();
   
-  const selectedCompanyName = companies.find(
+  // Make sure companies is always an array
+  const companiesList = Array.isArray(companies) ? companies : [];
+  
+  const selectedCompanyName = companiesList.find(
     company => company.id === selectedCompany
   )?.name || "";
 
@@ -52,23 +55,27 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
             <CommandInput placeholder="Buscar empresa..." />
             <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {companies.map((company) => (
-                <CommandItem
-                  key={company.id}
-                  onSelect={() => {
-                    onCompanyChange(company.id);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedCompany === company.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {company.name}
-                </CommandItem>
-              ))}
+              {companiesList.length > 0 ? (
+                companiesList.map((company) => (
+                  <CommandItem
+                    key={company.id}
+                    onSelect={() => {
+                      onCompanyChange(company.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedCompany === company.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {company.name}
+                  </CommandItem>
+                ))
+              ) : (
+                <CommandItem disabled>Nenhuma empresa disponível</CommandItem>
+              )}
             </CommandGroup>
           </Command>
         </PopoverContent>

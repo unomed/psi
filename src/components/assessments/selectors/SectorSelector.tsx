@@ -32,7 +32,8 @@ export function SectorSelector({
   const [open, setOpen] = useState(false);
   const { sectors = [], isLoading } = useSectors();
 
-  const filteredSectors = selectedCompany 
+  // Ensure we're always working with an array and properly filtering
+  const filteredSectors = selectedCompany && Array.isArray(sectors)
     ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
 
@@ -61,23 +62,27 @@ export function SectorSelector({
             <CommandInput placeholder="Buscar setor..." />
             <CommandEmpty>Nenhum setor encontrado.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredSectors.map((sector) => (
-                <CommandItem
-                  key={sector.id}
-                  onSelect={() => {
-                    onSectorChange(sector.id);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedSector === sector.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {sector.name}
-                </CommandItem>
-              ))}
+              {filteredSectors.length > 0 ? (
+                filteredSectors.map((sector) => (
+                  <CommandItem
+                    key={sector.id}
+                    onSelect={() => {
+                      onSectorChange(sector.id);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedSector === sector.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {sector.name}
+                  </CommandItem>
+                ))
+              ) : (
+                <CommandItem disabled>Nenhum setor disponível</CommandItem>
+              )}
             </CommandGroup>
           </Command>
         </PopoverContent>
