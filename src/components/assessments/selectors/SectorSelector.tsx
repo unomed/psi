@@ -1,96 +1,62 @@
 
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { useSectors } from "@/hooks/useSectors";
+
+// Mock data - this will need to be replaced with real data
+const SECTORS = [
+  { id: "sector-1", companyId: "comp-1", name: "Administrativo" },
+  { id: "sector-2", companyId: "comp-1", name: "Operacional" },
+  { id: "sector-3", companyId: "comp-2", name: "Comercial" },
+  { id: "sector-4", companyId: "comp-2", name: "Financeiro" },
+];
 
 interface SectorSelectorProps {
   selectedCompany: string | null;
   selectedSector: string | null;
-  onSectorChange: (value: string) => void;
+  onSectorChange: (sectorId: string) => void;
 }
 
-export function SectorSelector({ 
-  selectedCompany, 
-  selectedSector, 
-  onSectorChange 
+export function SectorSelector({
+  selectedCompany,
+  selectedSector,
+  onSectorChange,
 }: SectorSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const { sectors = [], isLoading } = useSectors();
-
-  const sectorsList = Array.isArray(sectors) ? sectors : [];
-  
-  const filteredSectors = selectedCompany 
-    ? sectorsList.filter(sector => sector.companyId === selectedCompany)
+  // Filter sectors by company
+  const filteredSectors = selectedCompany
+    ? SECTORS.filter(sector => sector.companyId === selectedCompany)
     : [];
-
-  const selectedSectorName = filteredSectors.find(
-    sector => sector.id === selectedSector
-  )?.name || "";
+    
+  // Ensure we always have at least one item to select
+  const sectors = filteredSectors.length > 0 
+    ? filteredSectors 
+    : [{ id: "", name: "Nenhum setor encontrado" }];
 
   return (
     <div className="space-y-2">
       <Label htmlFor="sector">Setor</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            disabled={!selectedCompany || isLoading}
-          >
-            {selectedSectorName || (selectedCompany ? "Selecione um setor" : "Primeiro selecione uma empresa")}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Buscar setor..." />
-            <CommandEmpty>Nenhum setor encontrado.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {filteredSectors.length > 0 ? (
-                filteredSectors.map((sector) => (
-                  <CommandItem
-                    key={sector.id}
-                    value={sector.name}
-                    onSelect={() => {
-                      onSectorChange(sector.id);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedSector === sector.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {sector.name}
-                  </CommandItem>
-                ))
-              ) : (
-                <CommandItem disabled>
-                  {selectedCompany ? "Nenhum setor disponível" : "Selecione uma empresa primeiro"}
-                </CommandItem>
-              )}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <Select
+        value={selectedSector || ""}
+        onValueChange={onSectorChange}
+        disabled={!selectedCompany}
+      >
+        <SelectTrigger id="sector">
+          <SelectValue placeholder="Selecione um setor" />
+        </SelectTrigger>
+        <SelectContent>
+          {sectors.map((sector) => (
+            <SelectItem key={sector.id} value={sector.id}>
+              {sector.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

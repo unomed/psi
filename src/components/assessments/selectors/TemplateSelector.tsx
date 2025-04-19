@@ -1,13 +1,15 @@
 
-import { Label } from "@/components/ui/label";
+import React from "react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { ChecklistTemplate } from "@/types/checklist";
+import { Label } from "@/components/ui/label";
+import { ChecklistTemplate } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TemplateSelectorProps {
   selectedEmployee: string | null;
@@ -16,34 +18,42 @@ interface TemplateSelectorProps {
   onTemplateSelect: (templateId: string) => void;
 }
 
-export function TemplateSelector({ 
-  selectedEmployee, 
-  templates, 
-  isTemplatesLoading, 
-  onTemplateSelect 
+export function TemplateSelector({
+  selectedEmployee,
+  templates,
+  isTemplatesLoading,
+  onTemplateSelect,
 }: TemplateSelectorProps) {
+  if (isTemplatesLoading) {
+    return (
+      <div className="space-y-2">
+        <Label>Modelo de Avaliação</Label>
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  // Ensure we always have at least one item to select
+  const availableTemplates = templates.length > 0 
+    ? templates 
+    : [{ id: "", title: "Nenhum modelo encontrado", type: "disc", questions: [], createdAt: new Date() }];
+
   return (
     <div className="space-y-2">
-      <Label htmlFor="template">Modelo de Checklist</Label>
-      <Select 
-        onValueChange={onTemplateSelect} 
+      <Label htmlFor="template">Modelo de Avaliação</Label>
+      <Select
+        onValueChange={onTemplateSelect}
         disabled={!selectedEmployee}
       >
         <SelectTrigger id="template">
-          <SelectValue placeholder={selectedEmployee ? "Selecione um modelo" : "Primeiro selecione um funcionário"} />
+          <SelectValue placeholder="Selecione um modelo de avaliação" />
         </SelectTrigger>
         <SelectContent>
-          {isTemplatesLoading ? (
-            <SelectItem value="loading" disabled>Carregando modelos...</SelectItem>
-          ) : templates.length === 0 ? (
-            <SelectItem value="empty" disabled>Nenhum modelo disponível</SelectItem>
-          ) : (
-            templates.map((template) => (
-              <SelectItem key={template.id} value={template.id}>
-                {template.title}
-              </SelectItem>
-            ))
-          )}
+          {availableTemplates.map((template) => (
+            <SelectItem key={template.id} value={template.id}>
+              {template.title}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

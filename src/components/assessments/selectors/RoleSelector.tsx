@@ -1,96 +1,63 @@
 
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { useRoles } from "@/hooks/useRoles";
+
+// Mock data
+const ROLES = [
+  { id: "role-1", sectorId: "sector-1", name: "Gerente Administrativo" },
+  { id: "role-2", sectorId: "sector-1", name: "Assistente Administrativo" },
+  { id: "role-3", sectorId: "sector-2", name: "Operador de Máquinas" },
+  { id: "role-4", sectorId: "sector-3", name: "Vendedor" },
+  { id: "role-5", sectorId: "sector-4", name: "Analista Financeiro" },
+];
 
 interface RoleSelectorProps {
   selectedSector: string | null;
   selectedRole: string | null;
-  onRoleChange: (value: string) => void;
+  onRoleChange: (roleId: string) => void;
 }
 
-export function RoleSelector({ 
-  selectedSector, 
-  selectedRole, 
-  onRoleChange 
+export function RoleSelector({
+  selectedSector,
+  selectedRole,
+  onRoleChange,
 }: RoleSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const { roles = [], isLoading } = useRoles();
-
-  const rolesList = Array.isArray(roles) ? roles : [];
-  
-  const filteredRoles = selectedSector 
-    ? rolesList.filter(role => role.sectorId === selectedSector)
+  // Filter roles by sector
+  const filteredRoles = selectedSector
+    ? ROLES.filter(role => role.sectorId === selectedSector)
     : [];
-
-  const selectedRoleName = filteredRoles.find(
-    role => role.id === selectedRole
-  )?.name || "";
+    
+  // Ensure we always have at least one item to select
+  const roles = filteredRoles.length > 0 
+    ? filteredRoles 
+    : [{ id: "", name: "Nenhuma função encontrada" }];
 
   return (
     <div className="space-y-2">
       <Label htmlFor="role">Função</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            disabled={!selectedSector || isLoading}
-          >
-            {selectedRoleName || (selectedSector ? "Selecione uma função" : "Primeiro selecione um setor")}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
-          <Command>
-            <CommandInput placeholder="Buscar função..." />
-            <CommandEmpty>Nenhuma função encontrada.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {filteredRoles.length > 0 ? (
-                filteredRoles.map((role) => (
-                  <CommandItem
-                    key={role.id}
-                    value={role.name}
-                    onSelect={() => {
-                      onRoleChange(role.id);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedRole === role.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {role.name}
-                  </CommandItem>
-                ))
-              ) : (
-                <CommandItem disabled>
-                  {selectedSector ? "Nenhuma função disponível" : "Selecione um setor primeiro"}
-                </CommandItem>
-              )}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <Select
+        value={selectedRole || ""}
+        onValueChange={onRoleChange}
+        disabled={!selectedSector}
+      >
+        <SelectTrigger id="role">
+          <SelectValue placeholder="Selecione uma função" />
+        </SelectTrigger>
+        <SelectContent>
+          {roles.map((role) => (
+            <SelectItem key={role.id} value={role.id}>
+              {role.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

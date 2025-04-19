@@ -1,59 +1,53 @@
 
-import { Label } from "@/components/ui/label";
+import React from "react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { useEmployees } from "@/hooks/useEmployees";
+import { Label } from "@/components/ui/label";
+import { mockEmployees } from "../mock/assessmentMockData";
 
 interface EmployeeSelectorProps {
   selectedRole: string | null;
   selectedEmployee: string | null;
-  onEmployeeChange: (value: string) => void;
+  onEmployeeChange: (employeeId: string) => void;
 }
 
-export function EmployeeSelector({ 
-  selectedRole, 
-  selectedEmployee, 
-  onEmployeeChange 
+export function EmployeeSelector({
+  selectedRole,
+  selectedEmployee,
+  onEmployeeChange,
 }: EmployeeSelectorProps) {
-  const { employees = [], isLoading } = useEmployees();
-
-  // Garantindo que employees seja sempre um array válido
-  const employeesList = Array.isArray(employees) ? employees : [];
-  
-  // Filtramos apenas quando temos um selectedRole válido
-  // Caso contrário, retornamos um array vazio para evitar iteração em undefined
-  const filteredEmployees = selectedRole 
-    ? employeesList.filter(employee => employee.role_id === selectedRole)
+  // Filter employees by role
+  const filteredEmployees = selectedRole
+    ? mockEmployees.filter(emp => emp.role_id === selectedRole)
     : [];
+    
+  // Ensure we always have at least one item to select
+  const employees = filteredEmployees.length > 0 
+    ? filteredEmployees 
+    : [{ id: "", name: "Nenhum funcionário encontrado", email: "", role_id: "" }];
 
   return (
     <div className="space-y-2">
       <Label htmlFor="employee">Funcionário</Label>
-      <Select 
-        onValueChange={onEmployeeChange} 
+      <Select
         value={selectedEmployee || ""}
-        disabled={!selectedRole || isLoading}
+        onValueChange={onEmployeeChange}
+        disabled={!selectedRole}
       >
         <SelectTrigger id="employee">
-          <SelectValue placeholder={selectedRole ? "Selecione um funcionário" : "Primeiro selecione uma função"} />
+          <SelectValue placeholder="Selecione um funcionário" />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees.length > 0 ? (
-            filteredEmployees.map((employee) => (
-              <SelectItem key={employee.id} value={employee.id}>
-                {employee.name}
-              </SelectItem>
-            ))
-          ) : (
-            <SelectItem value="no-employee" disabled>
-              Nenhum funcionário disponível
+          {employees.map((employee) => (
+            <SelectItem key={employee.id} value={employee.id}>
+              {employee.name}
             </SelectItem>
-          )}
+          ))}
         </SelectContent>
       </Select>
     </div>
