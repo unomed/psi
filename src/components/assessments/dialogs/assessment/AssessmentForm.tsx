@@ -5,6 +5,8 @@ import { AssessmentPeriodicitySection } from "./AssessmentPeriodicitySection";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { ChecklistTemplate } from "@/types";
+import { useEffect } from "react";
+import { useAssessmentFormValidation } from "@/hooks/assessments/operations/useAssessmentFormValidation";
 
 interface AssessmentFormProps {
   selectedEmployee: string | null;
@@ -51,6 +53,16 @@ export function AssessmentForm({
   onRecurrenceChange,
   onSave
 }: AssessmentFormProps) {
+  // Use our enhanced form validation
+  const { validateForm, clearError, errorMessages } = useAssessmentFormValidation();
+  
+  // Clear date error when a valid date is selected
+  useEffect(() => {
+    if (scheduledDate && dateError) {
+      clearError('date');
+    }
+  }, [scheduledDate, dateError, clearError]);
+
   return (
     <div className="space-y-6">
       <AssessmentSelectionTab
@@ -74,6 +86,7 @@ export function AssessmentForm({
           scheduledDate={scheduledDate}
           onDateSelect={onDateSelect}
           dateError={dateError}
+          errorMessage={errorMessages.date}
         />
 
         <AssessmentPeriodicitySection
@@ -87,7 +100,18 @@ export function AssessmentForm({
 
       <div className="flex justify-end">
         <Button
-          onClick={onSave}
+          onClick={() => {
+            // Validate all form fields before saving
+            const isValid = validateForm({
+              employeeId: selectedEmployee,
+              templateId: selectedTemplate?.id ?? null,
+              scheduledDate
+            });
+            
+            if (isValid) {
+              onSave();
+            }
+          }}
           disabled={!selectedEmployee || !selectedTemplate || dateError}
         >
           <Save className="mr-2 h-4 w-4" />

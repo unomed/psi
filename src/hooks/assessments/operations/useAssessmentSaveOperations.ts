@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
 import { saveScheduledAssessment } from "@/services/assessment";
 import { useAssessmentCalculations } from "./useAssessmentCalculations";
+import { isValidDate, validateAssessmentDate } from "@/utils/dateUtils";
 
 export function useAssessmentSaveOperations() {
   const [scheduledAssessments, setScheduledAssessments] = useState<ScheduledAssessment[]>([]);
@@ -23,7 +24,7 @@ export function useAssessmentSaveOperations() {
       templateId: selectedTemplate?.id,
       scheduledDate: scheduledDate ? {
         date: scheduledDate.toISOString(),
-        valid: scheduledDate instanceof Date && !isNaN(scheduledDate.getTime()),
+        valid: isValidDate(scheduledDate),
         toString: String(scheduledDate),
         typeof: typeof scheduledDate,
         timestamp: scheduledDate.getTime()
@@ -37,13 +38,10 @@ export function useAssessmentSaveOperations() {
       return null;
     }
     
-    // Validação rigorosa da data
-    if (!scheduledDate || !(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
-      console.error("Data inválida detectada:", scheduledDate, 
-        "instanceof Date:", scheduledDate instanceof Date, 
-        "isNaN check:", scheduledDate instanceof Date ? isNaN(scheduledDate.getTime()) : "N/A",
-        "Timestamp:", scheduledDate instanceof Date ? scheduledDate.getTime() : "N/A");
-      toast.error("Selecione uma data válida para a avaliação.");
+    // Using our date validation utility
+    const dateError = validateAssessmentDate(scheduledDate);
+    if (dateError) {
+      toast.error(dateError);
       return null;
     }
     
@@ -56,7 +54,7 @@ export function useAssessmentSaveOperations() {
       
       // Calcular próxima data se houver recorrência
       const nextDate = recurrenceType !== "none" 
-        ? calculateNextScheduledDate(scheduledDate, recurrenceType)
+        ? calculateNextScheduledDate(scheduledDate!, recurrenceType)
         : null;
         
       console.log("Próxima data calculada:", nextDate);
@@ -65,7 +63,7 @@ export function useAssessmentSaveOperations() {
       const newScheduledAssessment: Omit<ScheduledAssessment, "id"> = {
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
-        scheduledDate: scheduledDate,
+        scheduledDate: scheduledDate!,
         sentAt: null,
         linkUrl: "",
         status: "scheduled",

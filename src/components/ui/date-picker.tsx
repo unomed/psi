@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { isValidDate, parseDateString, createSafeDate } from "@/utils/dateUtils";
 
 interface DatePickerProps {
   date?: Date;
@@ -24,11 +25,6 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
   const [inputValue, setInputValue] = React.useState(date ? format(date, 'dd/MM/yyyy') : '');
   const [isOpen, setIsOpen] = React.useState(false);
   const [hasError, setHasError] = React.useState(false);
-
-  // Verificar se a data é válida
-  const isValidDate = (d: any): boolean => {
-    return d instanceof Date && !isNaN(d.getTime());
-  };
 
   // Garantir que a data inicial seja definida corretamente
   React.useEffect(() => {
@@ -55,59 +51,33 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
     const value = e.target.value;
     setInputValue(value);
     
-    // Tentar analisar a data do input
+    // If input is empty, reset date
     if (value.trim() === '') {
-      // Se o campo estiver vazio, definir a data como undefined
       console.log("DatePicker: Input vazio, definindo data como undefined");
       onSelect(undefined);
       setHasError(false);
       return;
     }
     
-    const parts = value.split('/');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado em Date
-      const year = parseInt(parts[2], 10);
+    // Use our utility to parse date string
+    const parsedDate = parseDateString(value);
+    
+    if (parsedDate) {
+      console.log("DatePicker: Data analisada do input:", parsedDate, "Timestamp:", parsedDate.getTime());
       
-      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-        const parsedDate = new Date(year, month, day);
-        parsedDate.setHours(0, 0, 0, 0); // Garantir que a hora seja 00:00:00
-        
-        console.log("DatePicker: Data analisada do input:", parsedDate, 
-          "Dia:", day, "Mês:", month, "Ano:", year,
-          "Timestamp:", parsedDate.getTime());
-        
-        // Verificar se é uma data válida
-        if (
-          parsedDate.getDate() === day &&
-          parsedDate.getMonth() === month &&
-          parsedDate.getFullYear() === year &&
-          isValidDate(parsedDate) &&
-          (!disabled || !disabled(parsedDate))
-        ) {
-          // Se a data for válida, notificar o componente pai
-          console.log("DatePicker: Data válida do input, notificando componente pai");
-          onSelect(parsedDate);
-          setHasError(false);
-        } else {
-          console.log("DatePicker: Data inválida do input", 
-            "getDate():", parsedDate.getDate(), 
-            "getMonth():", parsedDate.getMonth(), 
-            "getFullYear():", parsedDate.getFullYear(),
-            "isValidDate:", isValidDate(parsedDate),
-            "disabled:", disabled ? disabled(parsedDate) : false);
-          // Se a data for inválida, manter o valor no input mas não notificar o componente pai
-          setHasError(true);
-        }
-      } else {
-        console.log("DatePicker: Partes da data não são números", day, month, year);
-        // Se os valores não forem números, manter o valor no input mas não notificar o componente pai
+      // Check if date is disabled
+      if (disabled && disabled(parsedDate)) {
+        console.log("DatePicker: Data desabilitada:", parsedDate);
         setHasError(true);
+        return;
       }
+      
+      // Date is valid and enabled
+      console.log("DatePicker: Data válida do input, notificando componente pai");
+      onSelect(parsedDate);
+      setHasError(false);
     } else {
-      console.log("DatePicker: Formato não é DD/MM/YYYY", parts);
-      // Se o formato não for DD/MM/YYYY, marcar como erro apenas se não estiver vazio
+      // Only show error if user has typed something
       setHasError(value.length > 0);
     }
   };
@@ -116,26 +86,19 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
     console.log("DatePicker: Data selecionada no calendário:", newDate,
       newDate instanceof Date ? `Timestamp: ${newDate.getTime()}` : "");
     
-    // Verificar se a data é válida antes de notificar o componente pai
-    if (newDate === undefined || isValidDate(newDate)) {
-      if (newDate && isValidDate(newDate)) {
-        // Criar uma nova instância de Date para evitar problemas de referência
-        const safeDate = new Date(newDate.getTime());
-        safeDate.setHours(0, 0, 0, 0); // Garantir que a hora seja 00:00:00
-        
-        console.log("DatePicker: Criando nova instância de data:", safeDate, "Timestamp:", safeDate.getTime());
-        onSelect(safeDate);
-        setInputValue(format(safeDate, 'dd/MM/yyyy'));
-        setHasError(false);
-      } else {
-        console.log("DatePicker: Data undefined ou inválida do calendário");
-        onSelect(undefined);
-        setInputValue('');
-        setHasError(false);
-      }
+    // Use our utility to validate and safely create a date
+    if (newDate && isValidDate(newDate)) {
+      const safeDate = createSafeDate(newDate);
+      
+      console.log("DatePicker: Criando nova instância de data:", safeDate, "Timestamp:", safeDate.getTime());
+      onSelect(safeDate);
+      setInputValue(format(safeDate, 'dd/MM/yyyy'));
+      setHasError(false);
     } else {
-      console.error("DatePicker: Tentativa de selecionar data inválida:", newDate);
-      setHasError(true);
+      console.log("DatePicker: Data undefined ou inválida do calendário");
+      onSelect(undefined);
+      setInputValue('');
+      setHasError(false);
     }
     
     setIsOpen(false);

@@ -4,6 +4,7 @@ import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
 import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
 import { saveScheduledAssessment } from "@/services/checklistService";
+import { validateAssessmentDate } from "@/utils/dateUtils";
 
 export function useScheduleOperations({
   selectedEmployee,
@@ -32,8 +33,15 @@ export function useScheduleOperations({
   };
 
   const handleSaveSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
-    if (!selectedEmployee || !selectedTemplate || !scheduledDate) {
+    if (!selectedEmployee || !selectedTemplate) {
       toast.error("Preencha todos os campos obrigatórios.");
+      return;
+    }
+    
+    // Using our date validation utility
+    const dateError = validateAssessmentDate(scheduledDate);
+    if (dateError) {
+      toast.error(dateError);
       return;
     }
     
@@ -44,12 +52,12 @@ export function useScheduleOperations({
         return;
       }
       
-      const nextDate = calcNextDate(scheduledDate, recurrenceType);
+      const nextDate = calcNextDate(scheduledDate!, recurrenceType);
       
       const newScheduledAssessment = {
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
-        scheduledDate: scheduledDate,
+        scheduledDate: scheduledDate!,
         sentAt: null,
         linkUrl: "",
         status: "scheduled" as const,
