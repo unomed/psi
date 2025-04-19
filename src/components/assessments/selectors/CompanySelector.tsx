@@ -27,7 +27,7 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
   const [open, setOpen] = useState(false);
   const { companies = [], isLoading } = useCompanies();
   
-  // Garantindo que companies seja sempre um array
+  // Garantindo que companies seja sempre um array válido
   const companiesList = Array.isArray(companies) ? companies : [];
   
   const selectedCompanyName = companiesList.find(
@@ -50,7 +50,7 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
+        <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput placeholder="Buscar empresa..." />
             <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
@@ -59,7 +59,7 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
                 companiesList.map((company) => (
                   <CommandItem
                     key={company.id}
-                    value={company.id}
+                    value={company.name}
                     onSelect={() => {
                       onCompanyChange(company.id);
                       setOpen(false);
@@ -75,7 +75,7 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled value="no-company">
+                <CommandItem disabled value="no-companies">
                   Nenhuma empresa disponível
                 </CommandItem>
               )}
