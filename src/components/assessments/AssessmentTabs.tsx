@@ -1,4 +1,3 @@
-
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { CalendarClock, CheckCircle } from "lucide-react";
@@ -42,20 +41,14 @@ export function AssessmentTabs() {
 
       // Transform the data to match our ScheduledAssessment type
       return data.map(item => {
-        // Safely extract employee data, using optional chaining and nullish coalescing
-        let employeeInfo = null;
-        
-        // Check if employees data exists and is not an error object
-        if (item.employees && typeof item.employees === 'object') {
-          // Check if it's not an error object (doesn't have 'error' property)
-          if (!('error' in item.employees)) {
-            employeeInfo = {
-              name: item.employees?.name || 'Funcionário não encontrado',
-              email: item.employees?.email || '',
-              phone: item.employees?.phone || ''
-            };
-          }
-        }
+        // Safely extract employee data
+        const employeeInfo = item.employees && typeof item.employees === 'object' && !('error' in item.employees)
+          ? {
+              name: item.employees?.name ?? 'Funcionário não encontrado',
+              email: item.employees?.email ?? '',
+              phone: item.employees?.phone ?? ''
+            }
+          : null;
 
         return {
           id: item.id,
