@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function UserProfileMenu() {
@@ -35,15 +35,17 @@ export function UserProfileMenu() {
   const roleDisplay = getRoleDisplay();
 
   return (
-    <div className="flex items-center gap-2 p-4 border-b w-full">
-      <Avatar>
-        <AvatarFallback>{getInitials()}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{user.email}</p>
-        <Badge variant={roleDisplay.variant as any} className="mt-1">
-          {roleDisplay.text}
-        </Badge>
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <Avatar>
+          <AvatarFallback>{getInitials()}</AvatarFallback>
+        </Avatar>
+        <div className="hidden sm:block">
+          <p className="text-sm font-medium">{user.email}</p>
+          <Badge variant={roleDisplay.variant as any} className="mt-1">
+            {roleDisplay.text}
+          </Badge>
+        </div>
       </div>
       <Button variant="ghost" size="icon" onClick={signOut}>
         <LogOut className="h-4 w-4" />

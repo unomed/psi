@@ -3,8 +3,8 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarGroupContent,
   SidebarMenu,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,6 @@ import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { mainMenuItems } from "./sidebar/menuItems";
-import { UserProfileMenu } from "./UserProfileMenu";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
@@ -25,9 +24,7 @@ export function AppSidebar() {
     <Sidebar className="border-r">
       <SidebarHeader />
       
-      <UserProfileMenu />
-      
-      <SidebarContent className="flex flex-col h-[calc(100%-120px)]">
+      <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
         <SidebarGroup className="flex-1">
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
