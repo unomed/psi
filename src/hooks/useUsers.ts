@@ -72,7 +72,9 @@ export function useUsers() {
         return {
           id: profile.id,
           email: profile.email || '',
-          full_name: profile.full_name || '',
+          // Fix: The profiles_with_emails view might not have full_name property
+          // Set a default empty string if full_name is not present
+          full_name: (profile as any).full_name || '',
           role: userRole?.role || 'user',
           companies: companyNames
         };
