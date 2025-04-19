@@ -6,73 +6,125 @@ import { ScheduledAssessmentsList } from "./ScheduledAssessmentsList";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScheduledAssessment } from "@/types";
+import { toast } from "sonner";
 
 export function AssessmentTabs() {
   // Fetch scheduled assessments
   const { data: scheduledAssessments = [], isLoading } = useQuery({
     queryKey: ['scheduledAssessments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('scheduled_assessments')
-        .select(`
-          id,
-          employee_id,
-          template_id,
-          scheduled_date,
-          status,
-          completed_at,
-          phone_number,
-          link_url,
-          sent_at,
-          employees (
-            name,
-            email,
-            phone
-          ),
-          checklist_templates (
-            title
-          )
-        `)
-        .order('scheduled_date', { ascending: false });
+      try {
+        // First try to fetch with join
+        const { data, error } = await supabase
+          .from('scheduled_assessments')
+          .select(`
+            id,
+            employee_id,
+            template_id,
+            scheduled_date,
+            status,
+            completed_at,
+            phone_number,
+            link_url,
+            sent_at,
+            employees (
+              name,
+              email,
+              phone
+            ),
+            checklist_templates (
+              title
+            )
+          `)
+          .order('scheduled_date', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching scheduled assessments:", error);
-        return [];
-      }
-
-      // Transform the data to match our ScheduledAssessment type
-      return data.map(item => {
-        // Create a default empty employee object for safe access
-        const employeeInfo = {
-          name: 'Funcionário não encontrado',
-          email: '',
-          phone: ''
-        };
-
-        // Only try to extract employee data if it exists and is an object
-        if (item.employees) {
-          if (typeof item.employees === 'object') {
-            // Using optional chaining with nullish coalescing to safely access properties
-            employeeInfo.name = item.employees?.name || 'Funcionário não encontrado';
-            employeeInfo.email = item.employees?.email || '';
-            employeeInfo.phone = item.employees?.phone || '';
+        if (error) {
+          console.error("Error fetching scheduled assessments with join:", error);
+          
+          // If error in join, try without join and fetch employee data separately
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('scheduled_assessments')
+            .select(`
+              id,
+              employee_id,
+              template_id,
+              scheduled_date,
+              status,
+              completed_at,
+              phone_number,
+              link_url,
+              sent_at
+            `)
+            .order('scheduled_date', { ascending: false });
+          
+          if (fallbackError) {
+            console.error("Error fetching scheduled assessments:", fallbackError);
+            toast.error("Erro ao carregar avaliações agendadas");
+            return [];
           }
+          
+          // Transform the data to match our ScheduledAssessment type
+          return fallbackData.map(item => {
+            return {
+              id: item.id,
+              employeeId: item.employee_id,
+              templateId: item.template_id,
+              scheduledDate: new Date(item.scheduled_date),
+              status: item.status,
+              sentAt: item.sent_at ? new Date(item.sent_at) : null,
+              completedAt: item.completed_at ? new Date(item.completed_at) : null,
+              phoneNumber: item.phone_number || undefined,
+              linkUrl: item.link_url || '',
+              employees: {
+                name: 'Carregando funcionário...',
+                email: '',
+                phone: ''
+              },
+              checklist_templates: {
+                title: 'Carregando modelo...'
+              }
+            } as ScheduledAssessment;
+          });
         }
 
-        return {
-          id: item.id,
-          employeeId: item.employee_id,
-          templateId: item.template_id,
-          scheduledDate: new Date(item.scheduled_date),
-          status: item.status,
-          sentAt: item.sent_at ? new Date(item.sent_at) : null,
-          completedAt: item.completed_at ? new Date(item.completed_at) : null,
-          phoneNumber: item.phone_number || undefined,
-          linkUrl: item.link_url || '',
-          employees: employeeInfo,
-          checklist_templates: item.checklist_templates
-        } as ScheduledAssessment;
-      });
+        // Transform the data to match our ScheduledAssessment type
+        return data.map(item => {
+          // Create a default empty employee object for safe access
+          const employeeInfo = {
+            name: 'Funcionário não encontrado',
+            email: '',
+            phone: ''
+          };
+
+          // Only try to extract employee data if it exists and is an object
+          if (item.employees) {
+            if (typeof item.employees === 'object') {
+              // Using optional chaining with nullish coalescing to safely access properties
+              employeeInfo.name = item.employees?.name || 'Funcionário não encontrado';
+              employeeInfo.email = item.employees?.email || '';
+              employeeInfo.phone = item.employees?.phone || '';
+            }
+          }
+
+          return {
+            id: item.id,
+            employeeId: item.employee_id,
+            templateId: item.template_id,
+            scheduledDate: new Date(item.scheduled_date),
+            status: item.status,
+            sentAt: item.sent_at ? new Date(item.sent_at) : null,
+            completedAt: item.completed_at ? new Date(item.completed_at) : null,
+            phoneNumber: item.phone_number || undefined,
+            linkUrl: item.link_url || '',
+            employees: employeeInfo,
+            checklist_templates: item.checklist_templates
+          } as ScheduledAssessment;
+        });
+      } catch (error) {
+        console.error("Error in assessment fetching process:", error);
+        toast.error("Erro ao carregar avaliações agendadas");
+        return [];
+      }
     }
   });
 
