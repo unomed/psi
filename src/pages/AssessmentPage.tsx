@@ -16,6 +16,7 @@ export default function AssessmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [template, setTemplate] = useState<ChecklistTemplate | null>(null);
   const [assessmentId, setAssessmentId] = useState<string | null>(null);
+  const [linkId, setLinkId] = useState<string | null>(null);
   const [assessmentCompleted, setAssessmentCompleted] = useState(false);
   const [result, setResult] = useState<ChecklistResult | null>(null);
 
@@ -29,7 +30,7 @@ export default function AssessmentPage() {
           return;
         }
         
-        const { template, error, assessmentId } = await fetchAssessmentByToken(token);
+        const { template, error, assessmentId, linkId } = await fetchAssessmentByToken(token);
         
         if (error) {
           setError(error);
@@ -38,6 +39,7 @@ export default function AssessmentPage() {
         
         setTemplate(template);
         setAssessmentId(assessmentId);
+        setLinkId(linkId);
       } finally {
         setLoading(false);
       }
@@ -50,7 +52,11 @@ export default function AssessmentPage() {
     try {
       setLoading(true);
       
-      const { result, error } = await submitAssessmentResult(resultData);
+      const { result, error } = await submitAssessmentResult({
+        ...resultData,
+        assessmentId,
+        linkId
+      });
       
       if (error) {
         toast.error(error);

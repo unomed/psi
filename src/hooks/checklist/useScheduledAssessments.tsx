@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { ScheduledAssessment } from "@/types";
+import { RecurrenceType, ScheduledAssessment } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { createScheduledAssessment, sendAssessmentEmail, generateAssessmentLink } from "@/services/assessmentService";
@@ -29,7 +29,24 @@ export function useScheduledAssessments() {
         .order('scheduled_date', { ascending: false });
 
       if (error) throw error;
-      return data as ScheduledAssessment[];
+      
+      // Transform the data to match our ScheduledAssessment type
+      return data.map(item => ({
+        id: item.id,
+        employeeId: item.employee_id,
+        templateId: item.template_id,
+        scheduledDate: new Date(item.scheduled_date),
+        sentAt: item.sent_at ? new Date(item.sent_at) : null,
+        linkUrl: item.link_url || "",
+        status: item.status,
+        completedAt: item.completed_at ? new Date(item.completed_at) : null,
+        recurrenceType: item.recurrence_type as RecurrenceType | undefined,
+        nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+        phoneNumber: item.phone_number,
+        // Add employees and checklist_templates data for reference
+        employees: item.employees,
+        checklist_templates: item.checklist_templates
+      })) as ScheduledAssessment[];
     }
   });
 
