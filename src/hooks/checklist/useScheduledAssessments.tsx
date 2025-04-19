@@ -12,6 +12,7 @@ export function useScheduledAssessments() {
   } = useQuery({
     queryKey: ['scheduledAssessments'],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
+      // Modify the query to properly join with employees table
       const { data, error } = await supabase
         .from('scheduled_assessments')
         .select(`
@@ -26,14 +27,8 @@ export function useScheduledAssessments() {
           recurrence_type,
           next_scheduled_date,
           phone_number,
-          employees (
-            name,
-            email,
-            phone
-          ),
-          checklist_templates (
-            title
-          )
+          employees:employees(name, email, phone),
+          checklist_templates(title)
         `)
         .order('scheduled_date', { ascending: false });
       
@@ -43,12 +38,23 @@ export function useScheduledAssessments() {
       }
       
       return data.map(item => {
-        // Check if item exists and has the needed properties before accessing them
-        const employeeInfo = item.employees ? {
-          name: item.employees.name || 'Funcionário',
-          email: item.employees.email || '',
-          phone: item.employees.phone || ''
-        } : null;
+        // Safely handle the employees data, which might be null or undefined
+        let employeeInfo = null;
+        if (item.employees && Array.isArray(item.employees) && item.employees.length > 0) {
+          const employee = item.employees[0];
+          employeeInfo = {
+            name: employee.name || 'Funcionário',
+            email: employee.email || '',
+            phone: employee.phone || ''
+          };
+        } else if (item.employees && !Array.isArray(item.employees)) {
+          // If it's a single object and not an array
+          employeeInfo = {
+            name: item.employees.name || 'Funcionário',
+            email: item.employees.email || '',
+            phone: item.employees.phone || ''
+          };
+        }
 
         return {
           id: item.id,
