@@ -1,40 +1,15 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserPlus, Pencil, Trash2 } from "lucide-react";
+import { useUsers } from "@/hooks/useUsers";
 import { toast } from "sonner";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  companies: string[];
-}
-
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "João Silva",
-    email: "joao@exemplo.com",
-    role: "admin",
-    companies: ["Empresa A", "Empresa B"],
-  },
-  {
-    id: "2",
-    name: "Maria Santos",
-    email: "maria@exemplo.com",
-    role: "evaluator",
-    companies: ["Empresa C"],
-  },
-];
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function UserManagementSettings() {
-  const [users] = useState<User[]>(mockUsers);
+  const { users, isLoading, updateUserRole, deleteUser } = useUsers();
 
   const handleAddUser = () => {
     toast.info("Função em desenvolvimento");
@@ -44,9 +19,51 @@ export default function UserManagementSettings() {
     toast.info("Função em desenvolvimento");
   };
 
-  const handleDeleteUser = (userId: string) => {
-    toast.info("Função em desenvolvimento");
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser.mutateAsync(userId);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!users?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Gestão de Usuários</CardTitle>
+          <CardDescription>
+            Gerencie usuários e suas permissões no sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertDescription>
+              Nenhum usuário encontrado.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -77,10 +94,10 @@ export default function UserManagementSettings() {
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.full_name}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role === 'admin' ? 'Administrador' : 'Avaliador'}</TableCell>
-                <TableCell>{user.companies.join(", ")}</TableCell>
+                <TableCell>{user.role === 'admin' ? 'Administrador' : user.role === 'superadmin' ? 'Super Admin' : 'Avaliador'}</TableCell>
+                <TableCell>{user.companies.join(", ") || "-"}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button
                     variant="outline"
