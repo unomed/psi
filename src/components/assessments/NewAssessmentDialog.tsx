@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -38,6 +39,7 @@ export function NewAssessmentDialog({
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
+  const [dateError, setDateError] = useState<boolean>(false);
 
   // Get the employee's role risk level and corresponding periodicity
   const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
@@ -47,6 +49,13 @@ export function NewAssessmentDialog({
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  // Reset date error when date changes
+  useEffect(() => {
+    if (scheduledDate) {
+      setDateError(false);
+    }
+  }, [scheduledDate]);
 
   // Handle company change
   const handleCompanyChange = (companyId: string) => {
@@ -76,6 +85,7 @@ export function NewAssessmentDialog({
     }
 
     if (!scheduledDate) {
+      setDateError(true);
       toast.error("Selecione uma data para a avaliação");
       return;
     }
@@ -93,6 +103,7 @@ export function NewAssessmentDialog({
     setSelectedRole(null);
     setScheduledDate(new Date());
     setRecurrenceType("none");
+    setDateError(false);
     onClose();
   };
 
@@ -130,7 +141,13 @@ export function NewAssessmentDialog({
                 date={scheduledDate} 
                 onSelect={setScheduledDate} 
                 disabled={(date) => date < new Date()} 
+                allowInput={true}
               />
+              {dateError && (
+                <p className="text-xs text-red-500">
+                  Selecione uma data para a avaliação.
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Selecione a data em que a avaliação será realizada.
               </p>
@@ -152,7 +169,7 @@ export function NewAssessmentDialog({
                   <SelectItem value="annual">Anual</SelectItem>
                 </SelectContent>
               </Select>
-              {employeeRiskLevel && (
+              {employeeRiskLevel && suggestedPeriodicity && (
                 <p className="text-xs text-muted-foreground">
                   Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
                 </p>

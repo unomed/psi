@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { ScheduledAssessment, RecurrenceType } from "@/types";
 import { toast } from "sonner";
-import { mockEmployees } from "@/components/assessments/AssessmentSelectionForm";
+import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
 import { saveScheduledAssessment } from "@/services/assessment";
 import { useAssessmentCalculations } from "./useAssessmentCalculations";
 
@@ -15,18 +15,23 @@ export function useAssessmentSaveOperations() {
     selectedTemplate: any | null,
     scheduledDate: Date | undefined,
     recurrenceType: RecurrenceType,
-    phoneNumber: string
+    phoneNumber: string = ""
   ) => {
-    if (!selectedEmployee || !selectedTemplate || !scheduledDate) {
-      toast.error("Preencha todos os campos obrigatórios.");
-      return;
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo.");
+      return null;
+    }
+    
+    if (!scheduledDate) {
+      toast.error("Selecione uma data para a avaliação.");
+      return null;
     }
     
     try {
       const employee = mockEmployees.find(e => e.id === selectedEmployee);
       if (!employee) {
         toast.error("Funcionário não encontrado.");
-        return;
+        return null;
       }
       
       const nextDate = calculateNextScheduledDate(scheduledDate, recurrenceType);
