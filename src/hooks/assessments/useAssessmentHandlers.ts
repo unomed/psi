@@ -1,13 +1,13 @@
+
 import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
 import { useScheduleOperations } from "./useScheduleOperations";
-import { ScheduledAssessment, ChecklistTemplate, RecurrenceType } from "@/types";
-import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment";
 import { useAssessmentSubmission } from "./operations/useAssessmentSubmission";
 import { useAssessmentSaveOperations } from "./operations/useAssessmentSaveOperations";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useAssessmentCreation } from "./operations/useAssessmentCreation";
+import { useAssessmentScheduling } from "./operations/useAssessmentScheduling";
+import { ScheduledAssessment, ChecklistTemplate } from "@/types";
 
 export function useAssessmentHandlers({
   selectedEmployee,
@@ -46,15 +46,12 @@ export function useAssessmentHandlers({
   setSelectedAssessment: (assessment: ScheduledAssessment | null) => void;
   handleSendEmail: (employeeId: string) => void;
 }) {
-  const { getSelectedEmployeeName, getEmployeeById } = useAssessmentEmployeeOperations();
-  
+  const { getSelectedEmployeeName } = useAssessmentEmployeeOperations();
   const { handleSubmitAssessment, handleCloseResult } = useAssessmentSubmission({
     setAssessmentResult,
     setIsAssessmentDialogOpen,
     setIsResultDialogOpen
   });
-
-  const { handleSaveSchedule } = useAssessmentSaveOperations();
 
   const basicActions = useBasicAssessmentActions({
     setSelectedEmployee,
@@ -80,129 +77,8 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
-  const handleSaveAssessment = async () => {
-    if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de checklist.");
-      return false;
-    }
-
-    if (!scheduledDate) {
-      toast.error("Selecione uma data para a avaliação.");
-      return false;
-    }
-
-    try {
-      console.log("Tentando salvar avaliação para employee_id:", selectedEmployee);
-      console.log("Data agendada:", scheduledDate);
-
-      const { data: employeeData, error: employeeError } = await supabase
-        .from('employees')
-        .select('id, name')
-        .eq('id', selectedEmployee)
-        .single();
-
-      if (employeeError || !employeeData) {
-        console.error("Erro ao verificar funcionário:", employeeError);
-        toast.error(`Funcionário não encontrado: ${employeeError?.message || "Nenhum registro encontrado"}`);
-        return false;
-      }
-
-      console.log("Funcionário encontrado:", employeeData);
-
-      const { data: employeeWithRole } = await supabase
-        .from('employees')
-        .select(`
-          id,
-          roles (
-            risk_level
-          )
-        `)
-        .eq('id', selectedEmployee)
-        .single();
-
-      const riskLevel = employeeWithRole?.roles?.risk_level;
-
-      const { data: periodicitySettings } = await supabase
-        .from('periodicity_settings')
-        .select('*')
-        .single();
-
-      let suggestedRecurrenceType = 'none';
-      if (riskLevel && periodicitySettings) {
-        switch (riskLevel.toLowerCase()) {
-          case 'high':
-            suggestedRecurrenceType = periodicitySettings.risk_high_periodicity;
-            break;
-          case 'medium':
-            suggestedRecurrenceType = periodicitySettings.risk_medium_periodicity;
-            break;
-          case 'low':
-            suggestedRecurrenceType = periodicitySettings.risk_low_periodicity;
-            break;
-          default:
-            suggestedRecurrenceType = periodicitySettings.default_periodicity;
-        }
-      }
-
-      let nextScheduledDate = null;
-      if (suggestedRecurrenceType !== 'none') {
-        nextScheduledDate = new Date(scheduledDate);
-        switch (suggestedRecurrenceType) {
-          case 'monthly':
-            nextScheduledDate.setMonth(nextScheduledDate.getMonth() + 1);
-            break;
-          case 'semiannual':
-            nextScheduledDate.setMonth(nextScheduledDate.getMonth() + 6);
-            break;
-          case 'annual':
-            nextScheduledDate.setFullYear(nextScheduledDate.getFullYear() + 1);
-            break;
-        }
-      }
-
-      const { data: scheduledData, error: scheduledError } = await supabase
-        .from('scheduled_assessments')
-        .insert({
-          employee_id: selectedEmployee,
-          employee_name: employeeData.name,
-          template_id: selectedTemplate.id,
-          scheduled_date: scheduledDate.toISOString(),
-          status: 'scheduled',
-          recurrence_type: suggestedRecurrenceType,
-          next_scheduled_date: nextScheduledDate?.toISOString()
-        })
-        .select();
-
-      if (scheduledError) {
-        console.error("Erro ao salvar em scheduled_assessments:", scheduledError);
-        toast.error(`Erro ao agendar avaliação: ${scheduledError.message}`);
-        return false;
-      }
-
-      console.log("Avaliação agendada com sucesso:", scheduledData);
-      toast.success("Avaliação agendada com sucesso!");
-      return true;
-    } catch (error) {
-      console.error("Erro geral:", error);
-      toast.error("Erro ao salvar avaliação.");
-      return false;
-    }
-  };
-
-  const handleStartAssessment = () => {
-    if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de checklist.");
-      return;
-    }
-    
-    setIsAssessmentDialogOpen(true);
-  };
-
-  const handleScheduleNewAssessment = (employeeId: string, templateId: string) => {
-    setSelectedEmployee(employeeId);
-    setSelectedTemplate({ id: templateId } as ChecklistTemplate);
-    setIsScheduleDialogOpen(true);
-  };
+  const { handleSaveAssessment } = useAssessmentCreation();
+  const { handleScheduleNewAssessment, handleStartAssessment } = useAssessmentScheduling();
 
   const handleShareAssessment = (assessmentId: string) => {
     const assessment = { id: assessmentId } as ScheduledAssessment;
@@ -218,12 +94,12 @@ export function useAssessmentHandlers({
     handleCloseResult,
     handleGenerateLink: linkOperations.handleGenerateLink,
     handleSendEmail,
-    handleSaveAssessment,
+    handleSaveAssessment: () => handleSaveAssessment(selectedEmployee, selectedTemplate, scheduledDate),
     handleSubmitAssessment,
     getSelectedEmployeeName,
-    handleScheduleNewAssessment,
-    handleStartAssessment,
-    handleSaveSchedule: (recurrenceType: RecurrenceType, phoneNumber: string) => 
-      handleSaveSchedule(selectedEmployee, selectedTemplate, scheduledDate, recurrenceType, phoneNumber)
+    handleScheduleNewAssessment: (employeeId: string, templateId: string) => 
+      handleScheduleNewAssessment(setSelectedEmployee, setSelectedTemplate, setIsScheduleDialogOpen, employeeId, templateId),
+    handleStartAssessment: () => handleStartAssessment(selectedEmployee, selectedTemplate, setIsAssessmentDialogOpen),
+    handleSaveSchedule: scheduleOperations.handleSaveSchedule
   };
 }
