@@ -9,9 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSub,
-  SidebarSubContent,
-  SidebarSubTrigger,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
@@ -84,12 +81,6 @@ const menuItems = [
     icon: FileText,
     path: "/relatorios",
     roles: ["superadmin", "admin"] // Apenas superadmin e admin
-  },
-  {
-    title: "Configurações",
-    icon: Settings,
-    path: "/configuracoes",
-    roles: ["superadmin"] // Apenas superadmin
   },
 ];
 
@@ -188,33 +179,36 @@ export function AppSidebar() {
               ))}
 
               {filteredSettingsItems.length > 0 && (
-                <SidebarSub>
-                  <SidebarSubTrigger
+                <SidebarMenuItem>
+                  <SidebarMenuButton
                     className={cn(
                       "flex items-center w-full",
                       isSettingsRoute && "bg-sidebar-accent"
                     )}
+                    onClick={() => navigate('/configuracoes/criterios')}
                   >
                     <Settings className="mr-2 h-5 w-5" />
                     <span>Configurações</span>
-                  </SidebarSubTrigger>
-                  <SidebarSubContent>
-                    {filteredSettingsItems.map((item) => (
-                      <SidebarMenuItem key={item.title}>
+                  </SidebarMenuButton>
+                  
+                  {isSettingsRoute && (
+                    <div className="ml-6 mt-2 space-y-1">
+                      {filteredSettingsItems.map((item) => (
                         <SidebarMenuButton
+                          key={item.title}
                           onClick={() => navigate(item.path)}
                           className={cn(
-                            "flex items-center w-full",
-                            location.pathname === item.path && "bg-sidebar-accent"
+                            "flex items-center w-full text-sm py-1.5",
+                            location.pathname === item.path && "bg-sidebar-accent font-medium"
                           )}
                         >
-                          <item.icon className="mr-2 h-5 w-5" />
+                          <item.icon className="mr-2 h-4 w-4" />
                           <span>{item.title}</span>
                         </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarSubContent>
-                </SidebarSub>
+                      ))}
+                    </div>
+                  )}
+                </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
