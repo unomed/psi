@@ -23,10 +23,22 @@ export function useAssessmentEmployeeOperations() {
     return employees.find(emp => emp.id === employeeId) || null;
   };
 
+  const getEmployeeEmail = (employeeId: string | null) => {
+    const employee = getEmployeeById(employeeId);
+    return employee?.email || "";
+  };
+
+  const getEmployeePhone = (employeeId: string | null) => {
+    const employee = getEmployeeById(employeeId);
+    return employee?.phone || "";
+  };
+
   return {
     periodicitySettings,
     getSelectedEmployeeName,
     getEmployeeById,
+    getEmployeeEmail,
+    getEmployeePhone,
     employees
   };
 }
