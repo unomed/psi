@@ -69,6 +69,95 @@ export type Database = {
         }
         Relationships: []
       }
+      assessment_emails: {
+        Row: {
+          body: string
+          created_at: string
+          delivery_status: string | null
+          id: string
+          recipient_email: string
+          scheduled_assessment_id: string
+          sent_at: string | null
+          subject: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          delivery_status?: string | null
+          id?: string
+          recipient_email: string
+          scheduled_assessment_id: string
+          sent_at?: string | null
+          subject: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          delivery_status?: string | null
+          id?: string
+          recipient_email?: string
+          scheduled_assessment_id?: string
+          sent_at?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_emails_scheduled_assessment_id_fkey"
+            columns: ["scheduled_assessment_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          employee_id: string
+          expires_at: string | null
+          id: string
+          template_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          employee_id: string
+          expires_at?: string | null
+          id?: string
+          template_id: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string
+          expires_at?: string | null
+          id?: string
+          template_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_links_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_links_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_responses: {
         Row: {
           classification:
@@ -587,6 +676,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          created_by: string | null
           employee_id: string
           id: string
           link_url: string | null
@@ -601,6 +691,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string
+          created_by?: string | null
           employee_id: string
           id?: string
           link_url?: string | null
@@ -615,6 +706,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string
+          created_by?: string | null
           employee_id?: string
           id?: string
           link_url?: string | null

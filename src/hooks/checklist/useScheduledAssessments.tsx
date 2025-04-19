@@ -1,13 +1,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ScheduledAssessment } from "@/types";
-import { 
-  fetchScheduledAssessments,
-  saveScheduledAssessment,
-  sendAssessmentEmail,
-  generateAssessmentLink 
-} from "@/services/checklistService";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createScheduledAssessment, sendAssessmentEmail, generateAssessmentLink } from "@/services/assessmentService";
 
 export function useScheduledAssessments() {
   const { 
@@ -16,7 +12,25 @@ export function useScheduledAssessments() {
     refetch: refetchScheduled
   } = useQuery({
     queryKey: ['scheduledAssessments'],
-    queryFn: fetchScheduledAssessments
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('scheduled_assessments')
+        .select(`
+          *,
+          employees (
+            name,
+            email,
+            phone
+          ),
+          checklist_templates (
+            title
+          )
+        `)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) throw error;
+      return data as ScheduledAssessment[];
+    }
   });
 
   const handleScheduleAssessment = async (
@@ -27,17 +41,12 @@ export function useScheduledAssessments() {
     phoneNumber?: string
   ) => {
     try {
-      await saveScheduledAssessment({
+      await createScheduledAssessment({
         employeeId,
         templateId,
         scheduledDate,
-        status: "scheduled",
         recurrenceType,
-        phoneNumber,
-        // Add the missing required properties
-        sentAt: null,
-        completedAt: null,
-        linkUrl: ""
+        phoneNumber
       });
       
       toast.success("Avaliação agendada com sucesso!");
@@ -52,8 +61,13 @@ export function useScheduledAssessments() {
 
   const handleSendEmail = async (assessmentId: string) => {
     try {
-      await sendAssessmentEmail(assessmentId);
-      toast.success("Email enviado com sucesso!");
+      const assessment = scheduledAssessments.find(a => a.id === assessmentId);
+      if (!assessment?.employees?.email) {
+        toast.error("Funcionário não possui email cadastrado");
+        return false;
+      }
+
+      await sendAssessmentEmail(assessmentId, assessment.employees.email);
       refetchScheduled();
       return true;
     } catch (error) {
@@ -65,21 +79,9 @@ export function useScheduledAssessments() {
 
   const handleShareAssessment = async (assessmentId: string) => {
     try {
-      const assessment = scheduledAssessments.find(a => a.id === assessmentId);
-      if (!assessment) throw new Error("Assessment not found");
-      
-      const link = generateAssessmentLink(assessment.templateId, assessment.employeeId);
-      
-      // In a real app, this would update the assessment with the link
-      await saveScheduledAssessment({
-        ...assessment,
-        linkUrl: link,
-        status: "sent"
-      });
-
-      toast.success("Link gerado com sucesso!");
+      const link = await generateAssessmentLink(assessmentId);
       refetchScheduled();
-      return link;
+      return link.token;
     } catch (error) {
       console.error("Error sharing assessment:", error);
       toast.error("Erro ao gerar link.");
