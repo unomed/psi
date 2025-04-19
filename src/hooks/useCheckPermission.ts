@@ -26,7 +26,13 @@ export function useCheckPermission() {
           console.error('Error fetching permissions:', error);
           setPermissions(null);
         } else {
-          setPermissions(data.permissions);
+          // Type checking and conversion to ensure we have the correct type
+          if (data.permissions && typeof data.permissions === 'object') {
+            setPermissions(data.permissions as Record<string, boolean>);
+          } else {
+            console.error('Invalid permissions format:', data.permissions);
+            setPermissions(null);
+          }
         }
       } catch (error) {
         console.error('Error in permission check:', error);
