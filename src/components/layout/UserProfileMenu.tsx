@@ -2,8 +2,17 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function UserProfileMenu() {
   const { user, signOut, userRole } = useAuth();
@@ -35,21 +44,34 @@ export function UserProfileMenu() {
   const roleDisplay = getRoleDisplay();
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <Avatar>
-          <AvatarFallback>{getInitials()}</AvatarFallback>
-        </Avatar>
-        <div className="hidden sm:block">
-          <p className="text-sm font-medium">{user.email}</p>
-          <Badge variant={roleDisplay.variant as any} className="mt-1">
-            {roleDisplay.text}
-          </Badge>
-        </div>
-      </div>
-      <Button variant="ghost" size="icon" onClick={signOut}>
-        <LogOut className="h-4 w-4" />
-      </Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full">
+          <Avatar>
+            <AvatarFallback>{getInitials()}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <UserRound className="mr-2 h-4 w-4" />
+            <div className="flex flex-col">
+              <span className="text-sm">{user.email}</span>
+              <Badge variant={roleDisplay.variant as any} className="mt-1 w-fit">
+                {roleDisplay.text}
+              </Badge>
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={signOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Sair</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
