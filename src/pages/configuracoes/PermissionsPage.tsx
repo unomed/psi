@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, InfoCircle } from "lucide-react";
+import { PlusCircle, Info } from "lucide-react";  // Changed from 'InfoCircle' to 'Info'
 import { usePermissions, Permission } from "@/hooks/usePermissions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
