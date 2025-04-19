@@ -70,13 +70,6 @@ export function AssessmentHandlerRoot() {
         onSendEmail={handleSendEmail}
         onScheduleAssessment={handlers.handleScheduleNewAssessment}
         onGenerateLink={handlers.handleGenerateLink}
-        templates={templates}
-        isTemplatesLoading={isLoading}
-        selectedEmployee={selectedEmployee}
-        selectedTemplate={selectedTemplate}
-        onEmployeeSelect={handleEmployeeChange}
-        onTemplateSelect={handleTemplateSelect}
-        onStartAssessment={handlers.handleStartAssessment}
       />
       
       <AssessmentDialogsContainer
