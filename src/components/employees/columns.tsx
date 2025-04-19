@@ -1,15 +1,17 @@
+
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Employee } from "@/types/employee";
 import { format } from "date-fns";
 
-// Mapping for status translations
+// Mapping para tradução dos status
 const statusTranslations: Record<string, string> = {
   active: "Ativo",
   inactive: "Inativo",
   vacation: "Férias",
-  medical_leave: "Licença médica"
+  medical_leave: "Licença médica",
+  // Adicionar outras traduções conforme necessário
 };
 
 export const columns: ColumnDef<Employee>[] = [

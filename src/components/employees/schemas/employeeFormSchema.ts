@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const employeeFormSchema = z.object({
@@ -10,7 +11,7 @@ export const employeeFormSchema = z.object({
   address: z.string().optional().or(z.literal("")),
   start_date: z.date(),
   status: z.string().min(1, "Status é obrigatório"),
-  special_conditions: z.string().optional(),
+  special_conditions: z.string().optional().or(z.literal("")),
   photo_url: z.string().optional().or(z.literal("")),
   company_id: z.string().min(1, "Empresa é obrigatória"),
   sector_id: z.string().min(1, "Setor é obrigatório"),

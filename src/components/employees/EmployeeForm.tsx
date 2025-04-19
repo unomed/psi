@@ -30,6 +30,13 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       ...initialData,
       birth_date: initialData.birth_date ? new Date(initialData.birth_date) : undefined,
       start_date: new Date(initialData.start_date),
+      // Garantir que campos opcionais nunca sejam null
+      email: initialData.email || "",
+      phone: initialData.phone || "",
+      gender: initialData.gender || "",
+      address: initialData.address || "",
+      special_conditions: initialData.special_conditions || "",
+      photo_url: initialData.photo_url || "",
     } : {
       name: "",
       cpf: "",

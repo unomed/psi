@@ -18,7 +18,7 @@ export function AdditionalFields({ form }: AdditionalFieldsProps) {
           <FormItem>
             <FormLabel>Endereço</FormLabel>
             <FormControl>
-              <Textarea {...field} />
+              <Textarea {...field} value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -32,7 +32,7 @@ export function AdditionalFields({ form }: AdditionalFieldsProps) {
           <FormItem>
             <FormLabel>Condições especiais</FormLabel>
             <FormControl>
-              <Textarea {...field} />
+              <Textarea {...field} value={field.value || ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
