@@ -1,9 +1,16 @@
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Employee } from "@/types/employee";
 import { format } from "date-fns";
+
+// Mapping for status translations
+const statusTranslations: Record<string, string> = {
+  active: "Ativo",
+  inactive: "Inativo",
+  vacation: "Férias",
+  medical_leave: "Licença médica"
+};
 
 export const columns: ColumnDef<Employee>[] = [
   {
@@ -33,6 +40,10 @@ export const columns: ColumnDef<Employee>[] = [
   {
     accessorKey: "status",
     header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return statusTranslations[status] || status;
+    }
   },
   {
     id: "actions",
