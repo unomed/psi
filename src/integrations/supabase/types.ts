@@ -678,6 +678,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           employee_id: string
+          employee_name: string | null
           id: string
           link_url: string | null
           next_scheduled_date: string | null
@@ -693,6 +694,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           employee_id: string
+          employee_name?: string | null
           id?: string
           link_url?: string | null
           next_scheduled_date?: string | null
@@ -708,6 +710,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           employee_id?: string
+          employee_name?: string | null
           id?: string
           link_url?: string | null
           next_scheduled_date?: string | null

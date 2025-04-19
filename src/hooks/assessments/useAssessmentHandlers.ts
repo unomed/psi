@@ -1,4 +1,3 @@
-
 import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
@@ -81,7 +80,6 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
-  // Função para lidar com o salvamento de avaliações
   const handleSaveAssessment = async () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
@@ -94,26 +92,23 @@ export function useAssessmentHandlers({
     }
 
     try {
-      // Exibir informações de diagnóstico para debug
       console.log("Tentando salvar avaliação para employee_id:", selectedEmployee);
-      console.log("Tipo de employee_id:", typeof selectedEmployee);
       console.log("Data agendada:", scheduledDate);
 
-      // Verificar se o funcionário existe na tabela employees
       const { data: employeeData, error: employeeError } = await supabase
         .from('employees')
         .select('id, name')
-        .eq('id', selectedEmployee);
+        .eq('id', selectedEmployee)
+        .single();
 
-      if (employeeError || !employeeData || employeeData.length === 0) {
+      if (employeeError || !employeeData) {
         console.error("Erro ao verificar funcionário:", employeeError);
-        toast.error(`Funcionário não encontrado na tabela employees: ${employeeError?.message || "Nenhum registro encontrado"}`);
+        toast.error(`Funcionário não encontrado: ${employeeError?.message || "Nenhum registro encontrado"}`);
         return false;
       }
 
-      console.log("Funcionário encontrado na tabela employees:", employeeData[0]);
+      console.log("Funcionário encontrado:", employeeData);
 
-      // Get employee's risk level and corresponding periodicity
       const { data: employeeWithRole } = await supabase
         .from('employees')
         .select(`
@@ -127,7 +122,6 @@ export function useAssessmentHandlers({
 
       const riskLevel = employeeWithRole?.roles?.risk_level;
 
-      // Get periodicity settings
       const { data: periodicitySettings } = await supabase
         .from('periodicity_settings')
         .select('*')
@@ -150,7 +144,6 @@ export function useAssessmentHandlers({
         }
       }
 
-      // Calculate next scheduled date based on recurrence type
       let nextScheduledDate = null;
       if (suggestedRecurrenceType !== 'none') {
         nextScheduledDate = new Date(scheduledDate);
@@ -167,11 +160,11 @@ export function useAssessmentHandlers({
         }
       }
 
-      // Salvar como avaliação agendada (scheduled_assessments)
       const { data: scheduledData, error: scheduledError } = await supabase
         .from('scheduled_assessments')
         .insert({
           employee_id: selectedEmployee,
+          employee_name: employeeData.name,
           template_id: selectedTemplate.id,
           scheduled_date: scheduledDate.toISOString(),
           status: 'scheduled',
@@ -196,7 +189,6 @@ export function useAssessmentHandlers({
     }
   };
 
-  // Funções adicionais
   const handleStartAssessment = () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
