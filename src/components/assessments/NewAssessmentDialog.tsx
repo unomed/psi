@@ -6,6 +6,8 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { ChecklistTemplate } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -34,9 +36,37 @@ export function NewAssessmentDialog({
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
 
   const handleSave = async () => {
-    const saved = await onSave();
-    if (saved) {
-      onClose();
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de avaliação");
+      return;
+    }
+
+    try {
+      // First save to assessment_responses
+      const { error: responseError } = await supabase
+        .from('assessment_responses')
+        .insert({
+          template_id: selectedTemplate.id,
+          employee_id: selectedEmployee,
+          employee_name: selectedEmployeeData?.name,
+          response_data: {},
+          completed_at: new Date().toISOString()
+        });
+
+      if (responseError) {
+        console.error("Error saving assessment response:", responseError);
+        toast.error("Erro ao salvar avaliação");
+        return;
+      }
+
+      const saved = await onSave();
+      if (saved) {
+        toast.success("Avaliação salva com sucesso");
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error in handleSave:", error);
+      toast.error("Erro ao salvar avaliação");
     }
   };
 
@@ -58,14 +88,13 @@ export function NewAssessmentDialog({
             onTemplateSelect={onTemplateSelect}
             templates={templates}
             isTemplatesLoading={isTemplatesLoading}
-            // Remove unnecessary state and change tracking
             selectedCompany={null}
             selectedSector={null}
             selectedRole={null}
             onCompanyChange={() => {}}
             onSectorChange={() => {}}
             onRoleChange={() => {}}
-            onNext={handleSave} // Adding the missing onNext prop
+            onNext={handleSave}
           />
 
           <div className="flex justify-end">

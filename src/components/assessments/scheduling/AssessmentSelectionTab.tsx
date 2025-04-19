@@ -5,8 +5,6 @@ import { SectorSelector } from "../selectors/SectorSelector";
 import { RoleSelector } from "../selectors/RoleSelector";
 import { EmployeeSelector } from "../selectors/EmployeeSelector";
 import { TemplateSelector } from "../selectors/TemplateSelector";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 import { ChecklistTemplate } from "@/types";
 
 interface AssessmentSelectionTabProps {
@@ -36,7 +34,6 @@ export function AssessmentSelectionTab({
   onRoleChange,
   onEmployeeChange,
   onTemplateSelect,
-  onNext,
   templates,
   isTemplatesLoading
 }: AssessmentSelectionTabProps) {
@@ -75,19 +72,6 @@ export function AssessmentSelectionTab({
           onTemplateSelect={onTemplateSelect}
         />
       </div>
-
-      {/* Hide the Next button as per user request */}
-      {/*
-      <div className="flex justify-end">
-        <Button
-          onClick={onNext}
-          disabled={!selectedEmployee || !selectedTemplate}
-        >
-          Próximo
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-      */}
     </div>
   );
 }
