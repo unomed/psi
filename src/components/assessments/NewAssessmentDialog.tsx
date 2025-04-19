@@ -7,7 +7,7 @@ import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";  
 import { Label } from "@/components/ui/label";
-import { Save } from "lucide-react";
+import { Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { usePeriodicityForRisk } from "@/hooks/usePeriodicityForRisk";
@@ -40,6 +40,7 @@ export function NewAssessmentDialog({
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
   const [dateError, setDateError] = useState<boolean>(false);
+  const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
 
   // Obter o nível de risco do funcionário e a periodicidade correspondente
   const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
@@ -64,6 +65,15 @@ export function NewAssessmentDialog({
       }
     }
   }, [isOpen, suggestedPeriodicity]);
+
+  // Verificar compatibilidade entre data e recorrência
+  useEffect(() => {
+    if (recurrenceType !== 'none' && !scheduledDate) {
+      setShowRecurrenceWarning(true);
+    } else {
+      setShowRecurrenceWarning(false);
+    }
+  }, [recurrenceType, scheduledDate]);
 
   // Resetar erro de data quando a data muda
   useEffect(() => {
@@ -93,6 +103,17 @@ export function NewAssessmentDialog({
     onEmployeeSelect("");
   };
 
+  // Lidar com a mudança de periodicidade
+  const handleRecurrenceChange = (value: string) => {
+    setRecurrenceType(value as RecurrenceType);
+    
+    if (value !== 'none' && !scheduledDate) {
+      setShowRecurrenceWarning(true);
+    } else {
+      setShowRecurrenceWarning(false);
+    }
+  };
+
   const handleSave = async () => {
     console.log("Tentando salvar com data:", scheduledDate);
     
@@ -116,6 +137,11 @@ export function NewAssessmentDialog({
       return;
     }
 
+    // Verificar se a periodicidade é válida quando selecionada
+    if (recurrenceType !== 'none') {
+      console.log("Verificando periodicidade:", recurrenceType);
+    }
+
     const saved = await onSave();
     if (saved) {
       onClose();
@@ -128,7 +154,20 @@ export function NewAssessmentDialog({
     setSelectedSector(null);
     setSelectedRole(null);
     setDateError(false);
+    setShowRecurrenceWarning(false);
     onClose();
+  };
+
+  // Formatar data para exibição
+  const formatDateForDisplay = (date: Date | undefined): string => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return 'Data não selecionada';
+    }
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   };
 
   return (
@@ -168,7 +207,16 @@ export function NewAssessmentDialog({
                 onSelect={(date) => {
                   console.log("Data selecionada:", date);
                   setScheduledDate(date);
-                  if (date) setDateError(false);
+                  if (date) {
+                    setDateError(false);
+                    if (recurrenceType !== 'none') {
+                      setShowRecurrenceWarning(false);
+                    }
+                  } else {
+                    if (recurrenceType !== 'none') {
+                      setShowRecurrenceWarning(true);
+                    }
+                  }
                 }} 
                 disabled={(date) => {
                   const today = new Date();
@@ -182,16 +230,24 @@ export function NewAssessmentDialog({
                   Selecione uma data para a avaliação.
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Selecione a data em que a avaliação será realizada.
-              </p>
+              
+              {scheduledDate && !dateError && (
+                <p className="text-xs text-muted-foreground">
+                  Data selecionada: {formatDateForDisplay(scheduledDate)}
+                </p>
+              )}
+              {!scheduledDate && !dateError && (
+                <p className="text-xs text-muted-foreground">
+                  Selecione a data em que a avaliação será realizada.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="recurrence">Periodicidade</Label>
               <Select 
                 value={recurrenceType} 
-                onValueChange={(value) => setRecurrenceType(value as RecurrenceType)}
+                onValueChange={handleRecurrenceChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a periodicidade" />
@@ -203,6 +259,14 @@ export function NewAssessmentDialog({
                   <SelectItem value="annual">Anual</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {showRecurrenceWarning && (
+                <div className="flex items-center text-amber-500 text-xs gap-1 mt-1">
+                  <AlertCircle className="h-3 w-3" />
+                  <span>É necessário selecionar uma data para usar recorrência.</span>
+                </div>
+              )}
+              
               {employeeRiskLevel && suggestedPeriodicity && suggestedPeriodicity !== 'none' && (
                 <p className="text-xs text-muted-foreground">
                   Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
@@ -219,7 +283,7 @@ export function NewAssessmentDialog({
           <div className="flex justify-end">
             <Button
               onClick={handleSave}
-              disabled={!selectedEmployee || !selectedTemplate}
+              disabled={!selectedEmployee || !selectedTemplate || dateError || (recurrenceType !== 'none' && !scheduledDate)}
             >
               <Save className="mr-2 h-4 w-4" />
               Salvar Avaliação

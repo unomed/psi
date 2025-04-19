@@ -28,7 +28,9 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
   // Garantir que a data inicial seja definida corretamente
   React.useEffect(() => {
     if (date) {
-      setInputValue(format(date, 'dd/MM/yyyy'));
+      const formattedDate = format(date, 'dd/MM/yyyy');
+      console.log("Atualizando inputValue com data formatada:", formattedDate);
+      setInputValue(formattedDate);
       setHasError(false);
     } else {
       setInputValue('');
@@ -65,6 +67,11 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
       } else {
         setHasError(true);
       }
+    } else if (value === '') {
+      // Se o campo estiver vazio, definir a data como undefined
+      onSelect(undefined);
+    } else {
+      setHasError(value.length > 0);
     }
   };
 
@@ -78,6 +85,11 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
       setInputValue('');
     }
     setIsOpen(false);
+  };
+
+  // Função para verificar se a data é válida
+  const isValidDate = (d: any): boolean => {
+    return d instanceof Date && !isNaN(d.getTime());
   };
 
   return (
@@ -108,7 +120,7 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
+            {date && isValidDate(date) ? format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : <span>Selecione uma data</span>}
           </Button>
         )}
       </PopoverTrigger>

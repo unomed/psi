@@ -54,8 +54,19 @@ export function useAssessmentSaveOperations() {
         return null;
       }
       
+      // Verificar se temos uma recorrência selecionada
+      if (recurrenceType === "none") {
+        console.log("Avaliação sem recorrência");
+      } else {
+        console.log(`Recorrência definida como: ${recurrenceType}`);
+      }
+      
       const nextDate = calculateNextScheduledDate(scheduledDate, recurrenceType);
       console.log("Próxima data calculada:", nextDate);
+      
+      if (recurrenceType !== "none" && !nextDate) {
+        console.warn("Próxima data não calculada corretamente para recorrência:", recurrenceType);
+      }
       
       const newScheduledAssessment: Omit<ScheduledAssessment, "id"> = {
         employeeId: selectedEmployee,
