@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { fetchChecklistTemplates } from "@/services/checklistService";
 import { useAssessmentState } from "@/hooks/useAssessmentState";
@@ -65,12 +64,7 @@ export function AssessmentHandlerRoot() {
     <div className="space-y-8">
       <AssessmentActions onNewAssessment={handlers.handleNewAssessment} />
       
-      <AssessmentTabs
-        scheduledAssessments={scheduledAssessments}
-        onSendEmail={handleSendEmail}
-        onScheduleAssessment={handlers.handleScheduleNewAssessment}
-        onGenerateLink={handlers.handleGenerateLink}
-      />
+      <AssessmentTabs />
       
       <AssessmentDialogsContainer
         dialogState={dialogState}
