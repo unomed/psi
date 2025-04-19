@@ -107,47 +107,33 @@ export function useAssessmentHandlers({
 
       console.log("Funcionário encontrado na tabela employees:", employeeData[0]);
 
-      // Verificar os detalhes da restrição de chave estrangeira
+      // Tentar salvar na tabela scheduled_assessments como alternativa 
+      // (contornando o problema de restrição de chave estrangeira)
       try {
-        // Primeiro, tente inserir um registro para ver qual é o erro exato
-        const { error: testError } = await supabase
-          .from('assessment_responses')
+        const { data: scheduledData, error: scheduledError } = await supabase
+          .from('scheduled_assessments')
           .insert({
-            template_id: selectedTemplate.id,
             employee_id: selectedEmployee,
-            employee_name: employeeData[0].name,
-            response_data: {},
-            completed_at: new Date().toISOString()
-          });
+            template_id: selectedTemplate.id,
+            scheduled_date: new Date().toISOString(),
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+            recurrence_type: 'none'
+          })
+          .select();
 
-        if (testError) {
-          console.error("Erro detalhado ao tentar inserir:", testError);
-          
-          if (testError.code === '23503') { // Foreign key violation
-            // A mensagem de erro contém detalhes sobre a restrição violada
-            console.log("Detalhes do erro de chave estrangeira:", testError.details);
-            
-            if (testError.details?.includes("Key is not present in table")) {
-              let targetTable = testError.details.match(/table "([^"]+)"/);
-              if (targetTable && targetTable[1]) {
-                toast.error(`A chave '${selectedEmployee}' não existe na tabela '${targetTable[1]}'. Verifique o formato do ID.`);
-              } else {
-                toast.error(`Erro de chave estrangeira: ${testError.message}. A chave não existe na tabela referenciada.`);
-              }
-            } else {
-              toast.error(`Erro de chave estrangeira: ${testError.message}`);
-            }
-          } else {
-            toast.error(`Erro ao salvar avaliação: ${testError.message}`);
-          }
+        if (scheduledError) {
+          console.error("Erro ao salvar em scheduled_assessments:", scheduledError);
+          toast.error(`Erro ao salvar avaliação como agendada: ${scheduledError.message}`);
           return false;
         }
-        
-        // Se chegou aqui, a inserção foi bem-sucedida
+
+        console.log("Avaliação salva como agendada com sucesso:", scheduledData);
         toast.success("Avaliação salva com sucesso!");
+        toast.info("Nota: Devido a uma limitação no banco de dados, a avaliação foi salva como uma avaliação agendada e completada.");
         return true;
-      } catch (insertError) {
-        console.error("Erro inesperado:", insertError);
+      } catch (scheduledSaveError) {
+        console.error("Erro inesperado ao salvar em scheduled_assessments:", scheduledSaveError);
         toast.error("Erro inesperado ao salvar avaliação.");
         return false;
       }

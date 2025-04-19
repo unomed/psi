@@ -6,7 +6,6 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { ChecklistTemplate } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface NewAssessmentDialogProps {
