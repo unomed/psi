@@ -1,8 +1,10 @@
+
 import React, { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePermissions } from "@/hooks/usePermissions";
+import { usePermissions, Permission } from "@/hooks/usePermissions";
 import { NewRoleDialog } from "@/components/permissions/NewRoleDialog";
 import { PermissionSection } from "@/components/permissions/PermissionSection";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 
 interface PermissionSetting {
   id: string;
