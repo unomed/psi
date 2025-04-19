@@ -22,10 +22,11 @@ export function EmployeeSelector({
 }: EmployeeSelectorProps) {
   const { employees = [], isLoading } = useEmployees();
 
-  // Garantindo que employees seja sempre um array
+  // Garantindo que employees seja sempre um array válido
   const employeesList = Array.isArray(employees) ? employees : [];
   
-  // Garantindo que filtramos apenas quando temos um selectedRole válido
+  // Filtramos apenas quando temos um selectedRole válido
+  // Caso contrário, retornamos um array vazio para evitar iteração em undefined
   const filteredEmployees = selectedRole 
     ? employeesList.filter(employee => employee.role_id === selectedRole)
     : [];
@@ -42,7 +43,7 @@ export function EmployeeSelector({
           <SelectValue placeholder={selectedRole ? "Selecione um funcionário" : "Primeiro selecione uma função"} />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees && filteredEmployees.length > 0 ? (
+          {filteredEmployees.length > 0 ? (
             filteredEmployees.map((employee) => (
               <SelectItem key={employee.id} value={employee.id}>
                 {employee.name}
