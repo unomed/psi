@@ -113,6 +113,60 @@ export function useAssessmentHandlers({
 
       console.log("Funcionário encontrado na tabela employees:", employeeData[0]);
 
+      // Get employee's risk level and corresponding periodicity
+      const { data: employeeWithRole } = await supabase
+        .from('employees')
+        .select(`
+          id,
+          roles (
+            risk_level
+          )
+        `)
+        .eq('id', selectedEmployee)
+        .single();
+
+      const riskLevel = employeeWithRole?.roles?.risk_level;
+
+      // Get periodicity settings
+      const { data: periodicitySettings } = await supabase
+        .from('periodicity_settings')
+        .select('*')
+        .single();
+
+      let suggestedRecurrenceType = 'none';
+      if (riskLevel && periodicitySettings) {
+        switch (riskLevel.toLowerCase()) {
+          case 'high':
+            suggestedRecurrenceType = periodicitySettings.risk_high_periodicity;
+            break;
+          case 'medium':
+            suggestedRecurrenceType = periodicitySettings.risk_medium_periodicity;
+            break;
+          case 'low':
+            suggestedRecurrenceType = periodicitySettings.risk_low_periodicity;
+            break;
+          default:
+            suggestedRecurrenceType = periodicitySettings.default_periodicity;
+        }
+      }
+
+      // Calculate next scheduled date based on recurrence type
+      let nextScheduledDate = null;
+      if (suggestedRecurrenceType !== 'none') {
+        nextScheduledDate = new Date(scheduledDate);
+        switch (suggestedRecurrenceType) {
+          case 'monthly':
+            nextScheduledDate.setMonth(nextScheduledDate.getMonth() + 1);
+            break;
+          case 'semiannual':
+            nextScheduledDate.setMonth(nextScheduledDate.getMonth() + 6);
+            break;
+          case 'annual':
+            nextScheduledDate.setFullYear(nextScheduledDate.getFullYear() + 1);
+            break;
+        }
+      }
+
       // Salvar como avaliação agendada (scheduled_assessments)
       const { data: scheduledData, error: scheduledError } = await supabase
         .from('scheduled_assessments')
@@ -121,7 +175,8 @@ export function useAssessmentHandlers({
           template_id: selectedTemplate.id,
           scheduled_date: scheduledDate.toISOString(),
           status: 'scheduled',
-          recurrence_type: 'none'
+          recurrence_type: suggestedRecurrenceType,
+          next_scheduled_date: nextScheduledDate?.toISOString()
         })
         .select();
 

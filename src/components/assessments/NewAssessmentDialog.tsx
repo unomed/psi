@@ -3,12 +3,14 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
 import { useEmployees } from "@/hooks/useEmployees";
-import { ChecklistTemplate } from "@/types";
+import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";  
 import { Label } from "@/components/ui/label";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { usePeriodicityForRisk } from "@/hooks/usePeriodicityForRisk";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -36,6 +38,11 @@ export function NewAssessmentDialog({
   const { employees } = useEmployees();
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
+
+  // Get the employee's role risk level and corresponding periodicity
+  const employeeRiskLevel = employees?.find(emp => emp.id === selectedEmployee)?.role?.risk_level;
+  const suggestedPeriodicity = usePeriodicityForRisk(employeeRiskLevel);
   
   // Add state for company, sector, and role selection
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
@@ -45,22 +52,22 @@ export function NewAssessmentDialog({
   // Handle company change
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompany(companyId);
-    setSelectedSector(null); // Reset sector when company changes
-    setSelectedRole(null); // Reset role when company changes
-    onEmployeeSelect(""); // Reset employee when company changes
+    setSelectedSector(null);
+    setSelectedRole(null);
+    onEmployeeSelect("");
   };
 
   // Handle sector change
   const handleSectorChange = (sectorId: string) => {
     setSelectedSector(sectorId);
-    setSelectedRole(null); // Reset role when sector changes
-    onEmployeeSelect(""); // Reset employee when sector changes
+    setSelectedRole(null);
+    onEmployeeSelect("");
   };
 
   // Handle role change
   const handleRoleChange = (roleId: string) => {
     setSelectedRole(roleId);
-    onEmployeeSelect(""); // Reset employee when role changes
+    onEmployeeSelect("");
   };
 
   const handleSave = async () => {
@@ -76,6 +83,8 @@ export function NewAssessmentDialog({
 
     console.log("Tentando salvar com employee_id:", selectedEmployee);
     console.log("Data agendada:", scheduledDate);
+    console.log("Tipo de recorrência:", recurrenceType);
+    
     if (selectedEmployeeData) {
       console.log("Dados do funcionário encontrados na UI:", selectedEmployeeData);
     } else {
@@ -94,6 +103,7 @@ export function NewAssessmentDialog({
     setSelectedSector(null);
     setSelectedRole(null);
     setScheduledDate(new Date());
+    setRecurrenceType("none");
     onClose();
   };
 
@@ -135,6 +145,29 @@ export function NewAssessmentDialog({
               <p className="text-xs text-muted-foreground">
                 Selecione a data em que a avaliação será realizada.
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="recurrence">Periodicidade</Label>
+              <Select 
+                value={recurrenceType} 
+                onValueChange={(value) => setRecurrenceType(value as RecurrenceType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a periodicidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sem recorrência</SelectItem>
+                  <SelectItem value="monthly">Mensal</SelectItem>
+                  <SelectItem value="semiannual">Semestral</SelectItem>
+                  <SelectItem value="annual">Anual</SelectItem>
+                </SelectContent>
+              </Select>
+              {employeeRiskLevel && (
+                <p className="text-xs text-muted-foreground">
+                  Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
+                </p>
+              )}
             </div>
           </div>
 
