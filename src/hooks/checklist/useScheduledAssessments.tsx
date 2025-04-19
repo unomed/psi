@@ -1,6 +1,5 @@
-
 import { useQuery } from "@tanstack/react-query";
-import { RecurrenceType, ScheduledAssessment } from "@/types";
+import { RecurrenceType, ScheduledAssessment, AssessmentStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,7 +11,6 @@ export function useScheduledAssessments() {
   } = useQuery({
     queryKey: ['scheduledAssessments'],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
-      // Fetch scheduled assessments from Supabase
       const { data, error } = await supabase
         .from('scheduled_assessments')
         .select(`
@@ -33,39 +31,30 @@ export function useScheduledAssessments() {
         return [];
       }
       
-      // Transform the data to match our ScheduledAssessment type
-      return data.map(item => {
-        // Safely handle employees data with proper TypeScript casting
-        const employeesData = item.employees && typeof item.employees === 'object' && !('error' in item.employees)
-          ? {
-              name: item.employees ? (item.employees as any).name || 'Funcionário' : 'Funcionário',
-              email: item.employees ? (item.employees as any).email || '' : '',
-              phone: item.employees ? (item.employees as any).phone || '' : ''
-            }
-          : undefined;
-        
-        return {
-          id: item.id,
-          employeeId: item.employee_id,
-          templateId: item.template_id,
-          scheduledDate: new Date(item.scheduled_date),
-          sentAt: item.sent_at ? new Date(item.sent_at) : null,
-          linkUrl: item.link_url || '',
-          status: item.status,
-          completedAt: item.completed_at ? new Date(item.completed_at) : null,
-          recurrenceType: item.recurrence_type as RecurrenceType | undefined,
-          nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
-          phoneNumber: item.phone_number || undefined,
-          employees: employeesData,
-          checklist_templates: item.checklist_templates
-        };
-      });
+      return data.map(item => ({
+        id: item.id,
+        employeeId: item.employee_id,
+        templateId: item.template_id,
+        scheduledDate: new Date(item.scheduled_date),
+        sentAt: item.sent_at ? new Date(item.sent_at) : null,
+        linkUrl: item.link_url || '',
+        status: item.status as AssessmentStatus,
+        completedAt: item.completed_at ? new Date(item.completed_at) : null,
+        recurrenceType: item.recurrence_type as RecurrenceType | undefined,
+        nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+        phoneNumber: item.phone_number || undefined,
+        employees: item.employees ? {
+          name: item.employees.name || 'Funcionário',
+          email: item.employees.email || '',
+          phone: item.employees.phone || ''
+        } : undefined,
+        checklist_templates: item.checklist_templates
+      }));
     }
   });
 
   const handleScheduleAssessment = async (assessmentData: Omit<ScheduledAssessment, 'id' | 'linkUrl' | 'sentAt' | 'completedAt'>) => {
     try {
-      // Implementation here
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success("Avaliação agendada com sucesso!");
       refetch();
@@ -79,7 +68,6 @@ export function useScheduledAssessments() {
 
   const handleSendEmail = async (assessmentId: string) => {
     try {
-      // Implementation here
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success("Email enviado com sucesso!");
       refetch();
@@ -93,7 +81,6 @@ export function useScheduledAssessments() {
 
   const handleShareAssessment = async (assessmentId: string) => {
     try {
-      // Implementation here
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success("Link compartilhado com sucesso!");
       refetch();

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { toast } from "sonner";
 import { AssessmentError } from "@/components/assessments/AssessmentError";
 import { AssessmentLoading } from "@/components/assessments/AssessmentLoading";
 import { AssessmentComplete } from "@/components/assessments/AssessmentComplete";
-import { fetchAssessmentByToken, submitAssessmentResult } from "@/services/assessmentService";
+import { fetchAssessmentByToken, submitAssessmentResult } from "@/services/assessment";
 
 export default function AssessmentPage() {
   const { token } = useParams<{ token: string }>();

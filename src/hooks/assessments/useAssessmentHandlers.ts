@@ -1,9 +1,8 @@
-
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
 import { useScheduleOperations } from "./useScheduleOperations";
 import { ScheduledAssessment, ChecklistTemplate } from "@/types";
-import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessmentService";
+import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment";
 import { useAssessmentSubmission } from "./operations/useAssessmentSubmission";
 import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
 import { useAssessmentSaveOperations } from "./operations/useAssessmentSaveOperations";
@@ -92,7 +91,7 @@ export function useAssessmentHandlers({
     }
 
     try {
-      const assessment = await generateAssessmentLink(selectedEmployee, selectedTemplate.id);
+      const assessment = await generateAssessmentLink(selectedEmployee);
       setGeneratedLink(assessment.token);
       setIsLinkDialogOpen(true);
     } catch (error) {

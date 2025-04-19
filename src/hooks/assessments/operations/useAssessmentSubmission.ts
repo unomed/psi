@@ -1,6 +1,5 @@
-
 import { toast } from "sonner";
-import { createAssessmentResult } from "@/services/assessmentHandlerService";
+import { submitAssessmentResult } from "@/services/assessment";
 import { ChecklistResult } from "@/types";
 
 export function useAssessmentSubmission({
@@ -14,7 +13,7 @@ export function useAssessmentSubmission({
 }) {
   const handleSubmitAssessment = (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
     try {
-      const result = createAssessmentResult(resultData);
+      const result = submitAssessmentResult(resultData);
       setAssessmentResult(result);
       setIsAssessmentDialogOpen(false);
       setIsResultDialogOpen(true);

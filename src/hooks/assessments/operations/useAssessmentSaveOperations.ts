@@ -1,7 +1,6 @@
-
 import { toast } from "sonner";
 import { ChecklistTemplate } from "@/types";
-import { createScheduledAssessment } from "@/services/assessmentService";
+import { createScheduledAssessment } from "@/services/assessment";
 
 export function useAssessmentSaveOperations({
   setIsScheduleDialogOpen,
