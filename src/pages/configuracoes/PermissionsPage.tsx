@@ -29,8 +29,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, InfoCircle } from "lucide-react";
 import { usePermissions, Permission } from "@/hooks/usePermissions";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PermissionSetting {
   id: string;
@@ -97,6 +98,11 @@ export default function PermissionsPage() {
   const sections = [...new Set(permissionSettings.map(p => p.section))];
 
   const handleTogglePermission = (role: Permission, permissionId: string) => {
+    // Não permitir alteração para o perfil superadmin
+    if (role.role === 'superadmin') {
+      return;
+    }
+    
     const newPermissions = { 
       ...role.permissions,
       [permissionId]: !role.permissions[permissionId]
@@ -154,6 +160,10 @@ export default function PermissionsPage() {
   };
 
   const getPermissionValue = (role: Permission, permissionId: string): boolean => {
+    // Para superadmin, sempre retornar true
+    if (role.role === 'superadmin') {
+      return true;
+    }
     return role.permissions && role.permissions[permissionId] === true;
   };
 
@@ -256,11 +266,25 @@ export default function PermissionsPage() {
                       </TableCell>
                       {permissions?.map((role) => (
                         <TableCell key={`${role.id}-${permission.id}`}>
-                          <Switch 
-                            checked={getPermissionValue(role, permission.id)}
-                            onCheckedChange={() => handleTogglePermission(role, permission.id)}
-                            disabled={role.role === 'superadmin'} // Superadmin always has all permissions
-                          />
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <Switch 
+                                    checked={getPermissionValue(role, permission.id)}
+                                    onCheckedChange={() => handleTogglePermission(role, permission.id)}
+                                    disabled={role.role === 'superadmin'} // Superadmin sempre tem todas as permissões
+                                    aria-readonly={role.role === 'superadmin'}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              {role.role === 'superadmin' && (
+                                <TooltipContent>
+                                  <p>O perfil Superadmin sempre tem acesso total ao sistema</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
                         </TableCell>
                       ))}
                     </TableRow>
