@@ -67,34 +67,9 @@ export function NewAssessmentDialog({
       return;
     }
 
-    try {
-      // Tentar salvar diretamente na tabela assessment_responses
-      const { error: responseError } = await supabase
-        .from('assessment_responses')
-        .insert({
-          template_id: selectedTemplate.id,
-          employee_id: selectedEmployee,
-          employee_name: selectedEmployeeData?.name || "Funcionário",
-          response_data: {},
-          completed_at: new Date().toISOString()
-        });
-
-      if (responseError) {
-        console.error("Erro ao salvar na tabela assessment_responses:", responseError);
-        
-        // Se o método onSave falhou na tabela principal, tenta salvar no agendamento
-        const saved = await onSave();
-        if (saved) {
-          toast.success("Avaliação salva como agendada (não foi possível salvar como resposta)");
-          onClose();
-        }
-      } else {
-        toast.success("Avaliação salva com sucesso na tabela assessment_responses!");
-        onClose();
-      }
-    } catch (error) {
-      console.error("Error in handleSave:", error);
-      toast.error("Erro ao salvar avaliação");
+    const saved = await onSave();
+    if (saved) {
+      onClose();
     }
   };
 

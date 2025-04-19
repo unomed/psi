@@ -47,7 +47,7 @@ export function useAssessmentHandlers({
   setSelectedAssessment: (assessment: ScheduledAssessment | null) => void;
   handleSendEmail: (employeeId: string) => void;
 }) {
-  const { getSelectedEmployeeName } = useAssessmentEmployeeOperations();
+  const { getSelectedEmployeeName, getEmployeeById } = useAssessmentEmployeeOperations();
   
   const { handleSubmitAssessment, handleCloseResult } = useAssessmentSubmission({
     setAssessmentResult,
@@ -89,14 +89,39 @@ export function useAssessmentHandlers({
     }
 
     try {
-      const employeeName = getSelectedEmployeeName(selectedEmployee);
-      
+      // Verificar se o funcionário existe no banco de dados
+      const { data: employeeData, error: employeeError } = await supabase
+        .from('employees')
+        .select('id, name')
+        .eq('id', selectedEmployee)
+        .single();
+
+      if (employeeError) {
+        console.error("Erro ao verificar funcionário:", employeeError);
+        toast.error(`Funcionário não encontrado no banco de dados: ${employeeError.message}`);
+        return false;
+      }
+
+      // Verificar se o template existe no banco de dados
+      const { data: templateData, error: templateError } = await supabase
+        .from('checklist_templates')
+        .select('id')
+        .eq('id', selectedTemplate.id)
+        .single();
+
+      if (templateError) {
+        console.error("Erro ao verificar template:", templateError);
+        toast.error(`Modelo de checklist não encontrado no banco de dados: ${templateError.message}`);
+        return false;
+      }
+
+      // Agora podemos tentar inserir na tabela assessment_responses com mais confiança
       const { data, error } = await supabase
         .from('assessment_responses')
         .insert({
           template_id: selectedTemplate.id,
           employee_id: selectedEmployee,
-          employee_name: employeeName,
+          employee_name: employeeData.name,
           response_data: {},
           completed_at: new Date().toISOString()
         })
@@ -104,7 +129,12 @@ export function useAssessmentHandlers({
 
       if (error) {
         console.error("Erro detalhado ao salvar:", error);
-        toast.error(`Erro ao salvar avaliação: ${error.message}`);
+        
+        if (error.code === '23503') { // Foreign key violation
+          toast.error(`Erro de chave estrangeira: ${error.message}. Verifique se as informações do funcionário estão corretas.`);
+        } else {
+          toast.error(`Erro ao salvar avaliação: ${error.message}`);
+        }
         return false;
       }
 
