@@ -1,5 +1,5 @@
 
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -14,9 +14,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
-        </main>
+        <div className="flex-1 relative">
+          <div className="absolute top-4 left-4 z-50">
+            <SidebarTrigger className="bg-background shadow-md" />
+          </div>
+          <main className="flex-1 p-6 pt-16 overflow-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
