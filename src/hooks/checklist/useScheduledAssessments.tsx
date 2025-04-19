@@ -15,13 +15,23 @@ export function useScheduledAssessments() {
       const { data, error } = await supabase
         .from('scheduled_assessments')
         .select(`
-          *,
-          employees:employee_id (
+          id,
+          employee_id,
+          template_id,
+          scheduled_date,
+          sent_at,
+          link_url,
+          status,
+          completed_at,
+          recurrence_type,
+          next_scheduled_date,
+          phone_number,
+          employees (
             name,
             email,
             phone
           ),
-          checklist_templates:template_id (
+          checklist_templates (
             title
           )
         `)
