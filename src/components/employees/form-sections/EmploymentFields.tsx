@@ -35,6 +35,7 @@ export function EmploymentFields({
               <DatePicker
                 date={field.value}
                 onSelect={field.onChange}
+                allowInput={true}
               />
             </FormControl>
             <FormMessage />

@@ -79,6 +79,7 @@ export function PersonalInfoFields({ form }: PersonalInfoFieldsProps) {
               <DatePicker
                 date={field.value}
                 onSelect={field.onChange}
+                allowInput={true}
               />
             </FormControl>
             <FormMessage />
