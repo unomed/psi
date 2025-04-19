@@ -9,7 +9,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
+  SidebarSub,
+  SidebarSubContent,
+  SidebarSubTrigger,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +24,12 @@ import {
   Settings,
   Users,
   UserRound,
+  Mail,
+  Bell,
+  Shield,
+  Calendar,
+  Gauge,
+  Server
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -85,6 +93,52 @@ const menuItems = [
   },
 ];
 
+// Configurações submenu items
+const settingsMenuItems = [
+  {
+    title: "Critérios de Avaliação",
+    icon: Gauge,
+    path: "/configuracoes/criterios",
+    roles: ["superadmin"]
+  },
+  {
+    title: "Servidor de Email",
+    icon: Server,
+    path: "/configuracoes/servidor-email",
+    roles: ["superadmin"]
+  },
+  {
+    title: "E-mails",
+    icon: Mail,
+    path: "/configuracoes/emails",
+    roles: ["superadmin"]
+  },
+  {
+    title: "Notificações",
+    icon: Bell,
+    path: "/configuracoes/notificacoes",
+    roles: ["superadmin"]
+  },
+  {
+    title: "Periodicidade",
+    icon: Calendar,
+    path: "/configuracoes/periodicidade",
+    roles: ["superadmin"]
+  },
+  {
+    title: "Gerenciar Permissões",
+    icon: Shield,
+    path: "/configuracoes/permissoes",
+    roles: ["superadmin"]
+  },
+  {
+    title: "Perfil de Usuários",
+    icon: Users,
+    path: "/configuracoes/usuarios",
+    roles: ["superadmin"]
+  }
+];
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -94,6 +148,12 @@ export function AppSidebar() {
   const filteredMenuItems = menuItems.filter(item => 
     userRole && item.roles.includes(userRole)
   );
+
+  const filteredSettingsItems = settingsMenuItems.filter(item => 
+    userRole && item.roles.includes(userRole)
+  );
+
+  const isSettingsRoute = location.pathname.startsWith('/configuracoes');
 
   return (
     <Sidebar className="border-r">
@@ -126,6 +186,36 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              {filteredSettingsItems.length > 0 && (
+                <SidebarSub>
+                  <SidebarSubTrigger
+                    className={cn(
+                      "flex items-center w-full",
+                      isSettingsRoute && "bg-sidebar-accent"
+                    )}
+                  >
+                    <Settings className="mr-2 h-5 w-5" />
+                    <span>Configurações</span>
+                  </SidebarSubTrigger>
+                  <SidebarSubContent>
+                    {filteredSettingsItems.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          onClick={() => navigate(item.path)}
+                          className={cn(
+                            "flex items-center w-full",
+                            location.pathname === item.path && "bg-sidebar-accent"
+                          )}
+                        >
+                          <item.icon className="mr-2 h-5 w-5" />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarSubContent>
+                </SidebarSub>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

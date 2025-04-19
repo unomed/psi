@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,13 +12,19 @@ import Funcoes from "./pages/Funcoes";
 import Checklists from "./pages/Checklists";
 import Avaliacoes from "./pages/Avaliacoes";
 import Relatorios from "./pages/Relatorios";
-import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 import AssessmentPage from "./pages/AssessmentPage";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import { AuthProvider } from "./contexts/AuthContext";
 import { RouteGuard } from "./components/auth/RouteGuard";
+import AssessmentCriteriaPage from "./pages/configuracoes/AssessmentCriteriaPage";
+import EmailServerPage from "./pages/configuracoes/EmailServerPage";
+import EmailTemplatesPage from "./pages/configuracoes/EmailTemplatesPage";
+import NotificationsPage from "./pages/configuracoes/NotificationsPage";
+import PeriodicityPage from "./pages/configuracoes/PeriodicityPage";
+import UserManagementPage from "./pages/configuracoes/UserManagementPage";
+import PermissionsPage from "./pages/configuracoes/PermissionsPage";
 
 const queryClient = new QueryClient();
 
@@ -99,14 +104,62 @@ const App = () => (
               </RouteGuard>
             } />
             
-            {/* Routes accessible only by superadmin */}
-            <Route path="/configuracoes" element={
+            {/* Settings routes - accessible only by superadmin */}
+            <Route path="/configuracoes/criterios" element={
               <RouteGuard allowedRoles={['superadmin']}>
                 <MainLayout>
-                  <Configuracoes />
+                  <AssessmentCriteriaPage />
                 </MainLayout>
               </RouteGuard>
             } />
+            <Route path="/configuracoes/servidor-email" element={
+              <RouteGuard allowedRoles={['superadmin']}>
+                <MainLayout>
+                  <EmailServerPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/configuracoes/emails" element={
+              <RouteGuard allowedRoles={['superadmin']}>
+                <MainLayout>
+                  <EmailTemplatesPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/configuracoes/notificacoes" element={
+              <RouteGuard allowedRoles={['superadmin']}>
+                <MainLayout>
+                  <NotificationsPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/configuracoes/periodicidade" element={
+              <RouteGuard allowedRoles={['superadmin']}>
+                <MainLayout>
+                  <PeriodicityPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/configuracoes/permissoes" element={
+              <RouteGuard allowedRoles={['superadmin']}>
+                <MainLayout>
+                  <PermissionsPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/configuracoes/usuarios" element={
+              <RouteGuard allowedRoles={['superadmin']}>
+                <MainLayout>
+                  <UserManagementPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            
+            {/* Redirect /configuracoes to first settings page */}
+            <Route 
+              path="/configuracoes" 
+              element={<Navigate to="/configuracoes/criterios" replace />} 
+            />
             
             {/* Public assessment route - accessible without login */}
             <Route path="/avaliacao/:token" element={<AssessmentPage />} />
