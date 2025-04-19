@@ -44,7 +44,7 @@ export function ScheduledAssessmentsList({ assessments, type }: ScheduledAssessm
                 {assessment.checklist_templates?.title || "Modelo não encontrado"}
               </TableCell>
               <TableCell>
-                {format(new Date(assessment.scheduledDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                {format(assessment.scheduledDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </TableCell>
               <TableCell>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium

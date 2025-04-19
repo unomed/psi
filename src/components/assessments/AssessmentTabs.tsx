@@ -23,6 +23,7 @@ export function AssessmentTabs() {
           completed_at,
           phone_number,
           link_url,
+          sent_at,
           employees (
             name,
             email,
@@ -39,7 +40,20 @@ export function AssessmentTabs() {
         return [];
       }
 
-      return data as ScheduledAssessment[];
+      // Transform the data to match our ScheduledAssessment type
+      return data.map(item => ({
+        id: item.id,
+        employeeId: item.employee_id,
+        templateId: item.template_id,
+        scheduledDate: new Date(item.scheduled_date),
+        status: item.status,
+        sentAt: item.sent_at ? new Date(item.sent_at) : null,
+        completedAt: item.completed_at ? new Date(item.completed_at) : null,
+        phoneNumber: item.phone_number || undefined,
+        linkUrl: item.link_url || '',
+        employees: item.employees,
+        checklist_templates: item.checklist_templates
+      })) as ScheduledAssessment[];
     }
   });
 
