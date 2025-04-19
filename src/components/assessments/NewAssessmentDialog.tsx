@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
 import { useEmployees } from "@/hooks/useEmployees";
@@ -30,10 +30,6 @@ export function NewAssessmentDialog({
   onTemplateSelect,
   onSave
 }: NewAssessmentDialogProps) {
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  
   const { employees } = useEmployees();
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
 
@@ -56,19 +52,19 @@ export function NewAssessmentDialog({
 
         <div className="space-y-6">
           <AssessmentSelectionTab
-            selectedCompany={selectedCompany}
-            selectedSector={selectedSector}
-            selectedRole={selectedRole}
             selectedEmployee={selectedEmployee}
             selectedTemplate={selectedTemplate}
-            onCompanyChange={setSelectedCompany}
-            onSectorChange={setSelectedSector}
-            onRoleChange={setSelectedRole}
             onEmployeeChange={onEmployeeSelect}
             onTemplateSelect={onTemplateSelect}
             templates={templates}
             isTemplatesLoading={isTemplatesLoading}
-            onNext={handleSave}
+            // Remove unnecessary state and change tracking
+            selectedCompany={null}
+            selectedSector={null}
+            selectedRole={null}
+            onCompanyChange={() => {}}
+            onSectorChange={() => {}}
+            onRoleChange={() => {}}
           />
 
           <div className="flex justify-end">
