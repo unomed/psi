@@ -32,10 +32,8 @@ export function SectorSelector({
   const [open, setOpen] = useState(false);
   const { sectors = [], isLoading } = useSectors();
 
-  // Garantindo que sectors seja sempre um array válido
   const sectorsList = Array.isArray(sectors) ? sectors : [];
   
-  // Garantindo que filtramos apenas quando temos um selectedCompany válido
   const filteredSectors = selectedCompany 
     ? sectorsList.filter(sector => sector.companyId === selectedCompany)
     : [];
@@ -60,7 +58,7 @@ export function SectorSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput placeholder="Buscar setor..." />
             <CommandEmpty>Nenhum setor encontrado.</CommandEmpty>
@@ -69,7 +67,7 @@ export function SectorSelector({
                 filteredSectors.map((sector) => (
                   <CommandItem
                     key={sector.id}
-                    value={sector.name || ""}
+                    value={sector.name}
                     onSelect={() => {
                       onSectorChange(sector.id);
                       setOpen(false);
@@ -85,8 +83,8 @@ export function SectorSelector({
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled value="no-sectors">
-                  Nenhum setor disponível
+                <CommandItem disabled>
+                  {selectedCompany ? "Nenhum setor disponível" : "Selecione uma empresa primeiro"}
                 </CommandItem>
               )}
             </CommandGroup>

@@ -32,10 +32,8 @@ export function RoleSelector({
   const [open, setOpen] = useState(false);
   const { roles = [], isLoading } = useRoles();
 
-  // Garantindo que roles seja sempre um array válido
   const rolesList = Array.isArray(roles) ? roles : [];
   
-  // Garantindo que filtramos apenas quando temos um selectedSector válido
   const filteredRoles = selectedSector 
     ? rolesList.filter(role => role.sectorId === selectedSector)
     : [];
@@ -60,7 +58,7 @@ export function RoleSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0" align="start">
+        <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput placeholder="Buscar função..." />
             <CommandEmpty>Nenhuma função encontrada.</CommandEmpty>
@@ -69,7 +67,7 @@ export function RoleSelector({
                 filteredRoles.map((role) => (
                   <CommandItem
                     key={role.id}
-                    value={role.name || ""}
+                    value={role.name}
                     onSelect={() => {
                       onRoleChange(role.id);
                       setOpen(false);
@@ -85,8 +83,8 @@ export function RoleSelector({
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled value="no-roles">
-                  Nenhuma função disponível
+                <CommandItem disabled>
+                  {selectedSector ? "Nenhuma função disponível" : "Selecione um setor primeiro"}
                 </CommandItem>
               )}
             </CommandGroup>
