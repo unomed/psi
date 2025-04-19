@@ -81,7 +81,43 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
-  // Add missing function definitions
+  // Função para lidar com o salvamento de avaliações
+  const handleSaveAssessment = async () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist.");
+      return false;
+    }
+
+    try {
+      const employeeName = getSelectedEmployeeName(selectedEmployee);
+      
+      const { data, error } = await supabase
+        .from('assessment_responses')
+        .insert({
+          template_id: selectedTemplate.id,
+          employee_id: selectedEmployee,
+          employee_name: employeeName,
+          response_data: {},
+          completed_at: new Date().toISOString()
+        })
+        .select();
+
+      if (error) {
+        console.error("Erro detalhado ao salvar:", error);
+        toast.error(`Erro ao salvar avaliação: ${error.message}`);
+        return false;
+      }
+
+      toast.success("Avaliação salva com sucesso!");
+      return true;
+    } catch (error) {
+      console.error("Erro inesperado:", error);
+      toast.error("Erro ao salvar avaliação.");
+      return false;
+    }
+  };
+
+  // Funções adicionais
   const handleStartAssessment = () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
@@ -101,58 +137,6 @@ export function useAssessmentHandlers({
     const assessment = { id: assessmentId } as ScheduledAssessment;
     setSelectedAssessment(assessment);
     setIsShareDialogOpen(true);
-  };
-
-  const handleSaveAssessment = async () => {
-    if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de checklist.");
-      return false;
-    }
-
-    try {
-      // Tenta salvar diretamente na tabela assessment_responses primeiro
-      const employeeName = getSelectedEmployeeName(selectedEmployee);
-      
-      const { error: responseError } = await supabase
-        .from('assessment_responses')
-        .insert({
-          template_id: selectedTemplate.id,
-          employee_id: selectedEmployee,
-          employee_name: employeeName,
-          response_data: {},
-          completed_at: new Date().toISOString()
-        });
-
-      if (responseError) {
-        console.error("Erro ao salvar na tabela assessment_responses:", responseError);
-        
-        // Se falhar por restrição de chave estrangeira, tenta salvar como agendada
-        const { error } = await supabase
-          .from('scheduled_assessments')
-          .insert({
-            employee_id: selectedEmployee,
-            template_id: selectedTemplate.id,
-            scheduled_date: new Date().toISOString(),
-            status: 'scheduled'
-          });
-
-        if (error) {
-          console.error("Erro ao salvar agendamento:", error);
-          toast.error("Erro ao salvar avaliação em ambas as tabelas");
-          return false;
-        }
-        
-        toast.success("Avaliação salva como agendada (não foi possível salvar como resposta)");
-        return true;
-      }
-
-      toast.success("Avaliação salva com sucesso na tabela assessment_responses!");
-      return true;
-    } catch (error) {
-      console.error("Error saving assessment:", error);
-      toast.error("Erro ao salvar avaliação.");
-      return false;
-    }
   };
 
   return {
