@@ -15,7 +15,7 @@ interface AssessmentPeriodicitySectionProps {
   onRecurrenceChange: (value: RecurrenceType) => void;
   showRecurrenceWarning: boolean;
   employeeRiskLevel?: string;
-  suggestedPeriodicity?: RecurrenceType;
+  suggestedPeriodicity?: string;
 }
 
 export function AssessmentPeriodicitySection({

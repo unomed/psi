@@ -153,7 +153,7 @@ export function NewAssessmentDialog({
             <AssessmentPeriodicitySection
               recurrenceType={recurrenceType}
               onRecurrenceChange={(value) => {
-                setRecurrenceType(value);
+                setRecurrenceType(value as RecurrenceType);
                 if (value !== 'none' && !scheduledDate) {
                   setShowRecurrenceWarning(true);
                 } else {
