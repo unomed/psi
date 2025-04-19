@@ -5,6 +5,7 @@ import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { settingsMenuItems } from "./settingsItems";
 import { SidebarMenuItem as MenuItem } from "./SidebarMenuItem";
+import { useState, useEffect } from "react";
 
 interface SettingsSubmenuProps {
   userRole?: string;
@@ -13,6 +14,13 @@ interface SettingsSubmenuProps {
 export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   const location = useLocation();
   const isSettingsRoute = location.pathname.startsWith('/configuracoes');
+  const [isOpen, setIsOpen] = useState(isSettingsRoute);
+  
+  useEffect(() => {
+    if (isSettingsRoute) {
+      setIsOpen(true);
+    }
+  }, [isSettingsRoute]);
   
   const filteredSettingsItems = settingsMenuItems.filter(item => 
     userRole && item.roles.includes(userRole)
@@ -27,12 +35,13 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
           "flex items-center w-full",
           isSettingsRoute && "bg-sidebar-accent"
         )}
+        onClick={() => setIsOpen(!isOpen)}
       >
         <Settings className="mr-2 h-5 w-5" />
         <span>Configurações</span>
       </SidebarMenuButton>
       
-      {isSettingsRoute && (
+      {isOpen && (
         <div className="ml-6 mt-2 space-y-1">
           {filteredSettingsItems.map((item) => (
             <MenuItem
