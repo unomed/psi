@@ -72,6 +72,8 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
       
       if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
         const parsedDate = new Date(year, month, day);
+        parsedDate.setHours(0, 0, 0, 0); // Garantir que a hora seja 00:00:00
+        
         console.log("DatePicker: Data analisada do input:", parsedDate, 
           "Dia:", day, "Mês:", month, "Ano:", year,
           "Timestamp:", parsedDate.getTime());
@@ -119,6 +121,8 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
       if (newDate && isValidDate(newDate)) {
         // Criar uma nova instância de Date para evitar problemas de referência
         const safeDate = new Date(newDate.getTime());
+        safeDate.setHours(0, 0, 0, 0); // Garantir que a hora seja 00:00:00
+        
         console.log("DatePicker: Criando nova instância de data:", safeDate, "Timestamp:", safeDate.getTime());
         onSelect(safeDate);
         setInputValue(format(safeDate, 'dd/MM/yyyy'));

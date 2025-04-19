@@ -66,6 +66,11 @@ export function AssessmentDateSection({
           Data selecionada: {formatDateForDisplay(scheduledDate)}
         </p>
       )}
+      {!scheduledDate && !dateError && (
+        <p className="text-xs text-muted-foreground">
+          Selecione a data em que a avaliação será realizada.
+        </p>
+      )}
     </div>
   );
 }
