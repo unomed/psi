@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "./scheduling/AssessmentSelectionTab";
@@ -81,16 +80,6 @@ export function NewAssessmentDialog({
       return;
     }
 
-    console.log("Tentando salvar com employee_id:", selectedEmployee);
-    console.log("Data agendada:", scheduledDate);
-    console.log("Tipo de recorrência:", recurrenceType);
-    
-    if (selectedEmployeeData) {
-      console.log("Dados do funcionário encontrados na UI:", selectedEmployeeData);
-    } else {
-      console.warn("Funcionário selecionado não encontrado na lista de funcionários UI");
-    }
-
     const saved = await onSave();
     if (saved) {
       onClose();
@@ -134,7 +123,7 @@ export function NewAssessmentDialog({
             onNext={handleSave}
           />
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="scheduledDate">Data da Avaliação</Label>
               <DatePicker 
