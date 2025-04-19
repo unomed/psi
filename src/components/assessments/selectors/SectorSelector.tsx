@@ -66,6 +66,7 @@ export function SectorSelector({
                 filteredSectors.map((sector) => (
                   <CommandItem
                     key={sector.id}
+                    value={sector.id}
                     onSelect={() => {
                       onSectorChange(sector.id);
                       setOpen(false);

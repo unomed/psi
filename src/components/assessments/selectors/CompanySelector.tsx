@@ -59,6 +59,7 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
                 companiesList.map((company) => (
                   <CommandItem
                     key={company.id}
+                    value={company.id}
                     onSelect={() => {
                       onCompanyChange(company.id);
                       setOpen(false);

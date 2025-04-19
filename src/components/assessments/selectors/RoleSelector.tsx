@@ -66,6 +66,7 @@ export function RoleSelector({
                 filteredRoles.map((role) => (
                   <CommandItem
                     key={role.id}
+                    value={role.id}
                     onSelect={() => {
                       onRoleChange(role.id);
                       setOpen(false);

@@ -39,11 +39,17 @@ export function EmployeeSelector({
           <SelectValue placeholder={selectedRole ? "Selecione um funcionário" : "Primeiro selecione uma função"} />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees.map((employee) => (
-            <SelectItem key={employee.id} value={employee.id}>
-              {employee.name}
+          {filteredEmployees.length > 0 ? (
+            filteredEmployees.map((employee) => (
+              <SelectItem key={employee.id} value={employee.id}>
+                {employee.name}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem value="no-employee" disabled>
+              Nenhum funcionário disponível
             </SelectItem>
-          ))}
+          )}
         </SelectContent>
       </Select>
     </div>
