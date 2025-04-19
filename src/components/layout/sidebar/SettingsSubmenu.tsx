@@ -17,7 +17,7 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   const [isOpen, setIsOpen] = useState(isSettingsRoute);
   
   useEffect(() => {
-    if (isSettingsRoute) {
+    if (isSettingsRoute && !isOpen) {
       setIsOpen(true);
     }
   }, [isSettingsRoute]);
