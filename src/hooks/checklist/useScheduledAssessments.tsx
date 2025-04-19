@@ -12,7 +12,7 @@ export function useScheduledAssessments() {
   } = useQuery({
     queryKey: ['scheduledAssessments'],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
-      // Modify the query to properly join with employees table
+      // Using the proper join syntax for Supabase
       const { data, error } = await supabase
         .from('scheduled_assessments')
         .select(`
@@ -27,7 +27,11 @@ export function useScheduledAssessments() {
           recurrence_type,
           next_scheduled_date,
           phone_number,
-          employees:employees(name, email, phone),
+          employees (
+            name,
+            email,
+            phone
+          ),
           checklist_templates(title)
         `)
         .order('scheduled_date', { ascending: false });
@@ -38,21 +42,21 @@ export function useScheduledAssessments() {
       }
       
       return data.map(item => {
-        // Safely handle the employees data, which might be null or undefined
+        // Safely extract employee data, using optional chaining and nullish coalescing
         let employeeInfo = null;
-        if (item.employees && Array.isArray(item.employees) && item.employees.length > 0) {
-          const employee = item.employees[0];
+        
+        // Check if employees data exists
+        if (item.employees) {
+          // Handle both possible cases: array or single object
+          const employee = Array.isArray(item.employees) 
+            ? (item.employees[0] || {}) 
+            : item.employees;
+            
+          // Safe access with defaults
           employeeInfo = {
-            name: employee.name || 'Funcionário',
-            email: employee.email || '',
-            phone: employee.phone || ''
-          };
-        } else if (item.employees && !Array.isArray(item.employees)) {
-          // If it's a single object and not an array
-          employeeInfo = {
-            name: item.employees.name || 'Funcionário',
-            email: item.employees.email || '',
-            phone: item.employees.phone || ''
+            name: employee?.name || 'Funcionário',
+            email: employee?.email || '',
+            phone: employee?.phone || ''
           };
         }
 
