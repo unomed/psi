@@ -67,6 +67,13 @@ export function NewAssessmentDialog({
       return;
     }
 
+    console.log("Tentando salvar com employee_id:", selectedEmployee);
+    if (selectedEmployeeData) {
+      console.log("Dados do funcionário encontrados na UI:", selectedEmployeeData);
+    } else {
+      console.warn("Funcionário selecionado não encontrado na lista de funcionários UI");
+    }
+
     const saved = await onSave();
     if (saved) {
       onClose();

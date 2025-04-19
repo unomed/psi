@@ -89,59 +89,70 @@ export function useAssessmentHandlers({
     }
 
     try {
-      // Verificar se o funcionário existe no banco de dados
+      // Exibir informações de diagnóstico para debug
+      console.log("Tentando salvar avaliação para employee_id:", selectedEmployee);
+      console.log("Tipo de employee_id:", typeof selectedEmployee);
+
+      // Verificar se o funcionário existe na tabela employees
       const { data: employeeData, error: employeeError } = await supabase
         .from('employees')
         .select('id, name')
-        .eq('id', selectedEmployee)
-        .single();
+        .eq('id', selectedEmployee);
 
-      if (employeeError) {
+      if (employeeError || !employeeData || employeeData.length === 0) {
         console.error("Erro ao verificar funcionário:", employeeError);
-        toast.error(`Funcionário não encontrado no banco de dados: ${employeeError.message}`);
+        toast.error(`Funcionário não encontrado na tabela employees: ${employeeError?.message || "Nenhum registro encontrado"}`);
         return false;
       }
 
-      // Verificar se o template existe no banco de dados
-      const { data: templateData, error: templateError } = await supabase
-        .from('checklist_templates')
-        .select('id')
-        .eq('id', selectedTemplate.id)
-        .single();
+      console.log("Funcionário encontrado na tabela employees:", employeeData[0]);
 
-      if (templateError) {
-        console.error("Erro ao verificar template:", templateError);
-        toast.error(`Modelo de checklist não encontrado no banco de dados: ${templateError.message}`);
-        return false;
-      }
+      // Verificar os detalhes da restrição de chave estrangeira
+      try {
+        // Primeiro, tente inserir um registro para ver qual é o erro exato
+        const { error: testError } = await supabase
+          .from('assessment_responses')
+          .insert({
+            template_id: selectedTemplate.id,
+            employee_id: selectedEmployee,
+            employee_name: employeeData[0].name,
+            response_data: {},
+            completed_at: new Date().toISOString()
+          });
 
-      // Agora podemos tentar inserir na tabela assessment_responses com mais confiança
-      const { data, error } = await supabase
-        .from('assessment_responses')
-        .insert({
-          template_id: selectedTemplate.id,
-          employee_id: selectedEmployee,
-          employee_name: employeeData.name,
-          response_data: {},
-          completed_at: new Date().toISOString()
-        })
-        .select();
-
-      if (error) {
-        console.error("Erro detalhado ao salvar:", error);
-        
-        if (error.code === '23503') { // Foreign key violation
-          toast.error(`Erro de chave estrangeira: ${error.message}. Verifique se as informações do funcionário estão corretas.`);
-        } else {
-          toast.error(`Erro ao salvar avaliação: ${error.message}`);
+        if (testError) {
+          console.error("Erro detalhado ao tentar inserir:", testError);
+          
+          if (testError.code === '23503') { // Foreign key violation
+            // A mensagem de erro contém detalhes sobre a restrição violada
+            console.log("Detalhes do erro de chave estrangeira:", testError.details);
+            
+            if (testError.details?.includes("Key is not present in table")) {
+              let targetTable = testError.details.match(/table "([^"]+)"/);
+              if (targetTable && targetTable[1]) {
+                toast.error(`A chave '${selectedEmployee}' não existe na tabela '${targetTable[1]}'. Verifique o formato do ID.`);
+              } else {
+                toast.error(`Erro de chave estrangeira: ${testError.message}. A chave não existe na tabela referenciada.`);
+              }
+            } else {
+              toast.error(`Erro de chave estrangeira: ${testError.message}`);
+            }
+          } else {
+            toast.error(`Erro ao salvar avaliação: ${testError.message}`);
+          }
+          return false;
         }
+        
+        // Se chegou aqui, a inserção foi bem-sucedida
+        toast.success("Avaliação salva com sucesso!");
+        return true;
+      } catch (insertError) {
+        console.error("Erro inesperado:", insertError);
+        toast.error("Erro inesperado ao salvar avaliação.");
         return false;
       }
-
-      toast.success("Avaliação salva com sucesso!");
-      return true;
     } catch (error) {
-      console.error("Erro inesperado:", error);
+      console.error("Erro geral:", error);
       toast.error("Erro ao salvar avaliação.");
       return false;
     }
