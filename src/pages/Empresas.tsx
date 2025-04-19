@@ -1,23 +1,14 @@
+
 import { useState } from "react";
-import { PlusCircle, Building2, Search } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CompanyForm } from "@/components/forms/CompanyForm";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/companies/columns";
 import type { CompanyData } from "@/components/companies/CompanyCard";
 import { useCompanies } from "@/hooks/useCompanies";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { CompanySearch } from "@/components/companies/CompanySearch";
+import { EmptyCompanyState } from "@/components/companies/EmptyCompanyState";
+import { CompanyDialogs } from "@/components/companies/CompanyDialogs";
 
 export default function Empresas() {
   const [search, setSearch] = useState("");
@@ -88,40 +79,16 @@ export default function Empresas() {
         </Button>
       </div>
       
-      <div className="flex gap-2 items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Pesquisar empresas por nome, CNPJ, cidade..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-      </div>
+      <CompanySearch
+        search={search}
+        onSearchChange={setSearch}
+      />
       
       {filteredCompanies.length === 0 ? (
-        <div className="flex items-center justify-center h-64 border rounded-lg">
-          <div className="text-center">
-            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">
-              {search ? "Nenhuma empresa encontrada" : "Nenhuma empresa cadastrada"}
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              {search 
-                ? "Tente ajustar sua pesquisa para encontrar o que está procurando."
-                : "Cadastre empresas e filiais, gerencie informações sobre o ramo de atividade e registre os responsáveis pelo PGR."}
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => setIsCreateDialogOpen(true)}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Cadastrar Empresa
-            </Button>
-          </div>
-        </div>
+        <EmptyCompanyState
+          hasSearch={search.length > 0}
+          onCreateClick={() => setIsCreateDialogOpen(true)}
+        />
       ) : (
         <DataTable 
           columns={columns} 
@@ -141,116 +108,20 @@ export default function Empresas() {
         />
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Cadastro de Empresa</DialogTitle>
-            <DialogDescription>
-              Preencha os dados da empresa para cadastrá-la no sistema.
-            </DialogDescription>
-          </DialogHeader>
-          <CompanyForm onSubmit={handleCreate} />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Empresa</DialogTitle>
-            <DialogDescription>
-              Atualize os dados da empresa.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedCompany && (
-            <CompanyForm 
-              onSubmit={handleEdit} 
-              defaultValues={selectedCompany}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* View Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Empresa</DialogTitle>
-            <DialogDescription>
-              Visualize os dados completos da empresa.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedCompany && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Nome</h3>
-                <p>{selectedCompany.name}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">CNPJ</h3>
-                <p>{selectedCompany.cnpj}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Endereço</h3>
-                <p>{selectedCompany.address}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Cidade</h3>
-                <p>{selectedCompany.city}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Estado</h3>
-                <p>{selectedCompany.state}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Setor</h3>
-                <p>{selectedCompany.industry || "Não informado"}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Nome do Contato</h3>
-                <p>{selectedCompany.contactName}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Email do Contato</h3>
-                <p>{selectedCompany.contactEmail}</p>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium text-muted-foreground">Telefone do Contato</h3>
-                <p>{selectedCompany.contactPhone}</p>
-              </div>
-              {selectedCompany.notes && (
-                <div className="col-span-2 space-y-1">
-                  <h3 className="font-medium text-muted-foreground">Observações</h3>
-                  <p>{selectedCompany.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso excluirá permanentemente a empresa
-              e todos os dados associados a ela.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <CompanyDialogs
+        isCreateDialogOpen={isCreateDialogOpen}
+        setIsCreateDialogOpen={setIsCreateDialogOpen}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        isDeleteDialogOpen={isDeleteDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        isViewDialogOpen={isViewDialogOpen}
+        setIsViewDialogOpen={setIsViewDialogOpen}
+        selectedCompany={selectedCompany}
+        handleCreate={handleCreate}
+        handleEdit={handleEdit}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 }
