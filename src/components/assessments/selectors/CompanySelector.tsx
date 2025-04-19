@@ -27,7 +27,7 @@ export function CompanySelector({ selectedCompany, onCompanyChange }: CompanySel
   const [open, setOpen] = useState(false);
   const { companies = [], isLoading } = useCompanies();
   
-  // Make sure companies is always an array
+  // Garantindo que companies seja sempre um array
   const companiesList = Array.isArray(companies) ? companies : [];
   
   const selectedCompanyName = companiesList.find(

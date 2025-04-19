@@ -22,9 +22,12 @@ export function EmployeeSelector({
 }: EmployeeSelectorProps) {
   const { employees = [], isLoading } = useEmployees();
 
-  // Ensure we're always working with an array and properly filtering
-  const filteredEmployees = selectedRole && Array.isArray(employees)
-    ? employees.filter(employee => employee.role_id === selectedRole)
+  // Garantindo que employees seja sempre um array
+  const employeesList = Array.isArray(employees) ? employees : [];
+  
+  // Garantindo que filtramos apenas quando temos um selectedRole válido
+  const filteredEmployees = selectedRole 
+    ? employeesList.filter(employee => employee.role_id === selectedRole)
     : [];
 
   return (

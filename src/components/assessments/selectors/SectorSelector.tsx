@@ -32,9 +32,12 @@ export function SectorSelector({
   const [open, setOpen] = useState(false);
   const { sectors = [], isLoading } = useSectors();
 
-  // Ensure we're always working with an array and properly filtering
-  const filteredSectors = selectedCompany && Array.isArray(sectors)
-    ? sectors.filter(sector => sector.companyId === selectedCompany)
+  // Garantindo que sectors seja sempre um array
+  const sectorsList = Array.isArray(sectors) ? sectors : [];
+  
+  // Garantindo que filtramos apenas quando temos um selectedCompany válido
+  const filteredSectors = selectedCompany 
+    ? sectorsList.filter(sector => sector.companyId === selectedCompany)
     : [];
 
   const selectedSectorName = filteredSectors.find(

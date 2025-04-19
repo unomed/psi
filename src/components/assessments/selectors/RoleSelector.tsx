@@ -32,9 +32,12 @@ export function RoleSelector({
   const [open, setOpen] = useState(false);
   const { roles = [], isLoading } = useRoles();
 
-  // Ensure we're always working with an array and properly filtering
-  const filteredRoles = selectedSector && Array.isArray(roles)
-    ? roles.filter(role => role.sectorId === selectedSector)
+  // Garantindo que roles seja sempre um array
+  const rolesList = Array.isArray(roles) ? roles : [];
+  
+  // Garantindo que filtramos apenas quando temos um selectedSector válido
+  const filteredRoles = selectedSector 
+    ? rolesList.filter(role => role.sectorId === selectedSector)
     : [];
 
   const selectedRoleName = filteredRoles.find(
