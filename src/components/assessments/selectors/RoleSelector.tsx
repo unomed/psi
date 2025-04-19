@@ -32,7 +32,7 @@ export function RoleSelector({
   const [open, setOpen] = useState(false);
   const { roles = [], isLoading } = useRoles();
 
-  // Garantindo que roles seja sempre um array
+  // Garantindo que roles seja sempre um array válido
   const rolesList = Array.isArray(roles) ? roles : [];
   
   // Garantindo que filtramos apenas quando temos um selectedSector válido
@@ -65,11 +65,11 @@ export function RoleSelector({
             <CommandInput placeholder="Buscar função..." />
             <CommandEmpty>Nenhuma função encontrada.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredRoles && filteredRoles.length > 0 ? (
+              {filteredRoles.length > 0 ? (
                 filteredRoles.map((role) => (
                   <CommandItem
                     key={role.id}
-                    value={role.name || role.id}
+                    value={role.name || ""}
                     onSelect={() => {
                       onRoleChange(role.id);
                       setOpen(false);

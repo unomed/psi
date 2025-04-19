@@ -32,7 +32,7 @@ export function SectorSelector({
   const [open, setOpen] = useState(false);
   const { sectors = [], isLoading } = useSectors();
 
-  // Garantindo que sectors seja sempre um array
+  // Garantindo que sectors seja sempre um array válido
   const sectorsList = Array.isArray(sectors) ? sectors : [];
   
   // Garantindo que filtramos apenas quando temos um selectedCompany válido
@@ -65,11 +65,11 @@ export function SectorSelector({
             <CommandInput placeholder="Buscar setor..." />
             <CommandEmpty>Nenhum setor encontrado.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredSectors && filteredSectors.length > 0 ? (
+              {filteredSectors.length > 0 ? (
                 filteredSectors.map((sector) => (
                   <CommandItem
                     key={sector.id}
-                    value={sector.name || sector.id}
+                    value={sector.name || ""}
                     onSelect={() => {
                       onSectorChange(sector.id);
                       setOpen(false);
