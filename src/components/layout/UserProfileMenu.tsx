@@ -35,7 +35,7 @@ export function UserProfileMenu() {
   const roleDisplay = getRoleDisplay();
 
   return (
-    <div className="flex items-center gap-2 p-4 border-t">
+    <div className="flex items-center gap-2 p-4 border-b w-full">
       <Avatar>
         <AvatarFallback>{getInitials()}</AvatarFallback>
       </Avatar>

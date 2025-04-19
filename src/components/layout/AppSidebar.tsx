@@ -8,11 +8,11 @@ import {
   SidebarMenu,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserProfileMenu } from "./UserProfileMenu";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { mainMenuItems } from "./sidebar/menuItems";
+import { UserProfileMenu } from "./UserProfileMenu";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
@@ -25,7 +25,9 @@ export function AppSidebar() {
     <Sidebar className="border-r">
       <SidebarHeader />
       
-      <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
+      <UserProfileMenu />
+      
+      <SidebarContent className="flex flex-col h-[calc(100%-120px)]">
         <SidebarGroup className="flex-1">
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -43,8 +45,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
-        <UserProfileMenu />
       </SidebarContent>
     </Sidebar>
   );
