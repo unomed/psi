@@ -1,17 +1,10 @@
-
 import React, { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions, Permission } from "@/hooks/usePermissions";
 import { NewRoleDialog } from "@/components/permissions/NewRoleDialog";
 import { PermissionSection } from "@/components/permissions/PermissionSection";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
-
-interface PermissionSetting {
-  id: string;
-  name: string;
-  description: string;
-  section: string;
-}
+import { PermissionSetting } from "@/types/permissions";
 
 export default function PermissionsPage() {
   const { permissions, isLoading, updatePermission, createRole } = usePermissions();

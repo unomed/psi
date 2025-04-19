@@ -1,15 +1,8 @@
-
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Permission } from "@/hooks/usePermissions";
 import { PermissionTable } from './PermissionTable';
-
-interface PermissionSetting {
-  id: string;
-  name: string;
-  description: string;
-  section: string;
-}
+import { PermissionSetting } from '@/types/permissions';
 
 interface PermissionSectionProps {
   section: string;

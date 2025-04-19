@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Table,
@@ -11,13 +10,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Permission } from "@/hooks/usePermissions";
-
-interface PermissionSetting {
-  id: string;
-  name: string;
-  description: string;
-  section: string;
-}
+import { PermissionSetting } from '@/types/permissions';
 
 interface PermissionTableProps {
   permissions: Permission[];
