@@ -11,6 +11,8 @@ interface AssessmentTabsProps {
   templates: ChecklistTemplate[];
   onSendEmail: (assessmentId: string) => void;
   onShareAssessment: (assessmentId: string) => void;
+  onScheduleAssessment: (employeeId: string, templateId: string) => void;
+  onGenerateLink: (employeeId: string, templateId: string) => void;
 }
 
 export function AssessmentTabs({
@@ -19,7 +21,9 @@ export function AssessmentTabs({
   scheduledAssessments,
   templates,
   onSendEmail,
-  onShareAssessment
+  onShareAssessment,
+  onScheduleAssessment,
+  onGenerateLink
 }: AssessmentTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-4">
@@ -38,6 +42,8 @@ export function AssessmentTabs({
               scheduledAssessments={scheduledAssessments.filter(a => a.status === "scheduled")}
               onSendEmail={onSendEmail}
               onShareAssessment={onShareAssessment}
+              onScheduleAssessment={onScheduleAssessment}
+              onGenerateLink={onGenerateLink}
               templates={templates}
             />
           </div>
@@ -53,6 +59,8 @@ export function AssessmentTabs({
               scheduledAssessments={scheduledAssessments.filter(a => a.status === "sent")}
               onSendEmail={onSendEmail}
               onShareAssessment={onShareAssessment}
+              onScheduleAssessment={onScheduleAssessment}
+              onGenerateLink={onGenerateLink}
               templates={templates}
             />
           </div>
@@ -68,6 +76,8 @@ export function AssessmentTabs({
               scheduledAssessments={scheduledAssessments.filter(a => a.status === "completed")}
               onSendEmail={onSendEmail}
               onShareAssessment={onShareAssessment}
+              onScheduleAssessment={onScheduleAssessment}
+              onGenerateLink={onGenerateLink}
               templates={templates}
             />
           </div>

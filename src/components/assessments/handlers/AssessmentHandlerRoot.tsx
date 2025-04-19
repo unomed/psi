@@ -71,6 +71,8 @@ export function AssessmentHandlerRoot() {
         scheduledAssessments={scheduledAssessments}
         onSendEmail={handleSendEmail}
         onShareAssessment={handlers.handleShareAssessment}
+        onScheduleAssessment={handlers.handleScheduleNewAssessment}
+        onGenerateLink={handlers.handleGenerateLink}
         templates={templates}
       />
       

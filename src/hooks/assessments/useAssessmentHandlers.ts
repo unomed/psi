@@ -80,20 +80,29 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
-  const handleGenerateLink = async () => {
-    if (!selectedEmployee || !selectedTemplate) {
+  const handleGenerateLink = async (employeeId?: string, templateId?: string) => {
+    const targetEmployeeId = employeeId || selectedEmployee;
+    const targetTemplateId = templateId || (selectedTemplate?.id || "");
+    
+    if (!targetEmployeeId || !targetTemplateId) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
       return;
     }
 
     try {
-      const assessment = await generateAssessmentLink(selectedEmployee);
+      const assessment = await generateAssessmentLink(targetEmployeeId);
       setGeneratedLink(assessment.token);
       setIsLinkDialogOpen(true);
     } catch (error) {
       console.error("Error generating link:", error);
       toast.error("Erro ao gerar link.");
     }
+  };
+
+  const handleScheduleNewAssessment = (employeeId: string, templateId: string) => {
+    setSelectedEmployee(employeeId);
+    setSelectedTemplate({ id: templateId } as ChecklistTemplate);
+    setIsScheduleDialogOpen(true);
   };
 
   const handleShareAssessment = (assessmentId: string) => {
@@ -129,6 +138,7 @@ export function useAssessmentHandlers({
     handleSaveAssessment,
     handleSubmitAssessment,
     getSelectedEmployeeName,
+    handleScheduleNewAssessment,
     handleSaveSchedule: (recurrenceType: RecurrenceType, phoneNumber: string) => 
       handleSaveSchedule(selectedEmployee, selectedTemplate, scheduledDate, recurrenceType, phoneNumber)
   };

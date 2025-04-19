@@ -2,22 +2,18 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Mail, Link, Share2 } from "lucide-react";
+import { DataTable } from "@/components/ui/data-table";
+import { ClipboardList, Mail, Link, Share2, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { ScheduledAssessment } from "@/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useEmployees } from "@/hooks/useEmployees";
 
 interface ScheduledAssessmentsListProps {
   scheduledAssessments: ScheduledAssessment[];
   onSendEmail: (assessmentId: string) => void;
   onShareAssessment: (assessmentId: string) => void;
+  onScheduleAssessment: (employeeId: string, templateId: string) => void;
+  onGenerateLink: (employeeId: string, templateId: string) => void;
   templates: any[];
 }
 
@@ -25,16 +21,30 @@ export function ScheduledAssessmentsList({
   scheduledAssessments,
   onSendEmail,
   onShareAssessment,
+  onScheduleAssessment,
+  onGenerateLink,
   templates
 }: ScheduledAssessmentsListProps) {
+  const { employees } = useEmployees();
   
   const getEmployeeName = (employeeId: string) => {
-    return employeeId;
+    const employee = employees?.find(emp => emp.id === employeeId);
+    return employee?.name || "Funcionário não encontrado";
+  };
+
+  const getEmployeeEmail = (employeeId: string) => {
+    const employee = employees?.find(emp => emp.id === employeeId);
+    return employee?.email || "";
+  };
+  
+  const getEmployeePhone = (employeeId: string) => {
+    const employee = employees?.find(emp => emp.id === employeeId);
+    return employee?.phone || "";
   };
 
   const getTemplateName = (templateId: string) => {
     const template = templates.find(t => t.id === templateId);
-    return template?.title || "Desconhecido";
+    return template?.title || "Modelo não encontrado";
   };
 
   const getStatusLabel = (status: string) => {
@@ -69,6 +79,114 @@ export function ScheduledAssessmentsList({
     toast.success("Link copiado para a área de transferência!");
   };
 
+  const columns = [
+    {
+      accessorKey: "employee",
+      header: "Funcionário",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return getEmployeeName(assessment.employeeId);
+      }
+    },
+    {
+      accessorKey: "template",
+      header: "Modelo",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return getTemplateName(assessment.templateId);
+      }
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return getEmployeeEmail(assessment.employeeId) || "Não informado";
+      }
+    },
+    {
+      accessorKey: "phone",
+      header: "Telefone",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return getEmployeePhone(assessment.employeeId) || "Não informado";
+      }
+    },
+    {
+      accessorKey: "date",
+      header: "Data",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return format(new Date(assessment.scheduledDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+      }
+    },
+    {
+      accessorKey: "recurrence",
+      header: "Recorrência",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return getRecurrenceLabel(assessment.recurrenceType);
+      }
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(assessment.status)}`}>
+            {getStatusLabel(assessment.status)}
+          </span>
+        );
+      }
+    },
+    {
+      id: "actions",
+      header: "Ações",
+      cell: ({ row }: any) => {
+        const assessment = row.original;
+        return (
+          <div className="flex gap-1 justify-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Agendar nova avaliação"
+              onClick={() => onScheduleAssessment(assessment.employeeId, assessment.templateId)}
+            >
+              <Calendar className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Gerar link"
+              onClick={() => onGenerateLink(assessment.employeeId, assessment.templateId)}
+            >
+              <Link className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Enviar por email"
+              onClick={() => onSendEmail(assessment.id)}
+            >
+              <Mail className="h-4 w-4" />
+            </Button>
+            {assessment.status === "sent" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Compartilhar"
+                onClick={() => onShareAssessment(assessment.id)}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        );
+      }
+    }
+  ];
+
   if (scheduledAssessments.length === 0) {
     return (
       <div className="text-center py-10">
@@ -82,74 +200,9 @@ export function ScheduledAssessmentsList({
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow>
-            <TableHead>Funcionário</TableHead>
-            <TableHead>Modelo</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Recorrência</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {scheduledAssessments.map((assessment) => (
-            <TableRow key={assessment.id}>
-              <TableCell className="font-medium">
-                {getEmployeeName(assessment.employeeId)}
-              </TableCell>
-              <TableCell>
-                {getTemplateName(assessment.templateId)}
-              </TableCell>
-              <TableCell>
-                {format(assessment.scheduledDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-              </TableCell>
-              <TableCell>
-                {getRecurrenceLabel(assessment.recurrenceType)}
-              </TableCell>
-              <TableCell>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(assessment.status)}`}>
-                  {getStatusLabel(assessment.status)}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                {assessment.status === "scheduled" && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => onSendEmail(assessment.id)}
-                  >
-                    <Mail className="h-4 w-4 mr-1" />
-                    Enviar
-                  </Button>
-                )}
-                {assessment.status === "sent" && (
-                  <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleCopyLink(assessment.linkUrl)}
-                    >
-                      <Link className="h-4 w-4 mr-1" />
-                      Copiar
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => onShareAssessment(assessment.id)}
-                    >
-                      <Share2 className="h-4 w-4 mr-1" />
-                      Compartilhar
-                    </Button>
-                  </div>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable
+      columns={columns}
+      data={scheduledAssessments}
+    />
   );
 }

@@ -14,7 +14,7 @@ interface NewAssessmentDialogProps {
   selectedTemplate: ChecklistTemplate | null;
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
-  onScheduleAssessment: () => void;
+  onScheduleAssessment: (recurrenceType: RecurrenceType, phoneNumber: string) => void;
   onGenerateLink: () => void;
   onSendEmail: () => void;
   onEmployeeSelect: (employeeId: string) => void;
@@ -46,7 +46,7 @@ export function NewAssessmentDialog({
   const selectedEmployeeData = employees?.find(emp => emp.id === selectedEmployee);
 
   const handleSchedule = (recurrenceType: RecurrenceType, phoneNumber: string) => {
-    onScheduleAssessment();
+    onScheduleAssessment(recurrenceType, phoneNumber);
     onClose();
   };
 
@@ -97,7 +97,7 @@ export function NewAssessmentDialog({
 
           <TabsContent value="scheduling">
             <SchedulingDetailsTab
-              employeeName={selectedEmployeeData?.name || ""}
+              employeeName={selectedEmployeeData?.name || "Funcionário não encontrado"}
               employeeEmail={selectedEmployeeData?.email}
               templateTitle={selectedTemplate?.title}
               scheduledDate={scheduledDate}
