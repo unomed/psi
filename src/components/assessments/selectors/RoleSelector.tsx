@@ -85,7 +85,9 @@ export function RoleSelector({
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled>Nenhuma função disponível</CommandItem>
+                <CommandItem disabled value="no-role">
+                  Nenhuma função disponível
+                </CommandItem>
               )}
             </CommandGroup>
           </Command>

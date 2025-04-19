@@ -85,7 +85,9 @@ export function SectorSelector({
                   </CommandItem>
                 ))
               ) : (
-                <CommandItem disabled>Nenhum setor disponível</CommandItem>
+                <CommandItem disabled value="no-sector">
+                  Nenhum setor disponível
+                </CommandItem>
               )}
             </CommandGroup>
           </Command>
