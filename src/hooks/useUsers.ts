@@ -82,14 +82,24 @@ export function useUsers() {
 
   const updateUserRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
-      // Cast role to AppRole to ensure type safety
-      const safeRole = role as AppRole;
+      // Fix: Only allow valid database roles (not 'user')
+      // Cast role to database accepted types and exclude 'user'
+      let dbRole: "superadmin" | "admin" | "evaluator";
+      
+      // Convert role string to appropriate database role
+      if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
+        dbRole = role as "superadmin" | "admin" | "evaluator";
+      } else {
+        // Default to 'evaluator' if an invalid role is provided
+        dbRole = 'evaluator';
+        toast.warning('Função inválida, usando "evaluator" como padrão');
+      }
       
       const { error } = await supabase
         .from('user_roles')
         .upsert({ 
           user_id: userId, 
-          role: safeRole 
+          role: dbRole 
         });
 
       if (error) {
