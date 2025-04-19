@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { PlusCircle, Building2 } from "lucide-react";
+import { PlusCircle, Building2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CompanyForm } from "@/components/forms/CompanyForm";
 import { DataTable } from "@/components/ui/data-table";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function Empresas() {
+  const [search, setSearch] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -63,6 +65,14 @@ export default function Empresas() {
     setIsViewDialogOpen(true);
   };
 
+  const filteredCompanies = companies.filter(company => 
+    company.name.toLowerCase().includes(search.toLowerCase()) ||
+    company.cnpj.toLowerCase().includes(search.toLowerCase()) ||
+    company.city.toLowerCase().includes(search.toLowerCase()) ||
+    company.state.toLowerCase().includes(search.toLowerCase()) ||
+    (company.industry && company.industry.toLowerCase().includes(search.toLowerCase()))
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -78,14 +88,29 @@ export default function Empresas() {
         </Button>
       </div>
       
-      {companies.length === 0 ? (
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Pesquisar empresas por nome, CNPJ, cidade..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+      </div>
+      
+      {filteredCompanies.length === 0 ? (
         <div className="flex items-center justify-center h-64 border rounded-lg">
           <div className="text-center">
             <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">Nenhuma empresa cadastrada</h3>
+            <h3 className="text-lg font-medium">
+              {search ? "Nenhuma empresa encontrada" : "Nenhuma empresa cadastrada"}
+            </h3>
             <p className="mt-2 text-sm text-muted-foreground max-w-md">
-              Cadastre empresas e filiais, gerencie informações sobre o ramo de atividade
-              e registre os responsáveis pelo PGR.
+              {search 
+                ? "Tente ajustar sua pesquisa para encontrar o que está procurando."
+                : "Cadastre empresas e filiais, gerencie informações sobre o ramo de atividade e registre os responsáveis pelo PGR."}
             </p>
             <Button 
               variant="outline" 
@@ -100,7 +125,7 @@ export default function Empresas() {
       ) : (
         <DataTable 
           columns={columns} 
-          data={companies}
+          data={filteredCompanies}
           isLoading={isLoading}
           meta={{
             onEdit: (company: CompanyData) => {
