@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { X, Menu } from "lucide-react";
 import { Sheet, SheetContent as SheetContentPrimitive, SheetOverlay, SheetPortal } from "@/components/ui/sheet";
 import { useSidebar } from "./context";
 import { buttonVariants } from "./variants";
@@ -108,7 +108,6 @@ export const Sidebar = React.forwardRef<
 );
 Sidebar.displayName = "Sidebar";
 
-// Export other sub-components
 export const SidebarContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
@@ -138,5 +137,147 @@ export const SidebarGroup = React.forwardRef<
 ));
 SidebarGroup.displayName = "SidebarGroup";
 
-// ... Add other component exports following the same pattern
+export const SidebarGroupContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="group-content"
+    className={cn("relative flex w-full min-w-0 flex-col", className)}
+    {...props}
+  />
+));
+SidebarGroupContent.displayName = "SidebarGroupContent";
 
+export const SidebarGroupLabel = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="group-label"
+    className={cn(
+      "text-xs font-medium uppercase tracking-wider text-sidebar-foreground/50 group-data-[collapsible=icon]:ml-2 group-data-[collapsible=icon]:text-center",
+      className
+    )}
+    {...props}
+  />
+));
+SidebarGroupLabel.displayName = "SidebarGroupLabel";
+
+export const SidebarHeader = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="header"
+    className={cn(
+      "flex h-[60px] items-center border-b border-sidebar-border px-4",
+      className
+    )}
+    {...props}
+  />
+));
+SidebarHeader.displayName = "SidebarHeader";
+
+export const SidebarMenu = React.forwardRef<
+  HTMLUListElement,
+  React.ComponentProps<"ul">
+>(({ className, ...props }, ref) => (
+  <ul
+    ref={ref}
+    data-sidebar="menu"
+    className={cn(
+      "flex min-w-0 flex-col gap-1 group-data-[collapsible=icon]:items-center",
+      className
+    )}
+    {...props}
+  />
+));
+SidebarMenu.displayName = "SidebarMenu";
+
+export const SidebarMenuItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentProps<"li">
+>(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    data-sidebar="menu-item"
+    className={cn("min-w-0", className)}
+    {...props}
+  />
+));
+SidebarMenuItem.displayName = "SidebarMenuItem";
+
+export const SidebarMenuButton = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentPropsWithoutRef<"button">
+>(({ className, ...props }, ref) => (
+  <button
+    ref={ref}
+    data-sidebar="menu-button"
+    className={cn(
+      "group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-sidebar-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&>svg]:size-5",
+      className
+    )}
+    {...props}
+  />
+));
+SidebarMenuButton.displayName = "SidebarMenuButton";
+
+export const SidebarMenuLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, ...props }, ref) => (
+  <a
+    ref={ref}
+    data-sidebar="menu-link"
+    className={cn(
+      "group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-sidebar-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&>svg]:size-5",
+      className
+    )}
+    {...props}
+  />
+));
+SidebarMenuLink.displayName = "SidebarMenuLink";
+
+export const SidebarFooter = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="footer"
+    className={cn(
+      "border-t border-sidebar-border px-4 py-4",
+      className
+    )}
+    {...props}
+  />
+));
+SidebarFooter.displayName = "SidebarFooter";
+
+export const SidebarTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button">
+>(({ className, ...props }, ref) => {
+  const { toggleSidebar } = useSidebar();
+  return (
+    <button
+      type="button"
+      onClick={toggleSidebar}
+      ref={ref}
+      className={cn(
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md p-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        className
+      )}
+      {...props}
+    >
+      <Menu className="h-5 w-5" />
+      <span className="sr-only">Toggle sidebar</span>
+    </button>
+  );
+});
+SidebarTrigger.displayName = "SidebarTrigger";
