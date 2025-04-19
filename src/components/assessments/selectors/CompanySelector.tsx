@@ -25,8 +25,8 @@ export function CompanySelector({
   selectedCompany,
   onCompanyChange,
 }: CompanySelectorProps) {
-  // Ensure we always have at least one item to select
-  const companies = COMPANIES.length > 0 ? COMPANIES : [{ id: "", name: "Nenhuma empresa encontrada" }];
+  // Ensure we always have at least one item to select with a non-empty string value
+  const companies = COMPANIES.length > 0 ? COMPANIES : [{ id: "no-company", name: "Nenhuma empresa encontrada" }];
   
   return (
     <div className="space-y-2">

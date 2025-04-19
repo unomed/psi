@@ -33,10 +33,10 @@ export function SectorSelector({
     ? SECTORS.filter(sector => sector.companyId === selectedCompany)
     : [];
     
-  // Ensure we always have at least one item to select
+  // Ensure we always have at least one item to select with a non-empty string value
   const sectors = filteredSectors.length > 0 
     ? filteredSectors 
-    : [{ id: "", name: "Nenhum setor encontrado" }];
+    : [{ id: "no-sector", name: "Nenhum setor encontrado" }];
 
   return (
     <div className="space-y-2">

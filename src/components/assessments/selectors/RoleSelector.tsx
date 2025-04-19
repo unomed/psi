@@ -34,10 +34,10 @@ export function RoleSelector({
     ? ROLES.filter(role => role.sectorId === selectedSector)
     : [];
     
-  // Ensure we always have at least one item to select
+  // Ensure we always have at least one item to select with a non-empty string value
   const roles = filteredRoles.length > 0 
     ? filteredRoles 
-    : [{ id: "", name: "Nenhuma função encontrada" }];
+    : [{ id: "no-role", name: "Nenhuma função encontrada" }];
 
   return (
     <div className="space-y-2">

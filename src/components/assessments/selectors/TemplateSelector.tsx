@@ -33,10 +33,10 @@ export function TemplateSelector({
     );
   }
 
-  // Ensure we always have at least one item to select
+  // Ensure we always have at least one item to select with a non-empty string value
   const availableTemplates = templates.length > 0 
     ? templates 
-    : [{ id: "", title: "Nenhum modelo encontrado", type: "disc", questions: [], createdAt: new Date() }];
+    : [{ id: "no-template", title: "Nenhum modelo encontrado", type: "disc", questions: [], createdAt: new Date() }];
 
   return (
     <div className="space-y-2">

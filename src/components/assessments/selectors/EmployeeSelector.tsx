@@ -26,10 +26,10 @@ export function EmployeeSelector({
     ? mockEmployees.filter(emp => emp.role_id === selectedRole)
     : [];
     
-  // Ensure we always have at least one item to select
+  // Ensure we always have at least one item to select with a non-empty string value
   const employees = filteredEmployees.length > 0 
     ? filteredEmployees 
-    : [{ id: "", name: "Nenhum funcionário encontrado", email: "", role_id: "" }];
+    : [{ id: "no-employee", name: "Nenhum funcionário encontrado", email: "", role_id: "" }];
 
   return (
     <div className="space-y-2">

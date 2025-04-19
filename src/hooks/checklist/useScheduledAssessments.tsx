@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { RecurrenceType, ScheduledAssessment } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,12 +32,12 @@ export function useScheduledAssessments() {
       
       // Transform the data to match our ScheduledAssessment type
       return data.map(item => {
-        // Safely handle employees data
+        // Safely handle employees data with proper TypeScript casting
         const employeesData = item.employees && typeof item.employees === 'object' && !('error' in item.employees)
           ? {
-              name: (item.employees as any)?.name || 'Funcionário',
-              email: (item.employees as any)?.email || '',
-              phone: (item.employees as any)?.phone || ''
+              name: item.employees ? (item.employees as any)?.name || 'Funcionário' : 'Funcionário',
+              email: item.employees ? (item.employees as any)?.email || '' : '',
+              phone: item.employees ? (item.employees as any)?.phone || '' : ''
             }
           : undefined;
 
