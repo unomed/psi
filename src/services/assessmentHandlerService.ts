@@ -19,19 +19,39 @@ export const handleSaveAssessment = async (
   }
 
   try {
-    // Create a scheduled assessment instead
-    await saveScheduledAssessment({
-      employeeId: selectedEmployee,
-      templateId: selectedTemplate.id,
-      scheduledDate: new Date(),
-      status: "scheduled",
-      sentAt: null,
-      completedAt: null,
-      linkUrl: "",
-      recurrenceType: "none"
-    });
+    // Primeiro tentar salvar na tabela assessment_responses
+    const selectedEmployeeData = getEmployeeInfo(selectedEmployee);
     
-    toast.success("Avaliação salva com sucesso!");
+    const { error: responseError } = await supabase
+      .from('assessment_responses')
+      .insert({
+        template_id: selectedTemplate.id,
+        employee_id: selectedEmployee,
+        employee_name: selectedEmployeeData.name,
+        response_data: {},
+        completed_at: new Date().toISOString()
+      });
+
+    if (responseError) {
+      console.error("Erro ao salvar na tabela assessment_responses:", responseError);
+      
+      // Se falhar, tenta salvar como uma avaliação agendada
+      await saveScheduledAssessment({
+        employeeId: selectedEmployee,
+        templateId: selectedTemplate.id,
+        scheduledDate: new Date(),
+        status: "scheduled",
+        sentAt: null,
+        completedAt: null,
+        linkUrl: "",
+        recurrenceType: "none"
+      });
+      
+      toast.success("Avaliação salva como agendada (não foi possível salvar como resposta)");
+      return true;
+    }
+    
+    toast.success("Avaliação salva com sucesso na tabela assessment_responses!");
     return true;
   } catch (error) {
     console.error("Error saving assessment:", error);

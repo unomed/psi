@@ -128,23 +128,41 @@ export function useAssessmentHandlers({
     }
 
     try {
-      // Store in scheduled_assessments instead of assessment_responses to avoid foreign key constraint
-      const { error } = await supabase
-        .from('scheduled_assessments')
+      // Tenta salvar diretamente na tabela assessment_responses primeiro
+      const { error: responseError } = await supabase
+        .from('assessment_responses')
         .insert({
-          employee_id: selectedEmployee,
           template_id: selectedTemplate.id,
-          scheduled_date: new Date().toISOString(),
-          status: 'scheduled'
+          employee_id: selectedEmployee,
+          employee_name: selectedEmployeeData?.name || "Funcionário",
+          response_data: {},
+          completed_at: new Date().toISOString()
         });
 
-      if (error) {
-        console.error("Error saving scheduled assessment:", error);
-        toast.error("Erro ao salvar avaliação");
-        return false;
+      if (responseError) {
+        console.error("Erro ao salvar na tabela assessment_responses:", responseError);
+        
+        // Se falhar por restrição de chave estrangeira, tenta salvar como agendada
+        const { error } = await supabase
+          .from('scheduled_assessments')
+          .insert({
+            employee_id: selectedEmployee,
+            template_id: selectedTemplate.id,
+            scheduled_date: new Date().toISOString(),
+            status: 'scheduled'
+          });
+
+        if (error) {
+          console.error("Erro ao salvar agendamento:", error);
+          toast.error("Erro ao salvar avaliação em ambas as tabelas");
+          return false;
+        }
+        
+        toast.success("Avaliação salva como agendada (não foi possível salvar como resposta)");
+        return true;
       }
 
-      toast.success("Avaliação salva com sucesso!");
+      toast.success("Avaliação salva com sucesso na tabela assessment_responses!");
       return true;
     } catch (error) {
       console.error("Error saving assessment:", error);
