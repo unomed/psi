@@ -40,7 +40,6 @@ export function NewAssessmentDialog({
   onSave
 }: NewAssessmentDialogProps) {
   const [isSaved, setIsSaved] = useState(false);
-  
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
@@ -50,36 +49,47 @@ export function NewAssessmentDialog({
     setSelectedCompany(value);
     setSelectedSector(null);
     setSelectedRole(null);
-    onEmployeeSelect(""); // Clear employee selection
+    onEmployeeSelect(""); 
   };
 
   const handleSectorChange = (value: string) => {
     setIsSaved(false);
     setSelectedSector(value);
     setSelectedRole(null);
-    onEmployeeSelect(""); // Clear employee selection
+    onEmployeeSelect("");
   };
 
   const handleRoleChange = (value: string) => {
     setIsSaved(false);
     setSelectedRole(value);
-    onEmployeeSelect(""); // Clear employee selection
+    onEmployeeSelect("");
   };
 
-  const handleSave = () => {
-    onSave();
-    setIsSaved(true);
+  const handleSave = async () => {
+    const success = await onSave();
+    if (success) {
+      setIsSaved(true);
+    }
+  };
+
+  const handleClose = () => {
+    setIsSaved(false);
+    setSelectedCompany(null);
+    setSelectedSector(null);
+    setSelectedRole(null);
+    onEmployeeSelect("");
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Avaliação</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-6 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CompanySelector 
               selectedCompany={selectedCompany} 
               onCompanyChange={handleCompanyChange} 
@@ -104,55 +114,59 @@ export function NewAssessmentDialog({
             />
           </div>
           
-          <TemplateSelector 
-            selectedEmployee={selectedEmployee}
-            templates={templates}
-            isTemplatesLoading={isTemplatesLoading}
-            onTemplateSelect={onTemplateSelect}
-          />
+          <div className="w-full">
+            <TemplateSelector 
+              selectedEmployee={selectedEmployee}
+              templates={templates}
+              isTemplatesLoading={isTemplatesLoading}
+              onTemplateSelect={onTemplateSelect}
+            />
+          </div>
           
-          <div className="flex flex-col sm:flex-row gap-2 justify-end pt-4">
+          <div className="flex flex-wrap gap-3 justify-end pt-4">
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
             >
               Cancelar
             </Button>
 
-            <Button
-              onClick={handleSave}
-              disabled={!selectedEmployee || !selectedTemplate}
-            >
-              <Save className="mr-2 h-4 w-4" />
-              Salvar
-            </Button>
+            {!isSaved && (
+              <Button
+                onClick={handleSave}
+                disabled={!selectedEmployee || !selectedTemplate}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Salvar
+              </Button>
+            )}
             
-            <Button
-              variant="outline"
-              disabled={!isSaved}
-              onClick={onGenerateLink}
-            >
-              <Link2 className="mr-2 h-4 w-4" />
-              Gerar Link
-            </Button>
-            
-            <Button
-              variant="outline"
-              disabled={!isSaved}
-              onClick={onScheduleAssessment}
-            >
-              <CalendarClock className="mr-2 h-4 w-4" />
-              Agendar
-            </Button>
-            
-            <Button
-              type="submit"
-              disabled={!isSaved}
-              onClick={onSendEmail}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Enviar por Email
-            </Button>
+            {isSaved && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={onGenerateLink}
+                >
+                  <Link2 className="mr-2 h-4 w-4" />
+                  Gerar Link
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={onScheduleAssessment}
+                >
+                  <CalendarClock className="mr-2 h-4 w-4" />
+                  Agendar
+                </Button>
+                
+                <Button
+                  onClick={onSendEmail}
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Enviar por Email
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>
