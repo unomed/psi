@@ -1,11 +1,11 @@
 
+import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
 import { useBasicAssessmentActions } from "./useBasicAssessmentActions";
 import { useLinkOperations } from "./useLinkOperations";
 import { useScheduleOperations } from "./useScheduleOperations";
 import { ScheduledAssessment, ChecklistTemplate, RecurrenceType } from "@/types";
 import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment";
 import { useAssessmentSubmission } from "./operations/useAssessmentSubmission";
-import { useAssessmentEmployeeOperations } from "./operations/useAssessmentEmployeeOperations";
 import { useAssessmentSaveOperations } from "./operations/useAssessmentSaveOperations";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,46 +81,6 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
-  const handleStartAssessment = () => {
-    if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de checklist.");
-      return;
-    }
-    
-    setIsAssessmentDialogOpen(true);
-  };
-
-  const handleGenerateLink = async (employeeId?: string, templateId?: string) => {
-    const targetEmployeeId = employeeId || selectedEmployee;
-    const targetTemplateId = templateId || (selectedTemplate?.id || "");
-    
-    if (!targetEmployeeId || !targetTemplateId) {
-      toast.error("Selecione um funcionário e um modelo de checklist.");
-      return;
-    }
-
-    try {
-      const assessment = await generateAssessmentLink(targetEmployeeId);
-      setGeneratedLink(assessment.token);
-      setIsLinkDialogOpen(true);
-    } catch (error) {
-      console.error("Error generating link:", error);
-      toast.error("Erro ao gerar link.");
-    }
-  };
-
-  const handleScheduleNewAssessment = (employeeId: string, templateId: string) => {
-    setSelectedEmployee(employeeId);
-    setSelectedTemplate({ id: templateId } as ChecklistTemplate);
-    setIsScheduleDialogOpen(true);
-  };
-
-  const handleShareAssessment = (assessmentId: string) => {
-    const assessment = { id: assessmentId } as ScheduledAssessment;
-    setSelectedAssessment(assessment);
-    setIsShareDialogOpen(true);
-  };
-
   const handleSaveAssessment = async () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist.");
@@ -129,12 +89,14 @@ export function useAssessmentHandlers({
 
     try {
       // Tenta salvar diretamente na tabela assessment_responses primeiro
+      const employeeName = getSelectedEmployeeName(selectedEmployee);
+      
       const { error: responseError } = await supabase
         .from('assessment_responses')
         .insert({
           template_id: selectedTemplate.id,
           employee_id: selectedEmployee,
-          employee_name: selectedEmployeeData?.name || "Funcionário",
+          employee_name: employeeName,
           response_data: {},
           completed_at: new Date().toISOString()
         });
