@@ -41,7 +41,7 @@ export function NewAssessmentDialog({
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
 
   // Get the employee's role risk level and corresponding periodicity
-  const employeeRiskLevel = employees?.find(emp => emp.id === selectedEmployee)?.role?.risk_level;
+  const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
   const suggestedPeriodicity = usePeriodicityForRisk(employeeRiskLevel);
   
   // Add state for company, sector, and role selection

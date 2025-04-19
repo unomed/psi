@@ -15,6 +15,11 @@ export interface Employee {
   company_id: string;
   sector_id: string;
   role_id: string;
+  role?: {
+    id: string;
+    name: string;
+    risk_level?: string;
+  };
   created_at: string;
   updated_at: string;
 }

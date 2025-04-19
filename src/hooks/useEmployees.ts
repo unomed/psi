@@ -12,7 +12,14 @@ export function useEmployees() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('employees')
-        .select('*')
+        .select(`
+          *,
+          role:roles(
+            id,
+            name,
+            risk_level
+          )
+        `)
         .order('name');
       
       if (error) {

@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function usePeriodicityForRisk(riskLevel: string | null) {
+export function usePeriodicityForRisk(riskLevel: string | null | undefined) {
   const { data: settings } = useQuery({
     queryKey: ['periodicitySettings'],
     queryFn: async () => {
