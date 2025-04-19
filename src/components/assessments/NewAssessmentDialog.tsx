@@ -52,10 +52,18 @@ export function NewAssessmentDialog({
 
   // Verificar e inicializar a data ao abrir o diálogo
   useEffect(() => {
-    if (isOpen && !scheduledDate) {
-      setScheduledDate(new Date());
+    if (isOpen) {
+      const today = new Date();
+      console.log("Inicializando data com:", today);
+      setScheduledDate(today);
+      setDateError(false);
+      
+      // Se tiver um nível de risco e periodicidade sugerida, defina como padrão
+      if (suggestedPeriodicity && suggestedPeriodicity !== 'none') {
+        setRecurrenceType(suggestedPeriodicity as RecurrenceType);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, suggestedPeriodicity]);
 
   // Resetar erro de data quando a data muda
   useEffect(() => {
@@ -100,6 +108,14 @@ export function NewAssessmentDialog({
       return;
     }
 
+    // Validação adicional para garantir que a data é válida
+    if (!(scheduledDate instanceof Date) || isNaN(scheduledDate.getTime())) {
+      console.error("Data inválida detectada:", scheduledDate);
+      setDateError(true);
+      toast.error("A data selecionada é inválida. Por favor, selecione novamente.");
+      return;
+    }
+
     const saved = await onSave();
     if (saved) {
       onClose();
@@ -111,8 +127,6 @@ export function NewAssessmentDialog({
     setSelectedCompany(null);
     setSelectedSector(null);
     setSelectedRole(null);
-    setScheduledDate(new Date());
-    setRecurrenceType("none");
     setDateError(false);
     onClose();
   };
@@ -146,7 +160,9 @@ export function NewAssessmentDialog({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="scheduledDate">Data da Avaliação</Label>
+              <Label htmlFor="scheduledDate" className={dateError ? "text-red-500" : ""}>
+                Data da Avaliação {dateError && <span className="text-red-500">*</span>}
+              </Label>
               <DatePicker 
                 date={scheduledDate} 
                 onSelect={(date) => {
@@ -187,9 +203,14 @@ export function NewAssessmentDialog({
                   <SelectItem value="annual">Anual</SelectItem>
                 </SelectContent>
               </Select>
-              {employeeRiskLevel && suggestedPeriodicity && (
+              {employeeRiskLevel && suggestedPeriodicity && suggestedPeriodicity !== 'none' && (
                 <p className="text-xs text-muted-foreground">
                   Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
+                </p>
+              )}
+              {recurrenceType !== 'none' && (
+                <p className="text-xs text-muted-foreground">
+                  A próxima avaliação será agendada automaticamente de acordo com a periodicidade selecionada.
                 </p>
               )}
             </div>

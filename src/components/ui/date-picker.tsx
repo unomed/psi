@@ -23,11 +23,13 @@ interface DatePickerProps {
 export function DatePicker({ date, onSelect, disabled, allowInput = true }: DatePickerProps) {
   const [inputValue, setInputValue] = React.useState(date ? format(date, 'dd/MM/yyyy') : '');
   const [isOpen, setIsOpen] = React.useState(false);
+  const [hasError, setHasError] = React.useState(false);
 
   // Garantir que a data inicial seja definida corretamente
   React.useEffect(() => {
     if (date) {
       setInputValue(format(date, 'dd/MM/yyyy'));
+      setHasError(false);
     } else {
       setInputValue('');
     }
@@ -46,6 +48,7 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
       
       if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
         const parsedDate = new Date(year, month, day);
+        console.log("Data analisada do input:", parsedDate);
         
         // Verificar se é uma data válida
         if (
@@ -55,15 +58,22 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
           (!disabled || !disabled(parsedDate))
         ) {
           onSelect(parsedDate);
+          setHasError(false);
+        } else {
+          setHasError(true);
         }
+      } else {
+        setHasError(true);
       }
     }
   };
 
   const handleCalendarSelect = (newDate: Date | undefined) => {
+    console.log("Data selecionada no calendário:", newDate);
     onSelect(newDate);
     if (newDate) {
       setInputValue(format(newDate, 'dd/MM/yyyy'));
+      setHasError(false);
     } else {
       setInputValue('');
     }
@@ -79,7 +89,10 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
               value={inputValue}
               onChange={handleInputChange}
               placeholder="DD/MM/AAAA"
-              className="w-full pr-10"
+              className={cn(
+                "w-full pr-10",
+                hasError && "border-red-500 focus:border-red-500"
+              )}
               onClick={() => setIsOpen(true)}
             />
             <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 cursor-pointer" 
@@ -90,7 +103,8 @@ export function DatePicker({ date, onSelect, disabled, allowInput = true }: Date
             variant={"outline"}
             className={cn(
               "w-full justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              !date && "text-muted-foreground",
+              hasError && "border-red-500"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />

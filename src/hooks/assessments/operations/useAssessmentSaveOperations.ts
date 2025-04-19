@@ -17,11 +17,14 @@ export function useAssessmentSaveOperations() {
     recurrenceType: RecurrenceType,
     phoneNumber: string = ""
   ) => {
-    // Validação detalhada com logs para depuração
+    // Log detalhado para depuração
     console.log("Salvando agendamento:", {
       selectedEmployee,
       templateId: selectedTemplate?.id,
-      scheduledDate,
+      scheduledDate: scheduledDate ? {
+        date: scheduledDate.toISOString(),
+        valid: scheduledDate instanceof Date && !isNaN(scheduledDate.getTime())
+      } : 'undefined',
       recurrenceType
     });
     
@@ -32,7 +35,7 @@ export function useAssessmentSaveOperations() {
     
     // Verificação mais rigorosa da data
     if (!scheduledDate) {
-      console.error("Data de agendamento ausente ou inválida");
+      console.error("Data de agendamento ausente");
       toast.error("Selecione uma data para a avaliação.");
       return null;
     }
