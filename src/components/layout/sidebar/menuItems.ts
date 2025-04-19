@@ -1,53 +1,61 @@
 
-import { Building2, BarChart3, Users, FolderKanban, UserRound, ClipboardCheck, ClipboardList, FileText } from "lucide-react";
+import { BarChart3, Building2, Users, FolderKanban, ClipboardList, FileCheck, PieChart } from "lucide-react";
 
 export const mainMenuItems = [
   {
     title: "Dashboard",
     icon: BarChart3,
     path: "/",
-    roles: ["superadmin", "admin", "evaluator"]
+    permission: "view_dashboard",
+    roles: ["superadmin", "admin", "evaluator", "user"]
   },
   {
     title: "Empresas",
     icon: Building2,
     path: "/empresas",
+    permission: "view_companies",
     roles: ["superadmin", "admin"]
   },
   {
     title: "Funcionários",
     icon: Users,
     path: "/funcionarios",
+    permission: "view_employees",
     roles: ["superadmin", "admin"]
   },
   {
     title: "Setores",
     icon: FolderKanban,
     path: "/setores",
+    permission: "view_sectors",
     roles: ["superadmin", "admin"]
   },
   {
     title: "Funções",
-    icon: UserRound,
+    icon: FolderKanban,
     path: "/funcoes",
+    permission: "view_functions",
     roles: ["superadmin", "admin"]
   },
   {
     title: "Checklists",
-    icon: ClipboardCheck,
+    icon: ClipboardList,
     path: "/checklists",
+    permission: "view_checklists",
     roles: ["superadmin", "admin", "evaluator"]
   },
   {
     title: "Avaliações",
-    icon: ClipboardList,
+    icon: FileCheck,
     path: "/avaliacoes",
+    permission: "view_assessments",
     roles: ["superadmin", "admin", "evaluator"]
   },
   {
     title: "Relatórios",
-    icon: FileText,
+    icon: PieChart,
     path: "/relatorios",
+    permission: "view_reports",
     roles: ["superadmin", "admin"]
-  },
+  }
 ];

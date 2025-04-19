@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { settingsMenuItems } from "./settingsItems";
 import { SidebarMenuItem as MenuItem } from "./SidebarMenuItem";
 import { useState, useEffect } from "react";
+import { useCheckPermission } from "@/hooks/useCheckPermission";
 
 interface SettingsSubmenuProps {
   userRole?: string;
@@ -13,6 +14,7 @@ interface SettingsSubmenuProps {
 
 export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   const location = useLocation();
+  const { hasPermission } = useCheckPermission();
   const isSettingsRoute = location.pathname.startsWith('/configuracoes');
   const [isOpen, setIsOpen] = useState(isSettingsRoute);
   
@@ -23,7 +25,9 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   }, [isSettingsRoute, isOpen]);
   
   const filteredSettingsItems = settingsMenuItems.filter(item => 
-    userRole && item.roles.includes(userRole)
+    userRole && 
+    item.roles.includes(userRole) && 
+    hasPermission(item.permission)
   );
 
   if (filteredSettingsItems.length === 0) return null;

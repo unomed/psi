@@ -8,6 +8,7 @@ import {
   SidebarMenu,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCheckPermission } from "@/hooks/useCheckPermission";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
@@ -15,9 +16,12 @@ import { mainMenuItems } from "./sidebar/menuItems";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
+  const { hasPermission } = useCheckPermission();
 
   const filteredMenuItems = mainMenuItems.filter(item => 
-    userRole && item.roles.includes(userRole)
+    userRole && 
+    item.roles.includes(userRole) && 
+    hasPermission(item.permission)
   );
 
   return (

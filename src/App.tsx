@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,115 +41,111 @@ const App = () => (
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/register" element={<Register />} />
             
-            {/* Protected routes - accessible by all authenticated users */}
+            {/* Protected routes - require view_dashboard permission */}
             <Route path="/" element={
-              <RouteGuard>
+              <RouteGuard requirePermission="view_dashboard">
                 <MainLayout>
                   <Dashboard />
                 </MainLayout>
               </RouteGuard>
             } />
             
-            {/* Routes accessible only by superadmin and admin */}
+            {/* Routes requiring specific permissions */}
             <Route path="/empresas" element={
-              <RouteGuard allowedRoles={['superadmin', 'admin']}>
+              <RouteGuard requirePermission="view_companies">
                 <MainLayout>
                   <Empresas />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/funcionarios" element={
-              <RouteGuard allowedRoles={['superadmin', 'admin']}>
+              <RouteGuard requirePermission="view_employees">
                 <MainLayout>
                   <Funcionarios />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/setores" element={
-              <RouteGuard allowedRoles={['superadmin', 'admin']}>
+              <RouteGuard requirePermission="view_sectors">
                 <MainLayout>
                   <Setores />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/funcoes" element={
-              <RouteGuard allowedRoles={['superadmin', 'admin']}>
+              <RouteGuard requirePermission="view_functions">
                 <MainLayout>
                   <Funcoes />
                 </MainLayout>
               </RouteGuard>
             } />
-            
-            {/* Routes accessible by all authenticated users */}
             <Route path="/checklists" element={
-              <RouteGuard>
+              <RouteGuard requirePermission="view_checklists">
                 <MainLayout>
                   <Checklists />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/avaliacoes" element={
-              <RouteGuard>
+              <RouteGuard requirePermission="view_assessments">
                 <MainLayout>
                   <Avaliacoes />
                 </MainLayout>
               </RouteGuard>
             } />
-            
-            {/* Routes accessible only by superadmin and admin */}
             <Route path="/relatorios" element={
-              <RouteGuard allowedRoles={['superadmin', 'admin']}>
+              <RouteGuard requirePermission="view_reports">
                 <MainLayout>
                   <Relatorios />
                 </MainLayout>
               </RouteGuard>
             } />
             
-            {/* Settings routes - accessible only by superadmin */}
+            {/* Settings routes - require view_settings permission */}
             <Route path="/configuracoes/criterios" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <AssessmentCriteriaPage />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/configuracoes/servidor-email" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <EmailServerPage />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/configuracoes/emails" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <EmailTemplatesPage />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/configuracoes/notificacoes" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <NotificationsPage />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/configuracoes/periodicidade" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <PeriodicityPage />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/configuracoes/permissoes" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="edit_settings">
                 <MainLayout>
                   <PermissionsPage />
                 </MainLayout>
               </RouteGuard>
             } />
             <Route path="/configuracoes/usuarios" element={
-              <RouteGuard allowedRoles={['superadmin']}>
+              <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <UserManagementPage />
                 </MainLayout>
