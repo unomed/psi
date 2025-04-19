@@ -16,12 +16,12 @@ export function useScheduledAssessments() {
         .from('scheduled_assessments')
         .select(`
           *,
-          employees (
+          employees:employee_id (
             name,
             email,
             phone
           ),
-          checklist_templates (
+          checklist_templates:template_id (
             title
           )
         `)
@@ -32,25 +32,30 @@ export function useScheduledAssessments() {
         return [];
       }
       
-      return data.map(item => ({
-        id: item.id,
-        employeeId: item.employee_id,
-        templateId: item.template_id,
-        scheduledDate: new Date(item.scheduled_date),
-        sentAt: item.sent_at ? new Date(item.sent_at) : null,
-        linkUrl: item.link_url || '',
-        status: item.status as AssessmentStatus,
-        completedAt: item.completed_at ? new Date(item.completed_at) : null,
-        recurrenceType: item.recurrence_type as RecurrenceType | undefined,
-        nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
-        phoneNumber: item.phone_number || undefined,
-        employees: item.employees ? {
+      return data.map(item => {
+        // Check if item exists and has the needed properties before accessing them
+        const employeeInfo = item.employees ? {
           name: item.employees.name || 'Funcionário',
           email: item.employees.email || '',
           phone: item.employees.phone || ''
-        } : null,
-        checklist_templates: item.checklist_templates
-      }));
+        } : null;
+
+        return {
+          id: item.id,
+          employeeId: item.employee_id,
+          templateId: item.template_id,
+          scheduledDate: new Date(item.scheduled_date),
+          sentAt: item.sent_at ? new Date(item.sent_at) : null,
+          linkUrl: item.link_url || '',
+          status: item.status as AssessmentStatus,
+          completedAt: item.completed_at ? new Date(item.completed_at) : null,
+          recurrenceType: item.recurrence_type as RecurrenceType | undefined,
+          nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+          phoneNumber: item.phone_number || undefined,
+          employees: employeeInfo,
+          checklist_templates: item.checklist_templates
+        };
+      });
     }
   });
 
