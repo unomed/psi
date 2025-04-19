@@ -1,71 +1,134 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { EmployeeFormSchema } from "../schemas/employeeFormSchema";
-import { CompanySelector } from "@/components/assessments/selectors/CompanySelector";
-import { SectorSelector } from "@/components/assessments/selectors/SectorSelector";
-import { RoleSelector } from "@/components/assessments/selectors/RoleSelector";
+import { useEffect, useState } from "react";
+import { useCompanies } from "@/hooks/useCompanies";
+import { useSectors } from "@/hooks/useSectors";
+import { useRoles } from "@/hooks/useRoles";
+import { SearchableSelect, Option } from "@/components/ui/searchable-select";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface EmploymentFieldsProps {
   form: UseFormReturn<EmployeeFormSchema>;
   selectedCompany: string | null;
   selectedSector: string | null;
-  onCompanyChange: (value: string) => void;
-  onSectorChange: (value: string) => void;
+  onCompanyChange: (companyId: string | null) => void;
+  onSectorChange: (sectorId: string | null) => void;
 }
 
-export function EmploymentFields({ 
-  form, 
-  selectedCompany, 
-  selectedSector, 
-  onCompanyChange, 
-  onSectorChange 
+const statusOptions = [
+  { value: "active", label: "Ativo" },
+  { value: "inactive", label: "Inativo" },
+  { value: "vacation", label: "Férias" },
+  { value: "medical_leave", label: "Licença médica" },
+];
+
+export function EmploymentFields({
+  form,
+  selectedCompany,
+  selectedSector,
+  onCompanyChange,
+  onSectorChange,
 }: EmploymentFieldsProps) {
+  const { companies, isLoading: isLoadingCompanies } = useCompanies();
+  const { sectors, isLoading: isLoadingSectors } = useSectors(selectedCompany);
+  const { roles, isLoading: isLoadingRoles } = useRoles(selectedSector);
+  
+  const [companyOptions, setCompanyOptions] = useState<Option[]>([]);
+  const [sectorOptions, setSectorOptions] = useState<Option[]>([]);
+  const [roleOptions, setRoleOptions] = useState<Option[]>([]);
+
+  // Atualiza as opções de empresas
+  useEffect(() => {
+    if (companies) {
+      setCompanyOptions(
+        companies.map((company) => ({
+          value: company.id,
+          label: company.name,
+        }))
+      );
+    }
+  }, [companies]);
+
+  // Atualiza as opções de setores
+  useEffect(() => {
+    if (sectors) {
+      setSectorOptions(
+        sectors.map((sector) => ({
+          value: sector.id,
+          label: sector.name,
+        }))
+      );
+    } else {
+      setSectorOptions([]);
+    }
+  }, [sectors]);
+
+  // Atualiza as opções de funções
+  useEffect(() => {
+    if (roles) {
+      setRoleOptions(
+        roles.map((role) => ({
+          value: role.id,
+          label: role.name,
+        }))
+      );
+    } else {
+      setRoleOptions([]);
+    }
+  }, [roles]);
+
+  // Quando a empresa muda, atualiza o callback
+  const handleCompanyChange = (value: string) => {
+    form.setValue("sector_id", "");
+    form.setValue("role_id", "");
+    onCompanyChange(value);
+  };
+
+  // Quando o setor muda, atualiza o callback
+  const handleSectorChange = (value: string) => {
+    form.setValue("role_id", "");
+    onSectorChange(value);
+  };
+
   return (
     <div className="space-y-4">
-      <FormField
-        control={form.control}
-        name="start_date"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Data de admissão</FormLabel>
-            <FormControl>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="start_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Data de Admissão</FormLabel>
               <DatePicker
-                date={field.value}
+                selected={field.value}
                 onSelect={field.onChange}
-                allowInput={true}
               />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormField
-        control={form.control}
-        name="status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Status</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
               <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
+                <SearchableSelect
+                  options={statusOptions}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecione o status"
+                />
               </FormControl>
-              <SelectContent>
-                <SelectItem value="active">Ativo</SelectItem>
-                <SelectItem value="inactive">Inativo</SelectItem>
-                <SelectItem value="vacation">Férias</SelectItem>
-                <SelectItem value="medical_leave">Licença médica</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
       <div className="space-y-4">
         <FormField
@@ -73,13 +136,20 @@ export function EmploymentFields({
           name="company_id"
           render={({ field }) => (
             <FormItem>
-              <CompanySelector
-                selectedCompany={selectedCompany}
-                onCompanyChange={(value) => {
-                  onCompanyChange(value);
-                  field.onChange(value);
-                }}
-              />
+              <FormLabel>Empresa</FormLabel>
+              <FormControl>
+                <SearchableSelect
+                  options={companyOptions}
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    handleCompanyChange(value);
+                  }}
+                  placeholder="Selecione a empresa"
+                  loading={isLoadingCompanies}
+                  disabled={isLoadingCompanies}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -90,14 +160,20 @@ export function EmploymentFields({
           name="sector_id"
           render={({ field }) => (
             <FormItem>
-              <SectorSelector
-                selectedCompany={selectedCompany}
-                selectedSector={selectedSector}
-                onSectorChange={(value) => {
-                  onSectorChange(value);
-                  field.onChange(value);
-                }}
-              />
+              <FormLabel>Setor</FormLabel>
+              <FormControl>
+                <SearchableSelect
+                  options={sectorOptions}
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    handleSectorChange(value);
+                  }}
+                  placeholder="Selecione o setor"
+                  loading={isLoadingSectors}
+                  disabled={!selectedCompany || isLoadingSectors}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -108,11 +184,17 @@ export function EmploymentFields({
           name="role_id"
           render={({ field }) => (
             <FormItem>
-              <RoleSelector
-                selectedSector={selectedSector}
-                selectedRole={field.value}
-                onRoleChange={field.onChange}
-              />
+              <FormLabel>Função</FormLabel>
+              <FormControl>
+                <SearchableSelect
+                  options={roleOptions}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecione a função"
+                  loading={isLoadingRoles}
+                  disabled={!selectedSector || isLoadingRoles}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
