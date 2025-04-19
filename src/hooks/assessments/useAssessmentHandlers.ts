@@ -80,6 +80,15 @@ export function useAssessmentHandlers({
     setActiveTab
   });
 
+  const handleStartAssessment = () => {
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de checklist.");
+      return;
+    }
+    
+    setIsAssessmentDialogOpen(true);
+  };
+
   const handleGenerateLink = async (employeeId?: string, templateId?: string) => {
     const targetEmployeeId = employeeId || selectedEmployee;
     const targetTemplateId = templateId || (selectedTemplate?.id || "");
@@ -139,6 +148,7 @@ export function useAssessmentHandlers({
     handleSubmitAssessment,
     getSelectedEmployeeName,
     handleScheduleNewAssessment,
+    handleStartAssessment,
     handleSaveSchedule: (recurrenceType: RecurrenceType, phoneNumber: string) => 
       handleSaveSchedule(selectedEmployee, selectedTemplate, scheduledDate, recurrenceType, phoneNumber)
   };
