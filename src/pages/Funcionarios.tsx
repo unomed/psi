@@ -18,9 +18,15 @@ export default function Funcionarios() {
   
   const { employees, isLoading, createEmployee, updateEmployee, deleteEmployee } = useEmployees();
 
-  const filteredEmployees = employees?.filter(employee => 
-    employee.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEmployees = employees?.filter(employee => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesName = employee.name.toLowerCase().includes(searchLower);
+    const matchesCompany = employee.company?.name?.toLowerCase().includes(searchLower);
+    const matchesSector = employee.sector?.name?.toLowerCase().includes(searchLower);
+    const matchesRole = employee.role?.name?.toLowerCase().includes(searchLower);
+    
+    return matchesName || matchesCompany || matchesSector || matchesRole;
+  });
 
   const handleCreate = async (data: EmployeeFormData) => {
     try {
