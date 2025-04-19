@@ -1,5 +1,5 @@
 
-import { SidebarHeader as Header, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarHeader as Header } from "@/components/ui/sidebar";
 
 export function SidebarHeader() {
   return (
@@ -8,9 +8,6 @@ export function SidebarHeader() {
       <span className="ml-2 text-xs bg-psi-blue-100 text-psi-blue-800 px-2 py-0.5 rounded-full">
         NR 01
       </span>
-      <div className="ml-auto">
-        <SidebarTrigger />
-      </div>
     </Header>
   );
 }

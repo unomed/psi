@@ -16,7 +16,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         <div className="flex-1 relative">
           <div className="absolute top-4 left-4 z-50">
-            <SidebarTrigger className="bg-background shadow-md" />
+            <SidebarTrigger className="bg-background shadow-md rounded-md hover:bg-accent" />
           </div>
           <main className="flex-1 p-6 pt-16 overflow-auto">
             {children}
