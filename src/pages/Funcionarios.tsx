@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useEmployees } from "@/hooks/useEmployees";
 import { DataTable } from "@/components/ui/data-table";
@@ -6,7 +7,6 @@ import { Employee, EmployeeFormData } from "@/types/employee";
 import { EmptyEmployeeState } from "@/components/employees/EmptyEmployeeState";
 import { EmployeeHeader } from "@/components/employees/EmployeeHeader";
 import { EmployeeDialogs } from "@/components/employees/dialogs/EmployeeDialogs";
-import { EmployeeFilters } from "@/components/employees/EmployeeFilters";
 
 export default function Funcionarios() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -16,17 +16,6 @@ export default function Funcionarios() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   
   const { employees, isLoading, createEmployee, updateEmployee, deleteEmployee } = useEmployees();
-  
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-
-  const filteredEmployees = employees?.filter((employee) => {
-    if (selectedCompany && employee.company_id !== selectedCompany) return false;
-    if (selectedSector && employee.sector_id !== selectedSector) return false;
-    if (selectedRole && employee.role_id !== selectedRole) return false;
-    return true;
-  });
 
   const handleCreate = async (data: EmployeeFormData) => {
     try {
@@ -63,18 +52,12 @@ export default function Funcionarios() {
     <div className="space-y-8">
       <EmployeeHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
 
-      <EmployeeFilters
-        onCompanyChange={setSelectedCompany}
-        onSectorChange={setSelectedSector}
-        onRoleChange={setSelectedRole}
-      />
-
-      {filteredEmployees?.length === 0 && !isLoading ? (
+      {employees?.length === 0 && !isLoading ? (
         <EmptyEmployeeState onCreateClick={() => setIsCreateDialogOpen(true)} />
       ) : (
         <DataTable 
           columns={columns} 
-          data={filteredEmployees || []}
+          data={employees || []}
           isLoading={isLoading}
           meta={{
             onEdit: (employee: Employee) => {
@@ -110,3 +93,4 @@ export default function Funcionarios() {
     </div>
   );
 }
+
