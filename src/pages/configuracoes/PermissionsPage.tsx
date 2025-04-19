@@ -1,37 +1,8 @@
-
 import React, { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { PlusCircle, Info } from "lucide-react";  // Changed from 'InfoCircle' to 'Info'
-import { usePermissions, Permission } from "@/hooks/usePermissions";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { usePermissions } from "@/hooks/usePermissions";
+import { NewRoleDialog } from "@/components/permissions/NewRoleDialog";
+import { PermissionSection } from "@/components/permissions/PermissionSection";
 
 interface PermissionSetting {
   id: string;
@@ -94,11 +65,7 @@ export default function PermissionsPage() {
     { id: "edit_settings", name: "Editar Configurações", description: "Permissão para alterar configurações do sistema", section: "Configurações" },
   ];
 
-  // Get unique sections
-  const sections = [...new Set(permissionSettings.map(p => p.section))];
-
   const handleTogglePermission = (role: Permission, permissionId: string) => {
-    // Não permitir alteração para o perfil superadmin
     if (role.role === 'superadmin') {
       return;
     }
@@ -117,38 +84,8 @@ export default function PermissionsPage() {
   const handleCreateRole = () => {
     if (!newRoleName.trim()) return;
     
-    // Create basic permissions for the new role
-    const basicPermissions = {
-      view_dashboard: true,
-      view_companies: false,
-      create_companies: false,
-      edit_companies: false,
-      delete_companies: false,
-      view_employees: false,
-      create_employees: false,
-      edit_employees: false,
-      delete_employees: false,
-      view_sectors: false,
-      create_sectors: false,
-      edit_sectors: false,
-      delete_sectors: false,
-      view_functions: false,
-      create_functions: false,
-      edit_functions: false,
-      delete_functions: false,
-      view_checklists: false,
-      create_checklists: false,
-      edit_checklists: false,
-      delete_checklists: false,
-      view_assessments: false,
-      create_assessments: false,
-      edit_assessments: false,
-      delete_assessments: false,
-      view_reports: false,
-      export_reports: false,
-      view_settings: false,
-      edit_settings: false
-    };
+    const basicPermissions = createFullPermissions(false);
+    basicPermissions.view_dashboard = true;
     
     createRole.mutate({ 
       role: newRoleName.trim(), 
@@ -160,7 +97,6 @@ export default function PermissionsPage() {
   };
 
   const getPermissionValue = (role: Permission, permissionId: string): boolean => {
-    // Para superadmin, sempre retornar true
     if (role.role === 'superadmin') {
       return true;
     }
@@ -191,6 +127,8 @@ export default function PermissionsPage() {
     );
   }
 
+  const sections = [...new Set(permissionSettings.map(p => p.section))];
+
   return (
     <div className="space-y-8">
       <div>
@@ -202,98 +140,57 @@ export default function PermissionsPage() {
       
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Perfis de Usuários</h2>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Novo Perfil
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar Novo Perfil</DialogTitle>
-              <DialogDescription>
-                Digite o nome do novo perfil de usuário. Após a criação, você poderá configurar as permissões.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Label htmlFor="roleName">Nome do Perfil</Label>
-              <Input 
-                id="roleName" 
-                value={newRoleName} 
-                onChange={(e) => setNewRoleName(e.target.value)} 
-                placeholder="Ex: Gestor Comercial" 
-              />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleCreateRole}>Criar Perfil</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <NewRoleDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          newRoleName={newRoleName}
+          setNewRoleName={setNewRoleName}
+          handleCreateRole={handleCreateRole}
+        />
       </div>
       
       {sections.map((section) => (
-        <Card key={section}>
-          <CardHeader>
-            <CardTitle>{section}</CardTitle>
-            <CardDescription>
-              Permissões relacionadas a {section.toLowerCase()}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[300px]">Recurso</TableHead>
-                  {permissions?.map((role) => (
-                    <TableHead key={role.id}>
-                      {role.role.charAt(0).toUpperCase() + role.role.slice(1)}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {permissionSettings
-                  .filter(p => p.section === section)
-                  .map((permission) => (
-                    <TableRow key={permission.id}>
-                      <TableCell className="font-medium">
-                        <div>
-                          <div>{permission.name}</div>
-                          <div className="text-xs text-muted-foreground">{permission.description}</div>
-                        </div>
-                      </TableCell>
-                      {permissions?.map((role) => (
-                        <TableCell key={`${role.id}-${permission.id}`}>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>
-                                  <Switch 
-                                    checked={getPermissionValue(role, permission.id)}
-                                    onCheckedChange={() => handleTogglePermission(role, permission.id)}
-                                    disabled={role.role === 'superadmin'} // Superadmin sempre tem todas as permissões
-                                    aria-readonly={role.role === 'superadmin'}
-                                  />
-                                </div>
-                              </TooltipTrigger>
-                              {role.role === 'superadmin' && (
-                                <TooltipContent>
-                                  <p>O perfil Superadmin sempre tem acesso total ao sistema</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <PermissionSection
+          key={section}
+          section={section}
+          permissions={permissions}
+          permissionSettings={permissionSettings}
+          handleTogglePermission={handleTogglePermission}
+          getPermissionValue={getPermissionValue}
+        />
       ))}
     </div>
   );
 }
+
+const createFullPermissions = (value: boolean): Record<string, boolean> => ({
+  view_dashboard: value,
+  view_companies: value,
+  create_companies: value,
+  edit_companies: value,
+  delete_companies: value,
+  view_employees: value,
+  create_employees: value,
+  edit_employees: value,
+  delete_employees: value,
+  view_sectors: value,
+  create_sectors: value,
+  edit_sectors: value,
+  delete_sectors: value,
+  view_functions: value,
+  create_functions: value,
+  edit_functions: value,
+  delete_functions: value,
+  view_checklists: value,
+  create_checklists: value,
+  edit_checklists: value,
+  delete_checklists: value,
+  view_assessments: value,
+  create_assessments: value,
+  edit_assessments: value,
+  delete_assessments: value,
+  view_reports: value,
+  export_reports: value,
+  view_settings: value,
+  edit_settings: value,
+});
