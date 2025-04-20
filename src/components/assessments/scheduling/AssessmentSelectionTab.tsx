@@ -1,77 +1,37 @@
 
-import { Label } from "@/components/ui/label";
-import { CompanySelector } from "../selectors/CompanySelector";
-import { SectorSelector } from "../selectors/SectorSelector";
-import { RoleSelector } from "../selectors/RoleSelector";
-import { EmployeeSelector } from "../selectors/EmployeeSelector";
-import { TemplateSelector } from "../selectors/TemplateSelector";
+import React from "react";
 import { ChecklistTemplate } from "@/types";
+import { AssessmentSelectionForm } from "./AssessmentSelectionForm";
 
 interface AssessmentSelectionTabProps {
-  selectedCompany: string | null;
-  selectedSector: string | null;
-  selectedRole: string | null;
   selectedEmployee: string | null;
   selectedTemplate: ChecklistTemplate | null;
-  onCompanyChange: (value: string) => void;
-  onSectorChange: (value: string) => void;
-  onRoleChange: (value: string) => void;
-  onEmployeeChange: (value: string) => void;
-  onTemplateSelect: (value: string) => void;
-  onNext: () => void;
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
+  onEmployeeSelect: (employeeId: string) => void;
+  onTemplateSelect: (templateId: string) => void;
 }
 
 export function AssessmentSelectionTab({
-  selectedCompany,
-  selectedSector,
-  selectedRole,
   selectedEmployee,
   selectedTemplate,
-  onCompanyChange,
-  onSectorChange,
-  onRoleChange,
-  onEmployeeChange,
-  onTemplateSelect,
   templates,
-  isTemplatesLoading
+  isTemplatesLoading,
+  onEmployeeSelect,
+  onTemplateSelect,
 }: AssessmentSelectionTabProps) {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CompanySelector 
-          selectedCompany={selectedCompany} 
-          onCompanyChange={onCompanyChange} 
-        />
-        
-        <SectorSelector 
-          selectedCompany={selectedCompany}
-          selectedSector={selectedSector}
-          onSectorChange={onSectorChange}
-        />
-        
-        <RoleSelector 
-          selectedSector={selectedSector}
-          selectedRole={selectedRole}
-          onRoleChange={onRoleChange}
-        />
-        
-        <EmployeeSelector 
-          selectedRole={selectedRole}
-          selectedEmployee={selectedEmployee}
-          onEmployeeChange={onEmployeeChange}
-        />
-      </div>
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Nova Avaliação</h2>
       
-      <div className="w-full">
-        <TemplateSelector 
-          selectedEmployee={selectedEmployee}
-          templates={templates}
-          isTemplatesLoading={isTemplatesLoading}
-          onTemplateSelect={onTemplateSelect}
-        />
-      </div>
+      <AssessmentSelectionForm
+        selectedEmployee={selectedEmployee}
+        selectedTemplate={selectedTemplate}
+        templates={templates}
+        isTemplatesLoading={isTemplatesLoading}
+        onEmployeeSelect={onEmployeeSelect}
+        onTemplateSelect={onTemplateSelect}
+      />
     </div>
   );
 }

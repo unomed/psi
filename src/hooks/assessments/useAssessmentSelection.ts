@@ -1,23 +1,33 @@
 
 import { useState } from "react";
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 
-export function useAssessmentSelection() {
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
-  
-  // Mantemos a variável activeTab para compatibilidade, mas não a usamos mais na interface
-  const [activeTab, setActiveTab] = useState<string>("agendadas");
+export function useAssessmentSelectionState() {
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  const handleCompanyChange = (value: string) => {
+    setSelectedCompany(value);
+    setSelectedSector(null);
+    setSelectedRole(null);
+  };
+
+  const handleSectorChange = (value: string) => {
+    setSelectedSector(value);
+    setSelectedRole(null);
+  };
+
+  const handleRoleChange = (value: string) => {
+    setSelectedRole(value);
+  };
 
   return {
-    selectedEmployee,
-    setSelectedEmployee,
-    selectedTemplate,
-    setSelectedTemplate,
-    scheduledDate,
-    setScheduledDate,
-    activeTab,
-    setActiveTab
+    selectedCompany,
+    selectedSector,
+    selectedRole,
+    handleCompanyChange,
+    handleSectorChange,
+    handleRoleChange,
   };
 }

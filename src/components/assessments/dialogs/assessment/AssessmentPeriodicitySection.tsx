@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { useRiskBasedPeriodicity } from "@/hooks/assessments/operations/useRiskBasedPeriodicity";
 import { useEffect } from "react";
-import { PeriodicityType } from "@/types/settings";
 
 interface AssessmentPeriodicitySectionProps {
   recurrenceType: RecurrenceType;
@@ -30,7 +29,7 @@ export function AssessmentPeriodicitySection({
 
   useEffect(() => {
     // Only set suggested periodicity if no recurrence type is set yet and we have a valid suggestion
-    if (suggestedPeriodicity && suggestedPeriodicity !== "none" && recurrenceType === "none") {
+    if (suggestedPeriodicity && suggestedPeriodicity !== RecurrenceType.None && recurrenceType === RecurrenceType.None) {
       onRecurrenceChange(suggestedPeriodicity as RecurrenceType);
     }
   }, [suggestedPeriodicity, recurrenceType, onRecurrenceChange]);
@@ -50,10 +49,10 @@ export function AssessmentPeriodicitySection({
           <SelectValue placeholder="Selecione o tipo de recorrência" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="none">Sem recorrência</SelectItem>
-          <SelectItem value="monthly">Mensal</SelectItem>
-          <SelectItem value="semiannual">Semestral</SelectItem>
-          <SelectItem value="annual">Anual</SelectItem>
+          <SelectItem value={RecurrenceType.None}>Sem recorrência</SelectItem>
+          <SelectItem value={RecurrenceType.Monthly}>Mensal</SelectItem>
+          <SelectItem value={RecurrenceType.Semiannual}>Semestral</SelectItem>
+          <SelectItem value={RecurrenceType.Annual}>Anual</SelectItem>
         </SelectContent>
       </Select>
       
@@ -64,12 +63,12 @@ export function AssessmentPeriodicitySection({
         </div>
       )}
       
-      {suggestedPeriodicity && suggestedPeriodicity !== 'none' && (
+      {suggestedPeriodicity && suggestedPeriodicity !== RecurrenceType.None && (
         <p className="text-xs text-muted-foreground">
           Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
         </p>
       )}
-      {recurrenceType !== 'none' && (
+      {recurrenceType !== RecurrenceType.None && (
         <p className="text-xs text-muted-foreground">
           A próxima avaliação será agendada automaticamente de acordo com a periodicidade selecionada.
         </p>
