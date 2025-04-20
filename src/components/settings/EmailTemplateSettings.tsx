@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ export default function EmailTemplateSettings() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Modelos de Email</h2>
+        <h2 className="text-xl font-semibold">Modelos de E-mail</h2>
         <Button onClick={handleCreateTemplate} variant="outline" size="sm">
           <FilePlus className="mr-2 h-4 w-4" />
           Novo Modelo
