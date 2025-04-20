@@ -13,10 +13,10 @@ interface QuestionListProps {
 export function QuestionList({ questions, onRemoveQuestion }: QuestionListProps) {
   const getFactorColor = (type: DiscFactorType) => {
     switch (type) {
-      case "D": return "bg-red-100 hover:bg-red-200";
-      case "I": return "bg-yellow-100 hover:bg-yellow-200";
-      case "S": return "bg-green-100 hover:bg-green-200";
-      case "C": return "bg-blue-100 hover:bg-blue-200";
+      case DiscFactorType.D: return "bg-red-100 hover:bg-red-200";
+      case DiscFactorType.I: return "bg-yellow-100 hover:bg-yellow-200";
+      case DiscFactorType.S: return "bg-green-100 hover:bg-green-200";
+      case DiscFactorType.C: return "bg-blue-100 hover:bg-blue-200";
     }
   };
 

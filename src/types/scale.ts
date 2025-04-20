@@ -1,11 +1,5 @@
 
-// Application-specific scale types 
-export enum ScaleType {
-  Likert = "likert",
-  YesNo = "yesno",
-  Agree3 = "agree3",
-  Custom = "custom",
-}
+import { ScaleType } from './index';
 
 // Database scale types (from Supabase)
 export type DbScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom";

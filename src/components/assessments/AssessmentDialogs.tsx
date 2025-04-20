@@ -45,7 +45,7 @@ export function AssessmentDialogs({
               template={selectedTemplate}
               onSubmit={(resultData) => onSubmitAssessment({
                 ...resultData,
-                employeeName
+                employeeName: employeeName || resultData.employeeName
               })}
               onCancel={onAssessmentDialogClose}
             />

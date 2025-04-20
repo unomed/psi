@@ -29,7 +29,7 @@ export function AssessmentPeriodicitySection({
 
   useEffect(() => {
     // Only set suggested periodicity if no recurrence type is set yet and we have a valid suggestion
-    if (suggestedPeriodicity && suggestedPeriodicity !== RecurrenceType.None && recurrenceType === RecurrenceType.None) {
+    if (suggestedPeriodicity && suggestedPeriodicity !== "none" && recurrenceType === "none") {
       onRecurrenceChange(suggestedPeriodicity as RecurrenceType);
     }
   }, [suggestedPeriodicity, recurrenceType, onRecurrenceChange]);
@@ -49,10 +49,10 @@ export function AssessmentPeriodicitySection({
           <SelectValue placeholder="Selecione o tipo de recorrência" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={RecurrenceType.None}>Sem recorrência</SelectItem>
-          <SelectItem value={RecurrenceType.Monthly}>Mensal</SelectItem>
-          <SelectItem value={RecurrenceType.Semiannual}>Semestral</SelectItem>
-          <SelectItem value={RecurrenceType.Annual}>Anual</SelectItem>
+          <SelectItem value="none">Sem recorrência</SelectItem>
+          <SelectItem value="monthly">Mensal</SelectItem>
+          <SelectItem value="semiannual">Semestral</SelectItem>
+          <SelectItem value="annual">Anual</SelectItem>
         </SelectContent>
       </Select>
       
@@ -63,12 +63,12 @@ export function AssessmentPeriodicitySection({
         </div>
       )}
       
-      {suggestedPeriodicity && suggestedPeriodicity !== RecurrenceType.None && (
+      {suggestedPeriodicity && suggestedPeriodicity !== "none" && (
         <p className="text-xs text-muted-foreground">
           Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
         </p>
       )}
-      {recurrenceType !== RecurrenceType.None && (
+      {recurrenceType !== "none" && (
         <p className="text-xs text-muted-foreground">
           A próxima avaliação será agendada automaticamente de acordo com a periodicidade selecionada.
         </p>

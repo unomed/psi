@@ -2,7 +2,7 @@
 import { BarChart3, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChecklistResult } from "@/types/checklist";
+import { ChecklistResult, DiscFactorType } from "@/types";
 import { DiscFactorProgress } from "./DiscFactorProgress";
 import { discFactors, getFactorColor } from "./DiscFactorsData";
 
@@ -17,10 +17,10 @@ export function DiscResultSummary({ result, onDownload }: DiscResultSummaryProps
   
   // Calculate percentage for each factor
   const factorPercentages = {
-    D: Math.round((result.results.D / totalPoints) * 100) || 0,
-    I: Math.round((result.results.I / totalPoints) * 100) || 0,
-    S: Math.round((result.results.S / totalPoints) * 100) || 0,
-    C: Math.round((result.results.C / totalPoints) * 100) || 0
+    [DiscFactorType.D]: Math.round((result.results.D / totalPoints) * 100) || 0,
+    [DiscFactorType.I]: Math.round((result.results.I / totalPoints) * 100) || 0,
+    [DiscFactorType.S]: Math.round((result.results.S / totalPoints) * 100) || 0,
+    [DiscFactorType.C]: Math.round((result.results.C / totalPoints) * 100) || 0
   };
 
   return (
@@ -44,10 +44,10 @@ export function DiscResultSummary({ result, onDownload }: DiscResultSummaryProps
           </h3>
           
           <div className="space-y-3">
-            <DiscFactorProgress factor="D" percentage={factorPercentages.D} />
-            <DiscFactorProgress factor="I" percentage={factorPercentages.I} />
-            <DiscFactorProgress factor="S" percentage={factorPercentages.S} />
-            <DiscFactorProgress factor="C" percentage={factorPercentages.C} />
+            <DiscFactorProgress factor={DiscFactorType.D} percentage={factorPercentages[DiscFactorType.D]} />
+            <DiscFactorProgress factor={DiscFactorType.I} percentage={factorPercentages[DiscFactorType.I]} />
+            <DiscFactorProgress factor={DiscFactorType.S} percentage={factorPercentages[DiscFactorType.S]} />
+            <DiscFactorProgress factor={DiscFactorType.C} percentage={factorPercentages[DiscFactorType.C]} />
           </div>
         </div>
         

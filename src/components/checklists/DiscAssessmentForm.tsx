@@ -56,10 +56,10 @@ export function DiscAssessmentForm({
   const calculateResults = () => {
     // Calculate results
     const factorScores = {
-      D: 0,
-      I: 0,
-      S: 0,
-      C: 0
+      [DiscFactorType.D]: 0,
+      [DiscFactorType.I]: 0,
+      [DiscFactorType.S]: 0,
+      [DiscFactorType.C]: 0
     };
     
     // Calculate weighted scores for each factor
@@ -71,20 +71,20 @@ export function DiscAssessmentForm({
     });
     
     // Find dominant factor
-    let dominantFactor: DiscFactorType = "D";
-    let highestScore = factorScores.D;
+    let dominantFactor: DiscFactorType = DiscFactorType.D;
+    let highestScore = factorScores[DiscFactorType.D];
     
-    if (factorScores.I > highestScore) {
-      dominantFactor = "I";
-      highestScore = factorScores.I;
+    if (factorScores[DiscFactorType.I] > highestScore) {
+      dominantFactor = DiscFactorType.I;
+      highestScore = factorScores[DiscFactorType.I];
     }
-    if (factorScores.S > highestScore) {
-      dominantFactor = "S";
-      highestScore = factorScores.S;
+    if (factorScores[DiscFactorType.S] > highestScore) {
+      dominantFactor = DiscFactorType.S;
+      highestScore = factorScores[DiscFactorType.S];
     }
-    if (factorScores.C > highestScore) {
-      dominantFactor = "C";
-      highestScore = factorScores.C;
+    if (factorScores[DiscFactorType.C] > highestScore) {
+      dominantFactor = DiscFactorType.C;
+      highestScore = factorScores[DiscFactorType.C];
     }
     
     return {

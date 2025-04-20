@@ -19,7 +19,7 @@ interface QuestionFormProps {
 
 export function QuestionForm({ onAddQuestion }: QuestionFormProps) {
   const [questionText, setQuestionText] = useState("");
-  const [targetFactor, setTargetFactor] = useState<DiscFactorType>("D");
+  const [targetFactor, setTargetFactor] = useState<DiscFactorType>(DiscFactorType.D);
   const [weight, setWeight] = useState(1);
 
   const handleAddQuestion = () => {
@@ -36,7 +36,7 @@ export function QuestionForm({ onAddQuestion }: QuestionFormProps) {
 
     // Reset form after adding
     setQuestionText("");
-    setTargetFactor("D");
+    setTargetFactor(DiscFactorType.D);
     setWeight(1);
   };
 
@@ -64,10 +64,10 @@ export function QuestionForm({ onAddQuestion }: QuestionFormProps) {
                   <SelectValue placeholder="Fator" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="D">D - Dominância</SelectItem>
-                  <SelectItem value="I">I - Influência</SelectItem>
-                  <SelectItem value="S">S - Estabilidade</SelectItem>
-                  <SelectItem value="C">C - Conformidade</SelectItem>
+                  <SelectItem value={DiscFactorType.D}>D - Dominância</SelectItem>
+                  <SelectItem value={DiscFactorType.I}>I - Influência</SelectItem>
+                  <SelectItem value={DiscFactorType.S}>S - Estabilidade</SelectItem>
+                  <SelectItem value={DiscFactorType.C}>C - Conformidade</SelectItem>
                 </SelectContent>
               </Select>
             </div>

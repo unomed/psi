@@ -1,3 +1,4 @@
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,7 @@ export function QuestionStep({
   totalSteps,
   selectedValue,
   onResponseChange,
-  scaleType = "likert5"
+  scaleType = ScaleType.Likert
 }: QuestionStepProps) {
   return (
     <div className="space-y-6">
@@ -27,7 +28,7 @@ export function QuestionStep({
       
       <p className="text-base">{question.text}</p>
       
-      {scaleType === "likert5" && (
+      {scaleType === ScaleType.Likert && (
         <RadioGroup 
           value={selectedValue}
           onValueChange={onResponseChange}
@@ -56,7 +57,7 @@ export function QuestionStep({
         </RadioGroup>
       )}
 
-      {scaleType === "yesno" && (
+      {scaleType === ScaleType.YesNo && (
         <RadioGroup 
           value={selectedValue}
           onValueChange={onResponseChange}
@@ -73,7 +74,7 @@ export function QuestionStep({
         </RadioGroup>
       )}
 
-      {scaleType === "agree3" && (
+      {scaleType === ScaleType.Agree3 && (
         <RadioGroup 
           value={selectedValue}
           onValueChange={onResponseChange}
@@ -94,7 +95,7 @@ export function QuestionStep({
         </RadioGroup>
       )}
 
-      {scaleType === "custom" && (
+      {scaleType === ScaleType.Custom && (
         <div className="space-y-2 bg-muted/50 p-4 rounded-md">
           <p className="text-sm text-muted-foreground">
             Escala personalizada disponível em breve. Por padrão, usando escala Likert de 5 pontos.
