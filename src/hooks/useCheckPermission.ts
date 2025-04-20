@@ -3,6 +3,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+interface PermissionItem {
+  resource?: string;
+  actions?: string[];
+}
+
 export function useCheckPermission() {
   const { user, userRole } = useAuth();
   const [loadingPermission, setLoadingPermission] = useState(true);
@@ -71,7 +76,7 @@ export function useCheckPermission() {
           // Only map objects, skip boolean values
           return typeof value === 'object' && value !== null ? value : null;
         })
-        .filter((item): item is Record<string, any> => item !== null);
+        .filter((item): item is PermissionItem => item !== null);
         
       // Check if permission exists in nested structure
       for (const item of resourcesArray) {
