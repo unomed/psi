@@ -23,8 +23,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
-import { EmailTemplate } from "./types"; // Changed import path
+import { toast } from "sonner";
+import { EmailTemplate } from "./types";
 
 const emailTemplateSchema = z.object({
   subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
