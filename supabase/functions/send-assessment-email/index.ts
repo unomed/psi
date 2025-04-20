@@ -23,7 +23,6 @@ interface EmailRequest {
 
 // Email templates (in a real app, these would come from the database)
 const emailTemplates = {
-  // Templates em português
   "convite": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
@@ -63,7 +62,7 @@ Atenciosamente,
 Equipe de Recursos Humanos`
   },
   
-  // Manter compatibilidade com IDs antigos em inglês
+  // Maintain compatibility with old English IDs
   "assessment-invitation": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
@@ -87,6 +86,17 @@ Este é um lembrete de que você tem uma avaliação psicossocial pendente que p
 Link da avaliação: {linkUrl}
 
 A sua participação é muito importante.
+
+Atenciosamente,
+Equipe de Recursos Humanos`
+  },
+  "assessment-completion": {
+    subject: "Sua avaliação psicossocial foi concluída",
+    body: `Olá {employeeName},
+
+Gostaríamos de informar que você concluiu com sucesso a avaliação psicossocial.
+
+Agradecemos sua participação e comprometimento.
 
 Atenciosamente,
 Equipe de Recursos Humanos`
