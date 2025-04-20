@@ -69,7 +69,7 @@ export function useCheckPermission() {
         .filter(([key]) => !isNaN(Number(key)))
         .map(([_, value]) => {
           // Only map objects, skip boolean values
-          return typeof value === 'object' ? value : null;
+          return typeof value === 'object' && value !== null ? value : null;
         })
         .filter((item): item is Record<string, any> => item !== null);
         
