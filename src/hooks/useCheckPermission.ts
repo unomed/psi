@@ -74,13 +74,15 @@ export function useCheckPermission() {
         .filter(([key]) => !isNaN(Number(key)))
         .map(([_, value]) => {
           // Only map objects, skip boolean values
-          return typeof value === 'object' && value !== null ? value : null;
+          return typeof value === 'object' && value !== null ? value as PermissionItem : null;
         })
-        .filter((item): item is PermissionItem => item !== null);
+        .filter((item): item is PermissionItem => item !== null && typeof item === 'object');
         
       // Check if permission exists in nested structure
       for (const item of resourcesArray) {
-        if ('resource' in item && 'actions' in item && 
+        if (item && 
+            'resource' in item && 
+            'actions' in item && 
             Array.isArray(item.actions)) {
           const [action, resource] = permissionKey.split('_');
           if (item.resource === resource && item.actions.includes(action)) {
