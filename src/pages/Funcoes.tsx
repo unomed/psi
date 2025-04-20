@@ -11,6 +11,7 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { toast } from "sonner";
 
 export default function Funcoes() {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
@@ -123,7 +124,7 @@ export default function Funcoes() {
           <RoleForm 
             onSubmit={handleCreateRole}
             defaultValues={editingRole || undefined}
-            sectors={selectedCompany ? sectors?.filter(s => s.companyId === selectedCompany) || [] : []}
+            sectors={selectedCompany ? (sectors?.filter(s => s.companyId === selectedCompany) || []) : []}
           />
         </DialogContent>
       </Dialog>
