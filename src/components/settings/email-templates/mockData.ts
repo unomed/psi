@@ -3,21 +3,18 @@ import { EmailTemplate } from "./types";
 
 export const initialTemplates: EmailTemplate[] = [
   {
-    id: "assessment-invitation",
-    name: "Convite para Avaliação",
-    subject: "Convite para participar de uma avaliação psicossocial",
+    id: "assessment-completion",
+    name: "Conclusão de Avaliação",
+    subject: "Sua avaliação psicossocial foi concluída",
     body: `Olá {nome},
 
-Você foi convidado(a) a participar de uma avaliação psicossocial. 
-Por favor, acesse o link abaixo para completar a avaliação até {data_limite}.
+Gostaríamos de informar que você concluiu com sucesso a avaliação psicossocial.
 
-Link da avaliação: {link}
-
-Se tiver qualquer dúvida, entre em contato com o RH.
+Agradecemos sua participação e comprometimento.
 
 Atenciosamente,
 Equipe de Recursos Humanos`,
-    description: "Enviado quando uma nova avaliação é agendada para um funcionário"
+    description: "Enviado quando uma avaliação é concluída pelo funcionário"
   },
   {
     id: "assessment-reminder",
@@ -35,4 +32,21 @@ Atenciosamente,
 Equipe de Recursos Humanos`,
     description: "Enviado como lembrete para funcionários com avaliações pendentes"
   },
+  {
+    id: "assessment-invitation",
+    name: "Convite para Avaliação",
+    subject: "Convite para participar de uma avaliação psicossocial",
+    body: `Olá {nome},
+
+Você foi convidado(a) a participar de uma avaliação psicossocial. 
+Por favor, acesse o link abaixo para completar a avaliação até {data_limite}.
+
+Link da avaliação: {link}
+
+Se tiver qualquer dúvida, entre em contato com o RH.
+
+Atenciosamente,
+Equipe de Recursos Humanos`,
+    description: "Enviado quando uma nova avaliação é agendada para um funcionário"
+  }
 ];
