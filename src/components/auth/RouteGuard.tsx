@@ -21,7 +21,7 @@ export function RouteGuard({
   requireCompanyAccess 
 }: RouteGuardProps) {
   const { user, loading, userRole, userCompanies } = useAuth();
-  const { hasPermission, loadingPermission } = useCheckPermission();
+  const { hasPermission, loadingPermission, permissions } = useCheckPermission();
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
 
@@ -29,6 +29,7 @@ export function RouteGuard({
   console.log('[RouteGuard] Verificando acesso para rota:', location.pathname);
   console.log('[RouteGuard] Perfil do usuário:', userRole);
   console.log('[RouteGuard] Permissão requerida:', requirePermission);
+  console.log('[RouteGuard] Permissões configuradas:', permissions);
   console.log('[RouteGuard] Acesso à empresa requerido:', requireCompanyAccess);
   console.log('[RouteGuard] Empresas do usuário:', userCompanies);
   
@@ -43,17 +44,17 @@ export function RouteGuard({
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Verificar permissão baseada nas permissões configuradas
+  // Verificar permissão baseada nas configurações da página de permissões
   if (requirePermission && !hasPermission(requirePermission)) {
+    console.error(`[RouteGuard] Permissão negada: ${requirePermission} não está habilitada para o perfil ${userRole}`);
     toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
-    console.error(`[RouteGuard] Permissão negada: ${requirePermission}`);
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Verificar acesso à empresa - ESTRITAMENTE baseado nas associações configuradas na página de usuários
+  // Verificar acesso à empresa - baseado nas associações configuradas na página de usuários
   if (requireCompanyAccess && !hasAccess) {
-    toast.error(`Acesso negado: Você não tem acesso à empresa solicitada`);
-    console.error(`[RouteGuard] Acesso à empresa negado: ${requireCompanyAccess}`);
+    console.error(`[RouteGuard] Acesso à empresa negado: ${requireCompanyAccess} não está associada ao usuário`);
+    toast.error('Acesso negado: Você não tem acesso à empresa solicitada');
     return <Navigate to="/dashboard" replace />;
   }
 

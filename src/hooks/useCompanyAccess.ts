@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export function useCompanyAccess(requiredCompanyId?: string) {
   const { user, userRole, userCompanies } = useAuth();
@@ -30,14 +31,13 @@ export function useCompanyAccess(requiredCompanyId?: string) {
           return;
         }
 
-        // Verificação EXCLUSIVAMENTE baseada nas empresas associadas no gerenciamento de usuários
+        // Verificação EXCLUSIVAMENTE baseada nas empresas associadas na página de usuários
         if (userCompanies && userCompanies.length > 0) {
-          const hasCompanyAccess = userCompanies.some(
-            company => company.companyId === requiredCompanyId
-          );
+          const companyIds = userCompanies.map(company => company.companyId);
+          const hasCompanyAccess = companyIds.includes(requiredCompanyId);
           
           console.log('[useCompanyAccess] Acesso baseado nas empresas associadas:', hasCompanyAccess);
-          console.log('[useCompanyAccess] Empresas do usuário:', userCompanies.map(c => c.companyName).join(', '));
+          console.log('[useCompanyAccess] IDs das empresas do usuário:', companyIds);
           console.log('[useCompanyAccess] Empresa requisitada:', requiredCompanyId);
           
           setHasAccess(hasCompanyAccess);
@@ -51,6 +51,7 @@ export function useCompanyAccess(requiredCompanyId?: string) {
         setCheckingAccess(false);
       } catch (error) {
         console.error('[useCompanyAccess] Erro verificando acesso à empresa:', error);
+        toast.error('Erro ao verificar acesso à empresa');
         setHasAccess(false);
         setCheckingAccess(false);
       }

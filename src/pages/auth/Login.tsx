@@ -78,10 +78,10 @@ export default function Login() {
         infoMessage = "Super Admin: Acesso total ao sistema e todas as empresas.";
         break;
       case 'admin@company.com':
-        infoMessage = "Admin da Empresa: Acesso administrativo à Stepenovski Clínica Médica.";
+        infoMessage = "Admin da Empresa: Para ter acesso administrativo à empresa, este usuário precisa estar associado a ela na página de Configurações > Usuários.";
         break;
       case 'evaluator@company.com':
-        infoMessage = "Avaliador: Acesso limitado às funcionalidades de avaliações.";
+        infoMessage = "Avaliador: Para ter acesso às funcionalidades de avaliações, este usuário precisa estar associado a pelo menos uma empresa na página de Configurações > Usuários.";
         break;
     }
     setLoginInfo(infoMessage);
