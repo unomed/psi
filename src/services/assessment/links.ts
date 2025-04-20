@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,7 +18,7 @@ export async function generateAssessmentLink(
       .maybeSingle();
 
     if (existingLink?.token) {
-      return `https://avaliacao.unomed.med.br/avaliacao/${existingLink.token}`;
+      return `${window.location.origin}/avaliacao/${existingLink.token}`;
     }
 
     // Generate a unique token
@@ -42,8 +43,8 @@ export async function generateAssessmentLink(
 
     if (error) throw error;
 
-    // Return the complete URL
-    return `https://avaliacao.unomed.med.br/avaliacao/${token}`;
+    // Return the complete URL - use window.location.origin to ensure correct domain
+    return `${window.location.origin}/avaliacao/${token}`;
   } catch (error) {
     console.error("Erro ao gerar link:", error);
     toast.error("Erro ao gerar link de avaliação");

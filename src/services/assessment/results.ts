@@ -47,6 +47,7 @@ export async function submitAssessmentResult(resultData: Omit<any, "id" | "compl
 
 export async function fetchAssessmentByToken(token: string) {
   try {
+    // Get link data from database
     const { data: linkData, error: linkError } = await supabase
       .from('assessment_links')
       .select('*')
@@ -54,20 +55,24 @@ export async function fetchAssessmentByToken(token: string) {
       .single();
 
     if (linkError) {
+      console.error("Link error:", linkError);
       if (linkError.code === 'PGRST116') {
         return { error: "Link de avaliação não encontrado ou expirado", template: null, assessmentId: null };
       }
       throw linkError;
     }
 
+    // Check if link is expired
     if (linkData.expires_at && new Date(linkData.expires_at) < new Date()) {
       return { error: "Link de avaliação expirado", template: null, assessmentId: null };
     }
 
+    // Check if link has already been used
     if (linkData.used_at) {
       return { error: "Link de avaliação já foi utilizado", template: null, assessmentId: null };
     }
 
+    // Get template data
     const { data: template, error: templateError } = await supabase
       .from('checklist_templates')
       .select('*')
@@ -75,9 +80,13 @@ export async function fetchAssessmentByToken(token: string) {
       .single();
 
     if (templateError) {
+      console.error("Template error:", templateError);
       return { error: "Modelo de avaliação não encontrado", template: null, assessmentId: null };
     }
 
+    console.log("Template fetched:", template);
+
+    // Get assessment ID if available
     const { data: assessmentData } = await supabase
       .from('scheduled_assessments')
       .select('id')

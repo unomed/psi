@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
 import { ChecklistTemplate, ChecklistResult } from "@/types";
@@ -7,10 +8,12 @@ import { toast } from "sonner";
 import { AssessmentError } from "@/components/assessments/AssessmentError";
 import { AssessmentLoading } from "@/components/assessments/AssessmentLoading";
 import { AssessmentComplete } from "@/components/assessments/AssessmentComplete";
+import { checkLinkValidity, markLinkAsUsed } from "@/services/assessment/links";
 import { fetchAssessmentByToken, submitAssessmentResult } from "@/services/assessment";
 
 export default function AssessmentPage() {
   const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [template, setTemplate] = useState<ChecklistTemplate | null>(null);
@@ -29,6 +32,13 @@ export default function AssessmentPage() {
           return;
         }
         
+        // Check if token is valid
+        const isValid = await checkLinkValidity(token);
+        if (!isValid) {
+          setError("Link de avaliação expirado ou inválido");
+          return;
+        }
+        
         const { template, error, assessmentId, linkId } = await fetchAssessmentByToken(token);
         
         if (error) {
@@ -36,20 +46,35 @@ export default function AssessmentPage() {
           return;
         }
         
+        if (!template) {
+          setError("Modelo de avaliação não encontrado");
+          return;
+        }
+        
         setTemplate(template);
         setAssessmentId(assessmentId);
         setLinkId(linkId);
+        
+        console.log("Assessment loaded successfully:", { template, assessmentId, linkId });
+      } catch (err) {
+        console.error("Error loading assessment:", err);
+        setError("Erro ao carregar avaliação. Por favor, tente novamente.");
       } finally {
         setLoading(false);
       }
     };
 
     loadAssessment();
-  }, [token]);
+  }, [token, navigate]);
 
   const handleSubmitAssessment = async (resultData: Omit<ChecklistResult, "id" | "completedAt">) => {
     try {
       setLoading(true);
+      
+      if (!linkId) {
+        toast.error("Erro ao identificar o link da avaliação");
+        return;
+      }
       
       const { result, error } = await submitAssessmentResult({
         ...resultData,
@@ -63,10 +88,18 @@ export default function AssessmentPage() {
       }
       
       if (result) {
+        // Mark link as used
+        if (linkId) {
+          await markLinkAsUsed(token!);
+        }
+        
         setResult(result);
         setAssessmentCompleted(true);
         toast.success("Avaliação concluída com sucesso!");
       }
+    } catch (err) {
+      console.error("Error submitting assessment:", err);
+      toast.error("Erro ao enviar avaliação. Por favor, tente novamente.");
     } finally {
       setLoading(false);
     }
