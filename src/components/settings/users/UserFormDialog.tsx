@@ -139,12 +139,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   const handleSubmit = async (data: UserFormData) => {
     setError(null);
     
-    // Validar se empresas foram selecionadas para papéis que não são superadmin
-    if (data.role !== 'superadmin' && (!selectedCompanies || selectedCompanies.length === 0)) {
-      setError("Selecione pelo menos uma empresa para este usuário");
-      toast.error("Selecione pelo menos uma empresa para este usuário");
-      return;
-    }
+    // REMOVED: Company validation for non-superadmin roles
     
     try {
       setIsSubmitting(true);
@@ -190,11 +185,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
               onSearchChange={setSearchQuery}
             />
 
-            {error && (
-              <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
+            {/* Removed error message for company selection */}
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={onClose}>
