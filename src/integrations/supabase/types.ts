@@ -358,34 +358,46 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          imap_port: number | null
+          imap_server: string | null
           password: string
+          pop3_port: number | null
           sender_email: string
           sender_name: string
           smtp_port: number
           smtp_server: string
           updated_at: string
+          use_ssl: boolean | null
           username: string
         }
         Insert: {
           created_at?: string
           id?: string
+          imap_port?: number | null
+          imap_server?: string | null
           password: string
+          pop3_port?: number | null
           sender_email: string
           sender_name: string
           smtp_port: number
           smtp_server: string
           updated_at?: string
+          use_ssl?: boolean | null
           username: string
         }
         Update: {
           created_at?: string
           id?: string
+          imap_port?: number | null
+          imap_server?: string | null
           password?: string
+          pop3_port?: number | null
           sender_email?: string
           sender_name?: string
           smtp_port?: number
           smtp_server?: string
           updated_at?: string
+          use_ssl?: boolean | null
           username?: string
         }
         Relationships: []
