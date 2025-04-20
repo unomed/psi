@@ -3,7 +3,7 @@ import { EmailTemplate } from "./types";
 
 export const initialTemplates: EmailTemplate[] = [
   {
-    id: "assessment-completion",
+    id: "conclusao",
     name: "Conclusão de Avaliação",
     subject: "Sua avaliação psicossocial foi concluída",
     body: `Olá {nome},
@@ -17,7 +17,7 @@ Equipe de Recursos Humanos`,
     description: "Enviado quando uma avaliação é concluída pelo funcionário"
   },
   {
-    id: "assessment-reminder",
+    id: "lembrete",
     name: "Lembrete de Avaliação",
     subject: "Lembrete: Avaliação psicossocial pendente",
     body: `Olá {nome},
@@ -33,7 +33,7 @@ Equipe de Recursos Humanos`,
     description: "Enviado como lembrete para funcionários com avaliações pendentes"
   },
   {
-    id: "assessment-invitation",
+    id: "convite",
     name: "Convite para Avaliação",
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {nome},
