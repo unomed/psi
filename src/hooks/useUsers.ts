@@ -1,8 +1,7 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { AppRole } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface User {
   id: string;
@@ -14,10 +13,18 @@ export interface User {
 
 export function useUsers() {
   const queryClient = useQueryClient();
+  const { user: currentUser, userRole } = useAuth();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
+      const { data: userCompanies } = await supabase
+        .from('user_companies')
+        .select('company_id')
+        .eq('user_id', currentUser?.id);
+
+      const userCompanyIds = userCompanies?.map(uc => uc.company_id) || [];
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles_with_emails')
         .select('*');
@@ -36,7 +43,7 @@ export function useUsers() {
         throw rolesError;
       }
 
-      const { data: userCompanies, error: companiesError } = await supabase
+      const { data: allUserCompanies, error: companiesError } = await supabase
         .from('user_companies')
         .select('user_id, company_id');
 
@@ -57,12 +64,16 @@ export function useUsers() {
       return profiles.map(profile => {
         const userRole = userRoles.find(r => r.user_id === profile.id);
         
-        const userCompanyIds = userCompanies
+        const thisUserCompanyIds = allUserCompanies
           .filter(uc => uc.user_id === profile.id)
           .map(uc => uc.company_id);
         
+        if (userRole?.role !== 'superadmin' && !hasCommonCompany(thisUserCompanyIds, userCompanyIds)) {
+          return null;
+        }
+        
         const companyNames = companies
-          .filter(c => userCompanyIds.includes(c.id))
+          .filter(c => thisUserCompanyIds.includes(c.id))
           .map(c => c.name);
 
         return {
@@ -72,9 +83,13 @@ export function useUsers() {
           role: userRole?.role || 'user',
           companies: companyNames
         };
-      }) as User[];
+      }).filter(Boolean) as User[];
     }
   });
+
+  const hasCommonCompany = (array1: string[], array2: string[]): boolean => {
+    return array1.some(item => array2.includes(item));
+  };
 
   const updateUserRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string, role: string }) => {

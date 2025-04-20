@@ -2,6 +2,8 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCheckPermission } from '@/hooks/useCheckPermission';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -11,18 +13,48 @@ interface RouteGuardProps {
 }
 
 export function RouteGuard({ children, allowedRoles, requirePermission, requireCompanyAccess }: RouteGuardProps) {
-  const { user, loading, userRole, hasCompanyAccess } = useAuth();
+  const { user, loading, userRole } = useAuth();
   const { hasPermission, loadingPermission } = useCheckPermission();
   const location = useLocation();
+  const [hasAccess, setHasAccess] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
-  // Debugging logs
-  console.log("RouteGuard - Loading:", loading || loadingPermission, "User:", !!user, "UserRole:", userRole);
-  
-  if (requirePermission) {
-    console.log(`Checking permission: ${requirePermission}, Result:`, hasPermission(requirePermission));
-  }
+  useEffect(() => {
+    const checkCompanyAccess = async () => {
+      if (!user || !requireCompanyAccess) {
+        setCheckingAccess(false);
+        return;
+      }
 
-  if (loading || loadingPermission) {
+      try {
+        // Superadmin always has access
+        if (userRole === 'superadmin') {
+          setHasAccess(true);
+          setCheckingAccess(false);
+          return;
+        }
+
+        // Check if user has access to the required company
+        const { data: userCompanies } = await supabase
+          .from('user_companies')
+          .select('company_id')
+          .eq('user_id', user.id);
+
+        const hasCompanyAccess = userCompanies?.some(uc => uc.company_id === requireCompanyAccess) || false;
+        setHasAccess(hasCompanyAccess);
+      } catch (error) {
+        console.error('Error checking company access:', error);
+        setHasAccess(false);
+      } finally {
+        setCheckingAccess(false);
+      }
+    };
+
+    checkCompanyAccess();
+  }, [user, userRole, requireCompanyAccess]);
+
+  // Show loading state while checking permissions and access
+  if (loading || loadingPermission || checkingAccess) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -30,38 +62,28 @@ export function RouteGuard({ children, allowedRoles, requirePermission, requireC
     );
   }
 
+  // Check authentication
   if (!user) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Permission-based access check
+  // Check permission
   if (requirePermission && !hasPermission(requirePermission)) {
-    console.log(`User lacks permission: ${requirePermission}`);
     return <Navigate to="/" replace />;
   }
 
-  // Role-based access check if allowedRoles is provided
+  // Check role-based access
   if (allowedRoles && allowedRoles.length > 0) {
     const hasRole = userRole && allowedRoles.includes(userRole);
-    
-    console.log("RouteGuard - Role check:", { allowedRoles, userRole, hasRole });
-    
     if (!hasRole) {
       return <Navigate to="/" replace />;
     }
   }
 
-  // Company-based access check if requireCompanyAccess is provided
-  if (requireCompanyAccess) {
-    const checkCompanyAccess = async () => {
-      const hasAccess = await hasCompanyAccess(requireCompanyAccess);
-      if (!hasAccess) {
-        return <Navigate to="/" replace />;
-      }
-    };
-    
-    checkCompanyAccess();
+  // Check company access
+  if (requireCompanyAccess && !hasAccess) {
+    return <Navigate to="/" replace />;
   }
-  
+
   return <>{children}</>;
 }
