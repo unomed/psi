@@ -20,7 +20,8 @@ export function UserTableRow({ user, onEdit, onDelete, onToggleActive }: UserTab
       <TableCell>{user.email}</TableCell>
       <TableCell>
         {user.role === 'admin' ? 'Administrador' : 
-         user.role === 'superadmin' ? 'Super Admin' : 'Avaliador'}
+         user.role === 'superadmin' ? 'Super Admin' : 
+         user.role === 'profissionais' ? 'Profissional' : 'Avaliador'}
       </TableCell>
       <TableCell>
         <TooltipProvider>
@@ -55,11 +56,22 @@ export function UserTableRow({ user, onEdit, onDelete, onToggleActive }: UserTab
         </TooltipProvider>
       </TableCell>
       <TableCell>
-        <Switch
-          checked={user.is_active}
-          onCheckedChange={() => onToggleActive(user)}
-          aria-label="Toggle user active status"
-        />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Switch
+                checked={user.is_active}
+                onCheckedChange={() => onToggleActive(user)}
+                aria-label="Toggle user active status"
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              {user.is_active 
+                ? 'Usuário ativo no sistema' 
+                : 'Usuário inativo no sistema'}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
       <TableCell className="text-right space-x-2">
         <Button
