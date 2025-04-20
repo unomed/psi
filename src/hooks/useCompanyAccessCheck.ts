@@ -16,6 +16,8 @@ export function useCompanyAccessCheck() {
     
     try {
       console.log('[useCompanyAccessCheck] Verificando acesso do usuário à empresa:', companyId);
+      console.log('[useCompanyAccessCheck] Perfil do usuário:', userRole);
+      console.log('[useCompanyAccessCheck] Empresas do usuário:', userCompanies);
       
       // Superadmin has access to all companies
       if (userRole === 'superadmin') {
@@ -47,18 +49,20 @@ export function useCompanyAccessCheck() {
   ): T[] => {
     if (!user) return [];
     
-    // Superadmin has access to all resources
+    // Only superadmin should have access to all resources
     if (userRole === 'superadmin') {
+      console.log('[useCompanyAccessCheck] Usuário é superadmin, retornando todos os recursos');
       return resources;
     }
     
-    // For other roles, filter resources by company
+    // For other roles, strictly filter resources by company
     const userCompanyIds = userCompanies.map(company => company.companyId);
     
     console.log('[useCompanyAccessCheck] Filtrando recursos por empresa');
+    console.log('[useCompanyAccessCheck] Perfil do usuário:', userRole);
     console.log('[useCompanyAccessCheck] Empresas do usuário:', userCompanyIds);
     
-    return resources.filter(resource => {
+    const filteredResources = resources.filter(resource => {
       // Skip items without company_id (system-wide resources)
       if (!resource.company_id) return true;
       
@@ -70,6 +74,9 @@ export function useCompanyAccessCheck() {
       
       return hasAccess;
     });
+    
+    console.log('[useCompanyAccessCheck] Recursos filtrados:', filteredResources.length, 'de', resources.length);
+    return filteredResources;
   };
 
   return {

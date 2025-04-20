@@ -30,63 +30,68 @@ export function useUserRole() {
       } else if (roleData) {
         console.log("[useUserRole] Dados do papel do usuário:", roleData);
         setUserRole(roleData.role);
-      } else {
-        setUserRole('user');
-      }
-      
-      // If superadmin, fetch all companies
-      if (roleData?.role === 'superadmin') {
-        const { data: allCompanies, error: allCompaniesError } = await supabase
-          .from('companies')
-          .select('id, name');
-          
-        if (allCompaniesError) {
-          console.error('[useUserRole] Erro ao buscar todas as empresas:', allCompaniesError);
-        } else if (allCompanies) {
-          const formattedCompanies = allCompanies.map(company => ({
-            companyId: company.id,
-            companyName: company.name
-          }));
-          setUserCompanies(formattedCompanies);
-          console.log("[useUserRole] Empresas para superadmin:", formattedCompanies);
-        }
-      } else {
-        // For other roles, fetch associated companies from user_companies table
-        const { data: userCompanyData, error: userCompanyError } = await supabase
-          .from('user_companies')
-          .select('company_id')
-          .eq('user_id', userId);
         
-        if (userCompanyError) {
-          console.error('[useUserRole] Erro ao buscar empresas do usuário:', userCompanyError);
-          setUserCompanies([]);
-        } else if (userCompanyData && userCompanyData.length > 0) {
-          console.log("[useUserRole] Dados de empresas do usuário:", userCompanyData);
-          
-          // Fetch company names for the associated companies
-          const companyIds = userCompanyData.map(item => item.company_id);
-          const { data: companiesData, error: companiesError } = await supabase
+        // If superadmin, fetch all companies
+        if (roleData.role === 'superadmin') {
+          const { data: allCompanies, error: allCompaniesError } = await supabase
             .from('companies')
-            .select('id, name')
-            .in('id', companyIds);
+            .select('id, name');
             
-          if (companiesError) {
-            console.error('[useUserRole] Erro ao buscar detalhes das empresas:', companiesError);
-          } else if (companiesData) {
-            const formattedCompanies = companiesData.map(company => ({
+          if (allCompaniesError) {
+            console.error('[useUserRole] Erro ao buscar todas as empresas:', allCompaniesError);
+          } else if (allCompanies) {
+            const formattedCompanies = allCompanies.map(company => ({
               companyId: company.id,
               companyName: company.name
             }));
-            console.log("[useUserRole] Empresas formatadas para o usuário:", formattedCompanies);
             setUserCompanies(formattedCompanies);
+            console.log("[useUserRole] Empresas para superadmin:", formattedCompanies);
           }
         } else {
-          console.log("[useUserRole] Nenhuma empresa associada ao usuário");
-          setUserCompanies([]);
+          // For other roles, fetch only associated companies
+          console.log("[useUserRole] Buscando empresas associadas ao usuário (não superadmin)");
+          
+          const { data: userCompanyData, error: userCompanyError } = await supabase
+            .from('user_companies')
+            .select('company_id')
+            .eq('user_id', userId);
+          
+          if (userCompanyError) {
+            console.error('[useUserRole] Erro ao buscar empresas do usuário:', userCompanyError);
+            setUserCompanies([]);
+          } else if (userCompanyData && userCompanyData.length > 0) {
+            console.log("[useUserRole] Dados de empresas do usuário:", userCompanyData);
+            
+            // Fetch company names for the associated companies
+            const companyIds = userCompanyData.map(item => item.company_id);
+            const { data: companiesData, error: companiesError } = await supabase
+              .from('companies')
+              .select('id, name')
+              .in('id', companyIds);
+              
+            if (companiesError) {
+              console.error('[useUserRole] Erro ao buscar detalhes das empresas:', companiesError);
+            } else if (companiesData) {
+              const formattedCompanies = companiesData.map(company => ({
+                companyId: company.id,
+                companyName: company.name
+              }));
+              console.log("[useUserRole] Empresas formatadas para o usuário:", formattedCompanies);
+              setUserCompanies(formattedCompanies);
+            }
+          } else {
+            console.log("[useUserRole] Nenhuma empresa associada ao usuário");
+            setUserCompanies([]);
+          }
         }
+      } else {
+        setUserRole('user');
+        setUserCompanies([]);
       }
     } catch (error) {
       console.error('[useUserRole] Erro ao buscar papel e empresas do usuário:', error);
+      setUserRole('user');
+      setUserCompanies([]);
     } finally {
       setRoleLoading(false);
     }

@@ -55,7 +55,7 @@ export function RouteGuard({
   const routesRequiringCompanyAccess = ['/empresas', '/funcionarios', '/setores', '/funcoes', '/avaliacoes', '/relatorios'];
   const currentPath = location.pathname;
   
-  // If the user is not superadmin and tries to access a route that requires company association
+  // Check if route requires company access (except for superadmin who has access to all)
   if (routesRequiringCompanyAccess.some(route => currentPath.startsWith(route)) && userRole !== 'superadmin') {
     // Check if the user has at least one company associated
     if (userCompanies.length === 0) {
