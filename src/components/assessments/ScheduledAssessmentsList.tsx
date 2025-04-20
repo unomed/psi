@@ -43,9 +43,11 @@ export function ScheduledAssessmentsList({
     );
   }
 
-  const handleShareClick = (assessment: ScheduledAssessment) => {
+  const handleShareClick = async (assessment: ScheduledAssessment) => {
     setSelectedAssessment(assessment);
-    setGeneratedLink(assessment.linkUrl || "");
+    if (assessment.linkUrl) {
+      setGeneratedLink(assessment.linkUrl);
+    }
     setIsDialogOpen(true);
   };
 
@@ -140,7 +142,7 @@ export function ScheduledAssessmentsList({
                       size="icon"
                       title="Gerar link"
                       onClick={() => handleShareClick(assessment)}
-                      disabled={type === "completed" || !onShareAssessment || assessment.status === 'sent'}
+                      disabled={type === "completed" || !onShareAssessment || assessment.status === 'completed'}
                     >
                       <Link className="h-4 w-4" />
                     </Button>
@@ -164,7 +166,7 @@ export function ScheduledAssessmentsList({
           <DialogHeader>
             <DialogTitle>Gerar Link de Avaliação</DialogTitle>
             <DialogDescription>
-              Confirme os dados do funcionário e gere o link de avaliação.
+              {generatedLink ? 'Link de avaliação gerado com sucesso.' : 'Confirme os dados do funcionário e gere o link de avaliação.'}
             </DialogDescription>
           </DialogHeader>
           
@@ -185,18 +187,6 @@ export function ScheduledAssessmentsList({
               </div>
             </div>
             
-            <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm">
-                <strong>Modelo:</strong> {selectedAssessment?.checklist_templates?.title}
-              </p>
-              <p className="text-sm">
-                <strong>Data:</strong> {selectedAssessment ? format(selectedAssessment.scheduledDate, "dd/MM/yyyy", { locale: ptBR }) : ""}
-              </p>
-              <p className="text-sm">
-                <strong>Status:</strong> {selectedAssessment?.status === 'scheduled' ? 'Agendado' : selectedAssessment?.status === 'sent' ? 'Enviado' : 'Concluído'}
-              </p>
-            </div>
-
             {generatedLink ? (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Link gerado:</label>
@@ -218,23 +208,23 @@ export function ScheduledAssessmentsList({
                   </Button>
                 )}
               </div>
-            ) : null}
-          </div>
-          
-          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-            <DialogClose asChild>
-              <Button variant="outline">
-                Cancelar
-              </Button>
-            </DialogClose>
-            {!generatedLink && (
-              <Button 
+            ) : (
+              <Button
                 onClick={handleConfirmShare}
-                disabled={!selectedAssessment || !onShareAssessment || isGenerating}
+                className="w-full"
+                disabled={isGenerating}
               >
                 {isGenerating ? "Gerando..." : "Gerar Link"}
               </Button>
             )}
+          </div>
+          
+          <DialogFooter className="sm:justify-start">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Fechar
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
