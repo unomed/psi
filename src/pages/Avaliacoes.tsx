@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AssessmentHandler } from "@/components/assessments/AssessmentHandler";
 import { AssessmentErrorBoundary } from "@/components/assessments/error-boundary/AssessmentErrorBoundary";
@@ -23,19 +22,16 @@ export default function Avaliacoes() {
   const { userRole, userCompanies } = useAuth();
   const { verifyCompanyAccess } = useCompanyAccessCheck();
   
-  // Verificar se o usuário tem acesso à empresa selecionada
   useEffect(() => {
     const checkCompanyAccess = async () => {
       if (!selectedCompany) return;
       
-      // Superadmin tem acesso a todas as empresas
       if (userRole === 'superadmin') return;
       
       const hasAccess = await verifyCompanyAccess(selectedCompany);
       if (!hasAccess) {
         toast.error('Você não tem acesso à empresa selecionada');
         
-        // Se o usuário tem pelo menos uma empresa associada, selecionar a primeira
         if (userCompanies.length > 0) {
           const firstCompany = userCompanies[0].companyId;
           setSelectedCompany(firstCompany);
@@ -117,7 +113,7 @@ export default function Avaliacoes() {
       )}
       
       <AssessmentErrorBoundary>
-        <AssessmentHandler companyId={selectedCompany} />
+        <AssessmentHandler companyId={selectedCompany} onShareAssessment={handleShareAssessment} />
       </AssessmentErrorBoundary>
       
       <ShareLinkDialog

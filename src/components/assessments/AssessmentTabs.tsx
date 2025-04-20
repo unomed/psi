@@ -11,9 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface AssessmentTabsProps {
   companyId?: string | null;
+  onShareAssessment?: (assessmentId: string) => Promise<void>;
 }
 
-export function AssessmentTabs({ companyId }: AssessmentTabsProps) {
+export function AssessmentTabs({ companyId, onShareAssessment }: AssessmentTabsProps) {
   const { userRole } = useAuth();
   
   const { data: scheduledAssessments = [], isLoading } = useQuery({
@@ -112,6 +113,7 @@ export function AssessmentTabs({ companyId }: AssessmentTabsProps) {
           <ScheduledAssessmentsList 
             assessments={scheduledItems}
             type="scheduled"
+            onShareAssessment={onShareAssessment}
           />
         </TabsContent>
 
