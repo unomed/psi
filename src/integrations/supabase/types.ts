@@ -516,33 +516,56 @@ export type Database = {
       }
       notification_settings: {
         Row: {
+          company_id: string | null
           created_at: string
           deadline_alerts: boolean | null
+          deadline_warning_days: number | null
           email_notifications: boolean | null
+          high_risk_threshold: number | null
           id: string
+          last_notification_sent: string | null
+          notification_frequency: unknown | null
           risk_alerts: boolean | null
           system_notifications: boolean | null
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           deadline_alerts?: boolean | null
+          deadline_warning_days?: number | null
           email_notifications?: boolean | null
+          high_risk_threshold?: number | null
           id?: string
+          last_notification_sent?: string | null
+          notification_frequency?: unknown | null
           risk_alerts?: boolean | null
           system_notifications?: boolean | null
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           deadline_alerts?: boolean | null
+          deadline_warning_days?: number | null
           email_notifications?: boolean | null
+          high_risk_threshold?: number | null
           id?: string
+          last_notification_sent?: string | null
+          notification_frequency?: unknown | null
           risk_alerts?: boolean | null
           system_notifications?: boolean | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notification_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       periodicity_settings: {
         Row: {

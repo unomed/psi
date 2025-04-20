@@ -9,6 +9,11 @@ interface NotificationSettings {
   system_notifications: boolean;
   risk_alerts: boolean;
   deadline_alerts: boolean;
+  last_notification_sent?: string;
+  notification_frequency?: string;
+  company_id?: string;
+  high_risk_threshold?: number;
+  deadline_warning_days?: number;
 }
 
 export interface NotificationSettingsForm {
@@ -16,6 +21,9 @@ export interface NotificationSettingsForm {
   systemNotifications: boolean;
   riskAlerts: boolean;
   deadlineAlerts: boolean;
+  notificationFrequency?: string;
+  highRiskThreshold?: number;
+  deadlineWarningDays?: number;
 }
 
 export function useNotificationSettings() {
@@ -44,14 +52,18 @@ export function useNotificationSettings() {
         email_notifications: formValues.emailNotifications,
         system_notifications: formValues.systemNotifications,
         risk_alerts: formValues.riskAlerts,
-        deadline_alerts: formValues.deadlineAlerts
+        deadline_alerts: formValues.deadlineAlerts,
+        notification_frequency: formValues.notificationFrequency,
+        high_risk_threshold: formValues.highRiskThreshold,
+        deadline_warning_days: formValues.deadlineWarningDays
       };
 
       const { data, error } = await supabase
         .from('notification_settings')
         .upsert({
           ...newSettings,
-          ...(settings?.id ? { id: settings.id } : {})
+          ...(settings?.id ? { id: settings.id } : {}),
+          updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
