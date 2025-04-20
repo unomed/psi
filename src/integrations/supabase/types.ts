@@ -984,6 +984,10 @@ export type Database = {
       }
     }
     Functions: {
+      associate_user_with_company: {
+        Args: { _user_id: string; _company_id: string }
+        Returns: boolean
+      }
       check_company_access: {
         Args: { user_id: string; company_id: string }
         Returns: boolean
@@ -994,12 +998,20 @@ export type Database = {
           | { template_id: string; company_id: string; new_title?: string }
         Returns: string
       }
+      dissociate_user_from_company: {
+        Args: { _user_id: string; _company_id: string }
+        Returns: boolean
+      }
       get_user_emails: {
         Args: { user_ids: string[] }
         Returns: {
           id: string
           email: string
         }[]
+      }
+      has_company_access: {
+        Args: { _user_id: string; _company_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

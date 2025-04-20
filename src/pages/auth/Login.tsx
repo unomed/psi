@@ -1,92 +1,10 @@
 
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import AuthLayout from '@/components/layout/AuthLayout';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Info } from 'lucide-react';
-import { toast } from 'sonner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-
-const loginSchema = z.object({
-  email: z.string().email("Digite um email válido"),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { LoginForm } from '@/components/auth/login/LoginForm';
+import { TestAccountsSection } from '@/components/auth/login/TestAccountsSection';
 
 export default function Login() {
-  const { signIn, loading } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [loginInfo, setLoginInfo] = useState<string | null>(null);
-
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  async function onSubmit(data: LoginFormValues) {
-    setIsLoading(true);
-    setLoginError(null);
-    setLoginInfo(null);
-    
-    try {
-      await signIn(data.email, data.password);
-      toast.success("Login realizado com sucesso!");
-    } catch (error) {
-      console.error("Erro no login:", error);
-      let errorMessage = "Erro ao realizar login. Verifique suas credenciais.";
-      
-      if (error instanceof Error) {
-        // Handle specific error messages
-        if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
-        } else if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "Credenciais inválidas. Verifique seu email e senha.";
-        } else if (error.message.includes("Email not found")) {
-          errorMessage = "Email não encontrado. Verifique o email informado.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      setLoginError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // Helper function to set test credentials
-  const setTestCredentials = (email: string, password: string) => {
-    form.setValue('email', email);
-    form.setValue('password', password);
-    
-    // Mostrar informações sobre o perfil selecionado
-    let infoMessage = "";
-    switch(email) {
-      case 'superadmin@test.com':
-        infoMessage = "Super Admin: Acesso total ao sistema e todas as empresas.";
-        break;
-      case 'admin@company.com':
-        infoMessage = "Admin da Empresa: Para ter acesso administrativo às empresas, este usuário precisa estar associado a elas na página de Configurações > Usuários.";
-        break;
-      case 'evaluator@company.com':
-        infoMessage = "Avaliador: Para ter acesso às funcionalidades de avaliações, este usuário precisa estar associado a pelo menos uma empresa na página de Configurações > Usuários.";
-        break;
-    }
-    setLoginInfo(infoMessage);
-  };
-
   return (
     <AuthLayout
       title="Login"
@@ -102,102 +20,8 @@ export default function Login() {
         </div>
       }
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="seu.email@exemplo.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Senha</FormLabel>
-                <FormControl>
-                  <Input type="password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          {loginError && (
-            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-              {loginError}
-            </div>
-          )}
-          
-          {loginInfo && (
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-500" />
-              <AlertDescription className="text-blue-700 text-xs">
-                {loginInfo}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <Button type="submit" className="w-full" disabled={isLoading || loading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Entrando...
-              </>
-            ) : (
-              "Entrar"
-            )}
-          </Button>
-        </form>
-      </Form>
-
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Ou use uma conta de teste
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-2">
-          <Button 
-            variant="outline" 
-            type="button" 
-            disabled={isLoading || loading}
-            onClick={() => setTestCredentials('superadmin@test.com', 'super123')}
-          >
-            Super Admin
-          </Button>
-          <Button 
-            variant="outline" 
-            type="button" 
-            disabled={isLoading || loading}
-            onClick={() => setTestCredentials('admin@company.com', 'admin123')}
-          >
-            Admin da Empresa
-          </Button>
-          <Button 
-            variant="outline" 
-            type="button" 
-            disabled={isLoading || loading}
-            onClick={() => setTestCredentials('evaluator@company.com', 'eval123')}
-          >
-            Avaliador
-          </Button>
-        </div>
-      </div>
+      <LoginForm />
+      <TestAccountsSection />
     </AuthLayout>
   );
 }
