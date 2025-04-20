@@ -25,7 +25,7 @@ export function RouteGuard({
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
 
-  // Log para depuração
+  // Debug logs
   console.log('[RouteGuard] Verificando acesso para rota:', location.pathname);
   console.log('[RouteGuard] Perfil do usuário:', userRole);
   console.log('[RouteGuard] Permissão requerida:', requirePermission);
@@ -33,31 +33,31 @@ export function RouteGuard({
   console.log('[RouteGuard] Acesso à empresa requerido:', requireCompanyAccess);
   console.log('[RouteGuard] Empresas do usuário:', userCompanies);
   
-  // Mostrar loading enquanto verifica permissões e acesso
+  // Show loading while checking permissions and access
   if (loading || loadingPermission || checkingAccess) {
     return <LoadingSpinner />;
   }
 
-  // Verificar autenticação
+  // Check authentication
   if (!user) {
     toast.error('Você precisa estar logado para acessar esta página');
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Verificar permissão baseada nas configurações da página de permissões
+  // Check permission based on permission settings
   if (requirePermission && !hasPermission(requirePermission)) {
     console.error(`[RouteGuard] Permissão negada: ${requirePermission} não está habilitada para o perfil ${userRole}`);
     toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Para rotas protegidas que requerem associação com empresa
+  // For protected routes that require company association
   const routesRequiringCompanyAccess = ['/empresas', '/funcionarios', '/setores', '/funcoes', '/avaliacoes', '/relatorios'];
   const currentPath = location.pathname;
   
-  // Se o usuário não for superadmin e tenta acessar uma rota que exige associação com empresa
-  if (routesRequiringCompanyAccess.includes(currentPath) && userRole !== 'superadmin') {
-    // Verificar se o usuário tem pelo menos uma empresa associada
+  // If the user is not superadmin and tries to access a route that requires company association
+  if (routesRequiringCompanyAccess.some(route => currentPath.startsWith(route)) && userRole !== 'superadmin') {
+    // Check if the user has at least one company associated
     if (userCompanies.length === 0) {
       console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada');
       toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
@@ -65,17 +65,17 @@ export function RouteGuard({
     }
   }
 
-  // Verificar acesso à empresa específica se necessário
+  // Check specific company access if needed
   if (requireCompanyAccess && !hasAccess) {
     console.error(`[RouteGuard] Acesso à empresa negado: ${requireCompanyAccess} não está associada ao usuário`);
     toast.error('Acesso negado: Você não tem acesso à empresa solicitada');
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Log de decisão final
+  // Log final decision
   console.log(`[RouteGuard] Acesso concedido para rota: ${location.pathname}`);
   
-  // Verificar acesso baseado em perfil
+  // Check role-based access
   return (
     <RoleCheck allowedRoles={allowedRoles}>
       {children}

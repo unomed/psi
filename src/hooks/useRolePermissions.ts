@@ -39,10 +39,23 @@ export function useRolePermissions() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
       
+      // Check if user is superadmin (has access to all companies)
       const isSuperadmin = await hasRole('superadmin');
       if (isSuperadmin) return true;
       
-      return false; // For now, until company_users table is implemented
+      // For other roles, check the user_companies table
+      const { data, error } = await supabase
+        .rpc('has_company_access', {
+          _user_id: user.id,
+          _company_id: companyId
+        });
+        
+      if (error) {
+        console.error('Error checking company access:', error);
+        return false;
+      }
+      
+      return data || false;
     } catch (error) {
       console.error('Error checking company access:', error);
       return false;

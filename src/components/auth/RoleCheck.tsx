@@ -13,19 +13,19 @@ export function RoleCheck({ allowedRoles, children }: RoleCheckProps) {
 
   console.log("[RoleCheck] Verificando se perfil do usuário:", userRole, "está nos perfis permitidos:", allowedRoles);
 
-  // Se não há perfis restritos, permita o acesso
+  // If there are no restricted roles, allow access
   if (!allowedRoles || allowedRoles.length === 0) {
     console.log("[RoleCheck] Sem restrições de perfil, concedendo acesso");
     return <>{children}</>;
   }
 
-  // Superadmin tem acesso a tudo
+  // Superadmin has access to everything
   if (userRole === 'superadmin') {
     console.log("[RoleCheck] Usuário é superadmin, concedendo acesso");
     return <>{children}</>;
   }
 
-  // Verifica se o perfil do usuário está entre os permitidos
+  // Check if the user's role is among the allowed ones
   const hasRole = userRole && allowedRoles.includes(userRole);
   
   if (!hasRole) {

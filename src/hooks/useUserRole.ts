@@ -17,7 +17,7 @@ export function useUserRole() {
       console.log("[useUserRole] Buscando role e empresas para usuário:", userId);
       setRoleLoading(true);
       
-      // Buscar o papel do usuário
+      // Fetch user role
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
@@ -34,7 +34,7 @@ export function useUserRole() {
         setUserRole('user');
       }
       
-      // Se for superadmin, buscar todas as empresas
+      // If superadmin, fetch all companies
       if (roleData?.role === 'superadmin') {
         const { data: allCompanies, error: allCompaniesError } = await supabase
           .from('companies')
@@ -51,7 +51,7 @@ export function useUserRole() {
           console.log("[useUserRole] Empresas para superadmin:", formattedCompanies);
         }
       } else {
-        // Para outros papéis, buscar empresas associadas na tabela user_companies
+        // For other roles, fetch associated companies from user_companies table
         const { data: userCompanyData, error: userCompanyError } = await supabase
           .from('user_companies')
           .select('company_id')
@@ -63,7 +63,7 @@ export function useUserRole() {
         } else if (userCompanyData && userCompanyData.length > 0) {
           console.log("[useUserRole] Dados de empresas do usuário:", userCompanyData);
           
-          // Buscar os nomes das empresas associadas
+          // Fetch company names for the associated companies
           const companyIds = userCompanyData.map(item => item.company_id);
           const { data: companiesData, error: companiesError } = await supabase
             .from('companies')

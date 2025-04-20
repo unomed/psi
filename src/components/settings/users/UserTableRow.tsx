@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
 import { User } from "@/hooks/users/types";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UserTableRowProps {
   user: User;
@@ -19,7 +20,38 @@ export function UserTableRow({ user, onEdit, onDelete }: UserTableRowProps) {
         {user.role === 'admin' ? 'Administrador' : 
          user.role === 'superadmin' ? 'Super Admin' : 'Avaliador'}
       </TableCell>
-      <TableCell>{user.companies.join(", ") || "-"}</TableCell>
+      <TableCell>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center">
+                {user.role === 'superadmin' ? (
+                  <div className="flex items-center text-green-600">
+                    <Check className="h-4 w-4 mr-1" />
+                    <span>Todas empresas</span>
+                  </div>
+                ) : (
+                  user.companies.length > 0 ? (
+                    <span>{user.companies.join(", ")}</span>
+                  ) : (
+                    <div className="flex items-center text-amber-600">
+                      <X className="h-4 w-4 mr-1" />
+                      <span>Nenhuma empresa</span>
+                    </div>
+                  )
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {user.role === 'superadmin' 
+                ? 'Super Admin tem acesso a todas as empresas' 
+                : user.companies.length > 0 
+                  ? `Empresas associadas: ${user.companies.join(", ")}` 
+                  : 'Este usuário não tem acesso a nenhuma empresa'}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </TableCell>
       <TableCell className="text-right space-x-2">
         <Button
           variant="outline"
