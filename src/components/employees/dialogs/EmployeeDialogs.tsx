@@ -5,6 +5,7 @@ import { EmployeeForm } from "@/components/employees/EmployeeForm";
 import { Employee, EmployeeFormData } from "@/types/employee";
 import { useRoles } from "@/hooks/useRoles";
 import { useSectors } from "@/hooks/useSectors";
+import { isValidDate } from "@/utils/dateUtils";
 
 interface EmployeeDialogsProps {
   isCreateDialogOpen: boolean;
@@ -50,6 +51,19 @@ export function EmployeeDialogs({
     inactive: "Inativo",
     vacation: "Férias",
     medical_leave: "Licença Médica"
+  };
+
+  // Format date helper
+  const formatDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return "Não definida";
+    
+    try {
+      const date = new Date(dateStr);
+      if (!isValidDate(date)) return "Data inválida";
+      return date.toLocaleDateString();
+    } catch (error) {
+      return "Data inválida";
+    }
   };
 
   return (
@@ -119,7 +133,7 @@ export function EmployeeDialogs({
                     <p><span className="font-medium">CPF:</span> {selectedEmployee.cpf}</p>
                     {selectedEmployee.email && <p><span className="font-medium">Email:</span> {selectedEmployee.email}</p>}
                     {selectedEmployee.phone && <p><span className="font-medium">Telefone:</span> {selectedEmployee.phone}</p>}
-                    {selectedEmployee.birth_date && <p><span className="font-medium">Data de Nascimento:</span> {new Date(selectedEmployee.birth_date).toLocaleDateString()}</p>}
+                    {selectedEmployee.birth_date && <p><span className="font-medium">Data de Nascimento:</span> {formatDate(selectedEmployee.birth_date)}</p>}
                     {selectedEmployee.gender && <p><span className="font-medium">Gênero:</span> {selectedEmployee.gender}</p>}
                     {selectedEmployee.address && <p><span className="font-medium">Endereço:</span> {selectedEmployee.address}</p>}
                   </div>
@@ -127,7 +141,7 @@ export function EmployeeDialogs({
                 <div>
                   <h3 className="font-medium">Informações Profissionais</h3>
                   <div className="mt-2 space-y-2">
-                    <p><span className="font-medium">Data de Admissão:</span> {new Date(selectedEmployee.start_date).toLocaleDateString()}</p>
+                    <p><span className="font-medium">Data de Admissão:</span> {formatDate(selectedEmployee.start_date)}</p>
                     <p><span className="font-medium">Status:</span> {statusMap[selectedEmployee.status] || selectedEmployee.status}</p>
                     
                     {/* Lookup function role from roles */}

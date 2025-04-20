@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -5,6 +6,8 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import { useRoles } from "@/hooks/useRoles";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { DatePicker } from "@/components/ui/date-picker";
+import { isValidDate } from "@/utils/dateUtils";
 
 interface EmploymentFieldsProps {
   form: any;
@@ -164,11 +167,10 @@ export function EmploymentFields({
           <FormItem>
             <FormLabel>Data de Admissão</FormLabel>
             <FormControl>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded-md p-2"
-                value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''}
-                onChange={(e) => field.onChange(new Date(e.target.value))}
+              <DatePicker
+                date={field.value}
+                onSelect={field.onChange}
+                allowInput={true}
               />
             </FormControl>
             <FormMessage />

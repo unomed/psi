@@ -3,12 +3,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EmployeeFormData } from "@/types/employee";
 import { employeeFormSchema, EmployeeFormSchema } from "./schemas/employeeFormSchema";
 import { PersonalInfoFields } from "./form-sections/PersonalInfoFields";
 import { EmploymentFields } from "./form-sections/EmploymentFields";
 import { AdditionalFields } from "./form-sections/AdditionalFields";
+import { isValidDate } from "@/utils/dateUtils";
 
 interface EmployeeFormProps {
   initialData?: EmployeeFormData & { id: string };
@@ -24,12 +25,20 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     initialData?.sector_id || null
   );
 
+  // Helper function to safely parse dates
+  const safeParseDate = (dateString?: string): Date | undefined => {
+    if (!dateString) return undefined;
+    
+    const date = new Date(dateString);
+    return isValidDate(date) ? date : undefined;
+  };
+
   const form = useForm<EmployeeFormSchema>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: initialData ? {
       ...initialData,
-      birth_date: initialData.birth_date ? new Date(initialData.birth_date) : undefined,
-      start_date: new Date(initialData.start_date),
+      birth_date: safeParseDate(initialData.birth_date),
+      start_date: safeParseDate(initialData.start_date) || new Date(),
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",
@@ -57,10 +66,14 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       cpf: values.cpf,
       email: values.email || undefined,
       phone: values.phone || undefined,
-      birth_date: values.birth_date ? values.birth_date.toISOString() : undefined,
+      birth_date: values.birth_date && isValidDate(values.birth_date) 
+        ? values.birth_date.toISOString() 
+        : undefined,
       gender: values.gender || undefined,
       address: values.address || undefined,
-      start_date: values.start_date.toISOString(),
+      start_date: isValidDate(values.start_date) 
+        ? values.start_date.toISOString() 
+        : new Date().toISOString(),
       status: values.status,
       special_conditions: values.special_conditions || undefined,
       photo_url: values.photo_url || undefined,
