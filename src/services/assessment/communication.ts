@@ -31,7 +31,7 @@ export async function generateAssessmentLinkFromId(assessmentId: string) {
     const { error: updateError } = await supabase
       .from('scheduled_assessments')
       .update({
-        link_url: `${window.location.origin}/avaliacao/${token}`,
+        link_url: `https://avaliacao.unomed.med.br/avaliacao/${token}`,
         status: 'sent'
       })
       .eq('id', assessmentId);

@@ -89,8 +89,8 @@ export default function AssessmentPage() {
       
       if (result) {
         // Mark link as used
-        if (linkId) {
-          await markLinkAsUsed(token!);
+        if (token) {
+          await markLinkAsUsed(token);
         }
         
         setResult(result);
@@ -106,7 +106,7 @@ export default function AssessmentPage() {
   };
 
   const handleCloseResults = () => {
-    window.location.href = "/";
+    window.location.href = "https://avaliacao.unomed.med.br/";
   };
 
   if (loading) {
@@ -140,7 +140,7 @@ export default function AssessmentPage() {
                 <DiscAssessmentForm 
                   template={template} 
                   onSubmit={handleSubmitAssessment}
-                  onCancel={() => window.location.href = "/"}
+                  onCancel={() => window.location.href = "https://avaliacao.unomed.med.br/"}
                 />
               )}
             </>

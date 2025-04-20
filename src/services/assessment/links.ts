@@ -18,7 +18,8 @@ export async function generateAssessmentLink(
       .maybeSingle();
 
     if (existingLink?.token) {
-      return `${window.location.origin}/avaliacao/${existingLink.token}`;
+      // Use the public domain instead of window.location.origin
+      return `https://avaliacao.unomed.med.br/avaliacao/${existingLink.token}`;
     }
 
     // Generate a unique token
@@ -43,8 +44,8 @@ export async function generateAssessmentLink(
 
     if (error) throw error;
 
-    // Return the complete URL - use window.location.origin to ensure correct domain
-    return `${window.location.origin}/avaliacao/${token}`;
+    // Return the complete URL with the custom domain
+    return `https://avaliacao.unomed.med.br/avaliacao/${token}`;
   } catch (error) {
     console.error("Erro ao gerar link:", error);
     toast.error("Erro ao gerar link de avaliação");
