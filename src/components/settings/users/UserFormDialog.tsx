@@ -1,22 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { User } from "@/hooks/useUsers";
+import type { User } from "@/hooks/users/types";
 import { supabase } from "@/integrations/supabase/client";
-import { Search } from "lucide-react";
-
-interface Company {
-  id: string;
-  name: string;
-}
+import { BasicUserInfo } from "./form-sections/BasicUserInfo";
+import { CompanySelection } from "./form-sections/CompanySelection";
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -39,10 +31,9 @@ interface UserFormDialogProps {
 
 export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -54,7 +45,6 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
     },
   });
 
-  // Fetch all companies
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
@@ -67,7 +57,6 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
           console.error('Error fetching companies:', error);
         } else if (data) {
           setCompanies(data);
-          setFilteredCompanies(data);
         }
       } catch (error) {
         console.error('Unexpected error fetching companies:', error);
@@ -77,20 +66,6 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
     fetchCompanies();
   }, []);
 
-  // Filter companies based on search query
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredCompanies(companies);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = companies.filter(company => 
-        company.name.toLowerCase().includes(query)
-      );
-      setFilteredCompanies(filtered);
-    }
-  }, [searchQuery, companies]);
-
-  // Fetch user's companies if editing
   useEffect(() => {
     if (user?.id) {
       const fetchUserCompanies = async () => {
@@ -155,92 +130,15 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="email" placeholder="email@exemplo.com" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <BasicUserInfo form={form} />
+            
+            <CompanySelection
+              companies={companies}
+              selectedCompanies={selectedCompanies}
+              onToggleCompany={handleToggleCompany}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
-
-            <FormField
-              control={form.control}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome completo</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Nome do usuário" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Função</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma função" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="evaluator">Avaliador</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="superadmin">Super Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-2">
-              <FormLabel>Empresas</FormLabel>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar empresas..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 mb-2"
-                />
-              </div>
-              <div className="border rounded-md p-3 space-y-2 max-h-60 overflow-y-auto">
-                {filteredCompanies.length > 0 ? (
-                  filteredCompanies.map((company) => (
-                    <div key={company.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`company-${company.id}`} 
-                        checked={selectedCompanies.includes(company.id)}
-                        onCheckedChange={() => handleToggleCompany(company.id)}
-                      />
-                      <label 
-                        htmlFor={`company-${company.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {company.name}
-                      </label>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {searchQuery ? "Nenhuma empresa encontrada" : "Nenhuma empresa disponível"}
-                  </p>
-                )}
-              </div>
-            </div>
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={onClose}>
