@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,13 +81,15 @@ export function RecentAssessments({ companyId }: RecentAssessmentsProps) {
             const employee = employeeMap[response.employee_id] || { name: 'Desconhecido', sectorId: '' };
             const sectorName = employee.sectorId ? (sectorMap[employee.sectorId] || 'Não especificado') : 'Não especificado';
             
-            // Map classification to display text
+            // Map classification to display text and use string comparison instead of type comparison
             let riskLevel = 'Médio'; // Default
-            if (response.classification === 'high') {
+            const classification = String(response.classification || '').toLowerCase();
+            
+            if (classification === 'high') {
               riskLevel = 'Alto';
-            } else if (response.classification === 'medium') {
+            } else if (classification === 'medium') {
               riskLevel = 'Médio';
-            } else if (response.classification === 'low') {
+            } else if (classification === 'low') {
               riskLevel = 'Baixo';
             }
             

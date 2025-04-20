@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -55,7 +54,7 @@ export function RiskLevelChart({ companyId }: RiskLevelChartProps) {
           .from('assessment_responses')
           .select('classification, count(*)')
           .in('employee_id', employeeIds)
-          .groupBy('classification');
+          .group('classification');
 
         if (error) throw error;
 

@@ -68,7 +68,7 @@ export default function Dashboard() {
         if (employees && employees.length > 0) {
           const employeeIds = employees.map(emp => emp.id);
           
-          // Query for high risk employees using the employee IDs
+          // Query for high risk employees using the employee IDs and string comparison
           const { data: highRiskData, error: highRiskError } = await supabase
             .from('assessment_responses')
             .select('id')
