@@ -135,10 +135,44 @@ export function useUsers() {
     }
   });
 
+  const createUser = useMutation({
+    mutationFn: async ({ email, full_name, role }: { email: string; full_name: string; role: string }) => {
+      const { data, error } = await supabase.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { full_name }
+      });
+
+      if (error) {
+        toast.error('Erro ao criar usuário');
+        throw error;
+      }
+
+      if (data.user) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .upsert({ 
+            user_id: data.user.id, 
+            role 
+          });
+
+        if (roleError) {
+          toast.error('Erro ao definir função do usuário');
+          throw roleError;
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Usuário criado com sucesso');
+    }
+  });
+
   return {
     users,
     isLoading,
     updateUserRole,
-    deleteUser
+    deleteUser,
+    createUser
   };
 }

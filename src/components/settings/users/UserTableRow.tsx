@@ -6,8 +6,8 @@ import { User } from "@/hooks/useUsers";
 
 interface UserTableRowProps {
   user: User;
-  onEdit: (userId: string) => void;
-  onDelete: (userId: string) => void;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 export function UserTableRow({ user, onEdit, onDelete }: UserTableRowProps) {
@@ -24,14 +24,14 @@ export function UserTableRow({ user, onEdit, onDelete }: UserTableRowProps) {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => onEdit(user.id)}
+          onClick={() => onEdit(user)}
         >
           <Pencil className="h-4 w-4" />
         </Button>
         <Button
           variant="destructive"
           size="icon"
-          onClick={() => onDelete(user.id)}
+          onClick={() => onDelete(user)}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
