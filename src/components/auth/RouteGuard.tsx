@@ -15,8 +15,12 @@ export function RouteGuard({ children, allowedRoles, requirePermission, requireC
   const { hasPermission, loadingPermission } = useCheckPermission();
   const location = useLocation();
 
-  // Para debug
-  console.log("RouteGuard - Loading:", loading, "User:", !!user, "UserRole:", userRole);
+  // Debugging logs
+  console.log("RouteGuard - Loading:", loading || loadingPermission, "User:", !!user, "UserRole:", userRole);
+  
+  if (requirePermission) {
+    console.log(`Checking permission: ${requirePermission}, Result:`, hasPermission(requirePermission));
+  }
 
   if (loading || loadingPermission) {
     return (

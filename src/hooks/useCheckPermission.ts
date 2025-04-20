@@ -16,6 +16,7 @@ export function useCheckPermission() {
       }
 
       try {
+        console.log("Fetching permissions for role:", userRole);
         const { data, error } = await supabase
           .from('permission_settings')
           .select('permissions')
@@ -26,6 +27,7 @@ export function useCheckPermission() {
           console.error('Error fetching permissions:', error);
           setPermissions(null);
         } else {
+          console.log("Permissions data:", data.permissions);
           // Type checking and conversion to ensure we have the correct type
           if (data.permissions && typeof data.permissions === 'object') {
             setPermissions(data.permissions as Record<string, boolean>);
@@ -48,6 +50,9 @@ export function useCheckPermission() {
   const hasPermission = (permissionKey: string): boolean => {
     // If superadmin, always grant access
     if (userRole === 'superadmin') return true;
+    
+    // For debugging
+    console.log(`Checking permission ${permissionKey} for role ${userRole}:`, permissions ? permissions[permissionKey] : "no permissions data");
     
     // Check specific permission
     return permissions ? !!permissions[permissionKey] : false;
