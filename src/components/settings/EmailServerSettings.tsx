@@ -3,7 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Server, Key } from "lucide-react";
+import { Mail, Server, Key, TestTube } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -37,7 +37,9 @@ const emailServerSchema = z.object({
 type EmailServerFormValues = z.infer<typeof emailServerSchema>;
 
 export default function EmailServerSettings() {
-  const { settings, isLoading, updateSettings } = useEmailServerSettings();
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const { settings, isLoading, updateSettings, testConnection } = useEmailServerSettings();
+
   const form = useForm<EmailServerFormValues>({
     resolver: zodResolver(emailServerSchema),
     defaultValues: {
@@ -59,6 +61,28 @@ export default function EmailServerSettings() {
       sender_email: data.senderEmail,
       sender_name: data.senderName
     });
+  };
+
+  const handleTestConnection = async () => {
+    try {
+      setIsTestingConnection(true);
+      const success = await testConnection();
+      if (success) {
+        toast({
+          title: "Conexão bem sucedida",
+          description: "O servidor de email está configurado corretamente.",
+          variant: "default"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao testar conexão",
+        description: "Não foi possível conectar ao servidor de email. Verifique as configurações.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTestingConnection(false);
+    }
   };
 
   return (
@@ -167,9 +191,21 @@ export default function EmailServerSettings() {
               />
             </div>
 
-            <Button type="submit" className="w-full">
-              Salvar Configurações
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button type="submit" className="flex-1">
+                Salvar Configurações
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleTestConnection}
+                disabled={isTestingConnection}
+                className="flex items-center gap-2"
+              >
+                <TestTube className="h-4 w-4" />
+                {isTestingConnection ? "Testando..." : "Testar Conexão"}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

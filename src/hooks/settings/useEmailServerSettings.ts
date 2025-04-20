@@ -55,9 +55,22 @@ export function useEmailServerSettings() {
     }
   });
 
+  const testConnection = async () => {
+    const { error } = await supabase.functions.invoke('test-email-connection', {
+      body: { settings }
+    });
+
+    if (error) {
+      throw new Error('Failed to test email connection');
+    }
+
+    return true;
+  };
+
   return {
     settings,
     isLoading,
-    updateSettings
+    updateSettings,
+    testConnection
   };
 }
