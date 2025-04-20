@@ -51,7 +51,15 @@ export function RouteGuard({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Verificar acesso à empresa - baseado nas associações configuradas na página de usuários
+  // Para rotas como /empresas que requerem apenas view_companies mas não uma empresa específica
+  // Verificamos se o usuário tem acesso a pelo menos uma empresa
+  if (!requireCompanyAccess && location.pathname === '/empresas' && userCompanies.length === 0 && userRole !== 'superadmin') {
+    console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada');
+    toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Verificar acesso à empresa específica se necessário
   if (requireCompanyAccess && !hasAccess) {
     console.error(`[RouteGuard] Acesso à empresa negado: ${requireCompanyAccess} não está associada ao usuário`);
     toast.error('Acesso negado: Você não tem acesso à empresa solicitada');

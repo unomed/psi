@@ -15,8 +15,8 @@ export function useCompanyAccess(requiredCompanyId?: string) {
       console.log('[useCompanyAccess] Perfil do usuário:', userRole);
       console.log('[useCompanyAccess] Empresas do usuário:', userCompanies);
       
-      if (!user || !requiredCompanyId) {
-        console.log('[useCompanyAccess] Sem usuário ou ID de empresa, acesso negado');
+      if (!user) {
+        console.log('[useCompanyAccess] Sem usuário, acesso negado');
         setHasAccess(false);
         setCheckingAccess(false);
         return;
@@ -31,23 +31,39 @@ export function useCompanyAccess(requiredCompanyId?: string) {
           return;
         }
 
-        // Verificação EXCLUSIVAMENTE baseada nas empresas associadas na página de usuários
-        if (userCompanies && userCompanies.length > 0) {
-          const companyIds = userCompanies.map(company => company.companyId);
-          const hasCompanyAccess = companyIds.includes(requiredCompanyId);
+        // Se uma empresa específica é requerida, verificar se o usuário tem acesso a ela
+        if (requiredCompanyId) {
+          // Verificação EXCLUSIVAMENTE baseada nas empresas associadas na página de usuários
+          if (userCompanies && userCompanies.length > 0) {
+            const companyIds = userCompanies.map(company => company.companyId);
+            const hasCompanyAccess = companyIds.includes(requiredCompanyId);
+            
+            console.log('[useCompanyAccess] Acesso baseado nas empresas associadas:', hasCompanyAccess);
+            console.log('[useCompanyAccess] IDs das empresas do usuário:', companyIds);
+            console.log('[useCompanyAccess] Empresa requisitada:', requiredCompanyId);
+            
+            setHasAccess(hasCompanyAccess);
+            setCheckingAccess(false);
+            return;
+          }
           
-          console.log('[useCompanyAccess] Acesso baseado nas empresas associadas:', hasCompanyAccess);
-          console.log('[useCompanyAccess] IDs das empresas do usuário:', companyIds);
-          console.log('[useCompanyAccess] Empresa requisitada:', requiredCompanyId);
-          
-          setHasAccess(hasCompanyAccess);
+          // Se não houver empresas associadas e uma empresa específica é requerida, não tem acesso
+          console.log('[useCompanyAccess] Nenhuma empresa associada ao usuário, acesso negado');
+          setHasAccess(false);
           setCheckingAccess(false);
           return;
+        } 
+        
+        // Caso não haja uma empresa específica requerida, verificar se tem alguma empresa associada
+        // Este é o caso para páginas como "/empresas" que apenas exigem acesso a qualquer empresa
+        if (userCompanies && userCompanies.length > 0) {
+          console.log('[useCompanyAccess] Usuário tem acesso a alguma empresa, concedendo acesso');
+          setHasAccess(true);
+        } else {
+          console.log('[useCompanyAccess] Usuário não tem acesso a nenhuma empresa, acesso negado');
+          setHasAccess(false);
         }
         
-        // Se não houver empresas associadas, não tem acesso
-        console.log('[useCompanyAccess] Nenhuma empresa associada ao usuário, acesso negado');
-        setHasAccess(false);
         setCheckingAccess(false);
       } catch (error) {
         console.error('[useCompanyAccess] Erro verificando acesso à empresa:', error);
