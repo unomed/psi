@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -14,6 +13,7 @@ export async function generateAssessmentLink(
       .eq('employee_id', employeeId)
       .eq('template_id', templateId)
       .is('used_at', null)
+      .gt('expires_at', new Date().toISOString())
       .maybeSingle();
 
     if (existingLink?.token) {
@@ -77,7 +77,6 @@ export async function updateAssessmentStatus(
   }
 }
 
-// New function to check link validity
 export async function checkLinkValidity(token: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
@@ -97,7 +96,6 @@ export async function checkLinkValidity(token: string): Promise<boolean> {
   }
 }
 
-// New function to mark link as used
 export async function markLinkAsUsed(token: string): Promise<void> {
   try {
     const { error } = await supabase

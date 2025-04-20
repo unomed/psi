@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,6 +17,7 @@ import {
   DialogClose
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { generateAssessmentLink } from "@/services/assessment/links";
 
 interface ScheduledAssessmentsListProps {
   assessments: ScheduledAssessment[];
@@ -52,16 +54,23 @@ export function ScheduledAssessmentsList({
   };
 
   const handleConfirmShare = async () => {
-    if (!selectedAssessment || !onShareAssessment) return;
+    if (!selectedAssessment || !selectedAssessment.employeeId || !selectedAssessment.templateId) return;
     
     try {
       setIsGenerating(true);
-      await onShareAssessment(selectedAssessment.id);
-      const updatedAssessment = assessments.find(a => a.id === selectedAssessment.id);
-      if (updatedAssessment?.linkUrl) {
-        setGeneratedLink(updatedAssessment.linkUrl);
+      const link = await generateAssessmentLink(
+        selectedAssessment.employeeId,
+        selectedAssessment.templateId
+      );
+      
+      if (link) {
+        setGeneratedLink(link);
+        
+        // Update the assessment's link URL (optional, depends on your requirements)
+        await onShareAssessment?.(selectedAssessment.id);
+        
+        toast.success("Link gerado com sucesso!");
       }
-      toast.success("Link gerado com sucesso!");
     } catch (error) {
       console.error("Erro ao gerar link de avaliação:", error);
       toast.error("Erro ao gerar link de avaliação");
@@ -166,7 +175,9 @@ export function ScheduledAssessmentsList({
           <DialogHeader>
             <DialogTitle>Gerar Link de Avaliação</DialogTitle>
             <DialogDescription>
-              {generatedLink ? 'Link de avaliação gerado com sucesso.' : 'Confirme os dados do funcionário e gere o link de avaliação.'}
+              {generatedLink 
+                ? 'Link de avaliação gerado com sucesso.' 
+                : 'Confirme os dados do funcionário e gere o link de avaliação.'}
             </DialogDescription>
           </DialogHeader>
           
@@ -212,7 +223,7 @@ export function ScheduledAssessmentsList({
               <Button
                 onClick={handleConfirmShare}
                 className="w-full"
-                disabled={isGenerating}
+                disabled={isGenerating || type === "completed"}
               >
                 {isGenerating ? "Gerando..." : "Gerar Link"}
               </Button>
