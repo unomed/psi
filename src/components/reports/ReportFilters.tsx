@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateRange } from "react-day-picker";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Dispatch, SetStateAction } from "react";
+import { CompanyAccess } from "@/hooks/useUserRole";
 
 interface ReportFiltersProps {
   dateRange: DateRange;
@@ -13,6 +14,10 @@ interface ReportFiltersProps {
   setSelectedSector: (sector: string) => void;
   selectedRole: string;
   setSelectedRole: (role: string) => void;
+  selectedCompany?: string | null;
+  onCompanyChange?: (value: string) => void;
+  userCompanies?: CompanyAccess[];
+  userRole?: string | null;
 }
 
 export function ReportFilters({
@@ -21,7 +26,11 @@ export function ReportFilters({
   selectedSector,
   setSelectedSector,
   selectedRole,
-  setSelectedRole
+  setSelectedRole,
+  selectedCompany,
+  onCompanyChange,
+  userCompanies = [],
+  userRole
 }: ReportFiltersProps) {
   // Mock data - em uma aplicação real, isso viria de uma API
   const sectors = [
@@ -45,7 +54,29 @@ export function ReportFilters({
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Seletor de Empresa (apenas se o usuário tiver empresas associadas) */}
+          {onCompanyChange && userCompanies && userCompanies.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="company">Empresa</Label>
+              <Select 
+                value={selectedCompany || ""} 
+                onValueChange={onCompanyChange}
+              >
+                <SelectTrigger id="company">
+                  <SelectValue placeholder="Selecione uma empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {userCompanies.map(company => (
+                    <SelectItem key={company.companyId} value={company.companyId}>
+                      {company.companyName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
           <div className="space-y-2">
             <Label htmlFor="date-range">Período</Label>
             <DatePickerWithRange 

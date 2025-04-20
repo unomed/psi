@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportFilters } from "@/components/reports/ReportFilters";
@@ -10,6 +10,9 @@ import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { FileText, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "react-day-picker";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { toast } from "sonner";
 
 export default function Relatorios() {
   const [dateRange, setDateRange] = useState<DateRange>({ 
@@ -18,6 +21,45 @@ export default function Relatorios() {
   });
   const [selectedSector, setSelectedSector] = useState<string>('all');
   const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
+    const saved = localStorage.getItem('selectedCompany');
+    return saved || null;
+  });
+  
+  const { userRole, userCompanies } = useAuth();
+  const { verifyCompanyAccess } = useCompanyAccessCheck();
+  
+  // Verificar se o usuário tem acesso à empresa selecionada
+  useEffect(() => {
+    const checkCompanyAccess = async () => {
+      if (!selectedCompany) return;
+      
+      // Superadmin tem acesso a todas as empresas
+      if (userRole === 'superadmin') return;
+      
+      const hasAccess = await verifyCompanyAccess(selectedCompany);
+      if (!hasAccess) {
+        toast.error('Você não tem acesso à empresa selecionada');
+        
+        // Se o usuário tem pelo menos uma empresa associada, selecionar a primeira
+        if (userCompanies.length > 0) {
+          const firstCompany = userCompanies[0].companyId;
+          setSelectedCompany(firstCompany);
+          localStorage.setItem('selectedCompany', firstCompany);
+        } else {
+          setSelectedCompany(null);
+          localStorage.removeItem('selectedCompany');
+        }
+      }
+    };
+    
+    checkCompanyAccess();
+  }, [selectedCompany, userRole, userCompanies, verifyCompanyAccess]);
+  
+  const handleCompanyChange = (value: string) => {
+    setSelectedCompany(value);
+    localStorage.setItem('selectedCompany', value);
+  };
   
   const handleExportPDF = () => {
     // Seria implementado com uma biblioteca como jsPDF
@@ -57,6 +99,10 @@ export default function Relatorios() {
         setSelectedSector={setSelectedSector}
         selectedRole={selectedRole}
         setSelectedRole={setSelectedRole}
+        selectedCompany={selectedCompany}
+        onCompanyChange={handleCompanyChange}
+        userCompanies={userCompanies}
+        userRole={userRole}
       />
       
       <Tabs defaultValue="overview" className="w-full">
@@ -69,8 +115,8 @@ export default function Relatorios() {
         
         <TabsContent value="overview" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={{dateRange, selectedSector, selectedRole}} />
-            <SectorRiskFactors filters={{dateRange, selectedSector, selectedRole}} />
+            <RiskLevelDistribution filters={{dateRange, selectedSector, selectedRole, selectedCompany}} />
+            <SectorRiskFactors filters={{dateRange, selectedSector, selectedRole, selectedCompany}} />
           </div>
           
           <Card>
@@ -99,15 +145,22 @@ export default function Relatorios() {
         </TabsContent>
         
         <TabsContent value="sectors" className="space-y-6 mt-6">
-          <SectorRiskFactors filters={{dateRange, selectedSector, selectedRole}} fullWidth />
+          <SectorRiskFactors 
+            filters={{dateRange, selectedSector, selectedRole, selectedCompany}} 
+            fullWidth 
+          />
         </TabsContent>
         
         <TabsContent value="roles" className="space-y-6 mt-6">
-          <RoleRiskComparison filters={{dateRange, selectedSector, selectedRole}} />
+          <RoleRiskComparison 
+            filters={{dateRange, selectedSector, selectedRole, selectedCompany}} 
+          />
         </TabsContent>
         
         <TabsContent value="individual" className="space-y-6 mt-6">
-          <IndividualReports filters={{dateRange, selectedSector, selectedRole}} />
+          <IndividualReports 
+            filters={{dateRange, selectedSector, selectedRole, selectedCompany}} 
+          />
         </TabsContent>
       </Tabs>
     </div>

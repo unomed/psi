@@ -7,6 +7,7 @@ export function useCompanyAccess(requiredCompanyId?: string) {
   const { user, userRole, userCompanies } = useAuth();
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const checkCompanyAccess = async () => {
@@ -18,6 +19,7 @@ export function useCompanyAccess(requiredCompanyId?: string) {
         console.log('[useCompanyAccess] Usuário não autenticado, acesso negado');
         setHasAccess(false);
         setCheckingAccess(false);
+        setErrorMessage('Usuário não autenticado');
         return;
       }
 
@@ -27,6 +29,7 @@ export function useCompanyAccess(requiredCompanyId?: string) {
           console.log('[useCompanyAccess] Usuário é superadmin, concedendo acesso');
           setHasAccess(true);
           setCheckingAccess(false);
+          setErrorMessage(null);
           return;
         }
 
@@ -41,17 +44,29 @@ export function useCompanyAccess(requiredCompanyId?: string) {
           console.log('[useCompanyAccess] Empresa requisitada:', requiredCompanyId);
           
           setHasAccess(hasCompanyAccess);
+          
+          if (!hasCompanyAccess) {
+            setErrorMessage('Usuário não tem acesso à empresa solicitada');
+          } else {
+            setErrorMessage(null);
+          }
         } else {
           // Se nenhuma empresa específica é requerida, verificar se o usuário tem alguma associação
           const hasAnyCompany = userCompanies.length > 0;
           console.log('[useCompanyAccess] Usuário tem acesso a alguma empresa:', hasAnyCompany);
           setHasAccess(hasAnyCompany);
+          
+          if (!hasAnyCompany) {
+            setErrorMessage('Usuário não tem acesso a nenhuma empresa');
+          } else {
+            setErrorMessage(null);
+          }
         }
         
         setCheckingAccess(false);
       } catch (error) {
         console.error('[useCompanyAccess] Erro verificando acesso à empresa:', error);
-        toast.error('Erro ao verificar acesso à empresa');
+        setErrorMessage('Erro ao verificar acesso à empresa');
         setHasAccess(false);
         setCheckingAccess(false);
       }
@@ -60,5 +75,5 @@ export function useCompanyAccess(requiredCompanyId?: string) {
     checkCompanyAccess();
   }, [user, userRole, requiredCompanyId, userCompanies]);
 
-  return { hasAccess, checkingAccess };
+  return { hasAccess, checkingAccess, errorMessage };
 }

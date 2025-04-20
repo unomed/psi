@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,12 +15,15 @@ interface IndividualReportsProps {
     dateRange: DateRange;
     selectedSector: string;
     selectedRole: string;
+    selectedCompany?: string | null;
   };
 }
 
 export function IndividualReports({ filters }: IndividualReportsProps) {
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  
+  console.log('Filtros aplicados nos relatórios individuais:', filters);
 
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
   const reports = [

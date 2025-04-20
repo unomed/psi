@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,9 +8,12 @@ export function useCompanyAccessCheck() {
   const { user, userRole, userCompanies } = useAuth();
   const [checkingAccess, setCheckingAccess] = useState(false);
 
-  // Verify if a user can access a specific company
+  // Verificar se um usuário pode acessar uma empresa específica
   const verifyCompanyAccess = async (companyId: string): Promise<boolean> => {
-    if (!user) return false;
+    if (!user) {
+      console.log('[useCompanyAccessCheck] Usuário não autenticado, acesso negado');
+      return false;
+    }
     
     setCheckingAccess(true);
     
@@ -19,14 +22,14 @@ export function useCompanyAccessCheck() {
       console.log('[useCompanyAccessCheck] Perfil do usuário:', userRole);
       console.log('[useCompanyAccessCheck] Empresas do usuário:', userCompanies);
       
-      // Superadmin has access to all companies
+      // Superadmin tem acesso a todas as empresas
       if (userRole === 'superadmin') {
         console.log('[useCompanyAccessCheck] Usuário é superadmin, acesso concedido');
         setCheckingAccess(false);
         return true;
       }
       
-      // For other roles, check user_companies table
+      // Para outros perfis, verificar as empresas associadas ao usuário
       const companyIds = userCompanies.map(company => company.companyId);
       const hasAccess = companyIds.includes(companyId);
       
@@ -43,11 +46,14 @@ export function useCompanyAccessCheck() {
     }
   };
 
-  // Filter resources based on company access - FORÇAR FILTRAGEM ESTRITA
+  // Filtrar recursos baseado no acesso à empresa - com filtragem estrita
   const filterResourcesByCompany = <T extends { company_id?: string }>(
     resources: T[]
   ): T[] => {
-    if (!user) return [];
+    if (!user) {
+      console.log('[useCompanyAccessCheck] Usuário não autenticado, retornando lista vazia');
+      return [];
+    }
     
     // APENAS superadmin deve ter acesso a todos os recursos
     if (userRole === 'superadmin') {
@@ -88,9 +94,36 @@ export function useCompanyAccessCheck() {
     return filteredResources;
   };
 
+  // Verificar se o usuário tem pelo menos uma empresa associada
+  const hasAnyCompanyAccess = (): boolean => {
+    if (!user) return false;
+    
+    // Superadmin tem acesso a todas as empresas
+    if (userRole === 'superadmin') return true;
+    
+    // Para outros perfis, verificar se tem pelo menos uma empresa associada
+    return userCompanies.length > 0;
+  };
+
+  // Obter a primeira empresa acessível pelo usuário
+  const getFirstAccessibleCompany = (): string | null => {
+    if (!user) return null;
+    
+    // Se for superadmin e não tiver empresas, buscar todas as empresas
+    if (userRole === 'superadmin' && userCompanies.length === 0) {
+      // Aqui você pode implementar uma busca de todas as empresas
+      return null;
+    }
+    
+    // Para outros casos, retornar a primeira empresa do usuário
+    return userCompanies.length > 0 ? userCompanies[0].companyId : null;
+  };
+
   return {
     verifyCompanyAccess,
     filterResourcesByCompany,
+    hasAnyCompanyAccess,
+    getFirstAccessibleCompany,
     checkingAccess
   };
 }
