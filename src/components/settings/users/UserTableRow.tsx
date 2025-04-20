@@ -5,6 +5,7 @@ import { Pencil, Trash2, Check, X } from "lucide-react";
 import { User } from "@/hooks/users/types";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface UserTableRowProps {
   user: User;
@@ -59,11 +60,17 @@ export function UserTableRow({ user, onEdit, onDelete, onToggleActive }: UserTab
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Switch
-                checked={user.is_active}
-                onCheckedChange={() => onToggleActive(user)}
-                aria-label="Toggle user active status"
-              />
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={user.is_active}
+                  onCheckedChange={() => onToggleActive(user)}
+                  aria-label="Toggle user active status"
+                  className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-300"
+                />
+                <Badge variant={user.is_active ? "success" : "destructive"} className="px-2 py-0.5">
+                  {user.is_active ? 'Ativo' : 'Inativo'}
+                </Badge>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               {user.is_active 
