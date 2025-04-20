@@ -1,6 +1,7 @@
 
 import React from "react";
 import { useCompanies } from "@/hooks/useCompanies";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Select,
   SelectContent,
@@ -20,7 +21,16 @@ export function CompanySelector({
   selectedCompany,
   onCompanyChange,
 }: CompanySelectorProps) {
-  const { companies, isLoading } = useCompanies();
+  const { userRole, userCompanies } = useAuth();
+  const { companies: allCompanies, isLoading } = useCompanies();
+
+  // Se o usuário for superadmin, mostrar todas as empresas
+  // Caso contrário, mostrar apenas as empresas associadas ao usuário
+  const availableCompanies = userRole === 'superadmin' 
+    ? allCompanies 
+    : allCompanies.filter(company => 
+        userCompanies.some(userCompany => userCompany.companyId === company.id)
+      );
   
   if (isLoading) {
     return (
@@ -42,7 +52,7 @@ export function CompanySelector({
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
-          {companies.map((company) => (
+          {availableCompanies.map((company) => (
             <SelectItem key={company.id} value={company.id}>
               {company.name}
             </SelectItem>
