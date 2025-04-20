@@ -6,4 +6,5 @@ export * from './checklist';
 export * from './assessment';
 export * from './auth';
 export * from './permissions';
+export * from './settings';
 

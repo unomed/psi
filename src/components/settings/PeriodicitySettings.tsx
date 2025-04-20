@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePeriodicityConfiguration } from "@/hooks/settings/usePeriodicityConfiguration";
 import { PeriodicityForm, FormValues } from "./periodicity/PeriodicityForm";
 import { PeriodicityLoading } from "./periodicity/PeriodicityLoading";
+import { PeriodicityType } from "@/types/settings";
 
 export default function PeriodicitySettings() {
   const { settings, isLoading, updateSettings } = usePeriodicityConfiguration();
@@ -21,7 +22,7 @@ export default function PeriodicitySettings() {
     return <PeriodicityLoading />;
   }
 
-  const defaultValues = {
+  const defaultValues: FormValues = {
     defaultPeriodicity: settings?.default_periodicity ?? "annual",
     riskHighPeriodicity: settings?.risk_high_periodicity ?? "quarterly",
     riskMediumPeriodicity: settings?.risk_medium_periodicity ?? "semiannual",

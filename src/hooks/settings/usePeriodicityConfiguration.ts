@@ -2,15 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-export type PeriodicityType = "monthly" | "quarterly" | "semiannual" | "annual";
-
-interface PeriodicitySettings {
-  default_periodicity: PeriodicityType;
-  risk_high_periodicity: PeriodicityType;
-  risk_medium_periodicity: PeriodicityType;
-  risk_low_periodicity: PeriodicityType;
-}
+import { PeriodicityType, PeriodicitySettings } from "@/types/settings";
 
 export function usePeriodicityConfiguration() {
   const queryClient = useQueryClient();

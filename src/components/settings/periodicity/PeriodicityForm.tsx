@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PeriodicityType } from "@/hooks/settings/usePeriodicityConfiguration";
+import { PeriodicityType } from "@/types/settings";
 
 interface PeriodicityFormProps {
   defaultValues: FormValues;
