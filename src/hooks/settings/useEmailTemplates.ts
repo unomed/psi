@@ -23,12 +23,13 @@ export function useEmailTemplates() {
       }
 
       // Transform the data to ensure it matches EmailTemplate interface
+      // The database doesn't have a description field, so we add an empty string as default
       return data.map(template => ({
         id: template.id,
         name: template.name,
         subject: template.subject,
         body: template.body,
-        description: template.description || '' // Add description field
+        description: '' // Add default empty description since it's not in the database schema
       }));
     }
   });
@@ -71,12 +72,13 @@ export function useEmailTemplates() {
           name: template.name,
           subject: template.subject,
           body: template.body,
-          description: template.description || '',
+          // We don't include description in the database insert since it doesn't exist in the schema
           created_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      return { ...template, id };
+      // Return complete template with description for client-side use
+      return { ...template, id, description: template.description || '' };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emailTemplates'] });
@@ -95,4 +97,3 @@ export function useEmailTemplates() {
     createTemplate
   };
 }
-
