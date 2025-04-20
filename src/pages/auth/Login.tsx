@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import AuthLayout from '@/components/layout/AuthLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email("Digite um email válido"),
@@ -21,6 +22,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function Login() {
   const { signIn, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -32,8 +34,22 @@ export default function Login() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
-    await signIn(data.email, data.password);
-    setIsLoading(false);
+    setLoginError(null);
+    
+    try {
+      await signIn(data.email, data.password);
+      toast.success("Login realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro no login:", error);
+      if (error instanceof Error) {
+        setLoginError(error.message);
+      } else {
+        setLoginError("Erro ao realizar login. Verifique suas credenciais.");
+      }
+      toast.error(loginError || "Erro ao fazer login");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   // Helper function to set test credentials
@@ -85,6 +101,13 @@ export default function Login() {
               </FormItem>
             )}
           />
+          
+          {loginError && (
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+              {loginError}
+            </div>
+          )}
+          
           <Button type="submit" className="w-full" disabled={isLoading || loading}>
             {isLoading ? (
               <>

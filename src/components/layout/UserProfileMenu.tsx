@@ -1,9 +1,7 @@
 
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, UserRound } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,61 +11,73 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LogOut, Settings, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export function UserProfileMenu() {
-  const { user, signOut, userRole } = useAuth();
-  
+  const { user, signOut, userRole, userCompanies } = useAuth();
+
   if (!user) return null;
+
+  // Extract first letter of email for avatar
+  const emailFirstLetter = user.email ? user.email[0].toUpperCase() : "U";
   
-  // Get initials from email or name
-  const getInitials = () => {
-    const email = user.email || '';
-    return email.substring(0, 2).toUpperCase();
-  };
+  // Get user display name from either full_name (from profile) or email
+  const userDisplayName = user.user_metadata?.full_name || user.email || 'Usuário';
 
-  // Get role display text and color
-  const getRoleDisplay = () => {
-    if (!userRole) return { text: 'Usuário', variant: 'outline' };
-    
-    switch(userRole) {
-      case 'superadmin':
-        return { text: 'Super Admin', variant: 'destructive' };
-      case 'admin':
-        return { text: 'Admin', variant: 'default' };
-      case 'evaluator':
-        return { text: 'Avaliador', variant: 'secondary' };
-      default:
-        return { text: 'Usuário', variant: 'outline' };
-    }
-  };
-
-  const roleDisplay = getRoleDisplay();
+  // Format role for display
+  const displayRole = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'Usuário';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar>
-            <AvatarFallback>{getInitials()}</AvatarFallback>
+            <AvatarImage src="" alt={userDisplayName} />
+            <AvatarFallback>{emailFirstLetter}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel>
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{userDisplayName}</p>
+            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            <Badge variant="outline" className="mt-2 w-fit">
+              {displayRole}
+            </Badge>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        {userCompanies && userCompanies.length > 0 && (
+          <>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Empresas com acesso:
+            </DropdownMenuLabel>
+            <div className="max-h-32 overflow-y-auto px-2 py-1">
+              {userCompanies.map((company) => (
+                <div key={company.companyId} className="text-xs py-1">
+                  {company.companyName}
+                </div>
+              ))}
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <UserRound className="mr-2 h-4 w-4" />
-            <div className="flex flex-col">
-              <span className="text-sm">{user.email}</span>
-              <Badge variant={roleDisplay.variant as any} className="mt-1 w-fit">
-                {roleDisplay.text}
-              </Badge>
-            </div>
+            <User className="mr-2 h-4 w-4" />
+            <span>Perfil</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Configurações</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOut}>
+        <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
         </DropdownMenuItem>

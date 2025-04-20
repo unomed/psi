@@ -5,6 +5,7 @@ import { useCheckPermission } from '@/hooks/useCheckPermission';
 import { useCompanyAccess } from '@/hooks/useCompanyAccess';
 import { RoleCheck } from './RoleCheck';
 import { LoadingSpinner } from './LoadingSpinner';
+import { toast } from 'sonner';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export function RouteGuard({
   requirePermission, 
   requireCompanyAccess 
 }: RouteGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, userRole } = useAuth();
   const { hasPermission, loadingPermission } = useCheckPermission();
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
@@ -36,13 +37,18 @@ export function RouteGuard({
 
   // Check permission
   if (requirePermission && !hasPermission(requirePermission)) {
-    return <Navigate to="/" replace />;
+    toast.error(`Acesso negado: Você não tem permissão para acessar esta funcionalidade`);
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Check company access
   if (requireCompanyAccess && !hasAccess) {
-    return <Navigate to="/" replace />;
+    toast.error(`Acesso negado: Você não tem acesso a esta empresa`);
+    return <Navigate to="/dashboard" replace />;
   }
+
+  // Show role information in console for debugging
+  console.log(`User role: ${userRole}, Required permission: ${requirePermission}, Has permission: ${requirePermission ? hasPermission(requirePermission) : 'No permission required'}`);
 
   // Check role-based access
   return (
