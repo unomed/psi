@@ -1,6 +1,16 @@
+
 export type RoleType = "admin" | "employee" | "superadmin";
 
+// Define RecurrenceType as an enum and string type for compatibility
 export type RecurrenceType = "none" | "monthly" | "semiannual" | "annual";
+export enum RecurrenceType {
+  None = "none",
+  Monthly = "monthly",
+  Semiannual = "semiannual",
+  Annual = "annual"
+}
+
+// Scale type definitions
 export enum ScaleType {
   Likert = "likert",
   Frequency = "frequency",
@@ -29,6 +39,7 @@ export function scaleTypeToDbScaleType(scaleType: ScaleType): string {
   }
 }
 
+// DISC types
 export enum DiscFactorType {
   D = "D",
   I = "I",
@@ -36,9 +47,8 @@ export enum DiscFactorType {
   C = "C",
 }
 
-export enum RecurrenceType {
-  None = "none",
-  Monthly = "monthly",
-  Semiannual = "semiannual",
-  Annual = "annual"
-}
+// Export all types from subdirectories to make them available through @/types
+export * from './assessment';
+export * from './checklist';
+export * from './disc';
+export * from './scale';

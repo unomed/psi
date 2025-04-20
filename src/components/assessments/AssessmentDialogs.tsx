@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
 import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
-import { ChecklistResult, ChecklistTemplate } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate } from "@/types";
 
 interface AssessmentDialogsProps {
   isAssessmentDialogOpen: boolean;
@@ -45,7 +45,7 @@ export function AssessmentDialogs({
               template={selectedTemplate}
               onSubmit={(resultData) => onSubmitAssessment({
                 ...resultData,
-                employeeName: employeeName
+                employeeName
               })}
               onCancel={onAssessmentDialogClose}
             />
