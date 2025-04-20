@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -31,8 +30,7 @@ export default function EmailTemplateSettings() {
   };
 
   const handleCreateTemplate = () => {
-    toast({
-      title: "Função em desenvolvimento",
+    toast("Função em desenvolvimento", {
       description: "A criação de novos modelos estará disponível em breve.",
     });
   };
@@ -79,7 +77,10 @@ export default function EmailTemplateSettings() {
           {templates.map((template) => (
             <TabsContent key={template.id} value={template.id}>
               <EmailTemplateForm
-                template={template}
+                template={{
+                  ...template,
+                  description: template.description || ''
+                }}
                 onSubmit={handleSubmit}
               />
             </TabsContent>

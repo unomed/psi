@@ -4,5 +4,5 @@ export interface EmailTemplate {
   name: string;
   subject: string;
   body: string;
-  description: string;
+  description?: string; // Make description optional
 }

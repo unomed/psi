@@ -21,7 +21,11 @@ export function useEmailTemplates() {
         return [];
       }
 
-      return data;
+      // Transform the data to ensure it matches EmailTemplate interface
+      return data.map(template => ({
+        ...template,
+        description: template.description || '' // Add default empty description if missing
+      }));
     }
   });
 
