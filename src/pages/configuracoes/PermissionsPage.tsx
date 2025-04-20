@@ -22,10 +22,10 @@ export default function PermissionsPage() {
     { id: "delete_companies", name: "Excluir Empresas", description: "Permissão para excluir empresas", section: "Empresas" },
     
     // Employees
-    { id: "view_employees", name: "Visualizar Funcionários", description: "Acesso à listagem de funcionários", section: "Funcionários" },
-    { id: "create_employees", name: "Criar Funcionários", description: "Permissão para cadastrar novos funcionários", section: "Funcionários" },
-    { id: "edit_employees", name: "Editar Funcionários", description: "Permissão para editar funcionários existentes", section: "Funcionários" },
-    { id: "delete_employees", name: "Excluir Funcionários", description: "Permissão para excluir funcionários", section: "Funcionários" },
+    { id: "view_employees", name: "Visualizar Profissionais", description: "Acesso à listagem de profissionais", section: "Profissionais" },
+    { id: "create_employees", name: "Cadastrar Profissionais", description: "Permissão para cadastrar novos profissionais", section: "Profissionais" },
+    { id: "edit_employees", name: "Editar Profissionais", description: "Permissão para editar profissionais existentes", section: "Profissionais" },
+    { id: "delete_employees", name: "Excluir Profissionais", description: "Permissão para excluir profissionais", section: "Profissionais" },
     
     // Sectors
     { id: "view_sectors", name: "Visualizar Setores", description: "Acesso à listagem de setores", section: "Setores" },
