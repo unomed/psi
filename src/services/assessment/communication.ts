@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export async function generateAssessmentLink(assessmentId: string) {
+export async function generateAssessmentLinkFromId(assessmentId: string) {
   try {
     const { data: assessment, error: assessmentError } = await supabase
       .from('scheduled_assessments')
