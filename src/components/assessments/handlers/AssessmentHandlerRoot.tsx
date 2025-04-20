@@ -14,9 +14,10 @@ import { AssessmentDialogsContainer } from "@/components/assessments/handlers/As
 
 interface AssessmentHandlerRootProps {
   companyId: string | null;
+  onShareAssessment?: (assessment: any) => Promise<void>;
 }
 
-export function AssessmentHandlerRoot({ companyId }: AssessmentHandlerRootProps) {
+export function AssessmentHandlerRoot({ companyId, onShareAssessment }: AssessmentHandlerRootProps) {
   const {
     scheduledAssessments,
     handleSaveSchedule: saveSchedule,
@@ -66,11 +67,23 @@ export function AssessmentHandlerRoot({ companyId }: AssessmentHandlerRootProps)
     }
   };
 
+  // Custom share handler that uses the passed onShareAssessment if provided
+  const handleShareAssessment = async (assessmentId: string) => {
+    if (onShareAssessment) {
+      const assessment = scheduledAssessments.find(a => a.id === assessmentId);
+      if (assessment) {
+        await onShareAssessment(assessment);
+      }
+    } else {
+      handlers.handleShareAssessment(assessmentId);
+    }
+  };
+
   return (
     <AssessmentErrorBoundary>
       <div className="space-y-8">
         <AssessmentActions onNewAssessment={handlers.handleNewAssessment} />
-        <AssessmentTabs companyId={companyId} />
+        <AssessmentTabs companyId={companyId} onShareAssessment={handleShareAssessment} />
         <AssessmentDialogsContainer
           dialogState={dialogState}
           handlers={handlers}
