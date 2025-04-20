@@ -1,4 +1,3 @@
-
 import { AssessmentSelectionTab } from "../../scheduling/AssessmentSelectionTab";
 import { AssessmentDateSection } from "./AssessmentDateSection";
 import { AssessmentPeriodicitySection } from "./AssessmentPeriodicitySection";

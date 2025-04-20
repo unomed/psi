@@ -1,4 +1,3 @@
-
 /**
  * Utilities for date handling and validation
  */
@@ -97,4 +96,18 @@ export const validateAssessmentDate = (date: Date | undefined): string | null =>
   }
   
   return null;
+};
+
+/**
+ * Format a date object for display using the pt-BR locale
+ */
+export const formatDateForDisplay = (date: Date | undefined): string => {
+  if (!date || !isValidDate(date)) {
+    return 'Data não selecionada';
+  }
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
 };

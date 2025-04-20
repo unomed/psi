@@ -7,12 +7,14 @@ interface AssessmentDateSectionProps {
   scheduledDate: Date | undefined;
   onDateSelect: (date: Date | undefined) => void;
   dateError: boolean;
+  errorMessage?: string;
 }
 
 export function AssessmentDateSection({
   scheduledDate,
   onDateSelect,
-  dateError
+  dateError,
+  errorMessage
 }: AssessmentDateSectionProps) {
   return (
     <div className="space-y-2">
@@ -31,7 +33,7 @@ export function AssessmentDateSection({
       />
       {dateError && (
         <p className="text-xs text-red-500">
-          Selecione uma data para a avaliação.
+          {errorMessage || "Selecione uma data para a avaliação."}
         </p>
       )}
       
@@ -48,3 +50,4 @@ export function AssessmentDateSection({
     </div>
   );
 }
+

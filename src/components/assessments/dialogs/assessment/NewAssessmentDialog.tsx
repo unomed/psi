@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { AssessmentDateSection } from "./AssessmentDateSection";
 import { AssessmentPeriodicitySection } from "./AssessmentPeriodicitySection";
 import { AssessmentDialogHeader } from "./AssessmentDialogHeader";
 import { AssessmentDialogFooter } from "./AssessmentDialogFooter";
+import { useDateHandling } from "@/hooks/assessments/operations/useDateHandling";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -33,21 +33,15 @@ export function NewAssessmentDialog({
   onTemplateSelect,
   onSave
 }: NewAssessmentDialogProps) {
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
+  const { 
+    scheduledDate, 
+    dateError, 
+    handleDateSelect, 
+    validateDate 
+  } = useDateHandling(new Date());
+  
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
-  const [dateError, setDateError] = useState<boolean>(false);
   const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
-  const [attemptedSave, setAttemptedSave] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      const today = createSafeDate(new Date());
-      console.log("Inicializando data com:", today, "Timestamp:", today.getTime());
-      setScheduledDate(today);
-      setDateError(false);
-      setAttemptedSave(false);
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     if (recurrenceType !== 'none' && !scheduledDate) {
@@ -58,24 +52,17 @@ export function NewAssessmentDialog({
   }, [recurrenceType, scheduledDate]);
 
   const handleSave = async () => {
-    setAttemptedSave(true);
-    
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de avaliação");
       return;
     }
 
-    if (!scheduledDate) {
-      setDateError(true);
-      toast.error("Selecione uma data para a avaliação");
+    if (!validateDate()) {
       return;
     }
 
-    const safeDate = createSafeDate(scheduledDate);
-    console.log("Salvando com data segura:", safeDate, "Timestamp:", safeDate.getTime());
-    
     try {
-      const saved = await onSave(safeDate);
+      const saved = await onSave(scheduledDate);
       if (saved) {
         onClose();
       }
@@ -96,7 +83,7 @@ export function NewAssessmentDialog({
             selectedTemplate={selectedTemplate}
             templates={templates}
             isTemplatesLoading={isTemplatesLoading}
-            onEmployeeSelect={onEmployeeSelect}
+            onEmployeeChange={onEmployeeSelect}
             onTemplateSelect={onTemplateSelect}
             onNext={handleSave}
           />
@@ -104,7 +91,7 @@ export function NewAssessmentDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <AssessmentDateSection
               scheduledDate={scheduledDate}
-              onDateSelect={setScheduledDate}
+              onDateSelect={handleDateSelect}
               dateError={dateError}
             />
 
