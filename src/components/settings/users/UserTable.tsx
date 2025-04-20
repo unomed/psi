@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserTableRow } from "./UserTableRow";
-import { User } from "@/hooks/useUsers";
+import { User } from "@/hooks/users/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface UserTableProps {

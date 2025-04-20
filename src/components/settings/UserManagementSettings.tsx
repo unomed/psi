@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUsers } from "@/hooks/useUsers";
+import { useUsers, User } from "@/hooks/users/useUsers";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserTable } from "./users/UserTable";
 import { UserHeader } from "./users/UserHeader";
@@ -15,7 +14,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { User } from "@/hooks/useUsers";
 import { toast } from "sonner";
 
 export default function UserManagementSettings() {

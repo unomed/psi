@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
-import { User } from "@/hooks/useUsers";
+import { User } from "@/hooks/users/types";
 
 interface UserTableRowProps {
   user: User;
