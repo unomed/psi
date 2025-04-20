@@ -22,7 +22,7 @@ export function useEmailServerSettings() {
       const { data, error } = await supabase
         .from('email_server_settings')
         .select('*')
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle() to handle no results
 
       if (error) {
         console.error('Error fetching email server settings:', error);
@@ -56,6 +56,11 @@ export function useEmailServerSettings() {
   });
 
   const testConnection = async () => {
+    // If there are no settings yet, return an error
+    if (!settings) {
+      throw new Error('Configurações de email não encontradas. Salve as configurações primeiro.');
+    }
+
     const { error } = await supabase.functions.invoke('test-email-connection', {
       body: { settings }
     });
