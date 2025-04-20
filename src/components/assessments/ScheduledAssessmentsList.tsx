@@ -1,9 +1,8 @@
-
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Calendar, Link, Mail, UserRound } from "lucide-react";
+import { Calendar, Link, Mail, UserRound, Copy, Share2 } from "lucide-react";
 import { ScheduledAssessment } from "@/types";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -13,8 +12,10 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogDescription,
-  DialogFooter
+  DialogFooter,
+  DialogClose
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface ScheduledAssessmentsListProps {
   assessments: ScheduledAssessment[];
@@ -29,6 +30,8 @@ export function ScheduledAssessmentsList({
 }: ScheduledAssessmentsListProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<ScheduledAssessment | null>(null);
+  const [generatedLink, setGeneratedLink] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   if (assessments.length === 0) {
     return (
@@ -40,13 +43,9 @@ export function ScheduledAssessmentsList({
     );
   }
 
-  const handleShareClick = async (assessmentId: string) => {
-    // Encontrar a avaliação selecionada
-    const assessment = assessments.find(a => a.id === assessmentId);
-    if (!assessment) return;
-
-    // Abrir o dialog com informações do funcionário
+  const handleShareClick = (assessment: ScheduledAssessment) => {
     setSelectedAssessment(assessment);
+    setGeneratedLink(assessment.linkUrl || "");
     setIsDialogOpen(true);
   };
 
@@ -54,12 +53,41 @@ export function ScheduledAssessmentsList({
     if (!selectedAssessment || !onShareAssessment) return;
     
     try {
+      setIsGenerating(true);
       await onShareAssessment(selectedAssessment.id);
-      setIsDialogOpen(false);
+      const updatedAssessment = assessments.find(a => a.id === selectedAssessment.id);
+      if (updatedAssessment?.linkUrl) {
+        setGeneratedLink(updatedAssessment.linkUrl);
+      }
+      toast.success("Link gerado com sucesso!");
     } catch (error) {
-      console.error("Erro ao compartilhar avaliação:", error);
+      console.error("Erro ao gerar link de avaliação:", error);
       toast.error("Erro ao gerar link de avaliação");
+    } finally {
+      setIsGenerating(false);
     }
+  };
+
+  const handleCopyLink = () => {
+    if (!generatedLink) return;
+    
+    navigator.clipboard.writeText(generatedLink);
+    toast.success("Link copiado para a área de transferência!");
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!generatedLink || !selectedAssessment) return;
+    
+    const message = `Olá ${selectedAssessment.employees?.name}, aqui está o link para sua avaliação: ${generatedLink}`;
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = selectedAssessment.phoneNumber?.replace(/\D/g, '');
+    
+    if (!phoneNumber) {
+      toast.error("Número de telefone não disponível");
+      return;
+    }
+    
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
 
   return (
@@ -111,7 +139,7 @@ export function ScheduledAssessmentsList({
                       variant="ghost"
                       size="icon"
                       title="Gerar link"
-                      onClick={() => handleShareClick(assessment.id)}
+                      onClick={() => handleShareClick(assessment)}
                       disabled={type === "completed" || !onShareAssessment || assessment.status === 'sent'}
                     >
                       <Link className="h-4 w-4" />
@@ -131,7 +159,6 @@ export function ScheduledAssessmentsList({
         </Table>
       </div>
 
-      {/* Dialog para mostrar informações do funcionário e confirmar geração de link */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -148,7 +175,7 @@ export function ScheduledAssessmentsList({
               </div>
               <div>
                 <h3 className="text-lg font-medium">
-                  {selectedAssessment?.employees?.name || "Funcionário não encontrado"}
+                  {selectedAssessment?.employees?.name}
                 </h3>
                 {selectedAssessment?.phoneNumber && (
                   <p className="text-sm text-muted-foreground">
@@ -160,7 +187,7 @@ export function ScheduledAssessmentsList({
             
             <div className="bg-muted p-3 rounded-md">
               <p className="text-sm">
-                <strong>Modelo:</strong> {selectedAssessment?.checklist_templates?.title || "Modelo não encontrado"}
+                <strong>Modelo:</strong> {selectedAssessment?.checklist_templates?.title}
               </p>
               <p className="text-sm">
                 <strong>Data:</strong> {selectedAssessment ? format(selectedAssessment.scheduledDate, "dd/MM/yyyy", { locale: ptBR }) : ""}
@@ -169,15 +196,45 @@ export function ScheduledAssessmentsList({
                 <strong>Status:</strong> {selectedAssessment?.status === 'scheduled' ? 'Agendado' : selectedAssessment?.status === 'sent' ? 'Enviado' : 'Concluído'}
               </p>
             </div>
+
+            {generatedLink ? (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Link gerado:</label>
+                <div className="flex space-x-2">
+                  <Input readOnly value={generatedLink} className="flex-1" />
+                  <Button size="icon" onClick={handleCopyLink}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {selectedAssessment?.phoneNumber && (
+                  <Button 
+                    onClick={handleShareWhatsApp}
+                    className="w-full mt-2"
+                    variant="secondary"
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    Compartilhar via WhatsApp
+                  </Button>
+                )}
+              </div>
+            ) : null}
           </div>
           
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleConfirmShare} disabled={!selectedAssessment || !onShareAssessment}>
-              Gerar Link
-            </Button>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <DialogClose asChild>
+              <Button variant="outline">
+                Cancelar
+              </Button>
+            </DialogClose>
+            {!generatedLink && (
+              <Button 
+                onClick={handleConfirmShare}
+                disabled={!selectedAssessment || !onShareAssessment || isGenerating}
+              >
+                {isGenerating ? "Gerando..." : "Gerar Link"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
