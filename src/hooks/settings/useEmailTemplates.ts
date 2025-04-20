@@ -22,9 +22,13 @@ export function useEmailTemplates() {
       }
 
       // Transform the data to ensure it matches EmailTemplate interface
+      // The database doesn't have a description field, so we add it
       return data.map(template => ({
-        ...template,
-        description: template.description || '' // Add default empty description if missing
+        id: template.id,
+        name: template.name,
+        subject: template.subject,
+        body: template.body,
+        description: '' // Add empty description since it's not in the database
       }));
     }
   });
