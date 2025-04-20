@@ -9,39 +9,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRiskBasedPeriodicity } from "@/hooks/assessments/operations/useRiskBasedPeriodicity";
+import { useEffect } from "react";
 
 interface AssessmentPeriodicitySectionProps {
   recurrenceType: RecurrenceType;
   onRecurrenceChange: (value: RecurrenceType) => void;
   showRecurrenceWarning: boolean;
-  employeeRiskLevel?: string;
-  suggestedPeriodicity?: string;
+  employeeId: string | null;
 }
 
 export function AssessmentPeriodicitySection({
   recurrenceType,
   onRecurrenceChange,
   showRecurrenceWarning,
-  employeeRiskLevel,
-  suggestedPeriodicity
+  employeeId
 }: AssessmentPeriodicitySectionProps) {
-  // Helper para converter string para RecurrenceType com segurança
-  const safeRecurrenceType = (value: string): RecurrenceType => {
-    // Verificar se o valor está entre os tipos válidos de RecurrenceType
-    if (['none', 'monthly', 'semiannual', 'annual'].includes(value)) {
-      return value as RecurrenceType;
+  const { suggestedPeriodicity, isLoading } = useRiskBasedPeriodicity(employeeId);
+
+  useEffect(() => {
+    if (suggestedPeriodicity && !recurrenceType) {
+      onRecurrenceChange(suggestedPeriodicity);
     }
-    // Valor padrão se não for válido
-    console.log("Valor de recorrência inválido detectado:", value, "usando 'none' como padrão");
-    return 'none';
-  };
+  }, [suggestedPeriodicity, recurrenceType, onRecurrenceChange]);
 
   const handleRecurrenceChange = (value: string) => {
-    console.log("AssessmentPeriodicitySection: Mudança de periodicidade:", value);
-    const safeValue = safeRecurrenceType(value);
-    console.log("AssessmentPeriodicitySection: Valor seguro de periodicidade:", safeValue);
-    onRecurrenceChange(safeValue);
+    onRecurrenceChange(value as RecurrenceType);
   };
+
+  if (isLoading) {
+    return <div>Carregando periodicidade sugerida...</div>;
+  }
 
   return (
     <div className="space-y-2">
@@ -56,6 +54,7 @@ export function AssessmentPeriodicitySection({
         <SelectContent>
           <SelectItem value="none">Sem recorrência</SelectItem>
           <SelectItem value="monthly">Mensal</SelectItem>
+          <SelectItem value="quarterly">Trimestral</SelectItem>
           <SelectItem value="semiannual">Semestral</SelectItem>
           <SelectItem value="annual">Anual</SelectItem>
         </SelectContent>
@@ -68,7 +67,7 @@ export function AssessmentPeriodicitySection({
         </div>
       )}
       
-      {employeeRiskLevel && suggestedPeriodicity && suggestedPeriodicity !== 'none' && (
+      {suggestedPeriodicity && suggestedPeriodicity !== 'none' && (
         <p className="text-xs text-muted-foreground">
           Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
         </p>

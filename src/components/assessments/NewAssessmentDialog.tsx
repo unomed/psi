@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { usePeriodicityForRisk } from "@/hooks/usePeriodicityForRisk";
 import { isValidDate, createSafeDate } from "@/utils/dateUtils";
+import { AssessmentPeriodicitySection } from "@/components/assessments/dialogs/assessment/AssessmentPeriodicitySection";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -252,41 +252,12 @@ export function NewAssessmentDialog({
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="recurrence">Periodicidade</Label>
-              <Select 
-                value={recurrenceType} 
-                onValueChange={handleRecurrenceChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a periodicidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sem recorrência</SelectItem>
-                  <SelectItem value="monthly">Mensal</SelectItem>
-                  <SelectItem value="semiannual">Semestral</SelectItem>
-                  <SelectItem value="annual">Anual</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {showRecurrenceWarning && (
-                <div className="flex items-center text-amber-500 text-xs gap-1 mt-1">
-                  <AlertCircle className="h-3 w-3" />
-                  <span>É necessário selecionar uma data para usar recorrência.</span>
-                </div>
-              )}
-              
-              {employeeRiskLevel && suggestedPeriodicity && suggestedPeriodicity !== 'none' && (
-                <p className="text-xs text-muted-foreground">
-                  Periodicidade sugerida com base no nível de risco: {suggestedPeriodicity}
-                </p>
-              )}
-              {recurrenceType !== 'none' && (
-                <p className="text-xs text-muted-foreground">
-                  A próxima avaliação será agendada automaticamente de acordo com a periodicidade selecionada.
-                </p>
-              )}
-            </div>
+            <AssessmentPeriodicitySection
+              recurrenceType={recurrenceType}
+              onRecurrenceChange={handleRecurrenceChange}
+              showRecurrenceWarning={showRecurrenceWarning}
+              employeeId={selectedEmployee}
+            />
           </div>
 
           <div className="flex justify-end">
