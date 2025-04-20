@@ -30,80 +30,74 @@ export function RecentAssessments({ companyId }: RecentAssessmentsProps) {
         setLoading(true);
         console.log("Fetching recent assessments for company:", companyId);
 
-        // Get recent completed assessments
-        const { data: completedAssessments, error } = await supabase
-          .from('scheduled_assessments')
-          .select(`
-            id,
-            employee_name,
-            scheduled_date,
-            completed_at,
-            employee_id
-          `)
-          .eq('company_id', companyId)
-          .eq('status', 'completed')
+        // Get employees for this company
+        const { data: employees, error: empError } = await supabase
+          .from('employees')
+          .select('id, name, sector_id')
+          .eq('company_id', companyId);
+
+        if (empError) throw empError;
+        
+        if (!employees || employees.length === 0) {
+          console.log("No employees found for this company");
+          setLoading(false);
+          return;
+        }
+        
+        const employeeIds = employees.map(emp => emp.id);
+        const employeeMap = employees.reduce((acc, emp) => {
+          acc[emp.id] = { name: emp.name, sectorId: emp.sector_id };
+          return acc;
+        }, {} as Record<string, { name: string, sectorId: string }>);
+        
+        // Get sector names
+        const sectorIds = employees.map(emp => emp.sector_id).filter(Boolean);
+        const { data: sectors, error: sectorError } = await supabase
+          .from('sectors')
+          .select('id, name')
+          .in('id', sectorIds);
+          
+        if (sectorError) throw sectorError;
+        
+        const sectorMap = (sectors || []).reduce((acc, sector) => {
+          acc[sector.id] = sector.name;
+          return acc;
+        }, {} as Record<string, string>);
+        
+        // Get recent assessments
+        const { data: responses, error: responseError } = await supabase
+          .from('assessment_responses')
+          .select('id, employee_id, classification, completed_at')
+          .in('employee_id', employeeIds)
           .order('completed_at', { ascending: false })
           .limit(5);
+          
+        if (responseError) throw responseError;
 
-        if (error) throw error;
-
-        if (completedAssessments && completedAssessments.length > 0) {
+        if (responses && responses.length > 0) {
           // Transform database data into the format needed for display
-          const formattedAssessments: Assessment[] = await Promise.all(
-            completedAssessments.map(async (assessment) => {
-              // Get employee sector
-              let sectorName = "Não especificado";
-              
-              if (assessment.employee_id) {
-                const { data: employeeData, error: employeeError } = await supabase
-                  .from('employees')
-                  .select('sector_id')
-                  .eq('id', assessment.employee_id)
-                  .single();
-                
-                if (!employeeError && employeeData?.sector_id) {
-                  const { data: sectorData, error: sectorError } = await supabase
-                    .from('sectors')
-                    .select('name')
-                    .eq('id', employeeData.sector_id)
-                    .single();
-                  
-                  if (!sectorError && sectorData) {
-                    sectorName = sectorData.name;
-                  }
-                }
-              }
-              
-              // Get risk level from assessment_responses
-              const { data: responseData, error: responseError } = await supabase
-                .from('assessment_responses')
-                .select('classification')
-                .eq('employee_id', assessment.employee_id)
-                .order('completed_at', { ascending: false })
-                .limit(1);
-
-              let riskLevel = "Médio"; // Default if not found
-              
-              if (!responseError && responseData && responseData.length > 0) {
-                const classification = responseData[0].classification;
-                if (classification === 'high') {
-                  riskLevel = 'Alto';
-                } else if (classification === 'medium') {
-                  riskLevel = 'Médio';
-                } else if (classification === 'low') {
-                  riskLevel = 'Baixo';
-                }
-              }
-
-              return {
-                id: assessment.id,
-                employee: assessment.employee_name,
-                sector: sectorName,
-                date: assessment.completed_at || assessment.scheduled_date,
-                riskLevel: riskLevel
-              };
-            })
-          );
+          const formattedAssessments: Assessment[] = responses.map(response => {
+            const employee = employeeMap[response.employee_id] || { name: 'Desconhecido', sectorId: '' };
+            const sectorName = employee.sectorId ? (sectorMap[employee.sectorId] || 'Não especificado') : 'Não especificado';
+            
+            // Map classification to display text
+            let riskLevel = 'Médio'; // Default
+            if (response.classification === 'high') {
+              riskLevel = 'Alto';
+            } else if (response.classification === 'medium') {
+              riskLevel = 'Médio';
+            } else if (response.classification === 'low') {
+              riskLevel = 'Baixo';
+            }
+            
+            return {
+              id: response.id,
+              employee: employee.name,
+              sector: sectorName,
+              date: response.completed_at,
+              riskLevel: riskLevel
+            };
+          });
 
           setAssessments(formattedAssessments);
         } else {

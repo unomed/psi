@@ -34,11 +34,27 @@ export function RiskLevelChart({ companyId }: RiskLevelChartProps) {
         setLoading(true);
         console.log("Fetching risk level data for company:", companyId);
 
-        // Fetch assessment responses for this company
+        // First, get employees for this company
+        const { data: employees, error: empError } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('company_id', companyId);
+
+        if (empError) throw empError;
+        
+        if (!employees || employees.length === 0) {
+          console.log("No employees found for this company");
+          setLoading(false);
+          return;
+        }
+        
+        const employeeIds = employees.map(emp => emp.id);
+
+        // Fetch assessment responses for these employees
         const { data: assessments, error } = await supabase
           .from('assessment_responses')
           .select('classification, count(*)')
-          .eq('employee_id', supabase.rpc('get_employees_by_company', { company_id: companyId }))
+          .in('employee_id', employeeIds)
           .groupBy('classification');
 
         if (error) throw error;

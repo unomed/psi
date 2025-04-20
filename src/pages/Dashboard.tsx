@@ -55,16 +55,30 @@ export default function Dashboard() {
 
         if (completedError) throw completedError;
 
-        // Query for high risk employees 
-        // Note: Using custom query to find employees with high risk
-        const { data: highRiskData, error: highRiskError } = await supabase
-          .from('assessment_responses')
+        // Get employees for this company
+        const { data: employees, error: empError } = await supabase
+          .from('employees')
           .select('id')
-          .eq('classification', 'high')
-          .eq('employee_id', supabase.rpc('get_employees_by_company', { company_id: selectedCompany }))
-          .limit(1000);  // Set a reasonable limit
+          .eq('company_id', selectedCompany);
 
-        if (highRiskError) throw highRiskError;
+        if (empError) throw empError;
+        
+        let highRiskCount = 0;
+        
+        if (employees && employees.length > 0) {
+          const employeeIds = employees.map(emp => emp.id);
+          
+          // Query for high risk employees using the employee IDs
+          const { data: highRiskData, error: highRiskError } = await supabase
+            .from('assessment_responses')
+            .select('id')
+            .eq('classification', 'high')
+            .in('employee_id', employeeIds)
+            .limit(1000);
+
+          if (highRiskError) throw highRiskError;
+          highRiskCount = highRiskData?.length || 0;
+        }
 
         // Query for upcoming reassessments
         const nextMonth = new Date();
@@ -84,7 +98,7 @@ export default function Dashboard() {
         setDashboardData({
           pendingAssessments: pendingData?.[0]?.count || 24,
           completedAssessments: completedData?.[0]?.count || 215,
-          highRiskEmployees: highRiskData?.length || 12,
+          highRiskEmployees: highRiskCount || 12,
           upcomingReassessments: upcomingData?.[0]?.count || 8,
         });
 
