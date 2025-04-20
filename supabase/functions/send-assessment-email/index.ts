@@ -22,7 +22,7 @@ interface EmailRequest {
 
 // Email templates 
 const emailTemplates = {
-  "conclusao": {
+  "completion": {
     subject: "Sua avaliação psicossocial foi concluída",
     body: `Olá {employeeName},
 
@@ -33,7 +33,7 @@ Agradecemos sua participação e comprometimento.
 Atenciosamente,
 Equipe de Recursos Humanos`
   },
-  "lembrete": {
+  "reminder": {
     subject: "Lembrete: Avaliação psicossocial pendente",
     body: `Olá {employeeName},
 
@@ -46,7 +46,7 @@ A sua participação é muito importante.
 Atenciosamente,
 Equipe de Recursos Humanos`
   },
-  "convite": {
+  "welcome": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
 
@@ -61,7 +61,7 @@ Atenciosamente,
 Equipe de Recursos Humanos`
   },
   
-  // Maintain compatibility with old English and old template IDs
+  // Manter compatibilidade com IDs antigos em inglês
   "assessment-invitation": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
