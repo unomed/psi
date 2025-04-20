@@ -23,34 +23,6 @@ interface EmailRequest {
 
 // Email templates (in a real app, these would come from the database)
 const emailTemplates = {
-  "convite-avaliacao": {
-    subject: "Convite para participar de uma avaliação psicossocial",
-    body: `Olá {employeeName},
-
-Você foi convidado(a) a participar de uma avaliação psicossocial. 
-Por favor, acesse o link abaixo para completar a avaliação.
-
-Link da avaliação: {linkUrl}
-
-Se tiver qualquer dúvida, entre em contato com o RH.
-
-Atenciosamente,
-Equipe de Recursos Humanos`
-  },
-  "lembrete-avaliacao": {
-    subject: "Lembrete: Avaliação psicossocial pendente",
-    body: `Olá {employeeName},
-
-Este é um lembrete de que você tem uma avaliação psicossocial pendente que precisa ser concluída.
-
-Link da avaliação: {linkUrl}
-
-A sua participação é muito importante.
-
-Atenciosamente,
-Equipe de Recursos Humanos`
-  },
-  // Maintain backward compatibility with old IDs
   "assessment-invitation": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
@@ -109,8 +81,8 @@ serve(async (req) => {
     // Get request body
     const requestData: EmailRequest = await req.json();
     
-    // Get the email template to use (default to convite-avaliacao if not specified)
-    const templateId = requestData.emailTemplateId || "convite-avaliacao";
+    // Get the email template to use (default to assessment-invitation if not specified)
+    const templateId = requestData.emailTemplateId || "assessment-invitation";
     const emailTemplate = emailTemplates[templateId as keyof typeof emailTemplates];
     
     if (!emailTemplate && !requestData.customSubject) {
