@@ -11,7 +11,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { User } from "@/hooks/useUsers";
 import { supabase } from "@/integrations/supabase/client";
-import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Search } from "lucide-react";
 
 interface Company {
@@ -58,16 +57,20 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   // Fetch all companies
   useEffect(() => {
     const fetchCompanies = async () => {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('id, name')
-        .order('name');
-      
-      if (error) {
-        console.error('Error fetching companies:', error);
-      } else if (data) {
-        setCompanies(data);
-        setFilteredCompanies(data);
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('id, name')
+          .order('name');
+        
+        if (error) {
+          console.error('Error fetching companies:', error);
+        } else if (data) {
+          setCompanies(data);
+          setFilteredCompanies(data);
+        }
+      } catch (error) {
+        console.error('Unexpected error fetching companies:', error);
       }
     };
 
@@ -79,8 +82,9 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
     if (searchQuery.trim() === "") {
       setFilteredCompanies(companies);
     } else {
+      const query = searchQuery.toLowerCase();
       const filtered = companies.filter(company => 
-        company.name.toLowerCase().includes(searchQuery.toLowerCase())
+        company.name.toLowerCase().includes(query)
       );
       setFilteredCompanies(filtered);
     }
@@ -90,17 +94,21 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   useEffect(() => {
     if (user?.id) {
       const fetchUserCompanies = async () => {
-        const { data, error } = await supabase
-          .from('user_companies')
-          .select('company_id')
-          .eq('user_id', user.id);
-        
-        if (error) {
-          console.error('Error fetching user companies:', error);
-        } else if (data) {
-          const companyIds = data.map(item => item.company_id);
-          setSelectedCompanies(companyIds);
-          form.setValue('companyIds', companyIds);
+        try {
+          const { data, error } = await supabase
+            .from('user_companies')
+            .select('company_id')
+            .eq('user_id', user.id);
+          
+          if (error) {
+            console.error('Error fetching user companies:', error);
+          } else if (data) {
+            const companyIds = data.map(item => item.company_id);
+            setSelectedCompanies(companyIds);
+            form.setValue('companyIds', companyIds);
+          }
+        } catch (error) {
+          console.error('Unexpected error fetching user companies:', error);
         }
       };
 
