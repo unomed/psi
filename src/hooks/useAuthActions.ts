@@ -15,13 +15,16 @@ export function useAuthActions() {
         throw error;
       }
       
-      navigate('/');
+      // Explicitly navigate to dashboard after successful login
+      navigate('/dashboard');
+      return;
     } catch (error: any) {
       toast({
         title: "Erro ao fazer login",
         description: error.message || "Verifique suas credenciais e tente novamente",
         variant: "destructive"
       });
+      throw error;
     }
   };
 

@@ -26,7 +26,6 @@ import NotificationsPage from "./pages/configuracoes/NotificationsPage";
 import PeriodicityPage from "./pages/configuracoes/PeriodicityPage";
 import UserManagementPage from "./pages/configuracoes/UserManagementPage";
 import PermissionsPage from "./pages/configuracoes/PermissionsPage";
-import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +38,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Home route - redirects to login */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Navigate to="/auth/login" replace />} />
             
             {/* Auth routes - public */}
             <Route path="/auth/login" element={<Login />} />
