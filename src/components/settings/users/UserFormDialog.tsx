@@ -78,6 +78,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
           // If user is Super Admin, select all companies automatically
           if (user?.role === 'superadmin') {
             setSelectedCompanies(data.map(c => c.id));
+            form.setValue('companyIds', data.map(c => c.id));
           }
         }
       } catch (error) {
@@ -87,7 +88,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
     };
 
     fetchCompanies();
-  }, [user?.role]);
+  }, [user?.role, form]);
 
   // Fetch user's current company assignments when editing
   useEffect(() => {
@@ -139,8 +140,6 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   const handleSubmit = async (data: UserFormData) => {
     setError(null);
     
-    // REMOVED: Company validation for non-superadmin roles
-    
     try {
       setIsSubmitting(true);
       
@@ -184,8 +183,6 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
             />
-
-            {/* Removed error message for company selection */}
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={onClose}>

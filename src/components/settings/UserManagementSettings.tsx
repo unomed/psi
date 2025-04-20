@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUsers, User } from "@/hooks/users/useUsers";
@@ -51,11 +52,12 @@ export default function UserManagementSettings() {
 
   const handleCreateUser = async (data: any) => {
     try {
+      console.log('Creating user with data:', data);
       await createUser.mutateAsync({
         email: data.email,
         full_name: data.full_name,
         role: data.role,
-        companyIds: data.companyIds,
+        companyIds: data.companyIds || [],
       });
       setIsAddOpen(false);
     } catch (error) {
@@ -67,11 +69,18 @@ export default function UserManagementSettings() {
   const handleUpdateUser = async (data: any) => {
     if (selectedUser) {
       try {
-        await updateUserRole.mutateAsync({
+        console.log('Updating user with data:', {
           userId: selectedUser.id,
           role: data.role,
           companyIds: data.companyIds,
         });
+        
+        await updateUserRole.mutateAsync({
+          userId: selectedUser.id,
+          role: data.role,
+          companyIds: data.companyIds || [],
+        });
+        
         setIsEditOpen(false);
         setSelectedUser(null);
       } catch (error) {

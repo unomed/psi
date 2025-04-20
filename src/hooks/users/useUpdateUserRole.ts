@@ -57,7 +57,9 @@ export function useUpdateUserRole() {
         }
 
         // Update user companies if provided
-        if (companyIds && companyIds.length > 0) {
+        if (companyIds) {  // Modified to check if companyIds exists (even if empty array)
+          console.log('Updating user companies:', { userId, companyIds });
+          
           // First delete existing company assignments
           const { error: deleteError } = await supabase
             .from('user_companies')
@@ -70,20 +72,24 @@ export function useUpdateUserRole() {
             throw deleteError;
           }
           
-          // Then insert new company assignments
-          const companyAssignments = companyIds.map(companyId => ({
-            user_id: userId,
-            company_id: companyId
-          }));
-          
-          const { error: insertError } = await supabase
-            .from('user_companies')
-            .insert(companyAssignments);
+          // Then insert new company assignments if there are any
+          if (companyIds.length > 0) {
+            const companyAssignments = companyIds.map(companyId => ({
+              user_id: userId,
+              company_id: companyId
+            }));
             
-          if (insertError) {
-            console.error('Error inserting user companies:', insertError);
-            toast.error('Erro ao associar usuário às empresas');
-            throw insertError;
+            const { error: insertError } = await supabase
+              .from('user_companies')
+              .insert(companyAssignments);
+              
+            if (insertError) {
+              console.error('Error inserting user companies:', insertError);
+              toast.error('Erro ao associar usuário às empresas');
+              throw insertError;
+            }
+          } else {
+            console.log('No companies to associate with user');
           }
         }
       } catch (error) {
