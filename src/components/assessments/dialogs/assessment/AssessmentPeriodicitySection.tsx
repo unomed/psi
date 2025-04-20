@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useRiskBasedPeriodicity } from "@/hooks/assessments/operations/useRiskBasedPeriodicity";
 import { useEffect } from "react";
+import { PeriodicityType } from "@/types/settings";
 
 interface AssessmentPeriodicitySectionProps {
   recurrenceType: RecurrenceType;
@@ -28,7 +29,8 @@ export function AssessmentPeriodicitySection({
   const { suggestedPeriodicity, isLoading } = useRiskBasedPeriodicity(employeeId);
 
   useEffect(() => {
-    if (suggestedPeriodicity && suggestedPeriodicity !== "none" && !recurrenceType) {
+    // Only set suggested periodicity if no recurrence type is set yet and we have a valid suggestion
+    if (suggestedPeriodicity && suggestedPeriodicity !== "none" && recurrenceType === "none") {
       onRecurrenceChange(suggestedPeriodicity as RecurrenceType);
     }
   }, [suggestedPeriodicity, recurrenceType, onRecurrenceChange]);

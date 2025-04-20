@@ -1,3 +1,4 @@
+
 import { AssessmentSelectionTab } from "../../scheduling/AssessmentSelectionTab";
 import { AssessmentDateSection } from "./AssessmentDateSection";
 import { AssessmentPeriodicitySection } from "./AssessmentPeriodicitySection";
@@ -15,8 +16,6 @@ interface AssessmentFormProps {
   selectedRole: string | null;
   dateError: boolean;
   showRecurrenceWarning: boolean;
-  employeeRiskLevel?: string;
-  suggestedPeriodicity?: string;
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
   scheduledDate: Date | undefined;
@@ -38,8 +37,6 @@ export function AssessmentForm({
   selectedRole,
   dateError,
   showRecurrenceWarning,
-  employeeRiskLevel,
-  suggestedPeriodicity,
   templates,
   isTemplatesLoading,
   scheduledDate,
@@ -90,10 +87,9 @@ export function AssessmentForm({
 
         <AssessmentPeriodicitySection
           recurrenceType={showRecurrenceWarning ? "none" : "semiannual"}
-          onRecurrenceChange={onRecurrenceChange}
+          onRecurrenceChange={(type) => onRecurrenceChange(type)}
           showRecurrenceWarning={showRecurrenceWarning}
-          employeeRiskLevel={employeeRiskLevel}
-          suggestedPeriodicity={suggestedPeriodicity}
+          employeeId={selectedEmployee}
         />
       </div>
 
