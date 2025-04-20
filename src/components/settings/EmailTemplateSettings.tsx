@@ -1,23 +1,17 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FilePlus } from "lucide-react";
-import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EmailTemplateForm } from "./email-templates/EmailTemplateForm";
 import { useEmailTemplates } from "@/hooks/settings/useEmailTemplates";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Map para tradução dos IDs dos templates para nomes em português
+// Mapa para tradução dos IDs dos templates para nomes em português
 const templateNameMap: Record<string, string> = {
   "completion": "Conclusão",
   "reminder": "Lembrete",
-  "welcome": "Convite",
-  // Compatibilidade com IDs antigos em inglês
-  "assessment-invitation": "Convite", 
-  "assessment-reminder": "Lembrete",
-  "assessment-completion": "Conclusão"
+  "welcome": "Convite"
 };
 
 export default function EmailTemplateSettings() {
@@ -126,4 +120,3 @@ export default function EmailTemplateSettings() {
     </div>
   );
 }
-
