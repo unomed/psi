@@ -37,8 +37,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Home route - redirects to login */}
-            <Route path="/" element={<Navigate to="/auth/login" replace />} />
+            {/* Home route - redirects to dashboard when authenticated */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             {/* Auth routes - public */}
             <Route path="/auth/login" element={<Login />} />
@@ -164,7 +164,7 @@ const App = () => (
             {/* Public assessment route - accessible without login */}
             <Route path="/avaliacao/:token" element={<AssessmentPage />} />
 
-            {/* Redirect root to auth */}
+            {/* Redirect auth to login */}
             <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
             
             {/* Catch-all route for 404 */}

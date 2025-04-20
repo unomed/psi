@@ -5,9 +5,9 @@ export const mainMenuItems = [
   {
     title: "Dashboard",
     icon: BarChart3,
-    path: "/",
+    path: "/dashboard",
     permission: "view_dashboard",
-    roles: ["superadmin", "admin", "evaluator", "user"]
+    roles: ["superadmin", "admin", "evaluator", "user", "profissionais"]
   },
   {
     title: "Empresas",
@@ -49,7 +49,7 @@ export const mainMenuItems = [
     icon: FileCheck,
     path: "/avaliacoes",
     permission: "view_assessments",
-    roles: ["superadmin", "admin", "evaluator"]
+    roles: ["superadmin", "admin", "evaluator", "profissionais"]
   },
   {
     title: "Relatórios",
