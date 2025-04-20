@@ -11,6 +11,12 @@ export default function PermissionsPage() {
   const [newRoleName, setNewRoleName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const uniquePermissions = permissions 
+    ? permissions.filter((role, index, self) => 
+        index === self.findIndex((t) => t.role === role.role)
+      ) 
+    : [];
+
   const permissionSettings: PermissionSetting[] = [
     // Dashboard
     { id: "view_dashboard", name: "Visualizar Dashboard", description: "Acesso ao dashboard", section: "Dashboard" },
@@ -148,7 +154,7 @@ export default function PermissionsPage() {
         <PermissionSection
           key={section}
           section={section}
-          permissions={permissions}
+          permissions={uniquePermissions}
           permissionSettings={permissionSettings}
           handleTogglePermission={handleTogglePermission}
           getPermissionValue={getPermissionValue}
