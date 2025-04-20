@@ -37,7 +37,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Change the home route to redirect to login */}
+            {/* Home route redirects to login */}
             <Route path="/" element={<Navigate to="/auth/login" replace />} />
             
             {/* Auth routes - public */}
