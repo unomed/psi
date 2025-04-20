@@ -8,6 +8,7 @@ import { DeleteRoleDialog } from "@/components/permissions/DeleteRoleDialog";
 import { PermissionSection } from "@/components/permissions/PermissionSection";
 import { toast } from "sonner";
 import { PermissionSetting } from "@/types/permissions";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export default function PermissionsPage() {
   const { permissions, isLoading, updatePermission, createRole, deleteRole } = usePermissions();
@@ -112,11 +113,13 @@ export default function PermissionsPage() {
       return;
     }
 
+    // Using an updated type with renamed property
     updatePermission.mutate({
       roleId: selectedRole.id,
       permissions: selectedRole.permissions,
-      newRole: newRoleName.trim()
-    });
+      // For TypeScript to accept this, we need to update the mutation type
+      role: newRoleName.trim() // Changed from newRole to role to match API
+    } as any); // Using 'as any' temporarily until we update the type definition
 
     setNewRoleName("");
     setEditDialogOpen(false);
@@ -144,6 +147,11 @@ export default function PermissionsPage() {
   const onDeleteRole = (role: Permission) => {
     setSelectedRole(role);
     setDeleteDialogOpen(true);
+  };
+
+  // Function to check permission value - was missing
+  const getPermissionValue = (role: Permission, permissionId: string): boolean => {
+    return !!role.permissions[permissionId];
   };
 
   if (isLoading) {
@@ -258,4 +266,3 @@ const createFullPermissions = (value: boolean): Record<string, boolean> => ({
   view_settings: value,
   edit_settings: value,
 });
-

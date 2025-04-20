@@ -7,10 +7,29 @@ export function usePermissionMutations() {
   const queryClient = useQueryClient();
 
   const updatePermission = useMutation({
-    mutationFn: async ({ roleId, permissions }: { roleId: string, permissions: Record<string, boolean> }) => {
+    mutationFn: async ({ 
+      roleId, 
+      permissions, 
+      role 
+    }: { 
+      roleId: string; 
+      permissions: Record<string, boolean>;
+      role?: string; // Make role optional to support updating the role name
+    }) => {
+      // Create an update object that may include the role name
+      const updateData: { 
+        permissions: Record<string, boolean>; 
+        role?: string;
+      } = { permissions };
+      
+      // Only add role to the update if it's provided
+      if (role) {
+        updateData.role = role;
+      }
+      
       const { error } = await supabase
         .from('permission_settings')
-        .update({ permissions })
+        .update(updateData)
         .eq('id', roleId);
 
       if (error) {
