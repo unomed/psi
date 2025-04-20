@@ -18,7 +18,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
   } = useQuery({
     queryKey: ['scheduledAssessments', companyId],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
-      // Iniciar a query base
       let query = supabase
         .from('scheduled_assessments')
         .select(`
@@ -34,21 +33,21 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           next_scheduled_date,
           phone_number,
           company_id,
+          employee_name,
           employees (
             name,
             email,
-            phone,
-            company_id
+            phone
           ),
-          checklist_templates(title)
+          checklist_templates(
+            title
+          )
         `);
       
-      // Se um ID de empresa for fornecido, filtrar diretamente pelo company_id
       if (companyId && userRole !== 'superadmin') {
         query = query.eq('company_id', companyId);
       }
       
-      // Ordenar e executar a consulta
       const { data, error } = await query.order('scheduled_date', { ascending: false });
       
       if (error) {
@@ -57,42 +56,26 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
         return [];
       }
       
-      return data.map(item => {
-        // Safely extract employee data, using optional chaining and nullish coalescing
-        let employeeInfo = null;
-        
-        // Check if employees data exists
-        if (item.employees) {
-          // Handle both possible cases: array or single object
-          const employee = Array.isArray(item.employees) 
-            ? (item.employees[0] || {}) 
-            : item.employees;
-            
-          // Safe access with defaults
-          employeeInfo = {
-            name: employee?.name || 'Funcionário',
-            email: employee?.email || '',
-            phone: employee?.phone || ''
-          };
-        }
-
-        return {
-          id: item.id,
-          employeeId: item.employee_id,
-          templateId: item.template_id,
-          scheduledDate: new Date(item.scheduled_date),
-          sentAt: item.sent_at ? new Date(item.sent_at) : null,
-          linkUrl: item.link_url || '',
-          status: item.status as AssessmentStatus,
-          completedAt: item.completed_at ? new Date(item.completed_at) : null,
-          recurrenceType: item.recurrence_type as RecurrenceType | undefined,
-          nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
-          phoneNumber: item.phone_number || undefined,
-          company_id: item.company_id,
-          employees: employeeInfo,
-          checklist_templates: item.checklist_templates
-        };
-      });
+      return data.map(item => ({
+        id: item.id,
+        employeeId: item.employee_id,
+        templateId: item.template_id,
+        scheduledDate: new Date(item.scheduled_date),
+        sentAt: item.sent_at ? new Date(item.sent_at) : null,
+        linkUrl: item.link_url || '',
+        status: item.status as AssessmentStatus,
+        completedAt: item.completed_at ? new Date(item.completed_at) : null,
+        recurrenceType: item.recurrence_type as RecurrenceType | undefined,
+        nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+        phoneNumber: item.phone_number || undefined,
+        company_id: item.company_id,
+        employees: item.employees ? {
+          name: item.employees.name || item.employee_name || 'Funcionário não encontrado',
+          email: item.employees.email || '',
+          phone: item.employees.phone || ''
+        } : null,
+        checklist_templates: item.checklist_templates
+      }));
     }
   });
 

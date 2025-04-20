@@ -36,7 +36,7 @@ export function useScheduleAssessment() {
         status: 'scheduled',
         recurrence_type: recurrenceType,
         next_scheduled_date: nextScheduledDate?.toISOString(),
-        company_id: employeeData.company_id // Armazenar o ID da empresa diretamente
+        company_id: employeeData.company_id
       });
 
     if (scheduledError) {

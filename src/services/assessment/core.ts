@@ -8,7 +8,7 @@ export async function createScheduledAssessment(data: {
   scheduledDate: Date;
   recurrenceType?: RecurrenceType;
   phoneNumber?: string;
-  company_id: string; // Add company_id parameter
+  company_id: string;
 }) {
   try {
     const { data: assessment, error } = await supabase
@@ -20,7 +20,7 @@ export async function createScheduledAssessment(data: {
         recurrence_type: data.recurrenceType,
         phone_number: data.phoneNumber,
         status: "scheduled" as AssessmentStatus,
-        company_id: data.company_id, // Store company_id
+        company_id: data.company_id,
         created_by: (await supabase.auth.getUser()).data.user?.id
       })
       .select()

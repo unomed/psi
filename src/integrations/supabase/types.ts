@@ -698,6 +698,7 @@ export type Database = {
       }
       scheduled_assessments: {
         Row: {
+          company_id: string | null
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -714,6 +715,7 @@ export type Database = {
           template_id: string
         }
         Insert: {
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -730,6 +732,7 @@ export type Database = {
           template_id: string
         }
         Update: {
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -746,6 +749,13 @@ export type Database = {
           template_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "scheduled_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "scheduled_assessments_template_id_fkey"
             columns: ["template_id"]
