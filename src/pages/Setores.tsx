@@ -31,7 +31,28 @@ export default function Setores() {
   const { userRole } = useAuth();
 
   // Filter companies based on user access
-  const accessibleCompanies = filterResourcesByCompany(companies);
+  // Convert CompanyData to the format expected by filterResourcesByCompany
+  const formattedCompanies = companies.map(company => ({
+    company_id: company.id,
+    ...company
+  }));
+  
+  const accessibleCompanyRecords = filterResourcesByCompany(formattedCompanies);
+  
+  // Convert back to CompanyData format for the component
+  const accessibleCompanies = accessibleCompanyRecords.map(company => ({
+    id: company.company_id || "",
+    name: company.name || "",
+    cnpj: company.cnpj || "",
+    address: company.address || "",
+    city: company.city || "",
+    state: company.state || "",
+    industry: company.industry || "",
+    contactName: company.contactName || "",
+    contactEmail: company.contactEmail || "",
+    contactPhone: company.contactPhone || "",
+    notes: company.notes || ""
+  }));
   
   // Filter sectors based on selected company
   const filteredSectors = selectedCompany 

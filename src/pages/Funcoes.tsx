@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,40 @@ export default function Funcoes() {
   const [canCreateRoles, setCanCreateRoles] = useState(false);
   const { filterResourcesByCompany } = useCompanyAccessCheck();
 
-  const accessibleCompanies = filterResourcesByCompany(companies);
+  // Adding back viewingRole state that was removed
+  const [viewingRole, setViewingRole] = useState<RoleData | null>(null);
+  
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const isSuperAdminOrAdmin = userRole === 'superadmin' || userRole === 'admin';
+      setCanCreateRoles(isSuperAdminOrAdmin);
+    };
+    
+    checkPermissions();
+  }, [userRole]);
+
+  // Convert CompanyData to the format expected by filterResourcesByCompany
+  const formattedCompanies = companies.map(company => ({
+    company_id: company.id,
+    ...company
+  }));
+  
+  const accessibleCompanyRecords = filterResourcesByCompany(formattedCompanies);
+  
+  // Convert back to CompanyData format for the component
+  const accessibleCompanies = accessibleCompanyRecords.map(company => ({
+    id: company.company_id || "",
+    name: company.name || "",
+    cnpj: company.cnpj || "",
+    address: company.address || "",
+    city: company.city || "",
+    state: company.state || "",
+    industry: company.industry || "",
+    contactName: company.contactName || "",
+    contactEmail: company.contactEmail || "",
+    contactPhone: company.contactPhone || "",
+    notes: company.notes || ""
+  }));
 
   const filteredRoles = roles?.filter(role => 
     (!selectedCompany || role.companyId === selectedCompany) &&
