@@ -38,11 +38,7 @@ export function RecentAssessments({ companyId }: RecentAssessmentsProps) {
             employee_name,
             scheduled_date,
             completed_at,
-            employee_id,
-            employees!inner(
-              sector_id,
-              sectors(name)
-            )
+            employee_id
           `)
           .eq('company_id', companyId)
           .eq('status', 'completed')
@@ -55,6 +51,29 @@ export function RecentAssessments({ companyId }: RecentAssessmentsProps) {
           // Transform database data into the format needed for display
           const formattedAssessments: Assessment[] = await Promise.all(
             completedAssessments.map(async (assessment) => {
+              // Get employee sector
+              let sectorName = "Não especificado";
+              
+              if (assessment.employee_id) {
+                const { data: employeeData, error: employeeError } = await supabase
+                  .from('employees')
+                  .select('sector_id')
+                  .eq('id', assessment.employee_id)
+                  .single();
+                
+                if (!employeeError && employeeData?.sector_id) {
+                  const { data: sectorData, error: sectorError } = await supabase
+                    .from('sectors')
+                    .select('name')
+                    .eq('id', employeeData.sector_id)
+                    .single();
+                  
+                  if (!sectorError && sectorData) {
+                    sectorName = sectorData.name;
+                  }
+                }
+              }
+              
               // Get risk level from assessment_responses
               const { data: responseData, error: responseError } = await supabase
                 .from('assessment_responses')
@@ -67,14 +86,19 @@ export function RecentAssessments({ companyId }: RecentAssessmentsProps) {
               
               if (!responseError && responseData && responseData.length > 0) {
                 const classification = responseData[0].classification;
-                riskLevel = classification === 'high' ? 'Alto' : 
-                            classification === 'medium' ? 'Médio' : 'Baixo';
+                if (classification === 'high') {
+                  riskLevel = 'Alto';
+                } else if (classification === 'medium') {
+                  riskLevel = 'Médio';
+                } else if (classification === 'low') {
+                  riskLevel = 'Baixo';
+                }
               }
 
               return {
                 id: assessment.id,
                 employee: assessment.employee_name,
-                sector: assessment.employees?.sectors?.name || "Não especificado",
+                sector: sectorName,
                 date: assessment.completed_at || assessment.scheduled_date,
                 riskLevel: riskLevel
               };

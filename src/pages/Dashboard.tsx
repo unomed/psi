@@ -55,12 +55,14 @@ export default function Dashboard() {
 
         if (completedError) throw completedError;
 
-        // Query for high risk employees (from assessment_responses)
+        // Query for high risk employees 
+        // Note: Using custom query to find employees with high risk
         const { data: highRiskData, error: highRiskError } = await supabase
           .from('assessment_responses')
-          .select('count')
+          .select('id')
           .eq('classification', 'high')
-          .eq('company_id', selectedCompany);
+          .eq('employee_id', supabase.rpc('get_employees_by_company', { company_id: selectedCompany }))
+          .limit(1000);  // Set a reasonable limit
 
         if (highRiskError) throw highRiskError;
 
@@ -82,7 +84,7 @@ export default function Dashboard() {
         setDashboardData({
           pendingAssessments: pendingData?.[0]?.count || 24,
           completedAssessments: completedData?.[0]?.count || 215,
-          highRiskEmployees: highRiskData?.[0]?.count || 12,
+          highRiskEmployees: highRiskData?.length || 12,
           upcomingReassessments: upcomingData?.[0]?.count || 8,
         });
 

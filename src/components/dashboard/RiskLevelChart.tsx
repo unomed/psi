@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -36,9 +37,9 @@ export function RiskLevelChart({ companyId }: RiskLevelChartProps) {
         // Fetch assessment responses for this company
         const { data: assessments, error } = await supabase
           .from('assessment_responses')
-          .select('classification, count')
-          .eq('company_id', companyId)
-          .group('classification');
+          .select('classification, count(*)')
+          .eq('employee_id', supabase.rpc('get_employees_by_company', { company_id: companyId }))
+          .groupBy('classification');
 
         if (error) throw error;
 
