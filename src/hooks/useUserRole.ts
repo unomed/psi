@@ -14,9 +14,10 @@ export function useUserRole() {
 
   const fetchUserRoleAndCompanies = async (userId: string) => {
     try {
-      console.log("Fetching user role and companies for:", userId);
+      console.log("[useUserRole] Buscando role e empresas para usuário:", userId);
       setRoleLoading(true);
       
+      // Buscar o papel do usuário
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
@@ -24,34 +25,68 @@ export function useUserRole() {
         .single();
 
       if (roleError && roleError.code !== 'PGRST116') {
-        console.error('Error fetching user role:', roleError);
+        console.error('[useUserRole] Erro ao buscar papel do usuário:', roleError);
         setUserRole('user');
       } else if (roleData) {
-        console.log("User role data:", roleData);
+        console.log("[useUserRole] Dados do papel do usuário:", roleData);
         setUserRole(roleData.role);
       } else {
         setUserRole('user');
       }
       
+      // Se for superadmin, buscar todas as empresas
       if (roleData?.role === 'superadmin') {
         const { data: allCompanies, error: allCompaniesError } = await supabase
           .from('companies')
           .select('id, name');
           
         if (allCompaniesError) {
-          console.error('Error fetching all companies:', allCompaniesError);
+          console.error('[useUserRole] Erro ao buscar todas as empresas:', allCompaniesError);
         } else if (allCompanies) {
           const formattedCompanies = allCompanies.map(company => ({
             companyId: company.id,
             companyName: company.name
           }));
           setUserCompanies(formattedCompanies);
+          console.log("[useUserRole] Empresas para superadmin:", formattedCompanies);
         }
       } else {
-        setUserCompanies([]);
+        // Para outros papéis, buscar empresas associadas na tabela user_companies
+        const { data: userCompanyData, error: userCompanyError } = await supabase
+          .from('user_companies')
+          .select('company_id')
+          .eq('user_id', userId);
+        
+        if (userCompanyError) {
+          console.error('[useUserRole] Erro ao buscar empresas do usuário:', userCompanyError);
+          setUserCompanies([]);
+        } else if (userCompanyData && userCompanyData.length > 0) {
+          console.log("[useUserRole] Dados de empresas do usuário:", userCompanyData);
+          
+          // Buscar os nomes das empresas associadas
+          const companyIds = userCompanyData.map(item => item.company_id);
+          const { data: companiesData, error: companiesError } = await supabase
+            .from('companies')
+            .select('id, name')
+            .in('id', companyIds);
+            
+          if (companiesError) {
+            console.error('[useUserRole] Erro ao buscar detalhes das empresas:', companiesError);
+          } else if (companiesData) {
+            const formattedCompanies = companiesData.map(company => ({
+              companyId: company.id,
+              companyName: company.name
+            }));
+            console.log("[useUserRole] Empresas formatadas para o usuário:", formattedCompanies);
+            setUserCompanies(formattedCompanies);
+          }
+        } else {
+          console.log("[useUserRole] Nenhuma empresa associada ao usuário");
+          setUserCompanies([]);
+        }
       }
     } catch (error) {
-      console.error('Error fetching user role and companies:', error);
+      console.error('[useUserRole] Erro ao buscar papel e empresas do usuário:', error);
     } finally {
       setRoleLoading(false);
     }
