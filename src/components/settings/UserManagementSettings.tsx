@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUsers, User } from "@/hooks/users/useUsers";
@@ -15,8 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { queryClient } from "@/lib/queryClient";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserManagementSettings() {
   const { users, isLoading, deleteUser, updateUserRole, createUser } = useUsers();
@@ -24,6 +25,7 @@ export default function UserManagementSettings() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleAddUser = () => {
     setIsAddOpen(true);
