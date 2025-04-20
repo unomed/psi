@@ -12,7 +12,11 @@ import { AssessmentActions } from "@/components/assessments/AssessmentActions";
 import { AssessmentTabs } from "@/components/assessments/AssessmentTabs";
 import { AssessmentDialogsContainer } from "@/components/assessments/handlers/AssessmentDialogsContainer";
 
-export function AssessmentHandlerRoot() {
+interface AssessmentHandlerRootProps {
+  companyId: string | null;
+}
+
+export function AssessmentHandlerRoot({ companyId }: AssessmentHandlerRootProps) {
   const {
     scheduledAssessments,
     handleSaveSchedule: saveSchedule,
