@@ -50,3 +50,4 @@ Equipe de Recursos Humanos`,
     description: "Enviado quando uma nova avaliação é agendada para um funcionário"
   }
 ];
+

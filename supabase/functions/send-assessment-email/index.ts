@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0"
 
@@ -21,18 +20,15 @@ interface EmailRequest {
   customBody?: string;
 }
 
-// Email templates (in a real app, these would come from the database)
+// Email templates 
 const emailTemplates = {
-  "convite": {
-    subject: "Convite para participar de uma avaliação psicossocial",
+  "conclusao": {
+    subject: "Sua avaliação psicossocial foi concluída",
     body: `Olá {employeeName},
 
-Você foi convidado(a) a participar de uma avaliação psicossocial. 
-Por favor, acesse o link abaixo para completar a avaliação.
+Gostaríamos de informar que você concluiu com sucesso a avaliação psicossocial.
 
-Link da avaliação: {linkUrl}
-
-Se tiver qualquer dúvida, entre em contato com o RH.
+Agradecemos sua participação e comprometimento.
 
 Atenciosamente,
 Equipe de Recursos Humanos`
@@ -50,19 +46,22 @@ A sua participação é muito importante.
 Atenciosamente,
 Equipe de Recursos Humanos`
   },
-  "conclusao": {
-    subject: "Sua avaliação psicossocial foi concluída",
+  "convite": {
+    subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
 
-Gostaríamos de informar que você concluiu com sucesso a avaliação psicossocial.
+Você foi convidado(a) a participar de uma avaliação psicossocial. 
+Por favor, acesse o link abaixo para completar a avaliação.
 
-Agradecemos sua participação e comprometimento.
+Link da avaliação: {linkUrl}
+
+Se tiver qualquer dúvida, entre em contato com o RH.
 
 Atenciosamente,
 Equipe de Recursos Humanos`
   },
   
-  // Maintain compatibility with old English IDs
+  // Maintain compatibility with old English and old template IDs
   "assessment-invitation": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
