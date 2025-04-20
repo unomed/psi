@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,17 +21,16 @@ serve(async (req) => {
 
     console.log("Testing connection to email server:", settings.smtp_server);
     
-    const client = new SmtpClient();
-
-    await client.connectTLS({
+    // Create a TCP connection to the SMTP server directly
+    const conn = await Deno.connect({
       hostname: settings.smtp_server,
       port: settings.smtp_port,
-      username: settings.username,
-      password: settings.password,
     });
 
-    console.log("Connection successful, closing connection");
-    await client.close();
+    // Close the connection after successfully connecting
+    conn.close();
+    
+    console.log("Connection successful, connection closed");
 
     return new Response(
       JSON.stringify({ success: true }),
