@@ -22,7 +22,7 @@ export function useEmailServerSettings() {
       const { data, error } = await supabase
         .from('email_server_settings')
         .select('*')
-        .maybeSingle(); // Changed from .single() to .maybeSingle() to handle no results
+        .maybeSingle(); // Use maybeSingle() to handle no results
 
       if (error) {
         console.error('Error fetching email server settings:', error);
@@ -33,8 +33,14 @@ export function useEmailServerSettings() {
     }
   });
 
-  const { mutate: updateSettings } = useMutation({
+  const { mutate: updateSettings, isPending: isUpdating } = useMutation({
     mutationFn: async (newSettings: Omit<EmailServerSettings, 'id'>) => {
+      // Get current user to ensure they're logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Você precisa estar autenticado para atualizar as configurações.');
+      }
+      
       const { data, error } = await supabase
         .from('email_server_settings')
         .upsert({
@@ -42,7 +48,10 @@ export function useEmailServerSettings() {
           ...(settings?.id ? { id: settings.id } : {})
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error details:', error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
@@ -61,20 +70,28 @@ export function useEmailServerSettings() {
       throw new Error('Configurações de email não encontradas. Salve as configurações primeiro.');
     }
 
-    const { error } = await supabase.functions.invoke('test-email-connection', {
+    // Get current user to ensure they're logged in
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('Você precisa estar autenticado para testar a conexão.');
+    }
+
+    const { data, error } = await supabase.functions.invoke('test-email-connection', {
       body: { settings }
     });
 
     if (error) {
-      throw new Error('Failed to test email connection');
+      console.error('Error testing email connection:', error);
+      throw new Error('Falha ao testar a conexão de email. Verifique os logs para detalhes.');
     }
 
-    return true;
+    return data?.success || false;
   };
 
   return {
     settings,
     isLoading,
+    isUpdating,
     updateSettings,
     testConnection
   };

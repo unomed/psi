@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useEmailServerSettings } from "@/hooks/settings/useEmailServerSettings";
 
 const emailServerSchema = z.object({
@@ -38,19 +38,51 @@ type EmailServerFormValues = z.infer<typeof emailServerSchema>;
 
 export default function EmailServerSettings() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const { settings, isLoading, updateSettings, testConnection } = useEmailServerSettings();
+  const { 
+    settings, 
+    isLoading, 
+    isUpdating, 
+    updateSettings, 
+    testConnection 
+  } = useEmailServerSettings();
 
   const form = useForm<EmailServerFormValues>({
     resolver: zodResolver(emailServerSchema),
-    defaultValues: {
+    values: {
       smtpServer: settings?.smtp_server || "",
       smtpPort: settings?.smtp_port?.toString() || "587",
       username: settings?.username || "",
       password: settings?.password || "",
       senderEmail: settings?.sender_email || "",
       senderName: settings?.sender_name || ""
+    },
+    // Update form when settings change
+    defaultValues: {
+      smtpServer: "",
+      smtpPort: "587",
+      username: "",
+      password: "",
+      senderEmail: "",
+      senderName: ""
     }
   });
+
+  // Show loading state while fetching settings
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Configurações do Servidor de Email</CardTitle>
+          <CardDescription>Carregando configurações...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const onSubmit = (data: EmailServerFormValues) => {
     updateSettings({
@@ -68,17 +100,18 @@ export default function EmailServerSettings() {
       setIsTestingConnection(true);
       const success = await testConnection();
       if (success) {
-        toast({
-          title: "Conexão bem sucedida",
-          description: "O servidor de email está configurado corretamente.",
-          variant: "default"
+        toast.success("Conexão bem sucedida", {
+          description: "O servidor de email está configurado corretamente."
+        });
+      } else {
+        toast.error("Erro ao testar conexão", {
+          description: "Não foi possível conectar ao servidor de email. Verifique as configurações."
         });
       }
     } catch (error) {
-      toast({
-        title: "Erro ao testar conexão",
-        description: "Não foi possível conectar ao servidor de email. Verifique as configurações.",
-        variant: "destructive"
+      console.error("Error testing connection:", error);
+      toast.error("Erro ao testar conexão", {
+        description: error instanceof Error ? error.message : "Não foi possível conectar ao servidor de email. Verifique as configurações."
       });
     } finally {
       setIsTestingConnection(false);
@@ -192,14 +225,21 @@ export default function EmailServerSettings() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Button type="submit" className="flex-1">
-                Salvar Configurações
+              <Button type="submit" className="flex-1" disabled={isUpdating}>
+                {isUpdating ? (
+                  <>
+                    <span className="animate-spin mr-2">⭮</span>
+                    Salvando...
+                  </>
+                ) : (
+                  "Salvar Configurações"
+                )}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleTestConnection}
-                disabled={isTestingConnection}
+                disabled={isTestingConnection || isUpdating || !settings}
                 className="flex items-center gap-2"
               >
                 <TestTube className="h-4 w-4" />
