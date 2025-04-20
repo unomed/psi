@@ -130,6 +130,17 @@ function mapDbScaleToAppScale(dbScale: string): ScaleType {
   }
 }
 
+// Helper function to convert string to DiscFactorType enum
+function stringToDiscFactorType(factor: string): DiscFactorType {
+  switch (factor) {
+    case "D": return DiscFactorType.D;
+    case "I": return DiscFactorType.I;
+    case "S": return DiscFactorType.S;
+    case "C": return DiscFactorType.C;
+    default: return DiscFactorType.D; // Default to D if unknown
+  }
+}
+
 // Save an assessment result to Supabase
 export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | "completedAt">): Promise<string> {
   // Convert enum value to string for database storage
@@ -194,12 +205,15 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
       if ('C' in rawScores && rawScores.C !== null) factorScores.C = Number(rawScores.C) || 0;
     }
 
+    // Convert the dominant_factor string from database to DiscFactorType enum
+    const dominantFactor = stringToDiscFactorType(result.dominant_factor || "D");
+
     return {
       id: result.id,
       templateId: result.template_id,
       employeeName: result.employee_name || "Anônimo",
       results: factorScores,
-      dominantFactor: (result.dominant_factor as DiscFactorType) || "D",
+      dominantFactor: dominantFactor,
       completedAt: new Date(result.completed_at)
     };
   });
