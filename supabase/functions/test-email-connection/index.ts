@@ -14,7 +14,14 @@ serve(async (req) => {
 
   try {
     const { settings } = await req.json();
+    
+    if (!settings || !settings.smtp_server || !settings.smtp_port || 
+        !settings.username || !settings.password) {
+      throw new Error("Missing required email settings");
+    }
 
+    console.log("Testing connection to email server:", settings.smtp_server);
+    
     const client = new SmtpClient();
 
     await client.connectTLS({
@@ -24,6 +31,7 @@ serve(async (req) => {
       password: settings.password,
     });
 
+    console.log("Connection successful, closing connection");
     await client.close();
 
     return new Response(

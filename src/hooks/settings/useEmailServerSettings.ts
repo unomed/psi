@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,6 +18,13 @@ export function useEmailServerSettings() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['emailServerSettings'],
     queryFn: async () => {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('User not authenticated');
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('email_server_settings')
         .select('*')
@@ -26,6 +32,7 @@ export function useEmailServerSettings() {
 
       if (error) {
         console.error('Error fetching email server settings:', error);
+        toast.error('Erro ao carregar configurações do servidor de email');
         return null;
       }
 
@@ -41,18 +48,47 @@ export function useEmailServerSettings() {
         throw new Error('Você precisa estar autenticado para atualizar as configurações.');
       }
       
-      const { data, error } = await supabase
-        .from('email_server_settings')
-        .upsert({
-          ...newSettings,
-          ...(settings?.id ? { id: settings.id } : {})
-        });
+      // If we have existing settings, update them
+      if (settings?.id) {
+        const { data, error } = await supabase
+          .from('email_server_settings')
+          .update({
+            smtp_server: newSettings.smtp_server,
+            smtp_port: newSettings.smtp_port,
+            username: newSettings.username,
+            password: newSettings.password,
+            sender_email: newSettings.sender_email,
+            sender_name: newSettings.sender_name
+          })
+          .eq('id', settings.id)
+          .select();
 
-      if (error) {
-        console.error('Error details:', error);
-        throw error;
+        if (error) {
+          console.error('Error updating email server settings:', error);
+          throw error;
+        }
+        return data;
+      } 
+      // Otherwise insert new settings
+      else {
+        const { data, error } = await supabase
+          .from('email_server_settings')
+          .insert({
+            smtp_server: newSettings.smtp_server,
+            smtp_port: newSettings.smtp_port,
+            username: newSettings.username,
+            password: newSettings.password,
+            sender_email: newSettings.sender_email,
+            sender_name: newSettings.sender_name
+          })
+          .select();
+
+        if (error) {
+          console.error('Error creating email server settings:', error);
+          throw error;
+        }
+        return data;
       }
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emailServerSettings'] });
