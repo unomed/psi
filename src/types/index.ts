@@ -1,4 +1,3 @@
-
 // Export all types from their respective files
 export * from './disc';
 export * from './scale';
@@ -8,3 +7,4 @@ export * from './auth';
 export * from './permissions';
 export * from './settings';
 
+export type RecurrenceType = "none" | "monthly" | "semiannual" | "annual";

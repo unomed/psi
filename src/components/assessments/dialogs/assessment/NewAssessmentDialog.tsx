@@ -1,10 +1,14 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useAssessmentFormState } from "@/hooks/assessments/operations/useAssessmentFormState";
-import { useAssessmentFormValidation } from "@/hooks/assessments/operations/useAssessmentFormValidation";
-import { AssessmentForm } from "./AssessmentForm";
-import { useState } from "react";
-import { ChecklistTemplate } from "@/types";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
+import { useEffect, useState } from "react";
+import { ChecklistTemplate, RecurrenceType } from "@/types";
+import { toast } from "sonner";
+import { createSafeDate } from "@/utils/dateUtils";
+import { AssessmentDateSection } from "./AssessmentDateSection";
+import { AssessmentPeriodicitySection } from "./AssessmentPeriodicitySection";
+import { AssessmentDialogHeader } from "./AssessmentDialogHeader";
+import { AssessmentDialogFooter } from "./AssessmentDialogFooter";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -15,7 +19,7 @@ interface NewAssessmentDialogProps {
   isTemplatesLoading: boolean;
   onEmployeeSelect: (employeeId: string) => void;
   onTemplateSelect: (templateId: string) => void;
-  onSave: () => Promise<boolean> | boolean;
+  onSave: (date?: Date) => Promise<boolean> | boolean;
 }
 
 export function NewAssessmentDialog({
@@ -30,87 +34,93 @@ export function NewAssessmentDialog({
   onSave
 }: NewAssessmentDialogProps) {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
-  
-  const {
-    selectedCompany,
-    setSelectedCompany,
-    selectedSector,
-    setSelectedSector,
-    selectedRole,
-    setSelectedRole,
-    dateError,
-    setDateError,
-    showRecurrenceWarning,
-    setShowRecurrenceWarning,
-    recurrenceType,
-    setRecurrenceType,
-    resetForm
-  } = useAssessmentFormState();
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
+  const [dateError, setDateError] = useState<boolean>(false);
+  const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
+  const [attemptedSave, setAttemptedSave] = useState<boolean>(false);
 
-  const { formErrors, validateForm } = useAssessmentFormValidation();
+  useEffect(() => {
+    if (isOpen) {
+      const today = createSafeDate(new Date());
+      console.log("Inicializando data com:", today, "Timestamp:", today.getTime());
+      setScheduledDate(today);
+      setDateError(false);
+      setAttemptedSave(false);
+    }
+  }, [isOpen]);
 
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
+  useEffect(() => {
+    if (recurrenceType !== 'none' && !scheduledDate) {
+      setShowRecurrenceWarning(true);
+    } else {
+      setShowRecurrenceWarning(false);
+    }
+  }, [recurrenceType, scheduledDate]);
 
   const handleSave = async () => {
-    if (!validateForm({
-      employeeId: selectedEmployee,
-      templateId: selectedTemplate?.id || null,
-      scheduledDate
-    })) {
+    setAttemptedSave(true);
+    
+    if (!selectedEmployee || !selectedTemplate) {
+      toast.error("Selecione um funcionário e um modelo de avaliação");
       return;
     }
 
-    const saved = await onSave();
-    if (saved) {
-      handleClose();
+    if (!scheduledDate) {
+      setDateError(true);
+      toast.error("Selecione uma data para a avaliação");
+      return;
+    }
+
+    const safeDate = createSafeDate(scheduledDate);
+    console.log("Salvando com data segura:", safeDate, "Timestamp:", safeDate.getTime());
+    
+    try {
+      const saved = await onSave(safeDate);
+      if (saved) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      toast.error("Ocorreu um erro ao salvar a avaliação");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nova Avaliação</DialogTitle>
-          <DialogDescription>
-            Selecione o funcionário e o modelo de avaliação para criar uma nova avaliação.
-          </DialogDescription>
-        </DialogHeader>
+        <AssessmentDialogHeader />
 
-        <AssessmentForm
-          selectedEmployee={selectedEmployee}
-          selectedTemplate={selectedTemplate}
-          selectedCompany={selectedCompany}
-          selectedSector={selectedSector}
-          selectedRole={selectedRole}
-          dateError={dateError}
-          showRecurrenceWarning={showRecurrenceWarning}
-          templates={templates}
-          isTemplatesLoading={isTemplatesLoading}
-          scheduledDate={scheduledDate}
-          onEmployeeSelect={onEmployeeSelect}
-          onTemplateSelect={onTemplateSelect}
-          onCompanyChange={setSelectedCompany}
-          onSectorChange={setSelectedSector}
-          onRoleChange={setSelectedRole}
-          onDateSelect={(date) => {
-            setScheduledDate(date);
-            if (date) {
-              setDateError(false);
-              if (recurrenceType !== 'none') {
-                setShowRecurrenceWarning(false);
-              }
-            } else {
-              if (recurrenceType !== 'none') {
-                setShowRecurrenceWarning(true);
-              }
-            }
-          }}
-          onRecurrenceChange={(type) => setRecurrenceType(type as any)}
-          onSave={handleSave}
-        />
+        <div className="space-y-6">
+          <AssessmentSelectionTab
+            selectedEmployee={selectedEmployee}
+            selectedTemplate={selectedTemplate}
+            templates={templates}
+            isTemplatesLoading={isTemplatesLoading}
+            onEmployeeSelect={onEmployeeSelect}
+            onTemplateSelect={onTemplateSelect}
+            onNext={handleSave}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <AssessmentDateSection
+              scheduledDate={scheduledDate}
+              onDateSelect={setScheduledDate}
+              dateError={dateError}
+            />
+
+            <AssessmentPeriodicitySection
+              recurrenceType={recurrenceType}
+              onRecurrenceChange={setRecurrenceType}
+              showRecurrenceWarning={showRecurrenceWarning}
+              employeeId={selectedEmployee}
+            />
+          </div>
+
+          <AssessmentDialogFooter
+            onSave={handleSave}
+            disabled={!selectedEmployee || !selectedTemplate || dateError}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

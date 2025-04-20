@@ -29,13 +29,9 @@ export function AssessmentPeriodicitySection({
 
   useEffect(() => {
     if (suggestedPeriodicity && !recurrenceType) {
-      onRecurrenceChange(suggestedPeriodicity);
+      onRecurrenceChange(suggestedPeriodicity as RecurrenceType);
     }
   }, [suggestedPeriodicity, recurrenceType, onRecurrenceChange]);
-
-  const handleRecurrenceChange = (value: string) => {
-    onRecurrenceChange(value as RecurrenceType);
-  };
 
   if (isLoading) {
     return <div>Carregando periodicidade sugerida...</div>;
@@ -46,7 +42,7 @@ export function AssessmentPeriodicitySection({
       <Label htmlFor="recurrence">Periodicidade</Label>
       <Select 
         value={recurrenceType} 
-        onValueChange={handleRecurrenceChange}
+        onValueChange={(value) => onRecurrenceChange(value as RecurrenceType)}
       >
         <SelectTrigger>
           <SelectValue placeholder="Selecione o tipo de recorrência" />
@@ -54,7 +50,6 @@ export function AssessmentPeriodicitySection({
         <SelectContent>
           <SelectItem value="none">Sem recorrência</SelectItem>
           <SelectItem value="monthly">Mensal</SelectItem>
-          <SelectItem value="quarterly">Trimestral</SelectItem>
           <SelectItem value="semiannual">Semestral</SelectItem>
           <SelectItem value="annual">Anual</SelectItem>
         </SelectContent>
