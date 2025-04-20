@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,40 +16,40 @@ import { useAssessmentCriteriaSettings, type AssessmentCriteriaSettings } from "
 
 const assessmentCriteriaSchema = z.object({
   // Periodicidade
-  defaultRecurrenceType: z.enum(["none", "monthly", "semiannual", "annual"]).default("annual"),
-  enableRecurrenceReminders: z.boolean().default(true),
-  daysBeforeReminderSent: z.number().min(1).max(90).default(15),
+  default_recurrence_type: z.enum(["none", "monthly", "semiannual", "annual"]).default("annual"),
+  enable_recurrence_reminders: z.boolean().default(true),
+  days_before_reminder_sent: z.number().min(1).max(90).default(15),
   
   // Critérios de amostragem
-  minimumEmployeePercentage: z.number().min(1).max(100).default(30),
-  requireAllSectors: z.boolean().default(false),
-  requireAllRoles: z.boolean().default(false),
-  prioritizeHighRiskRoles: z.boolean().default(true),
+  minimum_employee_percentage: z.number().min(1).max(100).default(30),
+  require_all_sectors: z.boolean().default(false),
+  require_all_roles: z.boolean().default(false),
+  prioritize_high_risk_roles: z.boolean().default(true),
   
   // Níveis de risco
-  lowRiskThreshold: z.number().min(0).max(100).default(30),
-  mediumRiskThreshold: z.number().min(0).max(100).default(60),
+  low_risk_threshold: z.number().min(0).max(100).default(30),
+  medium_risk_threshold: z.number().min(0).max(100).default(60),
   // Alto risco é tudo acima do médio risco
   
   // Classificação nos relatórios
-  sectorRiskCalculationType: z.enum(["average", "highest", "weighted"]).default("weighted"),
-  companyRiskCalculationType: z.enum(["average", "highest", "weighted"]).default("weighted"),
+  sector_risk_calculation_type: z.enum(["average", "highest", "weighted"]).default("weighted"),
+  company_risk_calculation_type: z.enum(["average", "highest", "weighted"]).default("weighted"),
   
   // Governança
-  requireReassessmentForHighRisk: z.boolean().default(true),
-  reassessmentMaxDays: z.number().min(1).max(365).default(90),
-  notifyManagersOnHighRisk: z.boolean().default(true),
+  require_reassessment_for_high_risk: z.boolean().default(true),
+  reassessment_max_days: z.number().min(1).max(365).default(90),
+  notify_managers_on_high_risk: z.boolean().default(true),
 });
 
-type AssessmentCriteriaValues = z.infer<typeof assessmentCriteriaSchema>;
+type FormValues = z.infer<typeof assessmentCriteriaSchema>;
 
 export function AssessmentCriteriaSettings() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { settings, isLoading: isLoadingSettings, updateSettings } = useAssessmentCriteriaSettings();
   
-  const form = useForm<AssessmentCriteriaSettings>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(assessmentCriteriaSchema),
-    defaultValues: settings || {
+    defaultValues: {
       default_recurrence_type: "annual",
       enable_recurrence_reminders: true,
       days_before_reminder_sent: 15,
@@ -66,12 +67,33 @@ export function AssessmentCriteriaSettings() {
     }
   });
   
-  async function onSubmit(data: AssessmentCriteriaSettings) {
+  useEffect(() => {
+    if (settings) {
+      form.reset({
+        default_recurrence_type: settings.default_recurrence_type,
+        enable_recurrence_reminders: settings.enable_recurrence_reminders,
+        days_before_reminder_sent: settings.days_before_reminder_sent,
+        minimum_employee_percentage: settings.minimum_employee_percentage,
+        require_all_sectors: settings.require_all_sectors,
+        require_all_roles: settings.require_all_roles,
+        prioritize_high_risk_roles: settings.prioritize_high_risk_roles,
+        low_risk_threshold: settings.low_risk_threshold,
+        medium_risk_threshold: settings.medium_risk_threshold,
+        sector_risk_calculation_type: settings.sector_risk_calculation_type,
+        company_risk_calculation_type: settings.company_risk_calculation_type,
+        require_reassessment_for_high_risk: settings.require_reassessment_for_high_risk,
+        reassessment_max_days: settings.reassessment_max_days,
+        notify_managers_on_high_risk: settings.notify_managers_on_high_risk,
+      });
+    }
+  }, [settings, form]);
+  
+  async function onSubmit(data: FormValues) {
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       await updateSettings(data);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -120,7 +142,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="defaultRecurrenceType"
+                  name="default_recurrence_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Periodicidade Padrão</FormLabel>
@@ -149,7 +171,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="enableRecurrenceReminders"
+                  name="enable_recurrence_reminders"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
@@ -170,10 +192,10 @@ export function AssessmentCriteriaSettings() {
                   )}
                 />
                 
-                {form.watch("enableRecurrenceReminders") && (
+                {form.watch("enable_recurrence_reminders") && (
                   <FormField
                     control={form.control}
-                    name="daysBeforeReminderSent"
+                    name="days_before_reminder_sent"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Dias de Antecedência</FormLabel>
@@ -214,7 +236,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="minimumEmployeePercentage"
+                  name="minimum_employee_percentage"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Percentual Mínimo de Colaboradores</FormLabel>
@@ -244,7 +266,7 @@ export function AssessmentCriteriaSettings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="requireAllSectors"
+                    name="require_all_sectors"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
@@ -267,7 +289,7 @@ export function AssessmentCriteriaSettings() {
                 
                   <FormField
                     control={form.control}
-                    name="requireAllRoles"
+                    name="require_all_roles"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
@@ -291,7 +313,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="prioritizeHighRiskRoles"
+                  name="prioritize_high_risk_roles"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
@@ -325,7 +347,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="lowRiskThreshold"
+                  name="low_risk_threshold"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Limiar de Risco Baixo</FormLabel>
@@ -354,7 +376,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="mediumRiskThreshold"
+                  name="medium_risk_threshold"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Limiar de Risco Médio</FormLabel>
@@ -362,12 +384,12 @@ export function AssessmentCriteriaSettings() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">
-                              {form.watch("lowRiskThreshold")}% a {field.value}%
+                              {form.watch("low_risk_threshold")}% a {field.value}%
                             </span>
                           </div>
                           <Slider
                             value={[field.value]}
-                            min={form.watch("lowRiskThreshold") + 1}
+                            min={form.watch("low_risk_threshold") + 1}
                             max={90}
                             step={1}
                             onValueChange={(value) => field.onChange(value[0])}
@@ -384,14 +406,14 @@ export function AssessmentCriteriaSettings() {
                 <div className="p-4 rounded-lg bg-red-50 border border-red-200">
                   <div className="font-medium">Alto Risco</div>
                   <div className="text-sm text-gray-600 mt-1">
-                    Pontuações acima de {form.watch("mediumRiskThreshold")}% são consideradas alto risco
+                    Pontuações acima de {form.watch("medium_risk_threshold")}% são consideradas alto risco
                   </div>
                 </div>
                 
                 <div className="space-y-2 pt-2">
                   <FormField
                     control={form.control}
-                    name="sectorRiskCalculationType"
+                    name="sector_risk_calculation_type"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Cálculo de Risco do Setor</FormLabel>
@@ -419,7 +441,7 @@ export function AssessmentCriteriaSettings() {
                   
                   <FormField
                     control={form.control}
-                    name="companyRiskCalculationType"
+                    name="company_risk_calculation_type"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Cálculo de Risco da Empresa</FormLabel>
@@ -459,7 +481,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="requireReassessmentForHighRisk"
+                  name="require_reassessment_for_high_risk"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
@@ -480,10 +502,10 @@ export function AssessmentCriteriaSettings() {
                   )}
                 />
                 
-                {form.watch("requireReassessmentForHighRisk") && (
+                {form.watch("require_reassessment_for_high_risk") && (
                   <FormField
                     control={form.control}
-                    name="reassessmentMaxDays"
+                    name="reassessment_max_days"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Prazo para Reavaliação (dias)</FormLabel>
@@ -506,7 +528,7 @@ export function AssessmentCriteriaSettings() {
                 
                 <FormField
                   control={form.control}
-                  name="notifyManagersOnHighRisk"
+                  name="notify_managers_on_high_risk"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
@@ -530,8 +552,8 @@ export function AssessmentCriteriaSettings() {
             </Tabs>
             
             <div className="flex justify-end">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Salvando..." : "Salvar Configurações"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Salvando..." : "Salvar Configurações"}
               </Button>
             </div>
           </form>
