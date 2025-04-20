@@ -66,7 +66,10 @@ export function useCheckPermission() {
       // Convert numeric keys to array entries if needed
       const resourcesArray = Object.entries(permissions)
         .filter(([key]) => !isNaN(Number(key)))
-        .map(([_, value]) => value as Record<string, any> | null)
+        .map(([_, value]) => {
+          // Only map objects, skip boolean values
+          return typeof value === 'object' ? value : null;
+        })
         .filter((item): item is Record<string, any> => item !== null);
         
       // Check if permission exists in nested structure
