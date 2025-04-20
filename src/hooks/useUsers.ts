@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,7 +7,7 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  role: string;
+  role: "superadmin" | "admin" | "evaluator" | "profissionais";
   companies: string[];
 }
 
@@ -19,13 +18,7 @@ export function useUsers() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const { data: userCompanies } = await supabase
-        .from('user_companies')
-        .select('company_id')
-        .eq('user_id', currentUser?.id);
-
-      const userCompanyIds = userCompanies?.map(uc => uc.company_id) || [];
-
+      // Fetch all user profiles with emails
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles_with_emails')
         .select('*');
@@ -35,6 +28,7 @@ export function useUsers() {
         throw profilesError;
       }
 
+      // Fetch user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
@@ -44,7 +38,8 @@ export function useUsers() {
         throw rolesError;
       }
 
-      const { data: allUserCompanies, error: companiesError } = await supabase
+      // Fetch user companies
+      const { data: userCompanies, error: companiesError } = await supabase
         .from('user_companies')
         .select('user_id, company_id');
 
@@ -53,6 +48,7 @@ export function useUsers() {
         throw companiesError;
       }
 
+      // Fetch company names
       const { data: companies, error: companyNamesError } = await supabase
         .from('companies')
         .select('id, name');
@@ -62,29 +58,25 @@ export function useUsers() {
         throw companyNamesError;
       }
 
+      // Combine all user data
       return profiles.map(profile => {
         const userRole = userRoles.find(r => r.user_id === profile.id);
-        
-        const thisUserCompanyIds = allUserCompanies
+        const userCompanyIds = userCompanies
           .filter(uc => uc.user_id === profile.id)
           .map(uc => uc.company_id);
-        
-        if (userRole?.role !== 'superadmin' && !hasCommonCompany(thisUserCompanyIds, userCompanyIds)) {
-          return null;
-        }
-        
+
         const companyNames = companies
-          .filter(c => thisUserCompanyIds.includes(c.id))
+          .filter(c => userCompanyIds.includes(c.id))
           .map(c => c.name);
 
         return {
           id: profile.id,
           email: profile.email || '',
-          full_name: (profile as any).full_name || '',
-          role: userRole?.role || 'user',
+          full_name: profile.full_name || '', // Assuming we have full_name in profiles_with_emails
+          role: userRole?.role || 'evaluator',
           companies: companyNames
         };
-      }).filter(Boolean) as User[];
+      });
     }
   });
 
@@ -179,7 +171,7 @@ export function useUsers() {
       toast.success('Usuário criado com sucesso');
     }
   });
-
+  
   return {
     users,
     isLoading,
