@@ -96,20 +96,37 @@ export default function UserManagementSettings() {
 
   const handleToggleActive = async (user: User) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: !user.is_active })
-        .eq('id', user.id);
+      const newStatus = !user.is_active;
+      
+      // Show immediate feedback with optimistic update
+      toast.promise(
+        async () => {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ is_active: newStatus })
+            .eq('id', user.id);
 
-      if (error) {
-        toast.error('Erro ao atualizar status do usuário');
-        throw error;
-      }
-
-      toast.success(`Usuário ${!user.is_active ? 'ativado' : 'desativado'} com sucesso`);
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+          if (error) {
+            throw error;
+          }
+          
+          // Invalidate queries to refresh the data
+          await queryClient.invalidateQueries({ queryKey: ['users'] });
+          
+          return { success: true };
+        },
+        {
+          loading: `${newStatus ? 'Ativando' : 'Desativando'} usuário...`,
+          success: `Usuário ${newStatus ? 'ativado' : 'desativado'} com sucesso`,
+          error: (error) => {
+            console.error('Error toggling user active status:', error);
+            return `Erro ao ${newStatus ? 'ativar' : 'desativar'} usuário`;
+          }
+        }
+      );
     } catch (error) {
-      console.error('Error toggling user active status:', error);
+      console.error('Error in handleToggleActive:', error);
+      toast.error('Erro ao alterar status do usuário');
     }
   };
 
