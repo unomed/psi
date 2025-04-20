@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { User } from "@/hooks/useUsers";
+import { toast } from "sonner";
 
 export default function UserManagementSettings() {
   const { users, isLoading, deleteUser, updateUserRole, createUser } = useUsers();
@@ -77,6 +78,7 @@ export default function UserManagementSettings() {
         setSelectedUser(null);
       } catch (error) {
         console.error('Error updating user:', error);
+        toast.error('Erro ao atualizar função do usuário');
         throw error;
       }
     }

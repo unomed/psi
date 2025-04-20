@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,7 +13,7 @@ export interface User {
 
 interface ProfileWithEmail {
   id: string;
-  email: string;
+  email?: string;
   full_name?: string;
 }
 
@@ -97,17 +96,41 @@ export function useUsers() {
         toast.warning('Função inválida, usando "evaluator" como padrão');
       }
       
-      // Update user role
-      const { error: roleError } = await supabase
+      // First check if the role entry exists
+      const { data: existingRole, error: checkError } = await supabase
         .from('user_roles')
-        .upsert({ 
-          user_id: userId, 
-          role: dbRole 
-        });
-
-      if (roleError) {
-        toast.error('Erro ao atualizar função do usuário');
-        throw roleError;
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+        
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 means "no rows returned" which is fine - we'll create one
+        toast.error('Erro ao verificar função do usuário');
+        throw checkError;
+      }
+      
+      // Update or insert user role based on whether it exists
+      if (existingRole) {
+        // Update existing role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({ role: dbRole })
+          .eq('user_id', userId);
+          
+        if (roleError) {
+          toast.error('Erro ao atualizar função do usuário');
+          throw roleError;
+        }
+      } else {
+        // Insert new role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: dbRole });
+          
+        if (roleError) {
+          toast.error('Erro ao definir função do usuário');
+          throw roleError;
+        }
       }
 
       // Update user companies if provided

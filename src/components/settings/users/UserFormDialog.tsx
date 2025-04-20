@@ -11,6 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { User } from "@/hooks/useUsers";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Search } from "lucide-react";
 
 interface Company {
   id: string;
@@ -40,6 +42,8 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -51,22 +55,36 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
     },
   });
 
-  // Fetch companies
+  // Fetch all companies
   useEffect(() => {
     const fetchCompanies = async () => {
       const { data, error } = await supabase
         .from('companies')
-        .select('id, name');
+        .select('id, name')
+        .order('name');
       
       if (error) {
         console.error('Error fetching companies:', error);
       } else if (data) {
         setCompanies(data);
+        setFilteredCompanies(data);
       }
     };
 
     fetchCompanies();
   }, []);
+
+  // Filter companies based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredCompanies(companies);
+    } else {
+      const filtered = companies.filter(company => 
+        company.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredCompanies(filtered);
+    }
+  }, [searchQuery, companies]);
 
   // Fetch user's companies if editing
   useEffect(() => {
@@ -112,6 +130,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
       });
       onClose();
       form.reset();
+      setSelectedCompanies([]);
     } catch (error) {
       console.error("Error submitting form:", error);
     } finally {
@@ -181,9 +200,18 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
 
             <div className="space-y-2">
               <FormLabel>Empresas</FormLabel>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar empresas..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 mb-2"
+                />
+              </div>
               <div className="border rounded-md p-3 space-y-2 max-h-60 overflow-y-auto">
-                {companies.length > 0 ? (
-                  companies.map((company) => (
+                {filteredCompanies.length > 0 ? (
+                  filteredCompanies.map((company) => (
                     <div key={company.id} className="flex items-center space-x-2">
                       <Checkbox 
                         id={`company-${company.id}`} 
@@ -199,7 +227,9 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">Nenhuma empresa disponível</p>
+                  <p className="text-sm text-muted-foreground">
+                    {searchQuery ? "Nenhuma empresa encontrada" : "Nenhuma empresa disponível"}
+                  </p>
                 )}
               </div>
             </div>
