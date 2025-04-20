@@ -80,10 +80,7 @@ export function useCheckPermission() {
         
       // Check if permission exists in nested structure
       for (const item of resourcesArray) {
-        if (item && 
-            typeof item === 'object' && 
-            'resource' in item && 
-            'actions' in item && 
+        if ('resource' in item && 'actions' in item && 
             Array.isArray(item.actions)) {
           const [action, resource] = permissionKey.split('_');
           if (item.resource === resource && item.actions.includes(action)) {
