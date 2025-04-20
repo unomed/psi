@@ -1,6 +1,7 @@
 
 import { EmailRequest, EmailTemplate } from './types.ts';
-import { createClient } from '@supabase/supabase-js';
+// Change the import from @supabase/supabase-js to use npm: prefix for Deno compatibility
+import { createClient } from 'npm:@supabase/supabase-js@2.22.0';
 
 export function applyTemplateVariables(
   template: string, 
