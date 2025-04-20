@@ -25,6 +25,13 @@ export function RouteGuard({
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
 
+  // Log para depuração
+  console.log('[RouteGuard] Checking access for route:', location.pathname);
+  console.log('[RouteGuard] User role:', userRole);
+  console.log('[RouteGuard] Required permission:', requirePermission);
+  console.log('[RouteGuard] Required company access:', requireCompanyAccess);
+  console.log('[RouteGuard] User companies:', userCompanies);
+  
   // Show loading state while checking permissions and access
   if (loading || loadingPermission || checkingAccess) {
     return <LoadingSpinner />;
@@ -35,22 +42,22 @@ export function RouteGuard({
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check permission
+  // Check permission based on configured permissions
   if (requirePermission && !hasPermission(requirePermission)) {
-    toast.error(`Acesso negado: Você não tem permissão para acessar esta funcionalidade`);
+    toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
+    console.error(`[RouteGuard] Permission denied: ${requirePermission}`);
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Check company access
+  // Check company access - this now strictly uses what's configured in the User Management page
   if (requireCompanyAccess && !hasAccess) {
-    toast.error(`Acesso negado: Você não tem acesso a esta empresa`);
+    toast.error(`Acesso negado: Você não tem acesso à empresa solicitada`);
+    console.error(`[RouteGuard] Company access denied: ${requireCompanyAccess}`);
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Console logging for debugging
-  console.log(`[RouteGuard] User role: ${userRole}, Required permission: ${requirePermission}`);
-  console.log(`[RouteGuard] Has permission: ${requirePermission ? hasPermission(requirePermission) : 'No permission required'}`);
-  console.log(`[RouteGuard] User companies:`, userCompanies);
+  // Log final decision
+  console.log(`[RouteGuard] Access granted for route: ${location.pathname}`);
   
   // Check role-based access
   return (

@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import AuthLayout from '@/components/layout/AuthLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const loginSchema = z.object({
   email: z.string().email("Digite um email válido"),
@@ -23,6 +24,7 @@ export default function Login() {
   const { signIn, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginInfo, setLoginInfo] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -35,6 +37,7 @@ export default function Login() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     setLoginError(null);
+    setLoginInfo(null);
     
     try {
       await signIn(data.email, data.password);
@@ -67,6 +70,21 @@ export default function Login() {
   const setTestCredentials = (email: string, password: string) => {
     form.setValue('email', email);
     form.setValue('password', password);
+    
+    // Mostrar informações sobre o perfil selecionado
+    let infoMessage = "";
+    switch(email) {
+      case 'superadmin@test.com':
+        infoMessage = "Super Admin: Acesso total ao sistema e todas as empresas.";
+        break;
+      case 'admin@company.com':
+        infoMessage = "Admin da Empresa: Acesso administrativo à Stepenovski Clínica Médica.";
+        break;
+      case 'evaluator@company.com':
+        infoMessage = "Avaliador: Acesso limitado às funcionalidades de avaliações.";
+        break;
+    }
+    setLoginInfo(infoMessage);
   };
 
   return (
@@ -117,6 +135,15 @@ export default function Login() {
             <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               {loginError}
             </div>
+          )}
+          
+          {loginInfo && (
+            <Alert className="bg-blue-50 border-blue-200">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="text-blue-700 text-xs">
+                {loginInfo}
+              </AlertDescription>
+            </Alert>
           )}
           
           <Button type="submit" className="w-full" disabled={isLoading || loading}>

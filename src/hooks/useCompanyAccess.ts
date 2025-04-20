@@ -31,36 +31,28 @@ export function useCompanyAccess(requiredCompanyId?: string) {
         }
 
         // Verificar se o usuário tem acesso com base nas empresas carregadas do contexto de autenticação
+        // Esta verificação agora é a principal e deve refletir exatamente o que foi configurado na interface
         if (userCompanies && userCompanies.length > 0) {
           const hasCompanyAccess = userCompanies.some(
             company => company.companyId === requiredCompanyId
           );
           
-          console.log('[useCompanyAccess] Company access based on context:', hasCompanyAccess);
+          console.log('[useCompanyAccess] Company access based on assigned companies:', hasCompanyAccess);
+          console.log('[useCompanyAccess] User companies:', userCompanies.map(c => c.companyName).join(', '));
+          console.log('[useCompanyAccess] Required company:', requiredCompanyId);
+          
           setHasAccess(hasCompanyAccess);
           setCheckingAccess(false);
           return;
         }
-
-        // Se não encontrar nas empresas do contexto, fazer verificação direta no banco
-        console.log('[useCompanyAccess] Falling back to database check');
-        const { data: userCompanyData, error } = await supabase
-          .from('user_companies')
-          .select('company_id')
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.error('[useCompanyAccess] Error checking company access:', error);
-          setHasAccess(false);
-        } else {
-          const hasCompanyAccess = userCompanyData?.some(uc => uc.company_id === requiredCompanyId) || false;
-          console.log('[useCompanyAccess] Company access based on DB check:', hasCompanyAccess);
-          setHasAccess(hasCompanyAccess);
-        }
+        
+        // Se não houver empresas associadas, não tem acesso
+        console.log('[useCompanyAccess] No companies associated with user, denying access');
+        setHasAccess(false);
+        setCheckingAccess(false);
       } catch (error) {
         console.error('[useCompanyAccess] Error checking company access:', error);
         setHasAccess(false);
-      } finally {
         setCheckingAccess(false);
       }
     };

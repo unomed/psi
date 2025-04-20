@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User, Building } from "lucide-react";
+import { LogOut, Settings, User, Building, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function UserProfileMenu() {
@@ -27,6 +27,9 @@ export function UserProfileMenu() {
 
   // Format role for display
   const displayRole = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'Usuário';
+
+  // Determinar se existe acesso a empresas
+  const hasCompanyAccess = userCompanies && userCompanies.length > 0;
 
   return (
     <DropdownMenu>
@@ -50,7 +53,12 @@ export function UserProfileMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {userCompanies && userCompanies.length > 0 ? (
+        {userRole === 'superadmin' ? (
+          <div className="px-2 py-1 text-xs text-green-600 flex items-center">
+            <Building className="h-3 w-3 mr-1" />
+            Acesso a todas as empresas
+          </div>
+        ) : hasCompanyAccess ? (
           <>
             <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center">
               <Building className="h-3 w-3 mr-1" />
@@ -64,19 +72,15 @@ export function UserProfileMenu() {
                 </div>
               ))}
             </div>
-            <DropdownMenuSeparator />
           </>
         ) : (
-          userRole !== 'superadmin' && (
-            <>
-              <div className="px-2 py-1 text-xs text-amber-600">
-                Nenhuma empresa associada ao seu perfil
-              </div>
-              <DropdownMenuSeparator />
-            </>
-          )
+          <div className="px-2 py-1 text-xs text-amber-600 flex items-center">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Nenhuma empresa associada ao seu perfil
+          </div>
         )}
         
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />

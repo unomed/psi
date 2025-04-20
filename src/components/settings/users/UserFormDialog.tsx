@@ -10,6 +10,7 @@ import type { User } from "@/hooks/users/types";
 import { supabase } from "@/integrations/supabase/client";
 import { BasicUserInfo } from "./form-sections/BasicUserInfo";
 import { CompanySelection } from "./form-sections/CompanySelection";
+import { toast } from "sonner";
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -35,6 +36,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -46,6 +48,19 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
     },
   });
 
+  // Monitor role changes to enforce Super Admin rules
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'role' && value.role === 'superadmin') {
+        // Super Admin always has access to all companies
+        setSelectedCompanies(companies.map(c => c.id));
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, companies]);
+
+  // Fetch all companies when component mounts
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
@@ -56,17 +71,25 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
         
         if (error) {
           console.error('Error fetching companies:', error);
+          toast.error('Erro ao carregar empresas');
         } else if (data) {
           setCompanies(data);
+          
+          // If user is Super Admin, select all companies automatically
+          if (user?.role === 'superadmin') {
+            setSelectedCompanies(data.map(c => c.id));
+          }
         }
       } catch (error) {
         console.error('Unexpected error fetching companies:', error);
+        toast.error('Erro inesperado ao carregar empresas');
       }
     };
 
     fetchCompanies();
-  }, []);
+  }, [user?.role]);
 
+  // Fetch user's current company assignments when editing
   useEffect(() => {
     if (user?.id) {
       const fetchUserCompanies = async () => {
@@ -78,6 +101,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
           
           if (error) {
             console.error('Error fetching user companies:', error);
+            toast.error('Erro ao carregar empresas do usuário');
           } else if (data) {
             const companyIds = data.map(item => item.company_id);
             setSelectedCompanies(companyIds);
@@ -85,6 +109,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
           }
         } catch (error) {
           console.error('Unexpected error fetching user companies:', error);
+          toast.error('Erro inesperado ao carregar empresas do usuário');
         }
       };
 
@@ -94,6 +119,12 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
 
   const handleToggleCompany = (companyId: string) => {
     let updatedCompanies: string[];
+    
+    // Se o papel for superadmin, não permitir desmarcar empresas
+    if (form.getValues('role') === 'superadmin') {
+      toast.info('Super Admin tem acesso a todas as empresas por padrão');
+      return;
+    }
     
     if (selectedCompanies.includes(companyId)) {
       updatedCompanies = selectedCompanies.filter(id => id !== companyId);
@@ -106,17 +137,35 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
   };
 
   const handleSubmit = async (data: UserFormData) => {
+    setError(null);
+    
+    // Validar se empresas foram selecionadas para papéis que não são superadmin
+    if (data.role !== 'superadmin' && (!selectedCompanies || selectedCompanies.length === 0)) {
+      setError("Selecione pelo menos uma empresa para este usuário");
+      toast.error("Selecione pelo menos uma empresa para este usuário");
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
+      
+      // Garantir que superadmin tenha acesso a todas as empresas
+      const finalCompanyIds = data.role === 'superadmin' 
+        ? companies.map(c => c.id) 
+        : selectedCompanies;
+      
       await onSubmit({
         ...data,
-        companyIds: selectedCompanies,
+        companyIds: finalCompanyIds,
       });
+      
       onClose();
       form.reset();
       setSelectedCompanies([]);
+      setError(null);
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error("Erro ao salvar usuário");
     } finally {
       setIsSubmitting(false);
     }
@@ -140,6 +189,12 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
             />
+
+            {error && (
+              <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={onClose}>
