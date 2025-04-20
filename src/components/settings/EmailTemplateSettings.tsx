@@ -8,6 +8,17 @@ import { EmailTemplateForm } from "./email-templates/EmailTemplateForm";
 import { useEmailTemplates } from "@/hooks/settings/useEmailTemplates";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Map para tradução dos IDs dos templates para nomes em português
+const templateNameMap: Record<string, string> = {
+  "completion": "Conclusão",
+  "reminder": "Lembrete",
+  "welcome": "Convite",
+  // Compatibilidade com IDs antigos em inglês
+  "assessment-invitation": "Convite",
+  "assessment-reminder": "Lembrete",
+  "assessment-completion": "Conclusão"
+};
+
 export default function EmailTemplateSettings() {
   const { templates = [], isLoading, updateTemplate } = useEmailTemplates();
   const [activeTemplate, setActiveTemplate] = React.useState<string>("");
@@ -70,7 +81,7 @@ export default function EmailTemplateSettings() {
           <TabsList className="mb-4">
             {templates.map((template) => (
               <TabsTrigger key={template.id} value={template.id}>
-                {template.name}
+                {templateNameMap[template.id] || template.name}
               </TabsTrigger>
             ))}
           </TabsList>
