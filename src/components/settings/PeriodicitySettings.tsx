@@ -1,37 +1,31 @@
 
-import { usePeriodicitySettings, PeriodicityType } from "@/hooks/settings/usePeriodicitySettings";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePeriodicityConfiguration, PeriodicityType } from "@/hooks/settings/usePeriodicityConfiguration";
 
-const formSchema = z.object({
-  defaultPeriodicity: z.enum(["monthly", "quarterly", "semiannual", "annual"] as const),
-  riskHighPeriodicity: z.enum(["monthly", "quarterly", "semiannual", "annual"] as const),
-  riskMediumPeriodicity: z.enum(["monthly", "quarterly", "semiannual", "annual"] as const),
-  riskLowPeriodicity: z.enum(["monthly", "quarterly", "semiannual", "annual"] as const),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+interface FormValues {
+  defaultPeriodicity: PeriodicityType;
+  riskHighPeriodicity: PeriodicityType;
+  riskMediumPeriodicity: PeriodicityType;
+  riskLowPeriodicity: PeriodicityType;
+}
 
 export default function PeriodicitySettings() {
-  const { settings, isLoading, updateSettings } = usePeriodicitySettings();
+  const { settings, isLoading, updateSettings } = usePeriodicityConfiguration();
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
-      defaultPeriodicity: "annual" as PeriodicityType,
-      riskHighPeriodicity: "quarterly" as PeriodicityType,
-      riskMediumPeriodicity: "semiannual" as PeriodicityType,
-      riskLowPeriodicity: "annual" as PeriodicityType,
+      defaultPeriodicity: "annual",
+      riskHighPeriodicity: "quarterly",
+      riskMediumPeriodicity: "semiannual",
+      riskLowPeriodicity: "annual"
     }
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (settings) {
       form.reset({
         defaultPeriodicity: settings.default_periodicity as PeriodicityType,
@@ -42,23 +36,23 @@ export default function PeriodicitySettings() {
     }
   }, [settings, form]);
 
-  function onSubmit(values: FormValues) {
-    // Ensure all required properties are present
+  const onSubmit = (values: FormValues) => {
     updateSettings({
-      defaultPeriodicity: values.defaultPeriodicity,
-      riskHighPeriodicity: values.riskHighPeriodicity,
-      riskMediumPeriodicity: values.riskMediumPeriodicity,
-      riskLowPeriodicity: values.riskLowPeriodicity
+      default_periodicity: values.defaultPeriodicity,
+      risk_high_periodicity: values.riskHighPeriodicity,
+      risk_medium_periodicity: values.riskMediumPeriodicity,
+      risk_low_periodicity: values.riskLowPeriodicity
     });
+  };
+
+  if (isLoading) {
+    return <div>Carregando configurações...</div>;
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Configurações de Periodicidade</CardTitle>
-        <CardDescription>
-          Configure a frequência padrão das avaliações por nível de risco
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -70,11 +64,9 @@ export default function PeriodicitySettings() {
                 <FormItem>
                   <FormLabel>Periodicidade Padrão</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a periodicidade" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a periodicidade" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
                       <SelectItem value="quarterly">Trimestral</SelectItem>
@@ -93,11 +85,9 @@ export default function PeriodicitySettings() {
                 <FormItem>
                   <FormLabel>Periodicidade para Risco Alto</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a periodicidade" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a periodicidade" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
                       <SelectItem value="quarterly">Trimestral</SelectItem>
@@ -116,11 +106,9 @@ export default function PeriodicitySettings() {
                 <FormItem>
                   <FormLabel>Periodicidade para Risco Médio</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a periodicidade" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a periodicidade" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
                       <SelectItem value="quarterly">Trimestral</SelectItem>
@@ -139,11 +127,9 @@ export default function PeriodicitySettings() {
                 <FormItem>
                   <FormLabel>Periodicidade para Risco Baixo</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a periodicidade" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a periodicidade" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="monthly">Mensal</SelectItem>
                       <SelectItem value="quarterly">Trimestral</SelectItem>
@@ -155,7 +141,9 @@ export default function PeriodicitySettings() {
               )}
             />
 
-            <Button type="submit" className="w-full">Salvar Configurações</Button>
+            <Button type="submit" className="w-full">
+              Salvar Configurações
+            </Button>
           </form>
         </Form>
       </CardContent>
