@@ -41,12 +41,26 @@ export function AssessmentTabs({ companyId }: AssessmentTabsProps) {
           
         // Se um ID de empresa for fornecido, filtrar os funcionários pelo ID da empresa
         if (companyId && userRole !== 'superadmin') {
-          query = query.in('employee_id', 
-            supabase
-              .from('employees')
-              .select('id')
-              .eq('company_id', companyId)
-          );
+          // Obter primeiro os IDs dos funcionários da empresa
+          const { data: employeeIds, error: employeeError } = await supabase
+            .from('employees')
+            .select('id')
+            .eq('company_id', companyId);
+            
+          if (employeeError) {
+            console.error("Error fetching employee IDs:", employeeError);
+            toast.error("Erro ao buscar funcionários");
+            return [];
+          }
+          
+          // Se houver funcionários, filtrar as avaliações pelos IDs dos funcionários
+          if (employeeIds && employeeIds.length > 0) {
+            const ids = employeeIds.map(emp => emp.id);
+            query = query.in('employee_id', ids);
+          } else {
+            // Se não houver funcionários, retornar lista vazia
+            return [];
+          }
         }
         
         // Ordenar e executar a consulta
