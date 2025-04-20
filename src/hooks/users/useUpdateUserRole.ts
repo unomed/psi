@@ -19,7 +19,11 @@ export function useUpdateUserRole() {
       }
       
       try {
-        console.log('updateUserRole: início da operação', { userId, role: dbRole, companyIds });
+        console.log('updateUserRole: início da operação', { 
+          userId, 
+          role: dbRole, 
+          companyIds: companyIds || [] 
+        });
         
         // First check if the role entry exists
         const { data: existingRole, error: checkError } = await supabase
@@ -60,7 +64,7 @@ export function useUpdateUserRole() {
           }
         }
 
-        // Always delete existing company assignments first
+        // SEMPRE excluir as associações existentes de empresas primeiro
         console.log('updateUserRole: removendo associações existentes de empresas');
         const { error: deleteError } = await supabase
           .from('user_companies')
@@ -73,7 +77,7 @@ export function useUpdateUserRole() {
           throw deleteError;
         }
         
-        // If superadmin, fetch all companies and assign them
+        // Se superadmin, buscar todas as empresas e associá-las
         if (dbRole === 'superadmin') {
           console.log('updateUserRole: usuário é superadmin, buscando todas as empresas');
           const { data: allCompanies, error: companiesError } = await supabase
@@ -104,22 +108,30 @@ export function useUpdateUserRole() {
             }
           }
         } 
-        // For other roles, only assign selected companies
-        else if (companyIds && companyIds.length > 0) {
+        // Para outros perfis, associar apenas às empresas selecionadas
+        else if (Array.isArray(companyIds) && companyIds.length > 0) {
           console.log('updateUserRole: associando usuário a empresas específicas', companyIds);
-          const companyAssignments = companyIds.map(companyId => ({
-            user_id: userId,
-            company_id: companyId
-          }));
           
-          const { error: insertError } = await supabase
-            .from('user_companies')
-            .insert(companyAssignments);
+          // IMPORTANTE: Validar dados de entrada para evitar erros
+          const validCompanyIds = companyIds.filter(id => typeof id === 'string' && id.trim() !== '');
+          
+          if (validCompanyIds.length > 0) {
+            const companyAssignments = validCompanyIds.map(companyId => ({
+              user_id: userId,
+              company_id: companyId
+            }));
             
-          if (insertError) {
-            console.error('Error inserting user companies:', insertError);
-            toast.error('Erro ao associar usuário às empresas');
-            throw insertError;
+            const { error: insertError } = await supabase
+              .from('user_companies')
+              .insert(companyAssignments);
+              
+            if (insertError) {
+              console.error('Error inserting user companies:', insertError);
+              toast.error('Erro ao associar usuário às empresas');
+              throw insertError;
+            }
+          } else {
+            console.log('updateUserRole: nenhum ID de empresa válido fornecido');
           }
         } else {
           console.log('updateUserRole: usuário não terá acesso a nenhuma empresa');

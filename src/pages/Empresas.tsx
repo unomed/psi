@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -9,6 +9,9 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { CompanySearch } from "@/components/companies/CompanySearch";
 import { EmptyCompanyState } from "@/components/companies/EmptyCompanyState";
 import { CompanyDialogs } from "@/components/companies/CompanyDialogs";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { toast } from "sonner";
 
 export default function Empresas() {
   const [search, setSearch] = useState("");
@@ -17,8 +20,45 @@ export default function Empresas() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
+  const [displayedCompanies, setDisplayedCompanies] = useState<CompanyData[]>([]);
   
   const { companies, isLoading, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const { userRole, userCompanies } = useAuth();
+  const { filterResourcesByCompany } = useCompanyAccessCheck();
+
+  // Filtra empresas com base no acesso do usuário
+  useEffect(() => {
+    if (!companies) return;
+    
+    // Se não for superadmin, aplicar filtro rigoroso
+    if (userRole !== 'superadmin') {
+      const userCompanyIds = userCompanies.map(company => company.companyId);
+      console.log('[Empresas] IDs de empresas do usuário:', userCompanyIds);
+      
+      const filtered = companies.filter(company => 
+        userCompanyIds.includes(company.id)
+      );
+      
+      console.log('[Empresas] Empresas filtradas por acesso:', filtered.length, 'de', companies.length);
+      setDisplayedCompanies(filtered);
+    } else {
+      // Superadmin vê tudo
+      setDisplayedCompanies(companies);
+    }
+  }, [companies, userRole, userCompanies]);
+
+  // Verifica acesso antes de criar/editar/excluir
+  const verifyAccessToCompany = (companyId: string): boolean => {
+    if (userRole === 'superadmin') return true;
+    
+    const hasAccess = userCompanies.some(company => company.companyId === companyId);
+    if (!hasAccess) {
+      toast.error('Você não tem acesso a esta empresa');
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleCreate = async (data: Omit<CompanyData, "id">) => {
     try {
@@ -31,6 +71,10 @@ export default function Empresas() {
 
   const handleEdit = async (data: Omit<CompanyData, "id">) => {
     if (!selectedCompany) return;
+    
+    // Verificar acesso
+    if (!verifyAccessToCompany(selectedCompany.id)) return;
+    
     try {
       await updateCompany.mutateAsync({ ...data, id: selectedCompany.id });
       setIsEditDialogOpen(false);
@@ -42,6 +86,10 @@ export default function Empresas() {
 
   const handleDelete = async () => {
     if (!selectedCompany) return;
+    
+    // Verificar acesso
+    if (!verifyAccessToCompany(selectedCompany.id)) return;
+    
     try {
       await deleteCompany.mutateAsync(selectedCompany.id);
       setIsDeleteDialogOpen(false);
@@ -52,15 +100,19 @@ export default function Empresas() {
   };
 
   const handleView = (company: CompanyData) => {
+    // Verificar acesso
+    if (!verifyAccessToCompany(company.id)) return;
+    
     setSelectedCompany(company);
     setIsViewDialogOpen(true);
   };
 
-  const filteredCompanies = companies.filter(company => 
+  // Aplicar filtro de busca
+  const filteredCompanies = displayedCompanies.filter(company => 
     company.name.toLowerCase().includes(search.toLowerCase()) ||
     company.cnpj.toLowerCase().includes(search.toLowerCase()) ||
-    company.city.toLowerCase().includes(search.toLowerCase()) ||
-    company.state.toLowerCase().includes(search.toLowerCase()) ||
+    company.city?.toLowerCase().includes(search.toLowerCase()) ||
+    company.state?.toLowerCase().includes(search.toLowerCase()) ||
     (company.industry && company.industry.toLowerCase().includes(search.toLowerCase()))
   );
 
@@ -96,12 +148,16 @@ export default function Empresas() {
           isLoading={isLoading}
           meta={{
             onEdit: (company: CompanyData) => {
-              setSelectedCompany(company);
-              setIsEditDialogOpen(true);
+              if (verifyAccessToCompany(company.id)) {
+                setSelectedCompany(company);
+                setIsEditDialogOpen(true);
+              }
             },
             onDelete: (company: CompanyData) => {
-              setSelectedCompany(company);
-              setIsDeleteDialogOpen(true);
+              if (verifyAccessToCompany(company.id)) {
+                setSelectedCompany(company);
+                setIsDeleteDialogOpen(true);
+              }
             },
             onView: handleView,
           }}

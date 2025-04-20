@@ -22,7 +22,7 @@ export function useCompanyAccess(requiredCompanyId?: string) {
       }
 
       try {
-        // ONLY Superadmin role has access to all companies
+        // APENAS Superadmin tem acesso a todas as empresas
         if (userRole === 'superadmin') {
           console.log('[useCompanyAccess] Usuário é superadmin, concedendo acesso');
           setHasAccess(true);
@@ -30,8 +30,8 @@ export function useCompanyAccess(requiredCompanyId?: string) {
           return;
         }
 
-        // For admin and evaluator roles, strictly verify company associations
-        // If a specific company is required, check if the user has access to it
+        // Para perfis admin e evaluator, verificar ESTRITAMENTE as associações de empresas
+        // Se uma empresa específica é requerida, verificar se o usuário tem acesso a ela
         if (requiredCompanyId) {
           const companyIds = userCompanies.map(company => company.companyId);
           const hasCompanyAccess = companyIds.includes(requiredCompanyId);
@@ -42,7 +42,7 @@ export function useCompanyAccess(requiredCompanyId?: string) {
           
           setHasAccess(hasCompanyAccess);
         } else {
-          // If no specific company is required, check if user has any company association
+          // Se nenhuma empresa específica é requerida, verificar se o usuário tem alguma associação
           const hasAnyCompany = userCompanies.length > 0;
           console.log('[useCompanyAccess] Usuário tem acesso a alguma empresa:', hasAnyCompany);
           setHasAccess(hasAnyCompany);

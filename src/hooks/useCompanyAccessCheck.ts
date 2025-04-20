@@ -43,29 +43,38 @@ export function useCompanyAccessCheck() {
     }
   };
 
-  // Filter resources based on company access
+  // Filter resources based on company access - FORÇAR FILTRAGEM ESTRITA
   const filterResourcesByCompany = <T extends { company_id?: string }>(
     resources: T[]
   ): T[] => {
     if (!user) return [];
     
-    // Only superadmin should have access to all resources
+    // APENAS superadmin deve ter acesso a todos os recursos
     if (userRole === 'superadmin') {
       console.log('[useCompanyAccessCheck] Usuário é superadmin, retornando todos os recursos');
       return resources;
     }
     
-    // For other roles, strictly filter resources by company
+    // Para outros perfis, filtrar SEMPRE pelos IDs de empresas do usuário
     const userCompanyIds = userCompanies.map(company => company.companyId);
+    
+    if (userCompanyIds.length === 0) {
+      console.log('[useCompanyAccessCheck] Usuário não tem empresas associadas, retornando lista vazia');
+      return [];
+    }
     
     console.log('[useCompanyAccessCheck] Filtrando recursos por empresa');
     console.log('[useCompanyAccessCheck] Perfil do usuário:', userRole);
     console.log('[useCompanyAccessCheck] Empresas do usuário:', userCompanyIds);
     
     const filteredResources = resources.filter(resource => {
-      // Skip items without company_id (system-wide resources)
-      if (!resource.company_id) return true;
+      // Se recurso sem company_id, verificar se devemos filtrar ou não
+      if (!resource.company_id) {
+        // Recursos sem company_id só devem ser visíveis para superadmin
+        return userRole === 'superadmin';
+      }
       
+      // Para todos os outros recursos, verificar se o usuário tem acesso à empresa
       const hasAccess = userCompanyIds.includes(resource.company_id);
       
       if (!hasAccess) {

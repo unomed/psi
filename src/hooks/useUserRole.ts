@@ -64,20 +64,29 @@ export function useUserRole() {
             
             // Fetch company names for the associated companies
             const companyIds = userCompanyData.map(item => item.company_id);
-            const { data: companiesData, error: companiesError } = await supabase
-              .from('companies')
-              .select('id, name')
-              .in('id', companyIds);
-              
-            if (companiesError) {
-              console.error('[useUserRole] Erro ao buscar detalhes das empresas:', companiesError);
-            } else if (companiesData) {
-              const formattedCompanies = companiesData.map(company => ({
-                companyId: company.id,
-                companyName: company.name
-              }));
-              console.log("[useUserRole] Empresas formatadas para o usuário:", formattedCompanies);
-              setUserCompanies(formattedCompanies);
+            
+            // IMPORTANTE: Aqui precisamos garantir que mesmo se o tipo de company_id for diferente do esperado, ele seja convertido corretamente
+            const validCompanyIds = companyIds.filter(id => typeof id === 'string' && id.trim() !== '');
+            
+            if (validCompanyIds.length > 0) {
+              const { data: companiesData, error: companiesError } = await supabase
+                .from('companies')
+                .select('id, name')
+                .in('id', validCompanyIds);
+                
+              if (companiesError) {
+                console.error('[useUserRole] Erro ao buscar detalhes das empresas:', companiesError);
+              } else if (companiesData) {
+                const formattedCompanies = companiesData.map(company => ({
+                  companyId: company.id,
+                  companyName: company.name
+                }));
+                console.log("[useUserRole] Empresas formatadas para o usuário:", formattedCompanies);
+                setUserCompanies(formattedCompanies);
+              }
+            } else {
+              console.log("[useUserRole] Nenhum ID de empresa válido encontrado");
+              setUserCompanies([]);
             }
           } else {
             console.log("[useUserRole] Nenhuma empresa associada ao usuário");
