@@ -16,6 +16,7 @@ export interface ScheduledAssessment {
   recurrenceType?: RecurrenceType;
   nextScheduledDate?: Date | null;
   phoneNumber?: string;
+  company_id?: string; // Add company_id field
   // Make employees optional and add possible error state
   employees?: {
     name: string;

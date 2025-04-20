@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { RecurrenceType, ScheduledAssessment, AssessmentStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +33,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           recurrence_type,
           next_scheduled_date,
           phone_number,
+          company_id,
           employees (
             name,
             email,
@@ -43,28 +43,9 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           checklist_templates(title)
         `);
       
-      // Se um ID de empresa for fornecido, filtrar os funcionários pelo ID da empresa
+      // Se um ID de empresa for fornecido, filtrar diretamente pelo company_id
       if (companyId && userRole !== 'superadmin') {
-        // Obter primeiro os IDs dos funcionários da empresa
-        const { data: employeeIds, error: employeeError } = await supabase
-          .from('employees')
-          .select('id')
-          .eq('company_id', companyId);
-          
-        if (employeeError) {
-          console.error("Error fetching employee IDs:", employeeError);
-          toast.error("Erro ao buscar funcionários");
-          return [];
-        }
-        
-        // Se houver funcionários, filtrar as avaliações pelos IDs dos funcionários
-        if (employeeIds && employeeIds.length > 0) {
-          const ids = employeeIds.map(emp => emp.id);
-          query = query.in('employee_id', ids);
-        } else {
-          // Se não houver funcionários, retornar lista vazia
-          return [];
-        }
+        query = query.eq('company_id', companyId);
       }
       
       // Ordenar e executar a consulta
@@ -107,6 +88,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           recurrenceType: item.recurrence_type as RecurrenceType | undefined,
           nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
           phoneNumber: item.phone_number || undefined,
+          company_id: item.company_id,
           employees: employeeInfo,
           checklist_templates: item.checklist_templates
         };

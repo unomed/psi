@@ -6,6 +6,7 @@ import { mockEmployees } from "@/components/assessments/mock/assessmentMockData"
 import { saveScheduledAssessment } from "@/services/assessment";
 import { useAssessmentCalculations } from "./useAssessmentCalculations";
 import { isValidDate, validateAssessmentDate } from "@/utils/dateUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useAssessmentSaveOperations() {
   const [scheduledAssessments, setScheduledAssessments] = useState<ScheduledAssessment[]>([]);
@@ -46,9 +47,16 @@ export function useAssessmentSaveOperations() {
     }
     
     try {
-      const employee = mockEmployees.find(e => e.id === selectedEmployee);
-      if (!employee) {
-        toast.error("Funcionário não encontrado.");
+      // Buscar dados do funcionário do banco de dados
+      const { data: employeeData, error: employeeError } = await supabase
+        .from('employees')
+        .select('name, company_id')
+        .eq('id', selectedEmployee)
+        .single();
+        
+      if (employeeError) {
+        console.error("Erro ao buscar dados do funcionário:", employeeError);
+        toast.error("Funcionário não encontrado no banco de dados.");
         return null;
       }
       
@@ -70,7 +78,8 @@ export function useAssessmentSaveOperations() {
         completedAt: null,
         recurrenceType: recurrenceType,
         nextScheduledDate: nextDate,
-        phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined
+        phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined,
+        company_id: employeeData.company_id // Incluir o ID da empresa
       };
       
       // Salvar no banco de dados

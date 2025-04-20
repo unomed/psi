@@ -34,33 +34,15 @@ export function AssessmentTabs({ companyId }: AssessmentTabsProps) {
             phone_number,
             link_url,
             sent_at,
+            company_id,
             checklist_templates (
               title
             )
           `);
           
-        // Se um ID de empresa for fornecido, filtrar os funcionários pelo ID da empresa
+        // Se um ID de empresa for fornecido, filtrar diretamente pelo company_id
         if (companyId && userRole !== 'superadmin') {
-          // Obter primeiro os IDs dos funcionários da empresa
-          const { data: employeeIds, error: employeeError } = await supabase
-            .from('employees')
-            .select('id')
-            .eq('company_id', companyId);
-            
-          if (employeeError) {
-            console.error("Error fetching employee IDs:", employeeError);
-            toast.error("Erro ao buscar funcionários");
-            return [];
-          }
-          
-          // Se houver funcionários, filtrar as avaliações pelos IDs dos funcionários
-          if (employeeIds && employeeIds.length > 0) {
-            const ids = employeeIds.map(emp => emp.id);
-            query = query.in('employee_id', ids);
-          } else {
-            // Se não houver funcionários, retornar lista vazia
-            return [];
-          }
+          query = query.eq('company_id', companyId);
         }
         
         // Ordenar e executar a consulta
@@ -83,6 +65,7 @@ export function AssessmentTabs({ companyId }: AssessmentTabsProps) {
             completedAt: item.completed_at ? new Date(item.completed_at) : null,
             phoneNumber: item.phone_number || undefined,
             linkUrl: item.link_url || '',
+            company_id: item.company_id,
             employees: {
               name: item.employee_name || 'Funcionário não encontrado',
               email: '',
