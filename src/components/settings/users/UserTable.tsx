@@ -6,8 +6,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface UserTableProps {
   users: User[];
-  onEditUser: (userId: string) => void;
-  onDeleteUser: (userId: string) => void;
+  onEditUser: (user: User) => void;
+  onDeleteUser: (user: User) => void;
 }
 
 export function UserTable({ users, onEditUser, onDeleteUser }: UserTableProps) {

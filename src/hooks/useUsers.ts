@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -93,6 +94,7 @@ export function useUsers() {
 
   const updateUserRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
+      // Validate that role is one of the acceptable values
       let dbRole: "superadmin" | "admin" | "evaluator";
       
       if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
@@ -149,11 +151,21 @@ export function useUsers() {
       }
 
       if (data.user) {
+        // Cast the role to the appropriate type based on its value
+        let dbRole: "superadmin" | "admin" | "evaluator";
+        
+        if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
+          dbRole = role as "superadmin" | "admin" | "evaluator";
+        } else {
+          dbRole = 'evaluator';
+          toast.warning('Função inválida, usando "evaluator" como padrão');
+        }
+        
         const { error: roleError } = await supabase
           .from('user_roles')
           .upsert({ 
             user_id: data.user.id, 
-            role 
+            role: dbRole 
           });
 
         if (roleError) {
