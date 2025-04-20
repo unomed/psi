@@ -1,17 +1,18 @@
+
 import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DataTable } from "@/components/ui/data-table";
 import { RoleForm } from "@/components/roles/RoleForm";
 import { RoleCompanySelect } from "@/components/roles/RoleCompanySelect";
+import { RoleGrid } from "@/components/roles/RoleGrid";
+import { EmptyRoleState } from "@/components/roles/EmptyRoleState";
 import { useRoles } from "@/hooks/useRoles";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import type { RoleData } from "@/components/roles/RoleCard";
-import { columns } from "@/components/roles/columns";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -124,20 +125,25 @@ export default function Funcoes() {
         onSectorChange={setSelectedSector}
       />
 
-      <DataTable 
-        columns={columns} 
-        data={filteredRoles || []}
-        isLoading={isLoading}
-        meta={{
-          onEdit: (role) => {
+      {filteredRoles && filteredRoles.length > 0 ? (
+        <RoleGrid 
+          roles={filteredRoles}
+          onEdit={(role) => {
             setEditingRole(role);
             setIsDialogOpen(true);
-          },
-          onDelete: handleDeleteRole,
-          onView: (role) => setViewingRole(role),
-          canEdit: canCreateRoles,
-        }}
-      />
+          }}
+          onDelete={handleDeleteRole}
+          canEdit={canCreateRoles}
+        />
+      ) : (
+        <EmptyRoleState 
+          onCreateClick={() => {
+            setEditingRole(null);
+            setIsDialogOpen(true);
+          }}
+          canCreate={canCreateRoles}
+        />
+      )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-lg">
