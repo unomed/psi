@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Save } from "lucide-react";
+import { Save, Plus } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -26,41 +26,88 @@ import {
 import { toast } from "sonner";
 import { EmailTemplate } from "./types";
 
-const emailTemplateSchema = z.object({
+const emailTemplateCreateSchema = z.object({
+  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
+  subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
+  body: z.string().min(20, "O conteúdo deve ter pelo menos 20 caracteres"),
+  description: z.string().optional()
+});
+
+const emailTemplateEditSchema = z.object({
   subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
   body: z.string().min(20, "O conteúdo deve ter pelo menos 20 caracteres")
 });
 
-type EmailTemplateFormValues = z.infer<typeof emailTemplateSchema>;
+type EmailTemplateCreateValues = z.infer<typeof emailTemplateCreateSchema>;
+type EmailTemplateEditValues = z.infer<typeof emailTemplateEditSchema>;
 
 interface EmailTemplateFormProps {
-  template: EmailTemplate;
-  onSubmit: (values: EmailTemplateFormValues) => void;
+  mode: 'create' | 'edit';
+  template?: EmailTemplate;
+  onSubmit: (values: EmailTemplateCreateValues | EmailTemplateEditValues) => void;
 }
 
-export function EmailTemplateForm({ template, onSubmit }: EmailTemplateFormProps) {
-  const form = useForm<EmailTemplateFormValues>({
-    resolver: zodResolver(emailTemplateSchema),
-    defaultValues: {
-      subject: template.subject,
-      body: template.body
-    },
-    values: {
-      subject: template.subject,
-      body: template.body
-    }
+export function EmailTemplateForm({ 
+  mode, 
+  template, 
+  onSubmit 
+}: EmailTemplateFormProps) {
+  const schema = mode === 'create' ? emailTemplateCreateSchema : emailTemplateEditSchema;
+  
+  const form = useForm<EmailTemplateCreateValues | EmailTemplateEditValues>({
+    resolver: zodResolver(schema),
+    defaultValues: mode === 'create' 
+      ? { 
+          name: '', 
+          subject: '', 
+          body: '', 
+          description: '' 
+        }
+      : {
+          subject: template?.subject || '',
+          body: template?.body || ''
+        }
   });
+
+  const handleSubmit = (values: EmailTemplateCreateValues | EmailTemplateEditValues) => {
+    onSubmit(values);
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{template.name}</CardTitle>
-        <CardDescription>{template.description}</CardDescription>
+        <CardTitle>
+          {mode === 'create' 
+            ? 'Criar Novo Modelo de Email' 
+            : template?.name
+          }
+        </CardTitle>
+        {mode === 'create' && (
+          <CardDescription>
+            Preencha os detalhes do novo modelo de email
+          </CardDescription>
+        )}
       </CardHeader>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
           <CardContent className="space-y-4">
+            {mode === 'create' && (
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Modelo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Convite para Avaliação" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
             <FormField
               control={form.control}
               name="subject"
@@ -95,6 +142,22 @@ export function EmailTemplateForm({ template, onSubmit }: EmailTemplateFormProps
                 </FormItem>
               )}
             />
+
+            {mode === 'create' && (
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Breve descrição do modelo" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </CardContent>
           
           <CardFooter className="flex justify-between">
@@ -102,8 +165,17 @@ export function EmailTemplateForm({ template, onSubmit }: EmailTemplateFormProps
               Cancelar
             </Button>
             <Button type="submit">
-              <Save className="mr-2 h-4 w-4" />
-              Salvar Template
+              {mode === 'create' ? (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Criar Modelo
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Salvar Template
+                </>
+              )}
             </Button>
           </CardFooter>
         </form>
@@ -111,3 +183,4 @@ export function EmailTemplateForm({ template, onSubmit }: EmailTemplateFormProps
     </Card>
   );
 }
+

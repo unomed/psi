@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FilePlus } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EmailTemplateForm } from "./email-templates/EmailTemplateForm";
 import { useEmailTemplates } from "@/hooks/settings/useEmailTemplates";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,14 +15,15 @@ const templateNameMap: Record<string, string> = {
   "reminder": "Lembrete",
   "welcome": "Convite",
   // Compatibilidade com IDs antigos em inglês
-  "assessment-invitation": "Convite",
+  "assessment-invitation": "Convite", 
   "assessment-reminder": "Lembrete",
   "assessment-completion": "Conclusão"
 };
 
 export default function EmailTemplateSettings() {
-  const { templates = [], isLoading, updateTemplate } = useEmailTemplates();
+  const { templates = [], isLoading, updateTemplate, createTemplate } = useEmailTemplates();
   const [activeTemplate, setActiveTemplate] = React.useState<string>("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (templates.length > 0 && !activeTemplate) {
@@ -41,10 +43,14 @@ export default function EmailTemplateSettings() {
     });
   };
 
-  const handleCreateTemplate = () => {
-    toast("Função em desenvolvimento", {
-      description: "A criação de novos modelos estará disponível em breve.",
-    });
+  const handleCreateTemplate = (templateData: { 
+    name: string; 
+    subject: string; 
+    body: string; 
+    description?: string 
+  }) => {
+    createTemplate(templateData);
+    setIsCreateDialogOpen(false);
   };
 
   if (isLoading) {
@@ -66,10 +72,23 @@ export default function EmailTemplateSettings() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Modelos de E-mail</h2>
-        <Button onClick={handleCreateTemplate} variant="outline" size="sm">
-          <FilePlus className="mr-2 h-4 w-4" />
-          Novo Modelo
-        </Button>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <FilePlus className="mr-2 h-4 w-4" />
+              Novo Modelo
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+              <DialogTitle>Criar Novo Modelo de E-mail</DialogTitle>
+            </DialogHeader>
+            <EmailTemplateForm 
+              mode="create"
+              onSubmit={handleCreateTemplate} 
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {templates.length > 0 ? (
@@ -89,6 +108,7 @@ export default function EmailTemplateSettings() {
           {templates.map((template) => (
             <TabsContent key={template.id} value={template.id}>
               <EmailTemplateForm
+                mode="edit"
                 template={{
                   ...template,
                   description: template.description || ''
@@ -106,3 +126,4 @@ export default function EmailTemplateSettings() {
     </div>
   );
 }
+
