@@ -1,14 +1,21 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { User } from "@/hooks/useUsers";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Company {
+  id: string;
+  name: string;
+}
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -16,6 +23,7 @@ const userFormSchema = z.object({
   role: z.enum(["superadmin", "admin", "evaluator"], {
     required_error: "Selecione uma função",
   }),
+  companyIds: z.array(z.string()).optional(),
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -30,6 +38,8 @@ interface UserFormDialogProps {
 
 export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -37,13 +47,69 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
       email: user?.email || "",
       full_name: user?.full_name || "",
       role: user?.role as "superadmin" | "admin" | "evaluator" || "evaluator",
+      companyIds: [],
     },
   });
+
+  // Fetch companies
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name');
+      
+      if (error) {
+        console.error('Error fetching companies:', error);
+      } else if (data) {
+        setCompanies(data);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
+  // Fetch user's companies if editing
+  useEffect(() => {
+    if (user?.id) {
+      const fetchUserCompanies = async () => {
+        const { data, error } = await supabase
+          .from('user_companies')
+          .select('company_id')
+          .eq('user_id', user.id);
+        
+        if (error) {
+          console.error('Error fetching user companies:', error);
+        } else if (data) {
+          const companyIds = data.map(item => item.company_id);
+          setSelectedCompanies(companyIds);
+          form.setValue('companyIds', companyIds);
+        }
+      };
+
+      fetchUserCompanies();
+    }
+  }, [user, form]);
+
+  const handleToggleCompany = (companyId: string) => {
+    let updatedCompanies: string[];
+    
+    if (selectedCompanies.includes(companyId)) {
+      updatedCompanies = selectedCompanies.filter(id => id !== companyId);
+    } else {
+      updatedCompanies = [...selectedCompanies, companyId];
+    }
+    
+    setSelectedCompanies(updatedCompanies);
+    form.setValue('companyIds', updatedCompanies);
+  };
 
   const handleSubmit = async (data: UserFormData) => {
     try {
       setIsSubmitting(true);
-      await onSubmit(data);
+      await onSubmit({
+        ...data,
+        companyIds: selectedCompanies,
+      });
       onClose();
       form.reset();
     } catch (error) {
@@ -55,7 +121,7 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -112,6 +178,31 @@ export function UserFormDialog({ open, onClose, onSubmit, user, title }: UserFor
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2">
+              <FormLabel>Empresas</FormLabel>
+              <div className="border rounded-md p-3 space-y-2 max-h-60 overflow-y-auto">
+                {companies.length > 0 ? (
+                  companies.map((company) => (
+                    <div key={company.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`company-${company.id}`} 
+                        checked={selectedCompanies.includes(company.id)}
+                        onCheckedChange={() => handleToggleCompany(company.id)}
+                      />
+                      <label 
+                        htmlFor={`company-${company.id}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {company.name}
+                      </label>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhuma empresa disponível</p>
+                )}
+              </div>
+            </div>
 
             <DialogFooter>
               <Button variant="outline" type="button" onClick={onClose}>

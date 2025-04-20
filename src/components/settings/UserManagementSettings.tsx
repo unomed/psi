@@ -56,7 +56,9 @@ export default function UserManagementSettings() {
         email: data.email,
         full_name: data.full_name,
         role: data.role,
+        companyIds: data.companyIds,
       });
+      setIsAddOpen(false);
     } catch (error) {
       console.error('Error creating user:', error);
       throw error;
@@ -69,7 +71,10 @@ export default function UserManagementSettings() {
         await updateUserRole.mutateAsync({
           userId: selectedUser.id,
           role: data.role,
+          companyIds: data.companyIds,
         });
+        setIsEditOpen(false);
+        setSelectedUser(null);
       } catch (error) {
         console.error('Error updating user:', error);
         throw error;

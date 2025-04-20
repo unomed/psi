@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -86,7 +87,7 @@ export function useUsers() {
   };
 
   const updateUserRole = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
+    mutationFn: async ({ userId, role, companyIds }: { userId: string, role: string, companyIds?: string[] }) => {
       let dbRole: "superadmin" | "admin" | "evaluator";
       
       if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
@@ -96,21 +97,51 @@ export function useUsers() {
         toast.warning('Função inválida, usando "evaluator" como padrão');
       }
       
-      const { error } = await supabase
+      // Update user role
+      const { error: roleError } = await supabase
         .from('user_roles')
         .upsert({ 
           user_id: userId, 
           role: dbRole 
         });
 
-      if (error) {
+      if (roleError) {
         toast.error('Erro ao atualizar função do usuário');
-        throw error;
+        throw roleError;
+      }
+
+      // Update user companies if provided
+      if (companyIds && companyIds.length > 0) {
+        // First delete existing company assignments
+        const { error: deleteError } = await supabase
+          .from('user_companies')
+          .delete()
+          .eq('user_id', userId);
+          
+        if (deleteError) {
+          toast.error('Erro ao atualizar empresas do usuário');
+          throw deleteError;
+        }
+        
+        // Then insert new company assignments
+        const companyAssignments = companyIds.map(companyId => ({
+          user_id: userId,
+          company_id: companyId
+        }));
+        
+        const { error: insertError } = await supabase
+          .from('user_companies')
+          .insert(companyAssignments);
+          
+        if (insertError) {
+          toast.error('Erro ao associar usuário às empresas');
+          throw insertError;
+        }
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Função do usuário atualizada com sucesso');
+      toast.success('Usuário atualizado com sucesso');
     }
   });
 
@@ -130,7 +161,8 @@ export function useUsers() {
   });
 
   const createUser = useMutation({
-    mutationFn: async ({ email, full_name, role }: { email: string; full_name: string; role: string }) => {
+    mutationFn: async ({ email, full_name, role, companyIds }: 
+      { email: string; full_name: string; role: string; companyIds?: string[] }) => {
       const { data, error } = await supabase.auth.admin.createUser({
         email,
         email_confirm: true,
@@ -162,6 +194,23 @@ export function useUsers() {
         if (roleError) {
           toast.error('Erro ao definir função do usuário');
           throw roleError;
+        }
+        
+        // Add company assignments if provided
+        if (companyIds && companyIds.length > 0) {
+          const companyAssignments = companyIds.map(companyId => ({
+            user_id: data.user.id,
+            company_id: companyId
+          }));
+          
+          const { error: companiesError } = await supabase
+            .from('user_companies')
+            .insert(companyAssignments);
+            
+          if (companiesError) {
+            toast.error('Erro ao associar usuário às empresas');
+            throw companiesError;
+          }
         }
       }
     },
