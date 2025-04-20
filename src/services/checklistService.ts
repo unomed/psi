@@ -132,12 +132,15 @@ function mapDbScaleToAppScale(dbScale: string): ScaleType {
 
 // Save an assessment result to Supabase
 export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | "completedAt">): Promise<string> {
+  // Convert enum value to string for database storage
+  const dominantFactorString = result.dominantFactor.toString();
+  
   const { data, error } = await supabase
     .from('assessment_responses')
     .insert({
       template_id: result.templateId,
       employee_name: result.employeeName,
-      dominant_factor: result.dominantFactor,
+      dominant_factor: dominantFactorString,
       factors_scores: result.results,
       response_data: {}, // We would need to structure this based on the responses
       completed_at: new Date().toISOString()

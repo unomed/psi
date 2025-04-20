@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Download } from "lucide-react";
 import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
-import { ChecklistResult } from "@/types";
+import { ChecklistResult, DiscFactorType } from "@/types";
 
 interface IndividualReportsProps {
   filters: {
@@ -27,11 +27,11 @@ export function IndividualReports({ filters }: IndividualReportsProps) {
 
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
   const reports = [
-    { id: '1', employee: 'João Silva', sector: 'Produção', role: 'Operador', date: '15/03/2024', dominantFactor: 'D', riskLevel: 'medium' },
-    { id: '2', employee: 'Maria Santos', sector: 'Administrativo', role: 'Analista', date: '12/03/2024', dominantFactor: 'I', riskLevel: 'low' },
-    { id: '3', employee: 'Pedro Oliveira', sector: 'TI', role: 'Técnico', date: '10/03/2024', dominantFactor: 'S', riskLevel: 'high' },
-    { id: '4', employee: 'Ana Costa', sector: 'Comercial', role: 'Gerente', date: '05/03/2024', dominantFactor: 'C', riskLevel: 'medium' },
-    { id: '5', employee: 'Carlos Pereira', sector: 'Logística', role: 'Assistente', date: '02/03/2024', dominantFactor: 'D', riskLevel: 'low' },
+    { id: '1', employee: 'João Silva', sector: 'Produção', role: 'Operador', date: '15/03/2024', dominantFactor: DiscFactorType.D, riskLevel: 'medium' },
+    { id: '2', employee: 'Maria Santos', sector: 'Administrativo', role: 'Analista', date: '12/03/2024', dominantFactor: DiscFactorType.I, riskLevel: 'low' },
+    { id: '3', employee: 'Pedro Oliveira', sector: 'TI', role: 'Técnico', date: '10/03/2024', dominantFactor: DiscFactorType.S, riskLevel: 'high' },
+    { id: '4', employee: 'Ana Costa', sector: 'Comercial', role: 'Gerente', date: '05/03/2024', dominantFactor: DiscFactorType.C, riskLevel: 'medium' },
+    { id: '5', employee: 'Carlos Pereira', sector: 'Logística', role: 'Assistente', date: '02/03/2024', dominantFactor: DiscFactorType.D, riskLevel: 'low' },
   ];
 
   const getRiskBadge = (level: string) => {
@@ -54,7 +54,7 @@ export function IndividualReports({ filters }: IndividualReportsProps) {
       templateId: 'template-1',
       employeeName: reports.find(r => r.id === reportId)?.employee || 'Anônimo',
       results: { D: 25, I: 15, S: 35, C: 25 },
-      dominantFactor: (reports.find(r => r.id === reportId)?.dominantFactor || 'D') as "D" | "I" | "S" | "C",
+      dominantFactor: (reports.find(r => r.id === reportId)?.dominantFactor || DiscFactorType.D),
       completedAt: new Date()
     };
     
