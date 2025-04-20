@@ -49,33 +49,54 @@ export function RiskLevelChart({ companyId }: RiskLevelChartProps) {
         
         const employeeIds = employees.map(emp => emp.id);
 
-        // Fetch assessment responses for these employees
+        // Fetch assessment responses for these employees and count by classification
+        // We need to fetch the data and aggregate manually instead of using group
         const { data: assessments, error } = await supabase
           .from('assessment_responses')
-          .select('classification, count(*)')
-          .in('employee_id', employeeIds)
-          .group('classification');
+          .select('*')
+          .in('employee_id', employeeIds);
 
         if (error) throw error;
 
         if (assessments && assessments.length > 0) {
-          // Transform database data into the format needed for the chart
+          // Manually count classifications
+          const counts = {
+            severe: 0,
+            moderate: 0,
+            mild: 0,
+            normal: 0
+          };
+          
+          assessments.forEach(assessment => {
+            const classification = assessment.classification || 'normal';
+            if (classification === 'severe' || classification === 'critical') {
+              counts.severe++;
+            } else if (classification === 'moderate') {
+              counts.moderate++;
+            } else if (classification === 'mild') {
+              counts.mild++;
+            } else {
+              counts.normal++;
+            }
+          });
+          
+          // Transform to chart data format
           const chartData = [
             { 
               name: "Alto Risco", 
-              value: assessments.find(a => a.classification === 'high')?.count || 0, 
+              value: counts.severe, 
               color: "#ef4444" 
             },
             { 
               name: "Risco Médio", 
-              value: assessments.find(a => a.classification === 'medium')?.count || 0, 
+              value: counts.moderate, 
               color: "#f59e0b" 
             },
             { 
               name: "Baixo Risco", 
-              value: assessments.find(a => a.classification === 'low')?.count || 0, 
+              value: counts.normal + counts.mild, 
               color: "#10b981" 
-            },
+            }
           ];
           
           // Only update if we have actual data
