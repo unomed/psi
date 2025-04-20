@@ -23,10 +23,10 @@ export default function PeriodicitySettings() {
   }
 
   const defaultValues: FormValues = {
-    defaultPeriodicity: settings?.default_periodicity ?? "annual",
-    riskHighPeriodicity: settings?.risk_high_periodicity ?? "quarterly",
-    riskMediumPeriodicity: settings?.risk_medium_periodicity ?? "semiannual",
-    riskLowPeriodicity: settings?.risk_low_periodicity ?? "annual"
+    defaultPeriodicity: (settings?.default_periodicity ?? "annual") as PeriodicityType,
+    riskHighPeriodicity: (settings?.risk_high_periodicity ?? "quarterly") as PeriodicityType,
+    riskMediumPeriodicity: (settings?.risk_medium_periodicity ?? "semiannual") as PeriodicityType,
+    riskLowPeriodicity: (settings?.risk_low_periodicity ?? "annual") as PeriodicityType
   };
 
   return (
