@@ -64,6 +64,7 @@ export function useCheckPermission() {
     // For backward compatibility with the original structure format
     if (permissions) {
       // Convert numeric keys to array entries if needed
+      // Only include entries that are objects and not null
       const resourcesArray = Object.entries(permissions)
         .filter(([key]) => !isNaN(Number(key)))
         .map(([_, value]) => {
