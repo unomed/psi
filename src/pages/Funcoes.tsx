@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { toast } from "sonner";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import type { RoleData } from "@/components/roles/RoleCard";
+import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
 
 export default function Funcoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -27,16 +27,9 @@ export default function Funcoes() {
   const { sectors } = useSectors();
   const { userRole } = useAuth();
   const [canCreateRoles, setCanCreateRoles] = useState(false);
-  const [viewingRole, setViewingRole] = useState<RoleData | null>(null);
-  
-  useEffect(() => {
-    const checkPermissions = async () => {
-      const isSuperAdminOrAdmin = userRole === 'superadmin' || userRole === 'admin';
-      setCanCreateRoles(isSuperAdminOrAdmin);
-    };
-    
-    checkPermissions();
-  }, [userRole]);
+  const { filterResourcesByCompany } = useCompanyAccessCheck();
+
+  const accessibleCompanies = filterResourcesByCompany(companies);
 
   const filteredRoles = roles?.filter(role => 
     (!selectedCompany || role.companyId === selectedCompany) &&
@@ -117,7 +110,7 @@ export default function Funcoes() {
       </div>
 
       <RoleCompanySelect 
-        companies={companies || []}
+        companies={accessibleCompanies}
         sectors={sectors || []}
         selectedCompany={selectedCompany}
         selectedSector={selectedSector}

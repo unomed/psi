@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ import { useSectors } from "@/hooks/useSectors";
 import { EmptySectorState } from "@/components/sectors/EmptySectorState";
 import { SectorCompanySelect } from "@/components/sectors/SectorCompanySelect";
 import { SectorTable } from "@/components/sectors/SectorTable";
+import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Setores() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -24,7 +27,13 @@ export default function Setores() {
   
   const { companies } = useCompanies();
   const { sectors, isLoading, createSector, updateSector, deleteSector } = useSectors();
+  const { filterResourcesByCompany } = useCompanyAccessCheck();
+  const { userRole } = useAuth();
 
+  // Filter companies based on user access
+  const accessibleCompanies = filterResourcesByCompany(companies);
+  
+  // Filter sectors based on selected company
   const filteredSectors = selectedCompany 
     ? sectors.filter(sector => sector.companyId === selectedCompany)
     : [];
@@ -99,7 +108,7 @@ export default function Setores() {
       </div>
       
       <SectorCompanySelect 
-        companies={companies}
+        companies={accessibleCompanies}
         selectedCompany={selectedCompany}
         onCompanyChange={handleCompanyChange}
       />
