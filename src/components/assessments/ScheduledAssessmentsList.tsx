@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Calendar, Link, Mail } from "lucide-react";
 import { ScheduledAssessment } from "@/types";
+import { toast } from "sonner";
 
 interface ScheduledAssessmentsListProps {
   assessments: ScheduledAssessment[];
@@ -33,6 +34,7 @@ export function ScheduledAssessmentsList({
         await onShareAssessment(assessmentId);
       } catch (error) {
         console.error("Erro ao compartilhar avaliação:", error);
+        toast.error("Erro ao gerar link de avaliação");
       }
     }
   };
@@ -64,9 +66,12 @@ export function ScheduledAssessmentsList({
               <TableCell>
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                   ${assessment.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' : ''}
+                  ${assessment.status === 'sent' ? 'bg-blue-100 text-blue-800' : ''}
                   ${assessment.status === 'completed' ? 'bg-green-100 text-green-800' : ''}`}
                 >
-                  {assessment.status === 'scheduled' ? 'Agendado' : 'Concluído'}
+                  {assessment.status === 'scheduled' ? 'Agendado' : ''}
+                  {assessment.status === 'sent' ? 'Enviado' : ''}
+                  {assessment.status === 'completed' ? 'Concluído' : ''}
                 </span>
               </TableCell>
               <TableCell className="text-right">
@@ -83,7 +88,7 @@ export function ScheduledAssessmentsList({
                     size="icon"
                     title="Gerar link"
                     onClick={() => handleShareClick(assessment.id)}
-                    disabled={type === "completed" || !onShareAssessment}
+                    disabled={type === "completed" || !onShareAssessment || assessment.status === 'sent'}
                   >
                     <Link className="h-4 w-4" />
                   </Button>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { AssessmentHandler } from "@/components/assessments/AssessmentHandler";
 import { AssessmentErrorBoundary } from "@/components/assessments/error-boundary/AssessmentErrorBoundary";
@@ -53,6 +54,12 @@ export default function Avaliacoes() {
 
   const handleShareAssessment = async (assessment: any) => {
     try {
+      // Verificar se temos todos os dados necessários
+      if (!assessment.employeeId || !assessment.templateId) {
+        toast.error("Dados do funcionário ou template incompletos");
+        return;
+      }
+
       const link = await generateAssessmentLink(
         assessment.employeeId,
         assessment.templateId
@@ -63,6 +70,11 @@ export default function Avaliacoes() {
         setGeneratedLink(link);
         setSelectedAssessment(assessment);
         setIsShareDialogOpen(true);
+        
+        // Forçar uma atualização da página após 1 segundo para mostrar o status atualizado
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
     } catch (error) {
       console.error("Erro ao compartilhar avaliação:", error);
@@ -119,7 +131,7 @@ export default function Avaliacoes() {
       <ShareLinkDialog
         isOpen={isShareDialogOpen}
         onClose={() => setIsShareDialogOpen(false)}
-        employeeName={selectedAssessment?.employeeName || ""}
+        employeeName={selectedAssessment?.employees?.name || ""}
         assessmentLink={generatedLink}
         onSendEmail={handleSendEmail}
       />

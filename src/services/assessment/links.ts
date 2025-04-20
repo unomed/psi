@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -42,17 +43,23 @@ export async function updateAssessmentStatus(
   linkUrl: string
 ): Promise<void> {
   try {
+    const currentDate = new Date().toISOString();
+    
     const { error } = await supabase
       .from('scheduled_assessments')
       .update({ 
         link_url: linkUrl,
-        status: 'sent'
+        status: 'sent',
+        sent_at: currentDate
       })
       .eq('id', assessmentId);
 
     if (error) throw error;
+    
+    toast.success("Link gerado com sucesso!");
   } catch (error) {
     console.error("Erro ao atualizar status:", error);
+    toast.error("Erro ao atualizar status da avaliação");
     throw error;
   }
 }
