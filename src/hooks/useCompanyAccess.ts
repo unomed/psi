@@ -10,39 +10,55 @@ export function useCompanyAccess(requiredCompanyId?: string) {
 
   useEffect(() => {
     const checkCompanyAccess = async () => {
+      console.log('[useCompanyAccess] Checking access for company:', requiredCompanyId);
+      console.log('[useCompanyAccess] User role:', userRole);
+      console.log('[useCompanyAccess] User companies:', userCompanies);
+      
       if (!user || !requiredCompanyId) {
+        console.log('[useCompanyAccess] No user or company ID, setting access to false');
+        setHasAccess(false);
         setCheckingAccess(false);
         return;
       }
 
       try {
-        // Superadmin always has access
+        // Superadmin sempre tem acesso a todas as empresas
         if (userRole === 'superadmin') {
+          console.log('[useCompanyAccess] User is superadmin, granting access');
           setHasAccess(true);
           setCheckingAccess(false);
           return;
         }
 
-        // Use pre-loaded user companies from AuthContext
+        // Verificar se o usuário tem acesso com base nas empresas carregadas do contexto de autenticação
         if (userCompanies && userCompanies.length > 0) {
           const hasCompanyAccess = userCompanies.some(
             company => company.companyId === requiredCompanyId
           );
+          
+          console.log('[useCompanyAccess] Company access based on context:', hasCompanyAccess);
           setHasAccess(hasCompanyAccess);
           setCheckingAccess(false);
           return;
         }
 
-        // Fallback to direct database check if userCompanies not available
-        const { data: userCompanyData } = await supabase
+        // Se não encontrar nas empresas do contexto, fazer verificação direta no banco
+        console.log('[useCompanyAccess] Falling back to database check');
+        const { data: userCompanyData, error } = await supabase
           .from('user_companies')
           .select('company_id')
           .eq('user_id', user.id);
 
-        const hasCompanyAccess = userCompanyData?.some(uc => uc.company_id === requiredCompanyId) || false;
-        setHasAccess(hasCompanyAccess);
+        if (error) {
+          console.error('[useCompanyAccess] Error checking company access:', error);
+          setHasAccess(false);
+        } else {
+          const hasCompanyAccess = userCompanyData?.some(uc => uc.company_id === requiredCompanyId) || false;
+          console.log('[useCompanyAccess] Company access based on DB check:', hasCompanyAccess);
+          setHasAccess(hasCompanyAccess);
+        }
       } catch (error) {
-        console.error('Error checking company access:', error);
+        console.error('[useCompanyAccess] Error checking company access:', error);
         setHasAccess(false);
       } finally {
         setCheckingAccess(false);

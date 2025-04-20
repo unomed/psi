@@ -41,12 +41,23 @@ export default function Login() {
       toast.success("Login realizado com sucesso!");
     } catch (error) {
       console.error("Erro no login:", error);
+      let errorMessage = "Erro ao realizar login. Verifique suas credenciais.";
+      
       if (error instanceof Error) {
-        setLoginError(error.message);
-      } else {
-        setLoginError("Erro ao realizar login. Verifique suas credenciais.");
+        // Handle specific error messages
+        if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Email não confirmado. Verifique sua caixa de entrada.";
+        } else if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "Credenciais inválidas. Verifique seu email e senha.";
+        } else if (error.message.includes("Email not found")) {
+          errorMessage = "Email não encontrado. Verifique o email informado.";
+        } else {
+          errorMessage = error.message;
+        }
       }
-      toast.error(loginError || "Erro ao fazer login");
+      
+      setLoginError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

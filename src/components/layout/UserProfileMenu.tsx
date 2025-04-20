@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User, Building } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function UserProfileMenu() {
@@ -38,7 +38,7 @@ export function UserProfileMenu() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-64" align="end" forceMount>
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{userDisplayName}</p>
@@ -50,20 +50,31 @@ export function UserProfileMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {userCompanies && userCompanies.length > 0 && (
+        {userCompanies && userCompanies.length > 0 ? (
           <>
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
+            <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center">
+              <Building className="h-3 w-3 mr-1" />
               Empresas com acesso:
             </DropdownMenuLabel>
             <div className="max-h-32 overflow-y-auto px-2 py-1">
               {userCompanies.map((company) => (
-                <div key={company.companyId} className="text-xs py-1">
+                <div key={company.companyId} className="text-xs py-1 flex items-center">
+                  <span className="h-1.5 w-1.5 bg-green-500 rounded-full mr-2"></span>
                   {company.companyName}
                 </div>
               ))}
             </div>
             <DropdownMenuSeparator />
           </>
+        ) : (
+          userRole !== 'superadmin' && (
+            <>
+              <div className="px-2 py-1 text-xs text-amber-600">
+                Nenhuma empresa associada ao seu perfil
+              </div>
+              <DropdownMenuSeparator />
+            </>
+          )
         )}
         
         <DropdownMenuGroup>

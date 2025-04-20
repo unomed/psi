@@ -20,7 +20,7 @@ export function RouteGuard({
   requirePermission, 
   requireCompanyAccess 
 }: RouteGuardProps) {
-  const { user, loading, userRole } = useAuth();
+  const { user, loading, userRole, userCompanies } = useAuth();
   const { hasPermission, loadingPermission } = useCheckPermission();
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
@@ -47,9 +47,11 @@ export function RouteGuard({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Show role information in console for debugging
-  console.log(`User role: ${userRole}, Required permission: ${requirePermission}, Has permission: ${requirePermission ? hasPermission(requirePermission) : 'No permission required'}`);
-
+  // Console logging for debugging
+  console.log(`[RouteGuard] User role: ${userRole}, Required permission: ${requirePermission}`);
+  console.log(`[RouteGuard] Has permission: ${requirePermission ? hasPermission(requirePermission) : 'No permission required'}`);
+  console.log(`[RouteGuard] User companies:`, userCompanies);
+  
   // Check role-based access
   return (
     <RoleCheck allowedRoles={allowedRoles}>
