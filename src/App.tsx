@@ -37,14 +37,14 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Home route - redirects to dashboard when authenticated */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Change the home route to redirect to login */}
+            <Route path="/" element={<Navigate to="/auth/login" replace />} />
             
             {/* Auth routes - public */}
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/register" element={<Register />} />
             
-            {/* Dashboard route */}
+            {/* Dashboard route (only accessible after login) */}
             <Route path="/dashboard" element={
               <RouteGuard>
                 <MainLayout>
