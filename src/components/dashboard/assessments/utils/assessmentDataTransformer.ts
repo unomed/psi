@@ -38,7 +38,12 @@ export function transformAssessmentData(
   employeeMap: Record<string, { name: string; sectorId: string }>,
   sectorMap: Record<string, string>
 ): Assessment[] {
-  return responses.map(response => {
+  // Sort responses by date descending to show most recent first
+  const sortedResponses = [...responses].sort((a, b) => 
+    new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
+  );
+
+  return sortedResponses.map(response => {
     const employee = employeeMap[response.employee_id] || { name: 'Desconhecido', sectorId: '' };
     const sectorName = employee.sectorId ? (sectorMap[employee.sectorId] || 'Não especificado') : 'Não especificado';
     
@@ -53,41 +58,28 @@ export function transformAssessmentData(
 }
 
 export function createFallbackAssessments(): Assessment[] {
+  const today = new Date();
   return [
     {
       id: 1,
       employee: "João Silva",
       sector: "Produção",
-      date: "2025-04-05",
+      date: new Date(today.setDate(today.getDate() - 2)).toISOString(),
       riskLevel: "Alto",
     },
     {
       id: 2,
       employee: "Maria Santos",
       sector: "Administrativo",
-      date: "2025-04-04",
+      date: new Date(today.setDate(today.getDate() - 1)).toISOString(),
       riskLevel: "Baixo",
     },
     {
       id: 3,
       employee: "Carlos Oliveira",
       sector: "TI",
-      date: "2025-04-03",
+      date: new Date(today.setDate(today.getDate() - 1)).toISOString(),
       riskLevel: "Médio",
-    },
-    {
-      id: 4,
-      employee: "Ana Costa",
-      sector: "Comercial",
-      date: "2025-04-02",
-      riskLevel: "Baixo",
-    },
-    {
-      id: 5,
-      employee: "Pedro Souza",
-      sector: "Logística",
-      date: "2025-04-01",
-      riskLevel: "Médio",
-    },
+    }
   ];
 }

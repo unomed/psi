@@ -1,7 +1,5 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
 import { Assessment } from "@/components/dashboard/assessments/types";
 
 interface AssessmentTableProps {
@@ -18,7 +16,6 @@ export function AssessmentTable({ assessments }: AssessmentTableProps) {
             <th className="py-3 text-left font-medium">Setor</th>
             <th className="py-3 text-left font-medium">Data</th>
             <th className="py-3 text-left font-medium">Nível de Risco</th>
-            <th className="py-3 text-right font-medium">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -42,12 +39,6 @@ export function AssessmentTable({ assessments }: AssessmentTableProps) {
                 >
                   {assessment.riskLevel}
                 </Badge>
-              </td>
-              <td className="py-3 text-right">
-                <Button variant="ghost" size="sm">
-                  <Eye className="h-4 w-4 mr-1" />
-                  Ver
-                </Button>
               </td>
             </tr>
           ))}

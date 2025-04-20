@@ -19,6 +19,7 @@ export function useAssessments(companyId: string | null) {
         setLoading(true);
         console.log("Fetching recent assessments for company:", companyId);
 
+        // Get employees first
         const { data: employees, error: empError } = await supabase
           .from('employees')
           .select('id, name, sector_id')
@@ -28,16 +29,19 @@ export function useAssessments(companyId: string | null) {
         
         if (!employees || employees.length === 0) {
           console.log("No employees found for this company");
+          setAssessments(createFallbackAssessments());
           setLoading(false);
           return;
         }
         
+        // Create employee map for lookup
         const employeeIds = employees.map(emp => emp.id);
         const employeeMap = employees.reduce((acc, emp) => {
           acc[emp.id] = { name: emp.name, sectorId: emp.sector_id };
           return acc;
         }, {} as Record<string, { name: string; sectorId: string }>);
         
+        // Get sectors
         const { data: sectors, error: sectorError } = await supabase
           .from('sectors')
           .select('id, name')
@@ -45,11 +49,13 @@ export function useAssessments(companyId: string | null) {
           
         if (sectorError) throw sectorError;
         
+        // Create sector map for lookup
         const sectorMap = (sectors || []).reduce((acc, sector) => {
           acc[sector.id] = sector.name;
           return acc;
         }, {} as Record<string, string>);
         
+        // Get assessment responses
         const { data: responses, error: responseError } = await supabase
           .from('assessment_responses')
           .select('id, employee_id, classification, completed_at')
