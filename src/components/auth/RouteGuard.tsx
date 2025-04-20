@@ -26,40 +26,41 @@ export function RouteGuard({
   const location = useLocation();
 
   // Log para depuração
-  console.log('[RouteGuard] Checking access for route:', location.pathname);
-  console.log('[RouteGuard] User role:', userRole);
-  console.log('[RouteGuard] Required permission:', requirePermission);
-  console.log('[RouteGuard] Required company access:', requireCompanyAccess);
-  console.log('[RouteGuard] User companies:', userCompanies);
+  console.log('[RouteGuard] Verificando acesso para rota:', location.pathname);
+  console.log('[RouteGuard] Perfil do usuário:', userRole);
+  console.log('[RouteGuard] Permissão requerida:', requirePermission);
+  console.log('[RouteGuard] Acesso à empresa requerido:', requireCompanyAccess);
+  console.log('[RouteGuard] Empresas do usuário:', userCompanies);
   
-  // Show loading state while checking permissions and access
+  // Mostrar loading enquanto verifica permissões e acesso
   if (loading || loadingPermission || checkingAccess) {
     return <LoadingSpinner />;
   }
 
-  // Check authentication
+  // Verificar autenticação
   if (!user) {
+    toast.error('Você precisa estar logado para acessar esta página');
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check permission based on configured permissions
+  // Verificar permissão baseada nas permissões configuradas
   if (requirePermission && !hasPermission(requirePermission)) {
     toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
-    console.error(`[RouteGuard] Permission denied: ${requirePermission}`);
+    console.error(`[RouteGuard] Permissão negada: ${requirePermission}`);
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Check company access - this now strictly uses what's configured in the User Management page
+  // Verificar acesso à empresa - ESTRITAMENTE baseado nas associações configuradas na página de usuários
   if (requireCompanyAccess && !hasAccess) {
     toast.error(`Acesso negado: Você não tem acesso à empresa solicitada`);
-    console.error(`[RouteGuard] Company access denied: ${requireCompanyAccess}`);
+    console.error(`[RouteGuard] Acesso à empresa negado: ${requireCompanyAccess}`);
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Log final decision
-  console.log(`[RouteGuard] Access granted for route: ${location.pathname}`);
+  // Log de decisão final
+  console.log(`[RouteGuard] Acesso concedido para rota: ${location.pathname}`);
   
-  // Check role-based access
+  // Verificar acesso baseado em perfil
   return (
     <RoleCheck allowedRoles={allowedRoles}>
       {children}

@@ -10,12 +10,12 @@ export function useCompanyAccess(requiredCompanyId?: string) {
 
   useEffect(() => {
     const checkCompanyAccess = async () => {
-      console.log('[useCompanyAccess] Checking access for company:', requiredCompanyId);
-      console.log('[useCompanyAccess] User role:', userRole);
-      console.log('[useCompanyAccess] User companies:', userCompanies);
+      console.log('[useCompanyAccess] Verificando acesso para empresa:', requiredCompanyId);
+      console.log('[useCompanyAccess] Perfil do usuário:', userRole);
+      console.log('[useCompanyAccess] Empresas do usuário:', userCompanies);
       
       if (!user || !requiredCompanyId) {
-        console.log('[useCompanyAccess] No user or company ID, setting access to false');
+        console.log('[useCompanyAccess] Sem usuário ou ID de empresa, acesso negado');
         setHasAccess(false);
         setCheckingAccess(false);
         return;
@@ -24,22 +24,21 @@ export function useCompanyAccess(requiredCompanyId?: string) {
       try {
         // Superadmin sempre tem acesso a todas as empresas
         if (userRole === 'superadmin') {
-          console.log('[useCompanyAccess] User is superadmin, granting access');
+          console.log('[useCompanyAccess] Usuário é superadmin, concedendo acesso');
           setHasAccess(true);
           setCheckingAccess(false);
           return;
         }
 
-        // Verificar se o usuário tem acesso com base nas empresas carregadas do contexto de autenticação
-        // Esta verificação agora é a principal e deve refletir exatamente o que foi configurado na interface
+        // Verificação EXCLUSIVAMENTE baseada nas empresas associadas no gerenciamento de usuários
         if (userCompanies && userCompanies.length > 0) {
           const hasCompanyAccess = userCompanies.some(
             company => company.companyId === requiredCompanyId
           );
           
-          console.log('[useCompanyAccess] Company access based on assigned companies:', hasCompanyAccess);
-          console.log('[useCompanyAccess] User companies:', userCompanies.map(c => c.companyName).join(', '));
-          console.log('[useCompanyAccess] Required company:', requiredCompanyId);
+          console.log('[useCompanyAccess] Acesso baseado nas empresas associadas:', hasCompanyAccess);
+          console.log('[useCompanyAccess] Empresas do usuário:', userCompanies.map(c => c.companyName).join(', '));
+          console.log('[useCompanyAccess] Empresa requisitada:', requiredCompanyId);
           
           setHasAccess(hasCompanyAccess);
           setCheckingAccess(false);
@@ -47,11 +46,11 @@ export function useCompanyAccess(requiredCompanyId?: string) {
         }
         
         // Se não houver empresas associadas, não tem acesso
-        console.log('[useCompanyAccess] No companies associated with user, denying access');
+        console.log('[useCompanyAccess] Nenhuma empresa associada ao usuário, acesso negado');
         setHasAccess(false);
         setCheckingAccess(false);
       } catch (error) {
-        console.error('[useCompanyAccess] Error checking company access:', error);
+        console.error('[useCompanyAccess] Erro verificando acesso à empresa:', error);
         setHasAccess(false);
         setCheckingAccess(false);
       }
