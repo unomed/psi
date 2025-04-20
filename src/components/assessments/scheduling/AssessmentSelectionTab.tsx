@@ -8,7 +8,7 @@ interface AssessmentSelectionTabProps {
   selectedTemplate: ChecklistTemplate | null;
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
-  onEmployeeSelect: (employeeId: string) => void;
+  onEmployeeSelect?: (employeeId: string) => void;
   onTemplateSelect: (templateId: string) => void;
   selectedCompany?: string | null;
   selectedSector?: string | null;

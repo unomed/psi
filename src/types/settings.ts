@@ -1,5 +1,6 @@
 
-export type PeriodicityType = "monthly" | "quarterly" | "semiannual" | "annual";
+// Define PeriodicityType to align with RecurrenceType
+export type PeriodicityType = "none" | "monthly" | "quarterly" | "semiannual" | "annual";
 
 export interface PeriodicitySettings {
   id?: string;

@@ -7,10 +7,15 @@ export type DbScaleType = "likert5" | "likert7" | "binary" | "range10" | "freque
 // Mapping between app scale types and DB scale types
 export const scaleTypeToDbScaleType = (scaleType: ScaleType): DbScaleType => {
   switch (scaleType) {
-    case ScaleType.Likert: return "likert5";
-    case ScaleType.YesNo: return "binary";
-    case ScaleType.Agree3: return "custom";
-    case ScaleType.Custom: return "custom";
-    default: return "likert5";
+    case ScaleType.Likert:
+      return "likert5";
+    case ScaleType.YesNo:
+      return "binary";
+    case ScaleType.Agree3:
+      return "custom";
+    case ScaleType.Custom:
+      return "custom";
+    default:
+      return "likert5";
   }
 };

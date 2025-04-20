@@ -1,6 +1,6 @@
 
 import { DiscFactorType, DiscQuestion } from "./disc";
-import { ScaleType } from "./scale";
+import { ScaleType } from "./index";
 
 export interface ChecklistTemplate {
   id: string;
@@ -31,6 +31,4 @@ export interface ChecklistResult {
 }
 
 // Re-export types from disc and scale that are used with checklist
-export type { DiscFactorType, DiscQuestion } from "./disc";
-export type { ScaleType } from "./scale";
-export { scaleTypeToDbScaleType } from "./scale";
+export type { DiscQuestion } from "./disc";

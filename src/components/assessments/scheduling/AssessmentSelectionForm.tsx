@@ -6,7 +6,7 @@ import { SectorSelector } from "../selectors/SectorSelector";
 import { RoleSelector } from "../selectors/RoleSelector";
 import { EmployeeSelector } from "../selectors/EmployeeSelector";
 import { TemplateSelector } from "../selectors/TemplateSelector";
-import { useAssessmentSelection } from "@/hooks/assessments/useAssessmentSelection";
+import { useAssessmentSelection, useAssessmentSelectionState } from "@/hooks/assessments/useAssessmentSelection";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -119,38 +119,4 @@ export function AssessmentSelectionForm({
       )}
     </div>
   );
-}
-
-// Helper function for component internal state
-function useAssessmentSelectionState() {
-  const [selectedCompany, setSelectedCompany] = React.useState<string | null>(null);
-  const [selectedSector, setSelectedSector] = React.useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = React.useState<string | null>(null);
-  
-  const handleCompanyChange = (value: string) => {
-    setSelectedCompany(value);
-    setSelectedSector(null);
-    setSelectedRole(null);
-  };
-
-  const handleSectorChange = (value: string) => {
-    setSelectedSector(value);
-    setSelectedRole(null);
-  };
-
-  const handleRoleChange = (value: string) => {
-    setSelectedRole(value);
-  };
-
-  return {
-    selectedCompany,
-    setSelectedCompany,
-    selectedSector,
-    setSelectedSector,
-    selectedRole,
-    setSelectedRole,
-    handleCompanyChange,
-    handleSectorChange,
-    handleRoleChange
-  };
 }

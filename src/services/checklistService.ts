@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { 
   ChecklistTemplate, 
@@ -50,13 +49,15 @@ export async function saveChecklistTemplate(
   template: Omit<ChecklistTemplate, "id" | "createdAt">, 
   isStandard: boolean = false
 ): Promise<string> {
+  const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
+  
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
     .insert({
       title: template.title,
       description: template.description,
       type: template.type,
-      scale_type: scaleTypeToDbScaleType(template.scaleType || "likert5"),
+      scale_type: dbScaleType,
       is_active: true,
       is_standard: isStandard,
       company_id: template.companyId
@@ -118,11 +119,14 @@ export async function copyTemplateForCompany(
 // Helper function to map database scale types to application scale types
 function mapDbScaleToAppScale(dbScale: string): ScaleType {
   switch(dbScale) {
-    case "likert5": return "likert5";
-    case "binary": return "yesno";
+    case "likert5": 
+      return ScaleType.Likert;
+    case "binary": 
+      return ScaleType.YesNo;
     case "custom": 
-      return "custom";
-    default: return "likert5";
+      return ScaleType.Custom;
+    default: 
+      return ScaleType.Likert;
   }
 }
 

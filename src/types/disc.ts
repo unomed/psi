@@ -1,5 +1,10 @@
 
-import { DiscFactorType } from './index';
+export enum DiscFactorType {
+  D = "D",
+  I = "I",
+  S = "S",
+  C = "C",
+}
 
 export interface DiscFactor {
   type: DiscFactorType;
