@@ -1,15 +1,21 @@
+
 import React, { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions, Permission } from "@/hooks/usePermissions";
 import { NewRoleDialog } from "@/components/permissions/NewRoleDialog";
+import { EditRoleDialog } from "@/components/permissions/EditRoleDialog";
+import { DeleteRoleDialog } from "@/components/permissions/DeleteRoleDialog";
 import { PermissionSection } from "@/components/permissions/PermissionSection";
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
+import { toast } from "sonner";
 import { PermissionSetting } from "@/types/permissions";
 
 export default function PermissionsPage() {
-  const { permissions, isLoading, updatePermission, createRole } = usePermissions();
+  const { permissions, isLoading, updatePermission, createRole, deleteRole } = usePermissions();
   const [newRoleName, setNewRoleName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Permission | null>(null);
 
   const uniquePermissions = permissions 
     ? permissions.filter((role, index, self) => 
@@ -83,7 +89,10 @@ export default function PermissionsPage() {
   };
   
   const handleCreateRole = () => {
-    if (!newRoleName.trim()) return;
+    if (!newRoleName.trim()) {
+      toast.error("O nome do perfil é obrigatório");
+      return;
+    }
     
     const basicPermissions = createFullPermissions(false);
     basicPermissions.view_dashboard = true;
@@ -97,11 +106,44 @@ export default function PermissionsPage() {
     setDialogOpen(false);
   };
 
-  const getPermissionValue = (role: Permission, permissionId: string): boolean => {
-    if (role.role === 'superadmin') {
-      return true;
+  const handleEditRole = () => {
+    if (!selectedRole || !newRoleName.trim()) {
+      toast.error("O nome do perfil é obrigatório");
+      return;
     }
-    return role.permissions && role.permissions[permissionId] === true;
+
+    updatePermission.mutate({
+      roleId: selectedRole.id,
+      permissions: selectedRole.permissions,
+      newRole: newRoleName.trim()
+    });
+
+    setNewRoleName("");
+    setEditDialogOpen(false);
+    setSelectedRole(null);
+  };
+
+  const handleDeleteRole = () => {
+    if (!selectedRole) return;
+    
+    deleteRole.mutate(selectedRole.id, {
+      onSuccess: () => {
+        toast.success("Perfil excluído com sucesso");
+        setDeleteDialogOpen(false);
+        setSelectedRole(null);
+      }
+    });
+  };
+
+  const onEditRole = (role: Permission) => {
+    setSelectedRole(role);
+    setNewRoleName(role.role);
+    setEditDialogOpen(true);
+  };
+
+  const onDeleteRole = (role: Permission) => {
+    setSelectedRole(role);
+    setDeleteDialogOpen(true);
   };
 
   if (isLoading) {
@@ -149,7 +191,7 @@ export default function PermissionsPage() {
           handleCreateRole={handleCreateRole}
         />
       </div>
-      
+
       {sections.map((section) => (
         <PermissionSection
           key={section}
@@ -158,8 +200,29 @@ export default function PermissionsPage() {
           permissionSettings={permissionSettings}
           handleTogglePermission={handleTogglePermission}
           getPermissionValue={getPermissionValue}
+          onEditRole={onEditRole}
+          onDeleteRole={onDeleteRole}
         />
       ))}
+
+      {selectedRole && (
+        <>
+          <EditRoleDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            roleName={selectedRole.role}
+            newRoleName={newRoleName}
+            setNewRoleName={setNewRoleName}
+            handleEditRole={handleEditRole}
+          />
+          <DeleteRoleDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onConfirm={handleDeleteRole}
+            roleName={selectedRole.role}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -195,3 +258,4 @@ const createFullPermissions = (value: boolean): Record<string, boolean> => ({
   view_settings: value,
   edit_settings: value,
 });
+

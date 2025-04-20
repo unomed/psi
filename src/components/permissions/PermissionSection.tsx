@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Permission } from "@/hooks/usePermissions";
@@ -10,6 +11,8 @@ interface PermissionSectionProps {
   permissionSettings: PermissionSetting[];
   handleTogglePermission: (role: Permission, permissionId: string) => void;
   getPermissionValue: (role: Permission, permissionId: string) => boolean;
+  onEditRole: (role: Permission) => void;
+  onDeleteRole: (role: Permission) => void;
 }
 
 export function PermissionSection({
@@ -18,6 +21,8 @@ export function PermissionSection({
   permissionSettings,
   handleTogglePermission,
   getPermissionValue,
+  onEditRole,
+  onDeleteRole,
 }: PermissionSectionProps) {
   return (
     <Card>
@@ -34,6 +39,8 @@ export function PermissionSection({
           section={section}
           handleTogglePermission={handleTogglePermission}
           getPermissionValue={getPermissionValue}
+          onEditRole={onEditRole}
+          onDeleteRole={onDeleteRole}
         />
       </CardContent>
     </Card>

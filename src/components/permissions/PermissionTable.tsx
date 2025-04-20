@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Table,
@@ -11,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Permission } from "@/hooks/usePermissions";
 import { PermissionSetting } from '@/types/permissions';
+import { RoleHeader } from './RoleHeader';
 
 interface PermissionTableProps {
   permissions: Permission[];
@@ -18,6 +20,8 @@ interface PermissionTableProps {
   section: string;
   handleTogglePermission: (role: Permission, permissionId: string) => void;
   getPermissionValue: (role: Permission, permissionId: string) => boolean;
+  onEditRole: (role: Permission) => void;
+  onDeleteRole: (role: Permission) => void;
 }
 
 export function PermissionTable({
@@ -26,6 +30,8 @@ export function PermissionTable({
   section,
   handleTogglePermission,
   getPermissionValue,
+  onEditRole,
+  onDeleteRole,
 }: PermissionTableProps) {
   return (
     <Table>
@@ -33,9 +39,13 @@ export function PermissionTable({
         <TableRow>
           <TableHead className="w-[300px]">Recurso</TableHead>
           {permissions?.map((role) => (
-            <TableHead key={role.id}>
-              {role.role.charAt(0).toUpperCase() + role.role.slice(1)}
-            </TableHead>
+            <RoleHeader
+              key={role.id}
+              role={role.role.charAt(0).toUpperCase() + role.role.slice(1)}
+              onEdit={() => onEditRole(role)}
+              onDelete={() => onDeleteRole(role)}
+              isReadOnly={role.role === 'superadmin'}
+            />
           ))}
         </TableRow>
       </TableHeader>
