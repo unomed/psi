@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -7,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { useAssessmentCriteriaSettings, type AssessmentCriteriaSettings } from "@/hooks/settings/useAssessmentCriteriaSettings";
 
 const assessmentCriteriaSchema = z.object({
   // Periodicidade
@@ -45,46 +44,49 @@ type AssessmentCriteriaValues = z.infer<typeof assessmentCriteriaSchema>;
 
 export function AssessmentCriteriaSettings() {
   const [isLoading, setIsLoading] = useState(false);
+  const { settings, isLoading: isLoadingSettings, updateSettings } = useAssessmentCriteriaSettings();
   
-  // Em produção, isso carregaria os dados do banco
-  const form = useForm<AssessmentCriteriaValues>({
+  const form = useForm<AssessmentCriteriaSettings>({
     resolver: zodResolver(assessmentCriteriaSchema),
-    defaultValues: {
-      defaultRecurrenceType: "annual",
-      enableRecurrenceReminders: true,
-      daysBeforeReminderSent: 15,
-      minimumEmployeePercentage: 30,
-      requireAllSectors: false,
-      requireAllRoles: false,
-      prioritizeHighRiskRoles: true,
-      lowRiskThreshold: 30,
-      mediumRiskThreshold: 60,
-      sectorRiskCalculationType: "weighted",
-      companyRiskCalculationType: "weighted",
-      requireReassessmentForHighRisk: true,
-      reassessmentMaxDays: 90,
-      notifyManagersOnHighRisk: true,
+    defaultValues: settings || {
+      default_recurrence_type: "annual",
+      enable_recurrence_reminders: true,
+      days_before_reminder_sent: 15,
+      minimum_employee_percentage: 30,
+      require_all_sectors: false,
+      require_all_roles: false,
+      prioritize_high_risk_roles: true,
+      low_risk_threshold: 30,
+      medium_risk_threshold: 60,
+      sector_risk_calculation_type: "weighted",
+      company_risk_calculation_type: "weighted",
+      require_reassessment_for_high_risk: true,
+      reassessment_max_days: 90,
+      notify_managers_on_high_risk: true,
     }
   });
   
-  async function onSubmit(data: AssessmentCriteriaValues) {
+  async function onSubmit(data: AssessmentCriteriaSettings) {
     try {
       setIsLoading(true);
-      console.log("Salvando critérios de avaliação:", data);
-      
-      // Em uma implementação real, salvaríamos no banco de dados
-      // await supabase.from('system_settings').upsert({ 
-      //   setting_key: 'assessment_criteria', 
-      //   setting_value: data 
-      // });
-      
-      toast.success("Critérios de avaliação atualizados com sucesso!");
-    } catch (error) {
-      console.error("Erro ao salvar configurações:", error);
-      toast.error("Erro ao salvar configurações. Tente novamente.");
+      await updateSettings(data);
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (isLoadingSettings) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="h-4 bg-gray-200 animate-pulse rounded" />
+            <div className="h-4 bg-gray-200 animate-pulse rounded" />
+            <div className="h-4 bg-gray-200 animate-pulse rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
   
   return (
