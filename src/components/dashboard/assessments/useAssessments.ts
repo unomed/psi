@@ -2,6 +2,10 @@
 import { useState, useEffect } from "react";
 import { Assessment } from "./types";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  transformAssessmentData, 
+  createFallbackAssessments 
+} from "./utils/assessmentDataTransformer";
 
 export function useAssessments(companyId: string | null) {
   const [loading, setLoading] = useState(true);
@@ -32,7 +36,7 @@ export function useAssessments(companyId: string | null) {
         const employeeMap = employees.reduce((acc, emp) => {
           acc[emp.id] = { name: emp.name, sectorId: emp.sector_id };
           return acc;
-        }, {} as Record<string, { name: string, sectorId: string }>);
+        }, {} as Record<string, { name: string; sectorId: string }>);
         
         const { data: sectors, error: sectorError } = await supabase
           .from('sectors')
@@ -56,109 +60,14 @@ export function useAssessments(companyId: string | null) {
         if (responseError) throw responseError;
 
         if (responses && responses.length > 0) {
-          const formattedAssessments = responses.map(response => {
-            const employee = employeeMap[response.employee_id] || { name: 'Desconhecido', sectorId: '' };
-            const sectorName = employee.sectorId ? (sectorMap[employee.sectorId] || 'Não especificado') : 'Não especificado';
-            
-            let riskLevel = 'Médio';
-            const classification = String(response.classification || '').toLowerCase();
-            
-            if (classification === 'severe' || classification === 'critical') {
-              riskLevel = 'Alto';
-            } else if (classification === 'moderate') {
-              riskLevel = 'Médio';
-            } else if (classification === 'mild' || classification === 'normal') {
-              riskLevel = 'Baixo';
-            }
-            
-            return {
-              id: response.id,
-              employee: employee.name,
-              sector: sectorName,
-              date: response.completed_at,
-              riskLevel: riskLevel
-            };
-          });
-
+          const formattedAssessments = transformAssessmentData(responses, employeeMap, sectorMap);
           setAssessments(formattedAssessments);
         } else {
-          setAssessments([
-            {
-              id: 1,
-              employee: "João Silva",
-              sector: "Produção",
-              date: "2025-04-05",
-              riskLevel: "Alto",
-            },
-            {
-              id: 2,
-              employee: "Maria Santos",
-              sector: "Administrativo",
-              date: "2025-04-04",
-              riskLevel: "Baixo",
-            },
-            {
-              id: 3,
-              employee: "Carlos Oliveira",
-              sector: "TI",
-              date: "2025-04-03",
-              riskLevel: "Médio",
-            },
-            {
-              id: 4,
-              employee: "Ana Costa",
-              sector: "Comercial",
-              date: "2025-04-02",
-              riskLevel: "Baixo",
-            },
-            {
-              id: 5,
-              employee: "Pedro Souza",
-              sector: "Logística",
-              date: "2025-04-01",
-              riskLevel: "Médio",
-            },
-          ]);
+          setAssessments(createFallbackAssessments());
         }
       } catch (error) {
         console.error("Error fetching recent assessments:", error);
-        setAssessments([
-          {
-            id: 1,
-            employee: "João Silva",
-            sector: "Produção",
-            date: "2025-04-05",
-            riskLevel: "Alto",
-          },
-          {
-            id: 2,
-            employee: "Maria Santos",
-            sector: "Administrativo",
-            date: "2025-04-04",
-            riskLevel: "Baixo",
-          },
-          {
-            id: 3,
-            employee: "Carlos Oliveira",
-            sector: "TI",
-            date: "2025-04-03",
-            riskLevel: "Médio",
-          },
-          {
-            id: 4,
-            employee: "Ana Costa",
-            sector: "Comercial",
-            date: "2025-04-02",
-            riskLevel: "Baixo",
-          },
-          {
-            id: 5,
-            employee: "Pedro Souza",
-            sector: "Logística",
-            date: "2025-04-01",
-            riskLevel: "Médio",
-          },
-        ]);
+        setAssessments(createFallbackAssessments());
       } finally {
         setLoading(false);
       }
