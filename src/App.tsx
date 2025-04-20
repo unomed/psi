@@ -26,6 +26,7 @@ import NotificationsPage from "./pages/configuracoes/NotificationsPage";
 import PeriodicityPage from "./pages/configuracoes/PeriodicityPage";
 import UserManagementPage from "./pages/configuracoes/UserManagementPage";
 import PermissionsPage from "./pages/configuracoes/PermissionsPage";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -37,13 +38,16 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* Home route - public with redirection logic */}
+            <Route path="/" element={<Index />} />
+            
             {/* Auth routes - public */}
             <Route path="/auth/login" element={<Login />} />
             <Route path="/auth/register" element={<Register />} />
             
-            {/* Protected routes - require view_dashboard permission */}
-            <Route path="/" element={
-              <RouteGuard requirePermission="view_dashboard">
+            {/* Dashboard route */}
+            <Route path="/dashboard" element={
+              <RouteGuard>
                 <MainLayout>
                   <Dashboard />
                 </MainLayout>
