@@ -11,6 +11,12 @@ export interface User {
   companies: string[];
 }
 
+interface ProfileWithEmail {
+  id: string;
+  email: string;
+  full_name?: string;
+}
+
 export function useUsers() {
   const queryClient = useQueryClient();
   const { user: currentUser, userRole } = useAuth();
@@ -18,7 +24,6 @@ export function useUsers() {
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      // Fetch all user profiles with emails
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles_with_emails')
         .select('*');
@@ -28,7 +33,6 @@ export function useUsers() {
         throw profilesError;
       }
 
-      // Fetch user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
@@ -38,7 +42,6 @@ export function useUsers() {
         throw rolesError;
       }
 
-      // Fetch user companies
       const { data: userCompanies, error: companiesError } = await supabase
         .from('user_companies')
         .select('user_id, company_id');
@@ -48,7 +51,6 @@ export function useUsers() {
         throw companiesError;
       }
 
-      // Fetch company names
       const { data: companies, error: companyNamesError } = await supabase
         .from('companies')
         .select('id, name');
@@ -58,8 +60,7 @@ export function useUsers() {
         throw companyNamesError;
       }
 
-      // Combine all user data
-      return profiles.map(profile => {
+      return profiles.map((profile: ProfileWithEmail) => {
         const userRole = userRoles.find(r => r.user_id === profile.id);
         const userCompanyIds = userCompanies
           .filter(uc => uc.user_id === profile.id)
@@ -72,7 +73,7 @@ export function useUsers() {
         return {
           id: profile.id,
           email: profile.email || '',
-          full_name: profile.full_name || '', // Assuming we have full_name in profiles_with_emails
+          full_name: profile.full_name || '',
           role: userRole?.role || 'evaluator',
           companies: companyNames
         };
@@ -86,7 +87,6 @@ export function useUsers() {
 
   const updateUserRole = useMutation({
     mutationFn: async ({ userId, role }: { userId: string, role: string }) => {
-      // Validate that role is one of the acceptable values
       let dbRole: "superadmin" | "admin" | "evaluator";
       
       if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
@@ -143,7 +143,6 @@ export function useUsers() {
       }
 
       if (data.user) {
-        // Cast the role to the appropriate type based on its value
         let dbRole: "superadmin" | "admin" | "evaluator";
         
         if (role === 'superadmin' || role === 'admin' || role === 'evaluator') {
