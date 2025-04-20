@@ -6,9 +6,10 @@ import { UseFormReturn } from "react-hook-form";
 
 interface BasicUserInfoProps {
   form: UseFormReturn<{
-    email: string;
-    full_name: string;
-    role: "superadmin" | "admin" | "evaluator";
+    email?: string;
+    full_name?: string;
+    role?: "superadmin" | "admin" | "evaluator";
+    companyIds?: string[];
   }>;
 }
 
@@ -49,7 +50,11 @@ export function BasicUserInfo({ form }: BasicUserInfoProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Função</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              defaultValue={field.value}
+              value={field.value}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma função" />
