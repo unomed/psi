@@ -1,5 +1,5 @@
 
-import { EmailRequest, EmailTemplate } from './types';
+import { EmailRequest, EmailTemplate } from './types.ts';
 import { createClient } from '@supabase/supabase-js';
 
 export function applyTemplateVariables(
@@ -57,4 +57,3 @@ export function prepareVariables(request: EmailRequest): Record<string, string> 
     data_limite: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
   };
 }
-

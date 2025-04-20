@@ -1,5 +1,5 @@
 
-import { EmailRequest } from './types';
+import { EmailRequest } from './types.ts';
 
 // Default email templates
 export const emailTemplates = {
@@ -42,4 +42,3 @@ Atenciosamente,
 Equipe de Recursos Humanos`
   }
 };
-
