@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -29,8 +28,8 @@ export async function generateAssessmentLink(
 
     if (error) throw error;
 
-    // Retornar URL completa do link
-    return `${window.location.origin}/avaliacao/${token}`;
+    // Retornar URL completa do link usando o domínio personalizado
+    return `https://avaliacao.unomed.med.br/avaliacao/${token}`;
   } catch (error) {
     console.error("Erro ao gerar link:", error);
     toast.error("Erro ao gerar link de avaliação");
