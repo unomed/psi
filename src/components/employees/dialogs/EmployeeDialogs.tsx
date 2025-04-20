@@ -19,6 +19,7 @@ interface EmployeeDialogsProps {
   handleCreate: (data: EmployeeFormData) => Promise<void>;
   handleEdit: (data: EmployeeFormData) => Promise<void>;
   handleDelete: () => Promise<void>;
+  companyId: string | null;
 }
 
 export function EmployeeDialogs({
@@ -34,6 +35,7 @@ export function EmployeeDialogs({
   handleCreate,
   handleEdit,
   handleDelete,
+  companyId,
 }: EmployeeDialogsProps) {
   return (
     <>

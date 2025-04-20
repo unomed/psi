@@ -15,6 +15,7 @@ interface RiskLevelDistributionProps {
     dateRange: DateRange;
     selectedSector: string;
     selectedRole: string;
+    selectedCompany?: string | null;
   };
   fullWidth?: boolean;
 }

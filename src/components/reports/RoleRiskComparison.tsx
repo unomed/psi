@@ -17,6 +17,7 @@ interface RoleRiskComparisonProps {
     dateRange: DateRange;
     selectedSector: string;
     selectedRole: string;
+    selectedCompany?: string | null;
   };
 }
 
