@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,13 +21,34 @@ export function useEmailTemplates() {
       }
 
       // Transform the data to ensure it matches EmailTemplate interface
-      return data.map(template => ({
-        id: template.id,
-        name: template.name,
-        subject: template.subject,
-        body: template.body,
-        description: template.variables?.description || '' // Use variables field for description if available
-      }));
+      return data.map(template => {
+        // Safely extract description from variables if it exists
+        let description = '';
+        if (template.variables) {
+          // Handle the case when variables is a JSON object
+          if (typeof template.variables === 'object' && template.variables !== null) {
+            description = (template.variables as Record<string, any>).description || '';
+          } 
+          // Handle the case when variables might be a JSON string
+          else if (typeof template.variables === 'string') {
+            try {
+              const parsed = JSON.parse(template.variables);
+              description = parsed.description || '';
+            } catch (e) {
+              // If parsing fails, leave description as empty string
+              console.warn('Failed to parse variables JSON string:', e);
+            }
+          }
+        }
+
+        return {
+          id: template.id,
+          name: template.name,
+          subject: template.subject,
+          body: template.body,
+          description: description
+        };
+      });
     }
   });
 
