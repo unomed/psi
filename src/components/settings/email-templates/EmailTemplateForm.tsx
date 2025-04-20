@@ -23,38 +23,44 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EmailTemplate } from "./types";
-
-const emailTemplateCreateSchema = z.object({
-  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
-  subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
-  body: z.string().min(20, "O conteúdo deve ter pelo menos 20 caracteres"),
-  description: z.string().optional()
-});
-
-const emailTemplateEditSchema = z.object({
-  subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
-  body: z.string().min(20, "O conteúdo deve ter pelo menos 20 caracteres")
-});
-
-type EmailTemplateCreateValues = z.infer<typeof emailTemplateCreateSchema>;
-type EmailTemplateEditValues = z.infer<typeof emailTemplateEditSchema>;
 
 interface EmailTemplateFormProps {
   mode: 'create' | 'edit';
   template?: EmailTemplate;
-  onSubmit: (values: EmailTemplateCreateValues | EmailTemplateEditValues) => void;
+  onSubmit: (values: any) => void;
+  allowedTemplateNames?: string[];
 }
 
 export function EmailTemplateForm({ 
   mode, 
   template, 
-  onSubmit 
+  onSubmit,
+  allowedTemplateNames = ["Convite", "Conclusão", "Lembrete"]
 }: EmailTemplateFormProps) {
+  // Define schemas based on mode
+  const emailTemplateCreateSchema = z.object({
+    name: z.string().min(1, "O tipo de modelo é obrigatório"),
+    subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
+    body: z.string().min(20, "O conteúdo deve ter pelo menos 20 caracteres"),
+    description: z.string().optional()
+  });
+
+  const emailTemplateEditSchema = z.object({
+    subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres"),
+    body: z.string().min(20, "O conteúdo deve ter pelo menos 20 caracteres")
+  });
+  
   const schema = mode === 'create' ? emailTemplateCreateSchema : emailTemplateEditSchema;
   
-  const form = useForm<EmailTemplateCreateValues | EmailTemplateEditValues>({
+  const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: mode === 'create' 
       ? { 
@@ -69,7 +75,7 @@ export function EmailTemplateForm({
         }
   });
 
-  const handleSubmit = (values: EmailTemplateCreateValues | EmailTemplateEditValues) => {
+  const handleSubmit = (values: any) => {
     onSubmit(values);
   };
 
@@ -98,10 +104,27 @@ export function EmailTemplateForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do Modelo</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Convite para Avaliação" {...field} />
-                    </FormControl>
+                    <FormLabel>Tipo de Modelo</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo do modelo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {allowedTemplateNames.map((name) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Escolha o tipo de modelo que deseja criar
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -183,4 +206,3 @@ export function EmailTemplateForm({
     </Card>
   );
 }
-

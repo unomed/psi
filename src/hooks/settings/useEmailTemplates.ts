@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EmailTemplate } from "@/components/settings/email-templates/types";
-import { v4 as uuidv4 } from 'uuid';
 
 export function useEmailTemplates() {
   const queryClient = useQueryClient();
@@ -23,13 +22,12 @@ export function useEmailTemplates() {
       }
 
       // Transform the data to ensure it matches EmailTemplate interface
-      // The database doesn't have a description field, so we add an empty string as default
       return data.map(template => ({
         id: template.id,
         name: template.name,
         subject: template.subject,
         body: template.body,
-        description: '' // Add default empty description since it's not in the database schema
+        description: template.variables?.description || '' // Use variables field for description if available
       }));
     }
   });
@@ -64,29 +62,41 @@ export function useEmailTemplates() {
       body: string; 
       description?: string 
     }) => {
-      const id = uuidv4();
+      // Check if a template with this name already exists
+      const { data: existingTemplates, error: checkError } = await supabase
+        .from('email_templates')
+        .select('id')
+        .eq('name', template.name);
+      
+      if (checkError) throw checkError;
+      
+      if (existingTemplates && existingTemplates.length > 0) {
+        throw new Error(`Já existe um modelo do tipo "${template.name}"`);
+      }
+
+      // Store description in the variables field as JSON
+      const variables = template.description ? { description: template.description } : {};
+      
       const { error } = await supabase
         .from('email_templates')
         .insert({
-          id,
           name: template.name,
           subject: template.subject,
           body: template.body,
-          // We don't include description in the database insert since it doesn't exist in the schema
-          created_at: new Date().toISOString()
+          variables,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      // Return complete template with description for client-side use
-      return { ...template, id, description: template.description || '' };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['emailTemplates'] });
       toast.success('Novo modelo de email criado com sucesso');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error creating email template:', error);
-      toast.error('Erro ao criar novo modelo de email');
+      toast.error(error.message || 'Erro ao criar novo modelo de email');
     }
   });
 

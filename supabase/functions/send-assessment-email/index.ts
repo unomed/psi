@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.22.0"
 
@@ -20,9 +21,9 @@ interface EmailRequest {
   customBody?: string;
 }
 
-// Email templates 
+// Email templates - default fallbacks if database templates aren't available
 const emailTemplates = {
-  "completion": {
+  "Conclusão": {
     subject: "Sua avaliação psicossocial foi concluída",
     body: `Olá {employeeName},
 
@@ -33,7 +34,7 @@ Agradecemos sua participação e comprometimento.
 Atenciosamente,
 Equipe de Recursos Humanos`
   },
-  "reminder": {
+  "Lembrete": {
     subject: "Lembrete: Avaliação psicossocial pendente",
     body: `Olá {employeeName},
 
@@ -46,7 +47,7 @@ A sua participação é muito importante.
 Atenciosamente,
 Equipe de Recursos Humanos`
   },
-  "welcome": {
+  "Convite": {
     subject: "Convite para participar de uma avaliação psicossocial",
     body: `Olá {employeeName},
 
@@ -56,46 +57,6 @@ Por favor, acesse o link abaixo para completar a avaliação.
 Link da avaliação: {linkUrl}
 
 Se tiver qualquer dúvida, entre em contato com o RH.
-
-Atenciosamente,
-Equipe de Recursos Humanos`
-  },
-  
-  // Manter compatibilidade com IDs antigos em inglês
-  "assessment-invitation": {
-    subject: "Convite para participar de uma avaliação psicossocial",
-    body: `Olá {employeeName},
-
-Você foi convidado(a) a participar de uma avaliação psicossocial. 
-Por favor, acesse o link abaixo para completar a avaliação.
-
-Link da avaliação: {linkUrl}
-
-Se tiver qualquer dúvida, entre em contato com o RH.
-
-Atenciosamente,
-Equipe de Recursos Humanos`
-  },
-  "assessment-reminder": {
-    subject: "Lembrete: Avaliação psicossocial pendente",
-    body: `Olá {employeeName},
-
-Este é um lembrete de que você tem uma avaliação psicossocial pendente que precisa ser concluída.
-
-Link da avaliação: {linkUrl}
-
-A sua participação é muito importante.
-
-Atenciosamente,
-Equipe de Recursos Humanos`
-  },
-  "assessment-completion": {
-    subject: "Sua avaliação psicossocial foi concluída",
-    body: `Olá {employeeName},
-
-Gostaríamos de informar que você concluiu com sucesso a avaliação psicossocial.
-
-Agradecemos sua participação e comprometimento.
 
 Atenciosamente,
 Equipe de Recursos Humanos`
@@ -131,17 +92,54 @@ serve(async (req) => {
     // Get request body
     const requestData: EmailRequest = await req.json();
     
-    // Get the email template to use (default to convite if not specified)
-    const templateId = requestData.emailTemplateId || "convite";
-    const emailTemplate = emailTemplates[templateId as keyof typeof emailTemplates];
+    // Map old template names to new standardized names if needed
+    let templateName = requestData.emailTemplateId || "Convite";
+    if (templateName === "welcome" || templateName === "assessment-invitation") {
+      templateName = "Convite";
+    } else if (templateName === "completion" || templateName === "assessment-completion") {
+      templateName = "Conclusão";
+    } else if (templateName === "reminder" || templateName === "assessment-reminder") {
+      templateName = "Lembrete";
+    }
+    
+    // Try to get the email template from the database first
+    let emailTemplate: { subject: string, body: string } | null = null;
+    
+    if (requestData.emailTemplateId) {
+      const { data: dbTemplate, error } = await supabase
+        .from('email_templates')
+        .select('subject, body')
+        .eq('id', requestData.emailTemplateId)
+        .single();
+      
+      if (!error && dbTemplate) {
+        emailTemplate = dbTemplate;
+      }
+    }
+    
+    // If no template found by ID, try to find by name
+    if (!emailTemplate) {
+      const { data: dbTemplate, error } = await supabase
+        .from('email_templates')
+        .select('subject, body')
+        .eq('name', templateName)
+        .single();
+      
+      if (!error && dbTemplate) {
+        emailTemplate = dbTemplate;
+      } else {
+        // Fall back to hardcoded templates
+        emailTemplate = emailTemplates[templateName as keyof typeof emailTemplates];
+      }
+    }
     
     if (!emailTemplate && !requestData.customSubject) {
       throw new Error('Email template not found and no custom subject provided');
     }
     
     // Use provided custom subject/body or the template
-    const subject = requestData.customSubject || emailTemplate.subject;
-    const body = requestData.customBody || emailTemplate.body;
+    const subject = requestData.customSubject || emailTemplate?.subject || '';
+    const body = requestData.customBody || emailTemplate?.body || '';
     
     // Apply variables to the template
     const variables = {
@@ -149,7 +147,10 @@ serve(async (req) => {
       employeeEmail: requestData.employeeEmail,
       linkUrl: requestData.linkUrl,
       assessmentId: requestData.assessmentId,
-      templateName: requestData.templateName
+      templateName: requestData.templateName,
+      nome: requestData.employeeName, // Aliases in Portuguese
+      link: requestData.linkUrl,
+      data_limite: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR') // Default to 7 days from now
     };
     
     const emailSubject = applyTemplateVariables(subject, variables);

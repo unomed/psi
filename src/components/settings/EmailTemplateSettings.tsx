@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,11 @@ import { EmailTemplateForm } from "./email-templates/EmailTemplateForm";
 import { useEmailTemplates } from "@/hooks/settings/useEmailTemplates";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Mapa para tradução dos IDs dos templates para nomes em português
-const templateNameMap: Record<string, string> = {
-  "completion": "Conclusão",
-  "reminder": "Lembrete",
-  "welcome": "Convite"
+// Mapa para tradução dos IDs dos templates para nomes de exibição
+const templateDisplayNames: Record<string, string> = {
+  "Conclusão": "Conclusão",
+  "Lembrete": "Lembrete",
+  "Convite": "Convite"
 };
 
 export default function EmailTemplateSettings() {
@@ -80,6 +81,7 @@ export default function EmailTemplateSettings() {
             <EmailTemplateForm 
               mode="create"
               onSubmit={handleCreateTemplate} 
+              allowedTemplateNames={Object.keys(templateDisplayNames)}
             />
           </DialogContent>
         </Dialog>
@@ -94,7 +96,7 @@ export default function EmailTemplateSettings() {
           <TabsList className="mb-4">
             {templates.map((template) => (
               <TabsTrigger key={template.id} value={template.id}>
-                {templateNameMap[template.id] || template.name}
+                {templateDisplayNames[template.name] || template.name}
               </TabsTrigger>
             ))}
           </TabsList>
