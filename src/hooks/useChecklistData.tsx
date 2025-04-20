@@ -3,7 +3,11 @@ import { useChecklistTemplates } from "./checklist/useChecklistTemplates";
 import { useChecklistResults } from "./checklist/useChecklistResults";
 import { useScheduledAssessments } from "./checklist/useScheduledAssessments";
 
-export function useChecklistData() {
+interface UseChecklistDataProps {
+  companyId?: string | null;
+}
+
+export function useChecklistData({ companyId }: UseChecklistDataProps = {}) {
   const {
     checklists,
     isLoading: isLoadingChecklists,
@@ -26,7 +30,7 @@ export function useChecklistData() {
     handleScheduleAssessment,
     handleSendEmail,
     handleShareAssessment
-  } = useScheduledAssessments();
+  } = useScheduledAssessments({ companyId });
 
   return {
     checklists,

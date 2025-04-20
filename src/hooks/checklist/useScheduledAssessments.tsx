@@ -3,17 +3,24 @@ import { useQuery } from "@tanstack/react-query";
 import { RecurrenceType, ScheduledAssessment, AssessmentStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-export function useScheduledAssessments() {
+interface UseScheduledAssessmentsProps {
+  companyId?: string | null;
+}
+
+export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsProps = {}) {
+  const { userRole } = useAuth();
+  
   const {
     data: scheduledAssessments = [],
     isLoading,
     refetch
   } = useQuery({
-    queryKey: ['scheduledAssessments'],
+    queryKey: ['scheduledAssessments', companyId],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
-      // Using the proper join syntax for Supabase
-      const { data, error } = await supabase
+      // Iniciar a query base
+      let query = supabase
         .from('scheduled_assessments')
         .select(`
           id,
@@ -30,14 +37,28 @@ export function useScheduledAssessments() {
           employees (
             name,
             email,
-            phone
+            phone,
+            company_id
           ),
           checklist_templates(title)
-        `)
-        .order('scheduled_date', { ascending: false });
+        `);
+      
+      // Se um ID de empresa for fornecido, filtrar os funcionários pelo ID da empresa
+      if (companyId && userRole !== 'superadmin') {
+        query = query.in('employee_id', 
+          supabase
+            .from('employees')
+            .select('id')
+            .eq('company_id', companyId)
+        );
+      }
+      
+      // Ordenar e executar a consulta
+      const { data, error } = await query.order('scheduled_date', { ascending: false });
       
       if (error) {
         console.error("Error fetching scheduled assessments:", error);
+        toast.error("Erro ao carregar avaliações agendadas");
         return [];
       }
       

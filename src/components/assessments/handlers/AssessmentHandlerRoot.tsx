@@ -38,7 +38,7 @@ export function AssessmentHandlerRoot({ companyId }: AssessmentHandlerRootProps)
 
   // Fetch checklist templates
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: ['checklistTemplates'],
+    queryKey: ['checklistTemplates', companyId],
     queryFn: fetchChecklistTemplates
   });
 
@@ -70,7 +70,7 @@ export function AssessmentHandlerRoot({ companyId }: AssessmentHandlerRootProps)
     <AssessmentErrorBoundary>
       <div className="space-y-8">
         <AssessmentActions onNewAssessment={handlers.handleNewAssessment} />
-        <AssessmentTabs />
+        <AssessmentTabs companyId={companyId} />
         <AssessmentDialogsContainer
           dialogState={dialogState}
           handlers={handlers}

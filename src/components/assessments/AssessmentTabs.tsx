@@ -1,3 +1,4 @@
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { CalendarClock, CheckCircle } from "lucide-react";
@@ -6,13 +7,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScheduledAssessment } from "@/types";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-export function AssessmentTabs() {
+interface AssessmentTabsProps {
+  companyId?: string | null;
+}
+
+export function AssessmentTabs({ companyId }: AssessmentTabsProps) {
+  const { userRole } = useAuth();
+  
   const { data: scheduledAssessments = [], isLoading } = useQuery({
-    queryKey: ['scheduledAssessments'],
+    queryKey: ['scheduledAssessments', companyId],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        // Iniciar a consulta
+        let query = supabase
           .from('scheduled_assessments')
           .select(`
             id,
@@ -28,8 +37,20 @@ export function AssessmentTabs() {
             checklist_templates (
               title
             )
-          `)
-          .order('scheduled_date', { ascending: false });
+          `);
+          
+        // Se um ID de empresa for fornecido, filtrar os funcionários pelo ID da empresa
+        if (companyId && userRole !== 'superadmin') {
+          query = query.in('employee_id', 
+            supabase
+              .from('employees')
+              .select('id')
+              .eq('company_id', companyId)
+          );
+        }
+        
+        // Ordenar e executar a consulta
+        const { data, error } = await query.order('scheduled_date', { ascending: false });
 
         if (error) {
           console.error("Error fetching scheduled assessments:", error);

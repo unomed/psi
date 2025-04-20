@@ -12,6 +12,20 @@ export function useScheduleAssessment() {
     recurrenceType: string,
     nextScheduledDate: Date | null
   ) => {
+    // Obter ID da empresa do funcionário selecionado
+    const { data: employeeData, error: employeeError } = await supabase
+      .from('employees')
+      .select('company_id')
+      .eq('id', selectedEmployee)
+      .single();
+      
+    if (employeeError) {
+      console.error("Erro ao buscar dados do funcionário:", employeeError);
+      toast.error(`Erro ao buscar dados do funcionário: ${employeeError.message}`);
+      return false;
+    }
+    
+    // Agendar a avaliação
     const { error: scheduledError } = await supabase
       .from('scheduled_assessments')
       .insert({
