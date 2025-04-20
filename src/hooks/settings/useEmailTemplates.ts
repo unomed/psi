@@ -40,7 +40,7 @@ export function useEmailTemplates() {
         .update({
           subject: template.subject,
           body: template.body,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString() // Changed from modified_at to updated_at
         })
         .eq('id', template.id);
 
