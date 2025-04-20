@@ -19,21 +19,24 @@ export function useFetchUsers() {
           throw profilesError;
         }
 
-        // Fetch user display names (full_name) from profiles table
+        // Fetch user display names and active status from profiles table
         const { data: userProfiles, error: profileNamesError } = await supabase
           .from('profiles')
-          .select('id, full_name');
+          .select('id, full_name, is_active');
 
         if (profileNamesError) {
           toast.error('Erro ao carregar nomes dos usuários');
           throw profileNamesError;
         }
 
-        // Create a map of profile IDs to full names for easy lookup
-        const profileNamesMap = new Map();
+        // Create a map of profile IDs to user data for easy lookup
+        const profileDataMap = new Map();
         if (userProfiles) {
           userProfiles.forEach((profile: any) => {
-            profileNamesMap.set(profile.id, profile.full_name);
+            profileDataMap.set(profile.id, {
+              full_name: profile.full_name,
+              is_active: profile.is_active
+            });
           });
         }
 
@@ -74,15 +77,15 @@ export function useFetchUsers() {
             .filter(c => userCompanyIds.includes(c.id))
             .map(c => c.name);
 
-          // Get full_name from the profiles table if available, otherwise use from profiles_with_emails
-          const fullName = profileNamesMap.get(profile.id) || profile.full_name || '';
+          const profileData = profileDataMap.get(profile.id) || {};
 
           return {
             id: profile.id,
             email: profile.email || '',
-            full_name: fullName,
+            full_name: profileData.full_name || '',
             role: userRole?.role || 'evaluator',
-            companies: companyNames
+            companies: companyNames,
+            is_active: profileData.is_active ?? true
           };
         });
       } catch (error) {

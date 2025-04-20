@@ -3,15 +3,17 @@ import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import { User } from "@/hooks/users/types";
+import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface UserTableRowProps {
   user: User;
   onEdit: (user: User) => void;
   onDelete: (user: User) => void;
+  onToggleActive: (user: User) => void;
 }
 
-export function UserTableRow({ user, onEdit, onDelete }: UserTableRowProps) {
+export function UserTableRow({ user, onEdit, onDelete, onToggleActive }: UserTableRowProps) {
   return (
     <TableRow>
       <TableCell>{user.full_name}</TableCell>
@@ -51,6 +53,13 @@ export function UserTableRow({ user, onEdit, onDelete }: UserTableRowProps) {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+      </TableCell>
+      <TableCell>
+        <Switch
+          checked={user.is_active}
+          onCheckedChange={() => onToggleActive(user)}
+          aria-label="Toggle user active status"
+        />
       </TableCell>
       <TableCell className="text-right space-x-2">
         <Button

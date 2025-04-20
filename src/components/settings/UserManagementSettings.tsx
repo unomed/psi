@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUsers, User } from "@/hooks/users/useUsers";
@@ -16,6 +15,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { queryClient } from "@/lib/queryClient";
 
 export default function UserManagementSettings() {
   const { users, isLoading, deleteUser, updateUserRole, createUser } = useUsers();
@@ -91,6 +92,25 @@ export default function UserManagementSettings() {
     }
   };
 
+  const handleToggleActive = async (user: User) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: !user.is_active })
+        .eq('id', user.id);
+
+      if (error) {
+        toast.error('Erro ao atualizar status do usuário');
+        throw error;
+      }
+
+      toast.success(`Usuário ${!user.is_active ? 'ativado' : 'desativado'} com sucesso`);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    } catch (error) {
+      console.error('Error toggling user active status:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -123,6 +143,7 @@ export default function UserManagementSettings() {
           users={users || []} 
           onEditUser={handleEditUser} 
           onDeleteUser={handleDeleteUser}
+          onToggleActive={handleToggleActive}
         />
 
         <UserFormDialog

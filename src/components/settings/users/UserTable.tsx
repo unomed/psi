@@ -8,9 +8,10 @@ interface UserTableProps {
   users: User[];
   onEditUser: (user: User) => void;
   onDeleteUser: (user: User) => void;
+  onToggleActive: (user: User) => void;
 }
 
-export function UserTable({ users, onEditUser, onDeleteUser }: UserTableProps) {
+export function UserTable({ users, onEditUser, onDeleteUser, onToggleActive }: UserTableProps) {
   if (!users?.length) {
     return (
       <Alert>
@@ -29,6 +30,7 @@ export function UserTable({ users, onEditUser, onDeleteUser }: UserTableProps) {
           <TableHead>Email</TableHead>
           <TableHead>Perfil</TableHead>
           <TableHead>Empresas</TableHead>
+          <TableHead>Ativo</TableHead>
           <TableHead className="text-right">Ações</TableHead>
         </TableRow>
       </TableHeader>
@@ -39,6 +41,7 @@ export function UserTable({ users, onEditUser, onDeleteUser }: UserTableProps) {
             user={user}
             onEdit={onEditUser}
             onDelete={onDeleteUser}
+            onToggleActive={onToggleActive}
           />
         ))}
       </TableBody>
