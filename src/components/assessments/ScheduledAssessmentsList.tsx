@@ -9,9 +9,14 @@ import { ScheduledAssessment } from "@/types";
 interface ScheduledAssessmentsListProps {
   assessments: ScheduledAssessment[];
   type: "scheduled" | "completed";
+  onShareAssessment?: (assessmentId: string) => Promise<void>;
 }
 
-export function ScheduledAssessmentsList({ assessments, type }: ScheduledAssessmentsListProps) {
+export function ScheduledAssessmentsList({ 
+  assessments, 
+  type,
+  onShareAssessment 
+}: ScheduledAssessmentsListProps) {
   if (assessments.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground">
@@ -21,6 +26,16 @@ export function ScheduledAssessmentsList({ assessments, type }: ScheduledAssessm
       </div>
     );
   }
+
+  const handleShareClick = async (assessmentId: string) => {
+    if (onShareAssessment) {
+      try {
+        await onShareAssessment(assessmentId);
+      } catch (error) {
+        console.error("Erro ao compartilhar avaliação:", error);
+      }
+    }
+  };
 
   return (
     <div className="rounded-md border">
@@ -67,6 +82,8 @@ export function ScheduledAssessmentsList({ assessments, type }: ScheduledAssessm
                     variant="ghost"
                     size="icon"
                     title="Gerar link"
+                    onClick={() => handleShareClick(assessment.id)}
+                    disabled={type === "completed" || !onShareAssessment}
                   >
                     <Link className="h-4 w-4" />
                   </Button>
