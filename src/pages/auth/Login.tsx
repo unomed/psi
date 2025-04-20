@@ -2,7 +2,6 @@
 import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/layout/AuthLayout';
 import { LoginForm } from '@/components/auth/login/LoginForm';
-import { TestAccountsSection } from '@/components/auth/login/TestAccountsSection';
 
 export default function Login() {
   return (
@@ -21,7 +20,6 @@ export default function Login() {
       }
     >
       <LoginForm />
-      <TestAccountsSection />
     </AuthLayout>
   );
 }
