@@ -28,7 +28,7 @@ export function AssessmentPeriodicitySection({
   const { suggestedPeriodicity, isLoading } = useRiskBasedPeriodicity(employeeId);
 
   useEffect(() => {
-    if (suggestedPeriodicity && !recurrenceType) {
+    if (suggestedPeriodicity && suggestedPeriodicity !== "none" && !recurrenceType) {
       onRecurrenceChange(suggestedPeriodicity as RecurrenceType);
     }
   }, [suggestedPeriodicity, recurrenceType, onRecurrenceChange]);

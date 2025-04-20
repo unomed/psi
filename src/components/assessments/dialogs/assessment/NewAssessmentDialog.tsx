@@ -1,14 +1,12 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
-import { useEffect, useState } from "react";
-import { ChecklistTemplate, RecurrenceType } from "@/types";
-import { toast } from "sonner";
-import { createSafeDate } from "@/utils/dateUtils";
+import { ChecklistTemplate } from "@/types";
 import { AssessmentDateSection } from "./AssessmentDateSection";
 import { AssessmentPeriodicitySection } from "./AssessmentPeriodicitySection";
 import { AssessmentDialogHeader } from "./AssessmentDialogHeader";
 import { AssessmentDialogFooter } from "./AssessmentDialogFooter";
-import { useDateHandling } from "@/hooks/assessments/operations/useDateHandling";
+import { useAssessmentFormOperation } from "@/hooks/assessments/operations/useAssessmentFormOperation";
 
 interface NewAssessmentDialogProps {
   isOpen: boolean;
@@ -33,44 +31,22 @@ export function NewAssessmentDialog({
   onTemplateSelect,
   onSave
 }: NewAssessmentDialogProps) {
-  const { 
-    scheduledDate, 
-    dateError, 
-    handleDateSelect, 
-    validateDate 
-  } = useDateHandling(new Date());
-  
-  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
-  const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (recurrenceType !== 'none' && !scheduledDate) {
-      setShowRecurrenceWarning(true);
-    } else {
-      setShowRecurrenceWarning(false);
-    }
-  }, [recurrenceType, scheduledDate]);
-
-  const handleSave = async () => {
-    if (!selectedEmployee || !selectedTemplate) {
-      toast.error("Selecione um funcionário e um modelo de avaliação");
-      return;
-    }
-
-    if (!validateDate()) {
-      return;
-    }
-
-    try {
-      const saved = await onSave(scheduledDate);
-      if (saved) {
-        onClose();
-      }
-    } catch (error) {
-      console.error("Erro ao salvar:", error);
-      toast.error("Ocorreu um erro ao salvar a avaliação");
-    }
-  };
+  const {
+    selectedCompany,
+    setSelectedCompany,
+    selectedSector,
+    setSelectedSector,
+    selectedRole,
+    setSelectedRole,
+    recurrenceType,
+    setRecurrenceType,
+    showRecurrenceWarning,
+    setShowRecurrenceWarning,
+    scheduledDate,
+    dateError,
+    handleDateSelect,
+    handleSave
+  } = useAssessmentFormOperation(onClose);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -79,12 +55,18 @@ export function NewAssessmentDialog({
 
         <div className="space-y-6">
           <AssessmentSelectionTab
+            selectedCompany={selectedCompany}
+            selectedSector={selectedSector}
+            selectedRole={selectedRole}
             selectedEmployee={selectedEmployee}
             selectedTemplate={selectedTemplate}
-            templates={templates}
-            isTemplatesLoading={isTemplatesLoading}
+            onCompanyChange={setSelectedCompany}
+            onSectorChange={setSelectedSector}
+            onRoleChange={setSelectedRole}
             onEmployeeChange={onEmployeeSelect}
             onTemplateSelect={onTemplateSelect}
+            templates={templates}
+            isTemplatesLoading={isTemplatesLoading}
             onNext={handleSave}
           />
 
