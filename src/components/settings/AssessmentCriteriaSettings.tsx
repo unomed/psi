@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -7,19 +7,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAssessmentCriteriaSettings } from "@/hooks/settings/useAssessmentCriteriaSettings";
-import { assessmentCriteriaSchema } from "./schemas/assessmentCriteriaSchema";
+import { assessmentCriteriaSchema, type AssessmentCriteriaFormValues } from "./schemas/assessmentCriteriaSchema";
 import { PeriodicityTab } from "./tabs/PeriodicityTab";
 import { SamplingTab } from "./tabs/SamplingTab";
 import { RiskLevelsTab } from "./tabs/RiskLevelsTab";
 import { GovernanceTab } from "./tabs/GovernanceTab";
 
-type FormValues = z.infer<typeof assessmentCriteriaSchema>;
-
 export function AssessmentCriteriaSettings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { settings, isLoading: isLoadingSettings, updateSettings } = useAssessmentCriteriaSettings();
   
-  const form = useForm<FormValues>({
+  const form = useForm<AssessmentCriteriaFormValues>({
     resolver: zodResolver(assessmentCriteriaSchema),
     defaultValues: {
       default_recurrence_type: "annual",
@@ -40,13 +38,13 @@ export function AssessmentCriteriaSettings() {
   });
   
   // Reset form when settings are loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (settings) {
       form.reset(settings);
     }
   }, [settings, form]);
   
-  async function onSubmit(data: FormValues) {
+  async function onSubmit(data: AssessmentCriteriaFormValues) {
     try {
       setIsSubmitting(true);
       await updateSettings(data);
