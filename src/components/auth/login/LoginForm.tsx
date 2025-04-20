@@ -1,23 +1,15 @@
 
 import { useState } from 'react';
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
-
-const loginSchema = z.object({
-  email: z.string().email("Digite um email válido"),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { LoginError } from './components/LoginError';
+import { LoginInfo } from './components/LoginInfo';
+import { LoginButton } from './components/LoginButton';
+import { loginSchema, type LoginFormValues } from './schemas/loginSchema';
 
 export function LoginForm() {
   const { signIn, loading } = useAuth();
@@ -94,31 +86,10 @@ export function LoginForm() {
           )}
         />
         
-        {loginError && (
-          <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-            {loginError}
-          </div>
-        )}
+        {loginError && <LoginError error={loginError} />}
+        {loginInfo && <LoginInfo info={loginInfo} />}
         
-        {loginInfo && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <Info className="h-4 w-4 text-blue-500" />
-            <AlertDescription className="text-blue-700 text-xs">
-              {loginInfo}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <Button type="submit" className="w-full" disabled={isLoading || loading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Entrando...
-            </>
-          ) : (
-            "Entrar"
-          )}
-        </Button>
+        <LoginButton isLoading={isLoading} disabled={isLoading || loading} />
       </form>
     </Form>
   );
