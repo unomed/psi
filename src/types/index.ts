@@ -8,9 +8,9 @@ export type RecurrenceType = "none" | "monthly" | "semiannual" | "annual";
 // Scale type definitions
 export enum ScaleType {
   Likert = "likert",
-  YesNo = "yesno",
+  YesNo = "binary",
   Agree3 = "agree3",
-  Custom = "custom",
+  Custom = "psicossocial", // Updated to match the psicossocial scale used in the forms
   Frequency = "frequency",
   Importance = "importance",
   Probability = "probability",

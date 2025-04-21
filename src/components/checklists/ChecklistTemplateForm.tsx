@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -26,12 +27,13 @@ import {
 import { Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
+import { ScaleType } from "@/types";
 
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
   type: z.enum(["disc", "custom"]),
-  scaleType: z.enum(["binary", "likert", "numeric"]),
+  scaleType: z.enum(["binary", "likert", "numeric", "psicossocial"]),
   questions: z.array(z.object({
     id: z.string(),
     text: z.string().min(1, "A pergunta não pode estar vazia"),
@@ -48,17 +50,6 @@ interface ChecklistTemplateFormProps {
   existingTemplate?: any;
   isEditing?: boolean;
 }
-
-const psicoScaleType = [
-  { value: "psicossocial", label: "Psicossocial (1-Nunca/Quase nunca ... 5-Sempre/Quase sempre)" },
-];
-
-const scaleTypeOptions = [
-  { value: "binary", label: "Sim/Não" },
-  { value: "likert", label: "Likert (1-5)" },
-  { value: "numeric", label: "Numérico" },
-  ...psicoScaleType
-];
 
 export function ChecklistTemplateForm({ 
   defaultValues, 
@@ -191,7 +182,7 @@ export function ChecklistTemplateForm({
             <FormLabel>Escala</FormLabel>
             <Select value={selectedScale} onValueChange={(val) => {
               setSelectedScale(val);
-              form.setValue("scaleType", val);
+              form.setValue("scaleType", val as "binary" | "likert" | "numeric" | "psicossocial");
             }}>
               <FormControl>
                 <SelectTrigger>
@@ -200,13 +191,13 @@ export function ChecklistTemplateForm({
               </FormControl>
               <SelectContent>
                 {method === "custom" ? (
-                  psicoScaleType.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))
+                  <SelectItem value="psicossocial">Psicossocial (1-Nunca/Quase nunca ... 5-Sempre/Quase sempre)</SelectItem>
                 ) : (
-                  scaleTypeOptions.filter(opt => opt.value !== "psicossocial").map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))
+                  <>
+                    <SelectItem value="binary">Sim/Não</SelectItem>
+                    <SelectItem value="likert">Likert (1-5)</SelectItem>
+                    <SelectItem value="numeric">Numérico</SelectItem>
+                  </>
                 )}
               </SelectContent>
             </Select>

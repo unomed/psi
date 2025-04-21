@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
+import { DiscFactorType, ScaleType } from "@/types";
 
 interface ChecklistResponseFormProps {
   template: ChecklistTemplate;
@@ -27,7 +28,7 @@ export function ChecklistResponseForm({
 
   // Define escala conforme tipo/escala
   let options: { value: number; label: string }[] = [];
-  if (template.type === "disc" || template.scaleType === "likert") {
+  if (template.type === "disc" || template.scaleType === ScaleType.Likert) {
     options = [
       { value: 1, label: "1" },
       { value: 2, label: "2" },
@@ -35,12 +36,12 @@ export function ChecklistResponseForm({
       { value: 4, label: "4" },
       { value: 5, label: "5" },
     ];
-  } else if (template.scaleType === "binary") {
+  } else if (template.scaleType === ScaleType.YesNo) {
     options = [
       { value: 0, label: "Não" },
       { value: 1, label: "Sim" },
     ];
-  } else if (template.type === "custom" && template.scaleType === "psicossocial") {
+  } else if (template.type === "custom" && template.scaleType === ScaleType.Custom) {
     options = PSICOSSOCIAL_LABELS.map((label, idx) => ({
       value: idx + 1,
       label: `${idx + 1} - ${label}`,
@@ -65,11 +66,19 @@ export function ChecklistResponseForm({
     e.preventDefault();
     if (!allAnswered) return;
 
+    // Initializing default DISC results object with zeros
+    const discResults = template.type === "disc" ? {
+      D: 0,
+      I: 0,
+      S: 0,
+      C: 0
+    } : {};
+
     onSubmit({
       templateId: template.id,
       employeeName: employeeName.trim() || "Anônimo",
-      results: {}, // Você pode calcular resultados aqui ou deixar para o backend
-      dominantFactor: "D", // para DISC, calcular corretamente. Para outros, placeholder.
+      results: discResults,
+      dominantFactor: DiscFactorType.D, // para DISC, calcular corretamente. Para outros, placeholder.
     });
   };
 
@@ -118,4 +127,3 @@ export function ChecklistResponseForm({
     </form>
   );
 }
-
