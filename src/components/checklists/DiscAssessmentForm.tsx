@@ -123,7 +123,7 @@ export function DiscAssessmentForm({
           {!isLastQuestion ? (
             currentQuestion && (
               <QuestionStep
-                question={currentQuestion}
+                question={'targetFactor' in currentQuestion ? currentQuestion as DiscQuestion : { ...currentQuestion, targetFactor: DiscFactorType.D, weight: 1 } as DiscQuestion}
                 currentStep={currentStep}
                 totalSteps={template.questions.length}
                 selectedValue={responses[currentQuestion.id]?.toString()}
