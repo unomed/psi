@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export default function Checklists() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("all"); // Mudamos o padrão para "all" para mostrar todos os checklists
+  const [activeTab, setActiveTab] = useState("all"); // Mostrar todos os checklists por padrão
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
@@ -25,7 +25,8 @@ export default function Checklists() {
     handleCreateTemplate,
     handleUpdateTemplate,
     handleDeleteTemplate,
-    handleCopyTemplate
+    handleCopyTemplate,
+    handleSaveAssessmentResult
   } = useChecklistData();
 
   const handleCloseFormDialog = () => {
@@ -48,29 +49,51 @@ export default function Checklists() {
   const handleStartAssessment = (template: ChecklistTemplate) => {
     setSelectedTemplate(template);
     setIsAssessmentDialogOpen(true);
-    // Você pode escolher abrir um diálogo para selecionar um funcionário
-    // ou navegar diretamente para a página de avaliação
+    // Toast para informar que a avaliação está sendo iniciada
     toast.success(`Iniciando avaliação para ${template.title}`);
   };
 
   const handleSubmitAssessment = async (resultData: any) => {
-    // Aqui você pode implementar a lógica para salvar os resultados da avaliação
-    console.log("Salvando resultados da avaliação:", resultData);
-    toast.success("Avaliação concluída com sucesso!");
-    setIsAssessmentDialogOpen(false);
+    if (!selectedTemplate) return;
+    
+    try {
+      // Construir o objeto de resultado para salvar
+      const assessmentResult = {
+        templateId: selectedTemplate.id,
+        employeeName: "Teste", // Em produção, usaria o usuário real ou selecionado
+        employeeId: "", // Em produção, usaria o ID do funcionário selecionado
+        results: resultData.results,
+        dominantFactor: resultData.dominantFactor,
+        categorizedResults: resultData.categorizedResults || {},
+        completedAt: new Date()
+      };
+      
+      // Salvar o resultado
+      await handleSaveAssessmentResult(assessmentResult);
+      
+      toast.success("Avaliação concluída com sucesso!");
+      setIsAssessmentDialogOpen(false);
+      
+      // Atualizar para a aba de resultados para ver o resultado
+      setActiveTab("results");
+    } catch (error) {
+      console.error("Erro ao salvar resultado da avaliação:", error);
+      toast.error("Erro ao salvar avaliação. Tente novamente.");
+    }
   };
 
   const handleSubmitTemplate = async (templateData: Omit<ChecklistTemplate, "id" | "createdAt"> | ChecklistTemplate) => {
     let success = false;
     
     if (isEditing && selectedTemplate) {
-      // Make sure we're passing the full template with ID to update function
+      // Atualizar template existente
       const updatedTemplate = {
         ...selectedTemplate,
         ...(templateData as Omit<ChecklistTemplate, "id" | "createdAt">)
       };
       success = await handleUpdateTemplate(updatedTemplate);
     } else {
+      // Criar novo template
       success = await handleCreateTemplate(templateData as Omit<ChecklistTemplate, "id" | "createdAt">);
     }
     

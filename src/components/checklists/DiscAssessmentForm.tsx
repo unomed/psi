@@ -1,208 +1,424 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  ChecklistTemplate, 
-  ChecklistResult, 
-  DiscFactorType,
-  PsicossocialQuestion,
-  ChecklistQuestion
-} from "@/types";
-import { QuestionStep } from "./assessment/QuestionStep";
-import { CompletionStep } from "./assessment/CompletionStep";
-import { AssessmentNavigation } from "./assessment/AssessmentNavigation";
-import { DiscQuestion } from "@/types/disc";
+import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion } from "@/types/checklist";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { DiscFactorType } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DiscAssessmentFormProps {
   template: ChecklistTemplate;
-  onSubmit: (result: Omit<ChecklistResult, "id" | "completedAt">) => void;
+  onSubmit: (data: any) => void;
   onCancel: () => void;
 }
 
-export function DiscAssessmentForm({ 
-  template, 
-  onSubmit,
-  onCancel
-}: DiscAssessmentFormProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [responses, setResponses] = useState<Record<string, number>>({});
-  const [employeeName, setEmployeeName] = useState("");
-  
-  const isLastQuestion = currentStep === template.questions.length;
-  const currentQuestion = !isLastQuestion ? template.questions[currentStep] : null;
-  const canProceed = currentQuestion ? responses[currentQuestion.id] !== undefined : true;
-
-  const handleResponseChange = (value: string) => {
-    if (!currentQuestion) return;
-    
-    setResponses({
-      ...responses,
-      [currentQuestion.id]: parseInt(value)
-    });
-  };
-
-  const handleNext = () => {
-    if (currentQuestion && responses[currentQuestion.id] === undefined) {
-      return; // Prevent advancing if question is unanswered
-    }
-    setCurrentStep(currentStep + 1);
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep(Math.max(0, currentStep - 1));
-  };
-
-  const handleEmployeeNameChange = (name: string) => {
-    setEmployeeName(name);
-  };
-
-  const calculateResults = () => {
-    if (template.type === "disc") {
-      const factorScores = {
-        [DiscFactorType.D]: 0,
-        [DiscFactorType.I]: 0,
-        [DiscFactorType.S]: 0,
-        [DiscFactorType.C]: 0
-      };
+export function DiscAssessmentForm({ template, onSubmit, onCancel }: DiscAssessmentFormProps) {
+  const initializeResponses = () => {
+    if (template.type === "psicossocial") {
+      const initialResponses: Record<string, Record<string, number>> = {};
       
-      template.questions.forEach(question => {
-        if ('targetFactor' in question && 'weight' in question) {
-          const discQuestion = question as DiscQuestion;
-          const response = responses[question.id] || 0;
-          if (discQuestion.targetFactor && discQuestion.weight) {
-            const weightedResponse = response * discQuestion.weight;
-            factorScores[discQuestion.targetFactor] += weightedResponse;
-          }
+      template.questions.forEach((q) => {
+        const question = q as PsicossocialQuestion;
+        if (!initialResponses[question.category]) {
+          initialResponses[question.category] = {};
         }
+        initialResponses[question.category][question.id] = 0;
       });
       
-      let dominantFactor: DiscFactorType = DiscFactorType.D;
-      let highestScore = factorScores[DiscFactorType.D];
-      
-      if (factorScores[DiscFactorType.I] > highestScore) {
-        dominantFactor = DiscFactorType.I;
-        highestScore = factorScores[DiscFactorType.I];
-      }
-      if (factorScores[DiscFactorType.S] > highestScore) {
-        dominantFactor = DiscFactorType.S;
-        highestScore = factorScores[DiscFactorType.S];
-      }
-      if (factorScores[DiscFactorType.C] > highestScore) {
-        dominantFactor = DiscFactorType.C;
-        highestScore = factorScores[DiscFactorType.C];
-      }
-      
-      return {
-        templateId: template.id,
-        employeeName: employeeName.trim() || "Anônimo",
-        results: factorScores,
-        dominantFactor
-      };
-    } else if (template.type === "psicossocial") {
-      const categorizedResults: Record<string, number> = {};
-      const categoryCount: Record<string, number> = {};
-      
-      template.questions.forEach(question => {
-        if ('category' in question) {
-          const psicossocialQuestion = question as PsicossocialQuestion;
-          const response = responses[question.id] || 0;
-          const category = psicossocialQuestion.category;
-          
-          if (!categorizedResults[category]) {
-            categorizedResults[category] = 0;
-            categoryCount[category] = 0;
-          }
-          
-          categorizedResults[category] += response;
-          categoryCount[category]++;
-        }
-      });
-      
-      Object.keys(categorizedResults).forEach(category => {
-        if (categoryCount[category] > 0) {
-          categorizedResults[category] = Math.round(categorizedResults[category] / categoryCount[category] * 100) / 100;
-        }
-      });
-      
-      let dominantCategory = "";
-      let highestScore = 0;
-      
-      Object.keys(categorizedResults).forEach(category => {
-        if (categorizedResults[category] > highestScore) {
-          dominantCategory = category;
-          highestScore = categorizedResults[category];
-        }
-      });
-      
-      return {
-        templateId: template.id,
-        employeeName: employeeName.trim() || "Anônimo",
-        results: categorizedResults,
-        dominantFactor: dominantCategory || "Indefinido",
-        categorizedResults
-      };
+      return initialResponses;
     } else {
-      const totalScore = Object.values(responses).reduce((sum, value) => sum + value, 0);
-      
-      return {
-        templateId: template.id,
-        employeeName: employeeName.trim() || "Anônimo",
-        results: { totalScore },
-        dominantFactor: "Personalizado"
-      };
+      return template.questions.reduce((acc, q) => {
+        acc[q.id] = 0;
+        return acc;
+      }, {} as Record<string, number>);
+    }
+  };
+
+  const [responses, setResponses] = useState<Record<string, any>>(initializeResponses());
+  const [activeTab, setActiveTab] = useState<string>("1");
+
+  const getUniqueCategories = (): string[] => {
+    if (template.type !== "psicossocial") return [];
+    
+    const categories = new Set<string>();
+    template.questions.forEach((q) => {
+      const question = q as PsicossocialQuestion;
+      categories.add(question.category);
+    });
+    
+    return Array.from(categories);
+  };
+
+  const getQuestionsByCategory = (category: string): PsicossocialQuestion[] => {
+    if (template.type !== "psicossocial") return [];
+    
+    return template.questions.filter(
+      (q) => (q as PsicossocialQuestion).category === category
+    ) as PsicossocialQuestion[];
+  };
+
+  const getQuestionsByFactor = (factor: DiscFactorType): DiscQuestion[] => {
+    if (template.type !== "disc") return [];
+    
+    return template.questions.filter(
+      (q) => (q as DiscQuestion).targetFactor === factor
+    ) as DiscQuestion[];
+  };
+
+  const handleResponse = (questionId: string, value: number) => {
+    if (template.type === "psicossocial") {
+      const category = template.questions.find(q => q.id === questionId) as PsicossocialQuestion;
+      if (category) {
+        setResponses({
+          ...responses,
+          [category.category]: {
+            ...(responses[category.category] || {}),
+            [questionId]: value
+          }
+        });
+      }
+    } else {
+      setResponses({
+        ...responses,
+        [questionId]: value
+      });
     }
   };
 
   const handleSubmit = () => {
-    const result = calculateResults();
-    onSubmit(result);
+    if (template.type === "psicossocial") {
+      const categorizedResults: Record<string, number> = {};
+      let totalScore = 0;
+      let totalQuestions = 0;
+      
+      Object.keys(responses).forEach(category => {
+        const categoryResponses = responses[category];
+        let categoryTotal = 0;
+        let categoryQuestions = 0;
+        
+        Object.keys(categoryResponses).forEach(questionId => {
+          if (categoryResponses[questionId] > 0) {
+            categoryTotal += categoryResponses[questionId];
+            categoryQuestions++;
+            totalScore += categoryResponses[questionId];
+            totalQuestions++;
+          }
+        });
+        
+        if (categoryQuestions > 0) {
+          categorizedResults[category] = categoryTotal / categoryQuestions;
+        }
+      });
+      
+      let dominantFactor = "Não determinado";
+      let highestScore = 0;
+      
+      Object.keys(categorizedResults).forEach(category => {
+        if (categorizedResults[category] > highestScore) {
+          highestScore = categorizedResults[category];
+          dominantFactor = category;
+        }
+      });
+      
+      onSubmit({
+        results: categorizedResults,
+        dominantFactor,
+        overall: totalQuestions > 0 ? totalScore / totalQuestions : 0,
+        responses
+      });
+    } else {
+      const factors = { D: 0, I: 0, S: 0, C: 0 };
+      const factorCounts = { D: 0, I: 0, S: 0, C: 0 };
+
+      template.questions.forEach((q) => {
+        if (template.type === "disc") {
+          const question = q as DiscQuestion;
+          if (responses[q.id]) {
+            factors[question.targetFactor] += responses[q.id] * (question.weight || 1);
+            factorCounts[question.targetFactor]++;
+          }
+        }
+      });
+
+      Object.keys(factors).forEach((factor) => {
+        const key = factor as keyof typeof factors;
+        if (factorCounts[key] > 0) {
+          factors[key] = factors[key] / factorCounts[key];
+        }
+      });
+
+      let dominantFactor = "D";
+      let highestScore = 0;
+
+      Object.keys(factors).forEach((factor) => {
+        const key = factor as keyof typeof factors;
+        if (factors[key] > highestScore) {
+          highestScore = factors[key];
+          dominantFactor = factor;
+        }
+      });
+
+      onSubmit({
+        results: factors,
+        dominantFactor,
+        responses
+      });
+    }
   };
 
-  const adaptQuestionForDisplay = (question: ChecklistQuestion) => {
-    if ('targetFactor' in question) {
-      return question as DiscQuestion;
+  const renderAssessmentByType = () => {
+    if (template.type === "psicossocial") {
+      const categories = getUniqueCategories();
+      
+      return (
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            {categories.map((category, index) => (
+              <TabsTrigger key={category} value={(index + 1).toString()}>
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          {categories.map((category, index) => (
+            <TabsContent key={category} value={(index + 1).toString()}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{category}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {getQuestionsByCategory(category).map((question) => (
+                      <div key={question.id} className="border-b pb-4">
+                        <p className="mb-3 font-medium">{question.text}</p>
+                        <RadioGroup
+                          value={
+                            responses[category] && 
+                            responses[category][question.id]?.toString() || "0"
+                          }
+                          onValueChange={(value) => 
+                            handleResponse(question.id, parseInt(value))
+                          }
+                          className="flex justify-between"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="1" id={`${question.id}-1`} />
+                            <Label htmlFor={`${question.id}-1`}>1 - Nunca/Quase nunca</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="2" id={`${question.id}-2`} />
+                            <Label htmlFor={`${question.id}-2`}>2 - Raramente</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="3" id={`${question.id}-3`} />
+                            <Label htmlFor={`${question.id}-3`}>3 - Às vezes</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="4" id={`${question.id}-4`} />
+                            <Label htmlFor={`${question.id}-4`}>4 - Frequentemente</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="5" id={`${question.id}-5`} />
+                            <Label htmlFor={`${question.id}-5`}>5 - Sempre/Quase sempre</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
+      );
+    } else if (template.type === "disc") {
+      const dQuestions = getQuestionsByFactor("D");
+      const iQuestions = getQuestionsByFactor("I");
+      const sQuestions = getQuestionsByFactor("S");
+      const cQuestions = getQuestionsByFactor("C");
+      
+      return (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsTrigger value="1">D - Dominância</TabsTrigger>
+            <TabsTrigger value="2">I - Influência</TabsTrigger>
+            <TabsTrigger value="3">S - Estabilidade</TabsTrigger>
+            <TabsTrigger value="4">C - Conformidade</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="1">
+            <Card>
+              <CardHeader>
+                <CardTitle>D - Dominância</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {dQuestions.map((question) => (
+                    <div key={question.id} className="border-b pb-4">
+                      <p className="mb-3 font-medium">{question.text}</p>
+                      <RadioGroup
+                        value={responses[question.id]?.toString() || "0"}
+                        onValueChange={(value) => 
+                          handleResponse(question.id, parseInt(value))
+                        }
+                      >
+                        <div className="flex justify-between">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="1" id={`${question.id}-1`} />
+                            <Label htmlFor={`${question.id}-1`}>Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="0" id={`${question.id}-0`} />
+                            <Label htmlFor={`${question.id}-0`}>Não</Label>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="2">
+            <Card>
+              <CardHeader>
+                <CardTitle>I - Influência</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {iQuestions.map((question) => (
+                    <div key={question.id} className="border-b pb-4">
+                      <p className="mb-3 font-medium">{question.text}</p>
+                      <RadioGroup
+                        value={responses[question.id]?.toString() || "0"}
+                        onValueChange={(value) => 
+                          handleResponse(question.id, parseInt(value))
+                        }
+                      >
+                        <div className="flex justify-between">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="1" id={`${question.id}-1`} />
+                            <Label htmlFor={`${question.id}-1`}>Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="0" id={`${question.id}-0`} />
+                            <Label htmlFor={`${question.id}-0`}>Não</Label>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="3">
+            <Card>
+              <CardHeader>
+                <CardTitle>S - Estabilidade</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {sQuestions.map((question) => (
+                    <div key={question.id} className="border-b pb-4">
+                      <p className="mb-3 font-medium">{question.text}</p>
+                      <RadioGroup
+                        value={responses[question.id]?.toString() || "0"}
+                        onValueChange={(value) => 
+                          handleResponse(question.id, parseInt(value))
+                        }
+                      >
+                        <div className="flex justify-between">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="1" id={`${question.id}-1`} />
+                            <Label htmlFor={`${question.id}-1`}>Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="0" id={`${question.id}-0`} />
+                            <Label htmlFor={`${question.id}-0`}>Não</Label>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="4">
+            <Card>
+              <CardHeader>
+                <CardTitle>C - Conformidade</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cQuestions.map((question) => (
+                    <div key={question.id} className="border-b pb-4">
+                      <p className="mb-3 font-medium">{question.text}</p>
+                      <RadioGroup
+                        value={responses[question.id]?.toString() || "0"}
+                        onValueChange={(value) => 
+                          handleResponse(question.id, parseInt(value))
+                        }
+                      >
+                        <div className="flex justify-between">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="1" id={`${question.id}-1`} />
+                            <Label htmlFor={`${question.id}-1`}>Sim</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="0" id={`${question.id}-0`} />
+                            <Label htmlFor={`${question.id}-0`}>Não</Label>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      );
     } else {
-      return {
-        ...question,
-        targetFactor: DiscFactorType.D,
-        weight: 1
-      } as DiscQuestion;
+      return (
+        <div className="space-y-4">
+          <p>Tipo de checklist personalizado não implementado.</p>
+        </div>
+      );
     }
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          {!isLastQuestion ? (
-            currentQuestion && (
-              <QuestionStep
-                question={adaptQuestionForDisplay(currentQuestion)}
-                currentStep={currentStep}
-                totalSteps={template.questions.length}
-                selectedValue={responses[currentQuestion.id]?.toString()}
-                onResponseChange={handleResponseChange}
-                scaleType={template.scaleType}
-              />
-            )
-          ) : (
-            <CompletionStep
-              employeeName={employeeName}
-              onEmployeeNameChange={handleEmployeeNameChange}
-              totalQuestions={template.questions.length}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <h2 className="text-2xl font-bold">
+        {template.title}
+      </h2>
       
-      <AssessmentNavigation
-        currentStep={currentStep}
-        isLastStep={isLastQuestion}
-        canProceed={canProceed}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onSubmit={handleSubmit}
-        onCancel={onCancel}
-      />
+      {template.description && (
+        <p className="text-gray-600">
+          {template.description}
+        </p>
+      )}
+      
+      {renderAssessmentByType()}
+      
+      <div className="flex justify-end space-x-4 mt-6">
+        <Button variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button onClick={handleSubmit}>
+          Concluir Avaliação
+        </Button>
+      </div>
     </div>
   );
 }
