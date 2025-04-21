@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -315,7 +316,7 @@ export default function GestaoRiscos() {
             </div>
           </div>
             
-          <Card className="mt-6">
+          <Card>
             <CardContent className="pt-6">
               <Tabs 
                 defaultValue="identificacao" 
@@ -608,4 +609,281 @@ export default function GestaoRiscos() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">Quem deve fazer</label>
                           <select className="border p-2 w-full rounded">
                             <option>Selecione...</option>
-                            <
+                            <option>Maria Silva (RH)</option>
+                            <option>João Pereira (SESMT)</option>
+                            <option>Carlos Mendes (Supervisor)</option>
+                            <option>Joana Lima (TI)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Até quando</label>
+                          <Input type="date" />
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button>Adicionar Ação</Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="implementacao" className="space-y-6">
+                  <div className="bg-blue-50 p-4 rounded">
+                    <h3 className="font-bold mb-2">Status de Implementação</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="bg-white p-3 rounded shadow">
+                        <div className="text-xl font-bold text-red-600">2</div>
+                        <div className="text-sm text-gray-600">Não iniciadas</div>
+                      </div>
+                      <div className="bg-white p-3 rounded shadow">
+                        <div className="text-xl font-bold text-amber-600">1</div>
+                        <div className="text-sm text-gray-600">Em andamento</div>
+                      </div>
+                      <div className="bg-white p-3 rounded shadow">
+                        <div className="text-xl font-bold text-green-600">0</div>
+                        <div className="text-sm text-gray-600">Concluídas</div>
+                      </div>
+                      <div className="bg-white p-3 rounded shadow">
+                        <div className="text-xl font-bold">3</div>
+                        <div className="text-sm text-gray-600">Total de ações</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <table className="w-full">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="p-2 text-left">Ação</th>
+                        <th className="p-2 text-left">Responsável</th>
+                        <th className="p-2 text-center">Prazo</th>
+                        <th className="p-2 text-center">Status</th>
+                        <th className="p-2 text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="p-2">Implementar sistema de priorização de tarefas</td>
+                        <td className="p-2">Maria Silva (RH)</td>
+                        <td className="p-2 text-center">15/06/2025</td>
+                        <td className="p-2 text-center">
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Não iniciada</span>
+                        </td>
+                        <td className="p-2 text-center">
+                          <Button variant="ghost" size="sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </Button>
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">Realizar reuniões semanais com equipe</td>
+                        <td className="p-2">Carlos Mendes (Supervisor)</td>
+                        <td className="p-2 text-center">01/06/2025</td>
+                        <td className="p-2 text-center">
+                          <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">Em andamento</span>
+                        </td>
+                        <td className="p-2 text-center">
+                          <Button variant="ghost" size="sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </Button>
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-2">Implementar pausas obrigatórias no sistema</td>
+                        <td className="p-2">Joana Lima (TI)</td>
+                        <td className="p-2 text-center">30/06/2025</td>
+                        <td className="p-2 text-center">
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Não iniciada</span>
+                        </td>
+                        <td className="p-2 text-center">
+                          <Button variant="ghost" size="sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </Button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  
+                  <div className="mt-6 p-4 border rounded">
+                    <h3 className="font-bold mb-2">Atualizar Status da Ação</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Selecione a Ação</label>
+                        <select className="border p-2 w-full rounded">
+                          <option>Implementar sistema de priorização de tarefas</option>
+                          <option>Realizar reuniões semanais com equipe</option>
+                          <option>Implementar pausas obrigatórias no sistema</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Novo Status</label>
+                        <select className="border p-2 w-full rounded">
+                          <option>Não iniciada</option>
+                          <option>Em andamento</option>
+                          <option>Concluída</option>
+                          <option>Cancelada</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Comentários</label>
+                        <Textarea placeholder="Adicione comentários sobre a atualização de status" />
+                      </div>
+                      <div className="flex justify-end">
+                        <Button>Atualizar Status</Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="eficacia" className="space-y-6">
+                  <div className="bg-gray-50 p-4 rounded">
+                    <h3 className="font-bold mb-2">Avaliação da Eficácia</h3>
+                    <p className="text-sm text-gray-600">Avalie a eficácia das medidas implementadas para controle do risco PS001 - Sobrecarga de trabalho no setor de atendimento.</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold mb-2">Avaliação Geral</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-3 border rounded">
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-amber-600">Antes</div>
+                          <div className="mt-2 text-2xl font-bold">8</div>
+                          <div className="text-sm text-gray-600">Nível de Risco (Alto)</div>
+                        </div>
+                      </div>
+                      <div className="p-3 border rounded">
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-blue-600">Atual</div>
+                          <div className="mt-2 text-2xl font-bold">6</div>
+                          <div className="text-sm text-gray-600">Nível de Risco (Médio)</div>
+                        </div>
+                      </div>
+                      <div className="p-3 border rounded">
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-green-600">Meta</div>
+                          <div className="mt-2 text-2xl font-bold">4</div>
+                          <div className="text-sm text-gray-600">Nível de Risco (Médio-Baixo)</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold mb-2">Indicadores de Monitoramento</h3>
+                    <table className="w-full">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="p-2 text-left">Indicador</th>
+                          <th className="p-2 text-center">Antes</th>
+                          <th className="p-2 text-center">Depois</th>
+                          <th className="p-2 text-center">Variação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="p-2">Índice de afastamentos relacionados ao estresse</td>
+                          <td className="p-2 text-center">7%</td>
+                          <td className="p-2 text-center">5%</td>
+                          <td className="p-2 text-center text-green-600">-2%</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-2">Média de horas extras mensais por funcionário</td>
+                          <td className="p-2 text-center">16h</td>
+                          <td className="p-2 text-center">10h</td>
+                          <td className="p-2 text-center text-green-600">-6h</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-2">Taxa de turnover no setor</td>
+                          <td className="p-2 text-center">23%</td>
+                          <td className="p-2 text-center">18%</td>
+                          <td className="p-2 text-center text-green-600">-5%</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-2">Satisfação dos trabalhadores (escala 1-10)</td>
+                          <td className="p-2 text-center">5,2</td>
+                          <td className="p-2 text-center">6,8</td>
+                          <td className="p-2 text-center text-green-600">+1,6</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-bold mb-2">Avaliação Qualitativa</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">O risco está controlado adequadamente?</label>
+                        <select className="border p-2 w-full rounded">
+                          <option>Parcialmente controlado</option>
+                          <option>Totalmente controlado</option>
+                          <option>Não controlado</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Eficácia das medidas implementadas</label>
+                        <select className="border p-2 w-full rounded">
+                          <option>Média</option>
+                          <option>Alta</option>
+                          <option>Baixa</option>
+                          <option>Não avaliado</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Feedback dos trabalhadores</label>
+                        <Textarea placeholder="Descreva comentários e observações dos trabalhadores sobre as medidas implementadas" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Ações adicionais necessárias</label>
+                        <Textarea placeholder="Descreva ações complementares para melhorar o controle do risco" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-3">
+                    <Button variant="outline">
+                      Voltar
+                    </Button>
+                    <Button>
+                      Salvar Avaliação
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="relatorios" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Relatórios de Riscos Psicossociais</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p>Funcionalidade em desenvolvimento...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="configuracoes" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações do Módulo de Riscos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p>Funcionalidade em desenvolvimento...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
