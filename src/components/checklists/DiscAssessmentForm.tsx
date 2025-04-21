@@ -66,11 +66,14 @@ export function DiscAssessmentForm({
       
       // Calculate weighted scores for each factor
       template.questions.forEach(question => {
-        const discQuestion = question as DiscQuestion;
-        const response = responses[question.id] || 0;
-        if (discQuestion.targetFactor && discQuestion.weight) {
-          const weightedResponse = response * discQuestion.weight;
-          factorScores[discQuestion.targetFactor] += weightedResponse;
+        // Only process if it's a DISC question
+        if (template.type === "disc") {
+          const discQuestion = question as DiscQuestion;
+          const response = responses[question.id] || 0;
+          if (discQuestion.targetFactor && discQuestion.weight) {
+            const weightedResponse = response * discQuestion.weight;
+            factorScores[discQuestion.targetFactor] += weightedResponse;
+          }
         }
       });
       

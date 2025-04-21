@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { 
   ChecklistTemplate, 
@@ -73,9 +72,9 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       questions = (template.questions || []).map(q => ({
         id: q.id,
         text: q.question_text,
-        targetFactor: q.target_factor as DiscFactorType || "D",
+        targetFactor: q.target_factor as DiscFactorType,
         weight: q.weight || 1
-      }));
+      })) as DiscQuestion[];
     }
 
     return {
@@ -91,6 +90,31 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       createdAt: new Date(template.created_at)
     };
   });
+}
+
+// Helper function to map database scale types to application scale types
+function mapDbScaleToAppScale(dbScale: string): ScaleType {
+  switch(dbScale) {
+    case "likert5": 
+      return ScaleType.Likert;
+    case "binary": 
+      return ScaleType.YesNo;
+    case "custom": 
+      return ScaleType.Custom;
+    default: 
+      return ScaleType.Likert;
+  }
+}
+
+// Helper function to convert string to DiscFactorType enum
+function stringToDiscFactorType(factor: string): DiscFactorType {
+  switch (factor) {
+    case "D": return DiscFactorType.D;
+    case "I": return DiscFactorType.I;
+    case "S": return DiscFactorType.S;
+    case "C": return DiscFactorType.C;
+    default: return DiscFactorType.D; // Default to D if unknown
+  }
 }
 
 // Save a new checklist template to Supabase
@@ -188,31 +212,6 @@ export async function copyTemplateForCompany(
   }
 
   return data;
-}
-
-// Helper function to map database scale types to application scale types
-function mapDbScaleToAppScale(dbScale: string): ScaleType {
-  switch(dbScale) {
-    case "likert5": 
-      return ScaleType.Likert;
-    case "binary": 
-      return ScaleType.YesNo;
-    case "custom": 
-      return ScaleType.Custom;
-    default: 
-      return ScaleType.Likert;
-  }
-}
-
-// Helper function to convert string to DiscFactorType enum
-function stringToDiscFactorType(factor: string): DiscFactorType {
-  switch (factor) {
-    case "D": return DiscFactorType.D;
-    case "I": return DiscFactorType.I;
-    case "S": return DiscFactorType.S;
-    case "C": return DiscFactorType.C;
-    default: return DiscFactorType.D; // Default to D if unknown
-  }
 }
 
 // Save an assessment result to Supabase

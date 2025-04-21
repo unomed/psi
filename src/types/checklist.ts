@@ -11,6 +11,7 @@ export interface PsicossocialQuestion {
 
 export type ChecklistTemplateType = "disc" | "custom" | "psicossocial";
 
+// Define ChecklistQuestion as a union type
 export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion;
 
 // For disc + custom: DiscQuestion[]; for psicossocial: PsicossocialQuestion[]

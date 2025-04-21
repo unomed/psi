@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { DiscQuestion } from "@/types/disc";
+import { DiscQuestion, PsicossocialQuestion } from "@/types";
 
 interface ChecklistTemplateCardProps {
   template: ChecklistTemplate;
@@ -58,7 +58,9 @@ export function ChecklistTemplateCard({
         )}
         {template.type === "psicossocial" && (
           <div className="text-sm">
-            <span>Categorias: {Array.from(new Set(template.questions.map(q => q.category))).length}</span>
+            <span>Categorias: {Array.from(new Set(template.questions.map(q => 
+              template.type === "psicossocial" ? (q as PsicossocialQuestion).category : ""
+            )).filter(Boolean)).length}</span>
             <span className="ml-3">Perguntas: {template.questions.length}</span>
           </div>
         )}

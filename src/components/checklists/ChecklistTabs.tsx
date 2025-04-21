@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DiscFactorType, DiscQuestion } from "@/types/disc";
+import { DiscFactorType, DiscQuestion, PsicossocialQuestion } from "@/types";
 
 interface ChecklistTabsProps {
   activeTab: string;
