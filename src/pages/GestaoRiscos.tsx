@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Shield, Download, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import RiskMatrixConfigurator from "@/components/risks/RiskMatrixConfigurator";
+import RiskMatrixSettingsForm from "@/components/settings/RiskMatrixSettingsForm";
+import RiskAnalysisForm from "@/components/risks/RiskAnalysisForm";
 
 export default function GestaoRiscos() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -414,111 +415,7 @@ export default function GestaoRiscos() {
                 </TabsContent>
                 
                 <TabsContent value="analise" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-bold mb-2">Severidade</h3>
-                      <select
-                        className="border p-2 w-full rounded"
-                        value={selectedSeverityIndex}
-                        onChange={(e) => setSelectedSeverityIndex(Number(e.target.value))}
-                      >
-                        {severityOptions.map((opt, idx) => (
-                          <option key={idx} value={idx}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <h3 className="font-bold mb-2">Probabilidade</h3>
-                      <select
-                        className="border p-2 w-full rounded"
-                        value={selectedProbabilityIndex}
-                        onChange={(e) => setSelectedProbabilityIndex(Number(e.target.value))}
-                      >
-                        {probabilityOptions.map((opt, idx) => (
-                          <option key={idx} value={idx}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded" style={{backgroundColor: 
-                    calculatedRiskValue <= (matrixSize * matrixSize) / 3
-                      ? "#F2FCE2"
-                      : calculatedRiskValue <= (2 * matrixSize * matrixSize) / 3
-                      ? "#FEF7CD"
-                      : calculatedRiskValue < matrixSize * matrixSize
-                      ? "#FEC6A1"
-                      : "#FFB0B0"
-                  }}>
-                    <h3 className="font-bold mb-1">
-                      Nível de Risco Calculado
-                    </h3>
-                    <div className={`text-xl font-bold mt-1 ${
-                      calculatedRiskValue >= (2 * matrixSize * matrixSize) / 3 ? "text-red-600" :
-                      calculatedRiskValue > (matrixSize * matrixSize) / 3 ? "text-amber-600" : "text-green-600"
-                    }`}>
-                      {calculatedRiskValue >= (2 * matrixSize * matrixSize) / 3 && "Alto"}
-                      {calculatedRiskValue > (matrixSize * matrixSize) / 3 && calculatedRiskValue < (2 * matrixSize * matrixSize) / 3 && "Médio"}
-                      {calculatedRiskValue <= (matrixSize * matrixSize) / 3 && "Baixo"} ({calculatedRiskValue}) - {calculatedRiskValue >= (2 * matrixSize * matrixSize) / 3 ? "Crítico" : "Normal"}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {calculatedRiskValue >= (2 * matrixSize * matrixSize) / 3 ? "Requer ação imediata para controle" : "Avaliação necessária"}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold mb-2">Configurar Matriz de Riscos</h3>
-                    <div className="mb-4">
-                      <label className="font-semibold mr-2">Tamanho da Matriz:</label>
-                      <select
-                        className="border p-2 rounded"
-                        value={matrixSize}
-                        onChange={(e) => setMatrixSize(Number(e.target.value))}
-                      >
-                        <option value={3}>3x3</option>
-                        <option value={4}>4x4</option>
-                        <option value={5}>5x5</option>
-                      </select>
-                    </div>
-                    <RiskMatrixConfigurator
-                      size={matrixSize}
-                      rowLabels={rowLabels}
-                      colLabels={colLabels}
-                      riskMatrix={riskMatrix}
-                      onRowLabelsChange={setRowLabels}
-                      onColLabelsChange={setColLabels}
-                      onRiskMatrixChange={setRiskMatrix}
-                    />
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-bold mb-2">Método de Avaliação Utilizado</h3>
-                    <select className="border p-2 w-full rounded">
-                      <option>Observação direta da atividade</option>
-                      <option>Questionário de avaliação de riscos psicossociais</option>
-                      <option>Entrevistas com trabalhadores</option>
-                      <option>Workshop com equipe</option>
-                      <option>Dados de afastamentos</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-bold mb-2">Caracterização da Exposição</h3>
-                    <Textarea className="h-24" placeholder="Descreva detalhes sobre a exposição (duração, frequência, intensidade)" />
-                  </div>
-                  
-                  <div className="flex justify-end space-x-3">
-                    <Button variant="outline">
-                      Voltar
-                    </Button>
-                    <Button>
-                      Salvar e Avançar
-                    </Button>
-                  </div>
+                  <RiskAnalysisForm />
                 </TabsContent>
                 
                 <TabsContent value="planejamento" className="space-y-6">
@@ -876,10 +773,26 @@ export default function GestaoRiscos() {
             <CardHeader>
               <CardTitle>Configurações do Módulo de Riscos</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p>Funcionalidade em desenvolvimento...</p>
-              </div>
+            <CardContent className="pt-6">
+              <Tabs defaultValue="matrizRisco" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-6">
+                  <TabsTrigger value="matrizRisco">Matriz de Risco</TabsTrigger>
+                  <TabsTrigger value="categorias">Categorias</TabsTrigger>
+                  <TabsTrigger value="geral">Configurações Gerais</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="matrizRisco" className="space-y-6">
+                  <RiskMatrixSettingsForm />
+                </TabsContent>
+                
+                <TabsContent value="categorias" className="space-y-6">
+                  <p className="text-muted-foreground">Configuração de categorias de riscos em desenvolvimento...</p>
+                </TabsContent>
+                
+                <TabsContent value="geral" className="space-y-6">
+                  <p className="text-muted-foreground">Configurações gerais em desenvolvimento...</p>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </TabsContent>
