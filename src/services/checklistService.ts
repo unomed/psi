@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { 
   ChecklistTemplate, 
@@ -6,12 +7,34 @@ import {
   DiscFactorType,
   ScaleType,
   scaleTypeToDbScaleType,
-  ScheduledAssessment
+  ScheduledAssessment,
+  PsicossocialQuestion,
+  ChecklistTemplateType
 } from "@/types";
 import { Database } from "@/integrations/supabase/types";
 
 // Define types from Supabase that we need
 type Json = Database["public"]["Tables"]["assessment_responses"]["Row"]["factors_scores"];
+
+// Type to handle possible template types from the database
+type DbTemplateType = "disc" | "custom" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri";
+
+// Map our app types to DB types
+function mapAppTemplateTypeToDb(type: ChecklistTemplateType): DbTemplateType {
+  if (type === "psicossocial") {
+    return "custom"; // Map psicossocial to custom in the DB for now
+  }
+  return type as DbTemplateType;
+}
+
+// Map DB types to our app types
+function mapDbTemplateTypeToApp(type: string): ChecklistTemplateType {
+  // If it's one of our special DB types that we want to map to psicossocial
+  if (["copsoq", "jcq", "eri"].includes(type)) {
+    return "psicossocial";
+  }
+  return type as ChecklistTemplateType;
+}
 
 // Fetch all checklist templates from Supabase
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
@@ -25,23 +48,49 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
     throw error;
   }
 
-  return (data || []).map(template => ({
-    id: template.id,
-    title: template.title,
-    description: template.description || "",
-    type: template.type as "disc" | "custom",
-    scaleType: mapDbScaleToAppScale(template.scale_type),
-    isStandard: template.is_standard || false,
-    companyId: template.company_id,
-    derivedFromId: template.derived_from_id,
-    questions: (template.questions || []).map(q => ({
-      id: q.id,
-      text: q.question_text,
-      targetFactor: q.target_factor as DiscFactorType,
-      weight: q.weight || 1
-    })),
-    createdAt: new Date(template.created_at)
-  }));
+  return (data || []).map(template => {
+    const templateType = mapDbTemplateTypeToApp(template.type);
+    
+    let questions: (DiscQuestion | PsicossocialQuestion)[] = [];
+    
+    if (templateType === "disc") {
+      // Process DISC questions
+      questions = (template.questions || []).map(q => ({
+        id: q.id,
+        text: q.question_text,
+        targetFactor: q.target_factor as DiscFactorType,
+        weight: q.weight || 1
+      }));
+    } else if (templateType === "psicossocial") {
+      // Process psicossocial questions with categories
+      questions = (template.questions || []).map(q => ({
+        id: q.id,
+        text: q.question_text,
+        category: q.target_factor || "Geral" // Use target_factor as category
+      }));
+    } else {
+      // Process custom questions (might not have targetFactor)
+      questions = (template.questions || []).map(q => ({
+        id: q.id,
+        text: q.question_text,
+        targetFactor: q.target_factor as DiscFactorType || "D",
+        weight: q.weight || 1
+      }));
+    }
+
+    return {
+      id: template.id,
+      title: template.title,
+      description: template.description || "",
+      type: templateType,
+      scaleType: mapDbScaleToAppScale(template.scale_type),
+      isStandard: template.is_standard || false,
+      companyId: template.company_id,
+      derivedFromId: template.derived_from_id,
+      questions,
+      createdAt: new Date(template.created_at)
+    };
+  });
 }
 
 // Save a new checklist template to Supabase
@@ -50,13 +99,14 @@ export async function saveChecklistTemplate(
   isStandard: boolean = false
 ): Promise<string> {
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
+  const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
     .insert({
       title: template.title,
       description: template.description,
-      type: template.type,
+      type: dbTemplateType,
       scale_type: dbScaleType,
       is_active: true,
       is_standard: isStandard,
@@ -75,13 +125,37 @@ export async function saveChecklistTemplate(
     throw new Error("Failed to get template ID after insertion");
   }
 
-  const questionsToInsert = template.questions.map((q, index) => ({
-    template_id: templateId,
-    question_text: q.text,
-    order_number: index + 1,
-    target_factor: q.targetFactor,
-    weight: q.weight
-  }));
+  const questionsToInsert = template.questions.map((q, index) => {
+    if (template.type === "disc") {
+      const discQuestion = q as DiscQuestion;
+      return {
+        template_id: templateId,
+        question_text: discQuestion.text,
+        order_number: index + 1,
+        target_factor: discQuestion.targetFactor,
+        weight: discQuestion.weight
+      };
+    } else if (template.type === "psicossocial") {
+      const psiQuestion = q as PsicossocialQuestion;
+      return {
+        template_id: templateId,
+        question_text: psiQuestion.text,
+        order_number: index + 1,
+        target_factor: psiQuestion.category, // Store category in target_factor
+        weight: 1
+      };
+    } else {
+      // Generic handling for custom templates
+      return {
+        template_id: templateId,
+        question_text: q.text,
+        order_number: index + 1,
+        // Default values if properties don't exist
+        target_factor: (q as any).targetFactor || null,
+        weight: (q as any).weight || 1
+      };
+    }
+  });
 
   const { error: questionsError } = await supabase
     .from('questions')
@@ -226,16 +300,29 @@ export async function updateChecklistTemplate(
 ): Promise<string> {
   // Prepare the update object, converting scale type if needed
   // Remove properties that don't exist in the database schema
-  const { companyId, createdAt, isStandard, questions, scaleType, ...otherProps } = template;
+  const { companyId, createdAt, isStandard, questions, scaleType, type, ...otherProps } = template;
   
   // Prepare valid update data
-  const updateData = {
+  const updateData: any = {
     ...otherProps,
-    scale_type: scaleType ? scaleTypeToDbScaleType(scaleType) : undefined,
-    is_standard: isStandard,
-    company_id: companyId,
     updated_at: new Date().toISOString()
   };
+  
+  if (scaleType) {
+    updateData.scale_type = scaleTypeToDbScaleType(scaleType);
+  }
+  
+  if (isStandard !== undefined) {
+    updateData.is_standard = isStandard;
+  }
+  
+  if (companyId) {
+    updateData.company_id = companyId;
+  }
+  
+  if (type) {
+    updateData.type = mapAppTemplateTypeToDb(type);
+  }
 
   // Log para debug
   console.log("Template update data:", updateData);
@@ -254,14 +341,18 @@ export async function updateChecklistTemplate(
 
   // If questions were updated, handle that separately
   if (questions) {
-    await updateTemplateQuestions(templateId, questions);
+    await updateTemplateQuestions(templateId, questions, type || "disc");
   }
 
   return data.id;
 }
 
 // Helper function to update questions for a template
-async function updateTemplateQuestions(templateId: string, questions: DiscQuestion[]) {
+async function updateTemplateQuestions(
+  templateId: string, 
+  questions: (DiscQuestion | PsicossocialQuestion)[], 
+  templateType: ChecklistTemplateType
+) {
   // First, delete existing questions
   const { error: deleteError } = await supabase
     .from('questions')
@@ -273,14 +364,38 @@ async function updateTemplateQuestions(templateId: string, questions: DiscQuesti
     throw deleteError;
   }
 
-  // Then insert new questions
-  const questionsToInsert = questions.map((q, index) => ({
-    template_id: templateId,
-    question_text: q.text,
-    order_number: index + 1,
-    target_factor: q.targetFactor,
-    weight: q.weight
-  }));
+  // Then insert new questions based on template type
+  const questionsToInsert = questions.map((q, index) => {
+    if (templateType === "disc") {
+      const discQuestion = q as DiscQuestion;
+      return {
+        template_id: templateId,
+        question_text: discQuestion.text,
+        order_number: index + 1,
+        target_factor: discQuestion.targetFactor,
+        weight: discQuestion.weight
+      };
+    } else if (templateType === "psicossocial") {
+      const psiQuestion = q as PsicossocialQuestion;
+      return {
+        template_id: templateId,
+        question_text: psiQuestion.text,
+        order_number: index + 1,
+        target_factor: psiQuestion.category, // Store category in target_factor
+        weight: 1
+      };
+    } else {
+      // Generic handling for custom templates
+      return {
+        template_id: templateId,
+        question_text: q.text,
+        order_number: index + 1,
+        // Default values if properties don't exist
+        target_factor: (q as any).targetFactor || null,
+        weight: (q as any).weight || 1
+      };
+    }
+  });
 
   const { error: insertError } = await supabase
     .from('questions')

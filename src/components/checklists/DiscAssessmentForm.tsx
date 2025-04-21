@@ -9,6 +9,7 @@ import {
 import { QuestionStep } from "./assessment/QuestionStep";
 import { CompletionStep } from "./assessment/CompletionStep";
 import { AssessmentNavigation } from "./assessment/AssessmentNavigation";
+import { DiscQuestion } from "@/types/disc";
 
 interface DiscAssessmentFormProps {
   template: ChecklistTemplate;
@@ -54,45 +55,57 @@ export function DiscAssessmentForm({
   };
 
   const calculateResults = () => {
-    // Calculate results
-    const factorScores = {
-      [DiscFactorType.D]: 0,
-      [DiscFactorType.I]: 0,
-      [DiscFactorType.S]: 0,
-      [DiscFactorType.C]: 0
-    };
-    
-    // Calculate weighted scores for each factor
-    template.questions.forEach(question => {
-      const response = responses[question.id] || 0;
-      const weightedResponse = response * question.weight;
+    if (template.type === "disc") {
+      // Calculate DISC results
+      const factorScores = {
+        [DiscFactorType.D]: 0,
+        [DiscFactorType.I]: 0,
+        [DiscFactorType.S]: 0,
+        [DiscFactorType.C]: 0
+      };
       
-      factorScores[question.targetFactor] += weightedResponse;
-    });
-    
-    // Find dominant factor
-    let dominantFactor: DiscFactorType = DiscFactorType.D;
-    let highestScore = factorScores[DiscFactorType.D];
-    
-    if (factorScores[DiscFactorType.I] > highestScore) {
-      dominantFactor = DiscFactorType.I;
-      highestScore = factorScores[DiscFactorType.I];
+      // Calculate weighted scores for each factor
+      template.questions.forEach(question => {
+        const discQuestion = question as DiscQuestion;
+        const response = responses[question.id] || 0;
+        if (discQuestion.targetFactor && discQuestion.weight) {
+          const weightedResponse = response * discQuestion.weight;
+          factorScores[discQuestion.targetFactor] += weightedResponse;
+        }
+      });
+      
+      // Find dominant factor
+      let dominantFactor: DiscFactorType = DiscFactorType.D;
+      let highestScore = factorScores[DiscFactorType.D];
+      
+      if (factorScores[DiscFactorType.I] > highestScore) {
+        dominantFactor = DiscFactorType.I;
+        highestScore = factorScores[DiscFactorType.I];
+      }
+      if (factorScores[DiscFactorType.S] > highestScore) {
+        dominantFactor = DiscFactorType.S;
+        highestScore = factorScores[DiscFactorType.S];
+      }
+      if (factorScores[DiscFactorType.C] > highestScore) {
+        dominantFactor = DiscFactorType.C;
+        highestScore = factorScores[DiscFactorType.C];
+      }
+      
+      return {
+        templateId: template.id,
+        employeeName: employeeName.trim() || "Anônimo",
+        results: factorScores,
+        dominantFactor
+      };
+    } else {
+      // For non-DISC templates, return a simpler result structure
+      return {
+        templateId: template.id,
+        employeeName: employeeName.trim() || "Anônimo",
+        results: { D: 0, I: 0, S: 0, C: 0 },
+        dominantFactor: DiscFactorType.D
+      };
     }
-    if (factorScores[DiscFactorType.S] > highestScore) {
-      dominantFactor = DiscFactorType.S;
-      highestScore = factorScores[DiscFactorType.S];
-    }
-    if (factorScores[DiscFactorType.C] > highestScore) {
-      dominantFactor = DiscFactorType.C;
-      highestScore = factorScores[DiscFactorType.C];
-    }
-    
-    return {
-      templateId: template.id,
-      employeeName: employeeName.trim() || "Anônimo",
-      results: factorScores,
-      dominantFactor
-    };
   };
 
   const handleSubmit = () => {

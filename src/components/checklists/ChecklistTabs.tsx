@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DiscFactorType, DiscQuestion } from "@/types/disc";
 
 interface ChecklistTabsProps {
   activeTab: string;
@@ -88,10 +89,15 @@ export function ChecklistTabs({
               </TableHeader>
               <TableBody>
                 {checklists.map((template) => {
-                  const dFactorCount = template.questions.filter(q => q.targetFactor === "D").length;
-                  const iFactorCount = template.questions.filter(q => q.targetFactor === "I").length;
-                  const sFactorCount = template.questions.filter(q => q.targetFactor === "S").length;
-                  const cFactorCount = template.questions.filter(q => q.targetFactor === "C").length;
+                  // Only calculate DISC factors if it's a DISC type template
+                  const dFactorCount = template.type === "disc" ? 
+                    template.questions.filter(q => (q as DiscQuestion).targetFactor === "D").length : 0;
+                  const iFactorCount = template.type === "disc" ? 
+                    template.questions.filter(q => (q as DiscQuestion).targetFactor === "I").length : 0;
+                  const sFactorCount = template.type === "disc" ? 
+                    template.questions.filter(q => (q as DiscQuestion).targetFactor === "S").length : 0;
+                  const cFactorCount = template.type === "disc" ? 
+                    template.questions.filter(q => (q as DiscQuestion).targetFactor === "C").length : 0;
                   
                   return (
                     <TableRow key={template.id}>
@@ -104,17 +110,23 @@ export function ChecklistTabs({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={template.type === "disc" ? "default" : "outline"}>
-                          {template.type === "disc" ? "DISC" : "Personalizado"}
+                        <Badge variant={template.type === "disc" ? "default" : (template.type === "psicossocial" ? "secondary" : "outline")}>
+                          {template.type === "disc" ? "DISC" : (template.type === "psicossocial" ? "Psicossocial" : "Personalizado")}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          <Badge variant="outline" className="bg-red-50">D: {dFactorCount}</Badge>
-                          <Badge variant="outline" className="bg-yellow-50">I: {iFactorCount}</Badge>
-                          <Badge variant="outline" className="bg-green-50">S: {sFactorCount}</Badge>
-                          <Badge variant="outline" className="bg-blue-50">C: {cFactorCount}</Badge>
-                        </div>
+                        {template.type === "disc" ? (
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="bg-red-50">D: {dFactorCount}</Badge>
+                            <Badge variant="outline" className="bg-yellow-50">I: {iFactorCount}</Badge>
+                            <Badge variant="outline" className="bg-green-50">S: {sFactorCount}</Badge>
+                            <Badge variant="outline" className="bg-blue-50">C: {cFactorCount}</Badge>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {template.type === "psicossocial" ? "Categorias psicossociais" : "N/A"}
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {format(template.createdAt, "dd/MM/yyyy", { locale: ptBR })}

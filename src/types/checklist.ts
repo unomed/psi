@@ -44,4 +44,3 @@ export interface ChecklistResult {
 
 // Re-export types from disc and scale that are used with checklist
 export type { DiscQuestion } from "./disc";
-
