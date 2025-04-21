@@ -1,5 +1,5 @@
 
-import { BarChart3, Building2, Users, FolderKanban, ClipboardList, FileCheck, PieChart } from "lucide-react";
+import { BarChart3, Building2, Users, FolderKanban, ClipboardList, FileCheck, PieChart, Shield, ListChecks } from "lucide-react";
 
 export const mainMenuItems = [
   {
@@ -35,6 +35,20 @@ export const mainMenuItems = [
     icon: FolderKanban,
     path: "/funcoes",
     permission: "view_functions",
+    roles: ["superadmin", "admin"]
+  },
+  {
+    title: "Gestão de Riscos",
+    icon: Shield,
+    path: "/gestao-de-riscos",
+    permission: "view_risk_management",
+    roles: ["superadmin"],
+  },
+  {
+    title: "Plano de Ação",
+    icon: ListChecks,
+    path: "/plano-de-acao",
+    permission: "view_action_plan",
     roles: ["superadmin", "admin"]
   },
   {
