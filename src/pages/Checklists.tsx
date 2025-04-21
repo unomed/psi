@@ -5,14 +5,18 @@ import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
 import { ChecklistHeader } from "@/components/checklists/ChecklistHeader";
 import { useChecklistData } from "@/hooks/useChecklistData";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Checklists() {
-  const [activeTab, setActiveTab] = useState("templates");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("all"); // Mudamos o padrão para "all" para mostrar todos os checklists
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAssessmentDialogOpen, setIsAssessmentDialogOpen] = useState(false);
 
   const {
     checklists,
@@ -39,6 +43,21 @@ export default function Checklists() {
   const handleViewResult = (result: ChecklistResult) => {
     setSelectedResult(result);
     setIsResultDialogOpen(true);
+  };
+
+  const handleStartAssessment = (template: ChecklistTemplate) => {
+    setSelectedTemplate(template);
+    setIsAssessmentDialogOpen(true);
+    // Você pode escolher abrir um diálogo para selecionar um funcionário
+    // ou navegar diretamente para a página de avaliação
+    toast.success(`Iniciando avaliação para ${template.title}`);
+  };
+
+  const handleSubmitAssessment = async (resultData: any) => {
+    // Aqui você pode implementar a lógica para salvar os resultados da avaliação
+    console.log("Salvando resultados da avaliação:", resultData);
+    toast.success("Avaliação concluída com sucesso!");
+    setIsAssessmentDialogOpen(false);
   };
 
   const handleSubmitTemplate = async (templateData: Omit<ChecklistTemplate, "id" | "createdAt"> | ChecklistTemplate) => {
@@ -83,7 +102,7 @@ export default function Checklists() {
           onEditTemplate={handleEditTemplate}
           onDeleteTemplate={handleDeleteTemplate}
           onCopyTemplate={handleCopyTemplate}
-          onStartAssessment={() => {}} // Empty function as we're not using this feature
+          onStartAssessment={handleStartAssessment}
           onViewResult={handleViewResult}
           onCreateTemplate={() => {
             setIsEditing(false);
@@ -96,15 +115,15 @@ export default function Checklists() {
       <ChecklistDialogs
         isFormDialogOpen={isFormDialogOpen}
         setIsFormDialogOpen={handleCloseFormDialog}
-        isAssessmentDialogOpen={false}
-        setIsAssessmentDialogOpen={() => {}}
+        isAssessmentDialogOpen={isAssessmentDialogOpen}
+        setIsAssessmentDialogOpen={setIsAssessmentDialogOpen}
         isResultDialogOpen={isResultDialogOpen}
         setIsResultDialogOpen={setIsResultDialogOpen}
         selectedTemplate={selectedTemplate}
         selectedResult={selectedResult}
         onSubmitTemplate={handleSubmitTemplate}
-        onSubmitAssessment={() => {}}
-        onCloseAssessment={() => {}}
+        onSubmitAssessment={handleSubmitAssessment}
+        onCloseAssessment={() => setIsAssessmentDialogOpen(false)}
         onCloseResult={() => {
           setIsResultDialogOpen(false);
           setSelectedResult(null);
