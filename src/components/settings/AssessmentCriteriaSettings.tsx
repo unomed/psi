@@ -1,116 +1,133 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form } from "@/components/ui/form";
+import React, { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useAssessmentCriteriaSettings } from "@/hooks/settings/useAssessmentCriteriaSettings";
-import { assessmentCriteriaSchema, type AssessmentCriteriaFormValues } from "./schemas/assessmentCriteriaSchema";
-import { PeriodicityTab } from "./tabs/PeriodicityTab";
-import { SamplingTab } from "./tabs/SamplingTab";
-import { RiskLevelsTab } from "./tabs/RiskLevelsTab";
-import { GovernanceTab } from "./tabs/GovernanceTab";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import RiskMatrixSettingsForm from "./RiskMatrixSettingsForm";
 
-export function AssessmentCriteriaSettings() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { settings, isLoading: isLoadingSettings, updateSettings } = useAssessmentCriteriaSettings();
-  
-  const form = useForm<AssessmentCriteriaFormValues>({
-    resolver: zodResolver(assessmentCriteriaSchema),
-    defaultValues: {
-      default_recurrence_type: "annual",
-      enable_recurrence_reminders: true,
-      days_before_reminder_sent: 15,
-      minimum_employee_percentage: 30,
-      require_all_sectors: false,
-      require_all_roles: false,
-      prioritize_high_risk_roles: true,
-      low_risk_threshold: 30,
-      medium_risk_threshold: 60,
-      sector_risk_calculation_type: "weighted",
-      company_risk_calculation_type: "weighted",
-      require_reassessment_for_high_risk: true,
-      reassessment_max_days: 90,
-      notify_managers_on_high_risk: true,
-    }
-  });
-  
-  // Reset form when settings are loaded
-  useEffect(() => {
-    if (settings) {
-      form.reset(settings);
-    }
-  }, [settings, form]);
-  
-  async function onSubmit(data: AssessmentCriteriaFormValues) {
-    try {
-      setIsSubmitting(true);
-      await updateSettings(data);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  if (isLoadingSettings) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="h-4 bg-gray-200 animate-pulse rounded" />
-            <div className="h-4 bg-gray-200 animate-pulse rounded" />
-            <div className="h-4 bg-gray-200 animate-pulse rounded" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
+export const AssessmentCriteriaSettings = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Critérios de Avaliação NR-01</CardTitle>
-        <CardDescription>
-          Configure os parâmetros para avaliação de riscos psicossociais conforme a NR-01
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Tabs defaultValue="periodicidade" className="w-full">
-              <TabsList className="grid grid-cols-4 mb-4">
-                <TabsTrigger value="periodicidade">Periodicidade</TabsTrigger>
-                <TabsTrigger value="amostragem">Amostragem</TabsTrigger>
-                <TabsTrigger value="niveis">Níveis de Risco</TabsTrigger>
-                <TabsTrigger value="governanca">Governança</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="periodicidade">
-                <PeriodicityTab form={form} />
-              </TabsContent>
-              
-              <TabsContent value="amostragem">
-                <SamplingTab form={form} />
-              </TabsContent>
-              
-              <TabsContent value="niveis">
-                <RiskLevelsTab form={form} />
-              </TabsContent>
-              
-              <TabsContent value="governanca">
-                <GovernanceTab form={form} />
-              </TabsContent>
-            </Tabs>
-            
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Salvando..." : "Salvar Configurações"}
-              </Button>
+    <Tabs defaultValue="riskLevels" className="w-full">
+      <TabsList className="grid grid-cols-4 mb-8">
+        <TabsTrigger value="riskLevels">Níveis de Risco</TabsTrigger>
+        <TabsTrigger value="sampling">Amostragem</TabsTrigger>
+        <TabsTrigger value="governance">Governança</TabsTrigger>
+        <TabsTrigger value="periodicity">Periodicidade</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="riskLevels" className="space-y-6">
+        <RiskMatrixSettingsForm />
+      </TabsContent>
+      
+      <TabsContent value="sampling" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Regras de Amostragem</CardTitle>
+            <CardDescription>
+              Configure os critérios para amostragem de avaliações
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="minEmployeePercentage">
+                  Porcentagem mínima de funcionários
+                </Label>
+                <Input
+                  id="minEmployeePercentage"
+                  type="number"
+                  defaultValue={30}
+                  min={0}
+                  max={100}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="requireAllSectors">
+                    Exigir todos os setores?
+                  </Label>
+                  <Switch id="requireAllSectors" />
+                </div>
+              </div>
             </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button>Salvar Configurações</Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="governance" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Regras de Governança</CardTitle>
+            <CardDescription>
+              Configure os critérios de governança para avaliações
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="notifyManagers">
+                  Notificar gerentes em casos de alto risco
+                </Label>
+                <Switch id="notifyManagers" defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="requireReassessment">
+                  Exigir reavaliação para alto risco
+                </Label>
+                <Switch id="requireReassessment" defaultChecked />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button>Salvar Configurações</Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="periodicity" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Configuração de Periodicidade</CardTitle>
+            <CardDescription>
+              Configure as regras de periodicidade para avaliações
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="reassessmentMaxDays">
+                  Dias máximos para reavaliação
+                </Label>
+                <Input
+                  id="reassessmentMaxDays"
+                  type="number"
+                  defaultValue={90}
+                  min={1}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="enableRecurrenceReminders">
+                    Habilitar lembretes de recorrência
+                  </Label>
+                  <Switch id="enableRecurrenceReminders" defaultChecked />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button>Salvar Configurações</Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
-}
+};
