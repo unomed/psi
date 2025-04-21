@@ -9,7 +9,7 @@ import { IndividualReports } from "@/components/reports/IndividualReports";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { FileText, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DateRange } from "react-day-picker";
+import { DateRange } from "@/types/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
 import { toast } from "sonner";

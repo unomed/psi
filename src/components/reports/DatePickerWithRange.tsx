@@ -57,8 +57,17 @@ export function DatePickerWithRange({
             initialFocus
             mode="range"
             defaultMonth={dateRange.from}
-            selected={dateRange}
-            onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
+            selected={{
+              from: dateRange.from,
+              to: dateRange.to
+            }}
+            onSelect={(range) => {
+              if (range) {
+                setDateRange(range as DateRange);
+              } else {
+                setDateRange({ from: undefined, to: undefined });
+              }
+            }}
             numberOfMonths={2}
             locale={ptBR}
             className="pointer-events-auto"
