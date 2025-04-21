@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Shield, Download, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import RiskMatrixEditor from "@/components/risks/RiskMatrixEditor";
 
 export default function GestaoRiscos() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -14,7 +14,6 @@ export default function GestaoRiscos() {
   const [riskType, setRiskType] = useState("todos");
   const { userRole } = useAuth();
 
-  // Verificar se o usuário tem permissão para acessar esta página
   if (userRole !== "superadmin") {
     return (
       <div className="p-8 text-center">
