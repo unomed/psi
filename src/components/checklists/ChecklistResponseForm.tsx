@@ -18,6 +18,38 @@ const PSICOSSOCIAL_LABELS = [
   "Sempre/Quase sempre",
 ];
 
+// Exemplo de estrutura para perguntas psicossociais com categorias
+interface PsicossocialCategory {
+  name: string;
+  questions: { id: string; text: string }[];
+}
+
+// Mock para exibir perguntas psicossociais
+const PSICOSSOCIAL_CATEGORIES: PsicossocialCategory[] = [
+  {
+    name: "Demandas de Trabalho",
+    questions: [
+      { id: "1", text: "Tenho tempo suficiente para realizar minhas tarefas diárias" },
+      { id: "2", text: "O volume de trabalho é adequado para o tempo disponível" },
+      { id: "3", text: "Preciso trabalhar muito rapidamente para cumprir meus prazos" },
+      { id: "4", text: "Consigo fazer pausas quando necessário" },
+      { id: "5", text: "Sinto-me pressionado pelas metas e indicadores de desempenho" },
+    ],
+  },
+  // ...adicione as outras categorias seguindo o mesmo padrão (veja exemplo abaixo)
+  {
+    name: "Controle e Autonomia",
+    questions: [
+      { id: "6", text: "Tenho liberdade para decidir como realizar meu trabalho" },
+      { id: "7", text: "Posso influenciar decisões importantes relacionadas ao meu trabalho" },
+      { id: "8", text: "Minhas sugestões de melhorias são consideradas" },
+      { id: "9", text: "Tenho flexibilidade para organizar meu próprio tempo" },
+      { id: "10", text: "Minhas atividades são excessivamente controladas ou monitoradas" },
+    ],
+  },
+  // Demais categorias...
+];
+
 export function ChecklistResponseForm({
   template,
   onSubmit,
@@ -26,8 +58,8 @@ export function ChecklistResponseForm({
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [employeeName, setEmployeeName] = useState("");
 
-  // Define escala conforme tipo/escala
   let options: { value: number; label: string }[] = [];
+
   if (template.type === "disc" || template.scaleType === ScaleType.Likert) {
     options = [
       { value: 1, label: "1" },
@@ -41,13 +73,12 @@ export function ChecklistResponseForm({
       { value: 0, label: "Não" },
       { value: 1, label: "Sim" },
     ];
-  } else if (template.type === "custom" && template.scaleType === ScaleType.Custom) {
+  } else if (template.scaleType === ScaleType.Psicossocial) {
     options = PSICOSSOCIAL_LABELS.map((label, idx) => ({
       value: idx + 1,
       label: `${idx + 1} - ${label}`,
     }));
   } else {
-    // fallback padrão
     options = [
       { value: 1, label: "1" },
       { value: 2, label: "2" },
@@ -61,24 +92,36 @@ export function ChecklistResponseForm({
     setResponses((prev) => ({ ...prev, [qid]: value }));
   };
 
-  const allAnswered = template.questions.every(q => responses[q.id] !== undefined);
+  let questionList = template.questions.map(q => ({ ...q, category: "" }));
+  // Montar perguntas por categoria se for psicossocial
+  if (template.scaleType === ScaleType.Psicossocial) {
+    // Monta pergunta por categorias (fixa para demo, depois pode ser flexível)
+    questionList = PSICOSSOCIAL_CATEGORIES.flatMap(category => 
+      category.questions.map(q => ({
+        ...q,
+        category: category.name
+      }))
+    );
+  }
+
+  const allAnswered = questionList.every(q => responses[q.id] !== undefined);
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!allAnswered) return;
 
-    // Initializing default DISC results object with zeros
-    const discResults = template.type === "disc" ? {
-      D: 0,
-      I: 0,
-      S: 0,
-      C: 0
-    } : {};
+    const discResults = 
+      template.type === "disc"
+      ? { D: 0, I: 0, S: 0, C: 0 }
+      : undefined;
 
     onSubmit({
       templateId: template.id,
       employeeName: employeeName.trim() || "Anônimo",
-      results: discResults,
-      dominantFactor: DiscFactorType.D, // para DISC, calcular corretamente. Para outros, placeholder.
+      // Só envia results DISC se for checklist DISC
+      results: discResults || { D: 0, I: 0, S: 0, C: 0 },
+      dominantFactor: DiscFactorType.D,
+      // Para psicossocial/personalizado, resultado real deve ser calculado conforme regras
     });
   };
 
@@ -93,27 +136,57 @@ export function ChecklistResponseForm({
           onChange={(e) => setEmployeeName(e.target.value)}
         />
       </div>
-      {template.questions.map((question, idx) => (
-        <div key={question.id} className="space-y-2">
-          <p className="font-medium mb-2">{idx + 1}. {question.text}</p>
-          <div className="flex flex-wrap gap-4">
-            {options.map((opt) => (
-              <label key={opt.value} className="inline-flex items-center gap-1">
-                <input
-                  type="radio"
-                  name={`q_${question.id}`}
-                  value={opt.value}
-                  checked={responses[question.id] === opt.value}
-                  onChange={() => handleChange(question.id, opt.value)}
-                  className="accent-primary"
-                  required
-                />
-                <span className="text-sm">{opt.label}</span>
-              </label>
+      {template.scaleType === ScaleType.Psicossocial ? (
+        // Exibe categorias, perguntas e opções psicossociais
+        PSICOSSOCIAL_CATEGORIES.map((cat, cIdx) => (
+          <div key={cat.name} className="mb-4 border rounded-lg p-4">
+            <div className="font-semibold mb-2">{cat.name}</div>
+            {cat.questions.map((q, qIdx) => (
+              <div key={q.id} className="mb-2">
+                <p className="font-medium">{qIdx + 1 + cIdx * 5}. {q.text}</p>
+                <div className="flex flex-wrap gap-3 mt-1">
+                  {options.map((opt) => (
+                    <label key={opt.value} className="inline-flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name={`q_${q.id}`}
+                        value={opt.value}
+                        checked={responses[q.id] === opt.value}
+                        onChange={() => handleChange(q.id, opt.value)}
+                        className="accent-primary"
+                        required
+                      />
+                      <span className="text-sm">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-      ))}
+        ))
+      ) : (
+        template.questions.map((question, idx) => (
+          <div key={question.id} className="space-y-2">
+            <p className="font-medium mb-2">{idx + 1}. {question.text}</p>
+            <div className="flex flex-wrap gap-4">
+              {options.map((opt) => (
+                <label key={opt.value} className="inline-flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name={`q_${question.id}`}
+                    value={opt.value}
+                    checked={responses[question.id] === opt.value}
+                    onChange={() => handleChange(question.id, opt.value)}
+                    className="accent-primary"
+                    required
+                  />
+                  <span className="text-sm">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
       <div className="flex gap-4 pt-4">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>

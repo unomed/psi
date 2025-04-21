@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -32,7 +31,7 @@ import { ScaleType } from "@/types";
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
-  type: z.enum(["disc", "custom"]),
+  type: z.enum(["disc", "custom", "psicossocial"]),
   scaleType: z.enum(["binary", "likert", "numeric", "psicossocial"]),
   questions: z.array(z.object({
     id: z.string(),
@@ -64,7 +63,7 @@ export function ChecklistTemplateForm({
     defaultValues?.type || existingTemplate?.type || 'disc'
   );
   const [selectedScale, setSelectedScale] = useState<string>(
-    defaultValues?.scaleType || existingTemplate?.scaleType || (defaultValues?.type === "custom" ? "psicossocial" : "binary")
+    defaultValues?.scaleType || existingTemplate?.scaleType || (defaultValues?.type === "psicossocial" ? "psicossocial" : "binary")
   );
 
   const form = useForm<FormValues>({
@@ -77,7 +76,7 @@ export function ChecklistTemplateForm({
       questions: defaultValues?.questions || existingTemplate?.questions || [],
     }
   });
-  
+
   useEffect(() => {
     const checkPermissions = async () => {
       const isSuperAdmin = await hasRole('superadmin');
@@ -88,9 +87,12 @@ export function ChecklistTemplateForm({
   }, [hasRole]);
   
   useEffect(() => {
-    if (method === "custom") {
+    if (method === "psicossocial") {
       setSelectedScale("psicossocial");
       form.setValue("scaleType", "psicossocial");
+    } else if (method === "custom") {
+      setSelectedScale("likert");
+      form.setValue("scaleType", "likert");
     } else {
       setSelectedScale("binary");
       form.setValue("scaleType", "binary");
@@ -172,7 +174,8 @@ export function ChecklistTemplateForm({
               </FormControl>
               <SelectContent>
                 <SelectItem value="disc">DISC</SelectItem>
-                <SelectItem value="custom">Personalizado/Psicossocial</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
+                <SelectItem value="psicossocial">Psicossocial</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -190,7 +193,7 @@ export function ChecklistTemplateForm({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {method === "custom" ? (
+                {method === "psicossocial" ? (
                   <SelectItem value="psicossocial">Psicossocial (1-Nunca/Quase nunca ... 5-Sempre/Quase sempre)</SelectItem>
                 ) : (
                   <>
@@ -212,58 +215,68 @@ export function ChecklistTemplateForm({
             <FormItem>
               <FormLabel>Perguntas</FormLabel>
               <FormDescription>
-                Adicione as perguntas do seu checklist.
+                {method === "psicossocial"
+                  ? "Perguntas são definidas de acordo com as categorias psicossociais."
+                  : "Adicione as perguntas do seu checklist personalizado."}
               </FormDescription>
               <FormControl>
-                <div>
-                  <Accordion type="multiple" className="w-full">
-                    {field.value.map((question, index) => (
-                      <AccordionItem value={question.id} key={question.id}>
-                        <AccordionTrigger>
-                          {index + 1}. {question.text || "Nova Pergunta"}
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="grid grid-cols-1 gap-2">
-                            <Input
-                              type="text"
-                              placeholder="Digite a pergunta"
-                              value={question.text}
-                              onChange={(e) => {
-                                const updatedQuestions = [...field.value];
-                                updatedQuestions[index].text = e.target.value;
-                                field.onChange(updatedQuestions);
-                              }}
-                            />
-                            <Button 
-                              type="button" 
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                const updatedQuestions = field.value.filter((_, i) => i !== index);
-                                field.onChange(updatedQuestions);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir Pergunta
-                            </Button>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
+                {method === "psicossocial" ? (
+                  <div>
+                    <p>Categorias e perguntas serão geradas conforme o padrão psicossocial.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <Accordion type="multiple" className="w-full">
+                      {field.value.map((question, index) => (
+                        <AccordionItem value={question.id} key={question.id}>
+                          <AccordionTrigger>
+                            {index + 1}. {question.text || "Nova Pergunta"}
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="grid grid-cols-1 gap-2">
+                              <Input
+                                type="text"
+                                placeholder="Digite a pergunta"
+                                value={question.text}
+                                onChange={(e) => {
+                                  const updatedQuestions = [...field.value];
+                                  updatedQuestions[index].text = e.target.value;
+                                  field.onChange(updatedQuestions);
+                                }}
+                              />
+                              <Button 
+                                type="button" 
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  const updatedQuestions = field.value.filter((_, i) => i !== index);
+                                  field.onChange(updatedQuestions);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Excluir Pergunta
+                              </Button>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                )}
               </FormControl>
               <FormMessage />
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  field.onChange([...field.value, { id: uuidv4(), text: '', type: 'text' }]);
-                }} 
-                className="mt-2"
-              >
-                Adicionar Pergunta
-              </Button>
+              {method !== "psicossocial" && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    field.onChange([...field.value, { id: uuidv4(), text: '', type: 'text' }]);
+                  }} 
+                  className="mt-2"
+                >
+                  Adicionar Pergunta
+                </Button>
+              )}
             </FormItem>
           )}
         />

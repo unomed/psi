@@ -10,12 +10,13 @@ export enum ScaleType {
   Likert = "likert",
   YesNo = "binary",
   Agree3 = "agree3",
-  Custom = "psicossocial", // Updated to match the psicossocial scale used in the forms
+  Custom = "custom",
   Frequency = "frequency",
   Importance = "importance",
   Probability = "probability",
   Impact = "impact",
   RiskLevel = "risk_level",
+  Psicossocial = "psicossocial", // NOVO: psicossocial separado de custom
 }
 
 // Export DiscFactorType from disc.ts
