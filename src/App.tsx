@@ -26,6 +26,8 @@ import NotificationsPage from "./pages/configuracoes/NotificationsPage";
 import PeriodicityPage from "./pages/configuracoes/PeriodicityPage";
 import UserManagementPage from "./pages/configuracoes/UserManagementPage";
 import PermissionsPage from "./pages/configuracoes/PermissionsPage";
+import GestaoRiscos from "./pages/GestaoRiscos";
+import PlanoAcao from "./pages/PlanoAcao";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +102,22 @@ const App = () => (
               <RouteGuard requirePermission="view_reports">
                 <MainLayout>
                   <Relatorios />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            
+            {/* Gestão de Riscos e Plano de Ação */}
+            <Route path="/gestao-de-riscos" element={
+              <RouteGuard requirePermission="view_risk_management">
+                <MainLayout>
+                  <GestaoRiscos />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/plano-de-acao" element={
+              <RouteGuard requirePermission="view_action_plan">
+                <MainLayout>
+                  <PlanoAcao />
                 </MainLayout>
               </RouteGuard>
             } />
