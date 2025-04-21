@@ -10,7 +10,6 @@ import RiskMatrixConfigurator from "@/components/risks/RiskMatrixConfigurator";
 import RiskMatrixSettingsForm from "@/components/settings/RiskMatrixSettingsForm";
 import RiskAnalysisForm from "@/components/risks/RiskAnalysisForm";
 import { ReportFilters } from "@/components/reports/ReportFilters";
-import { DateRange } from "react-day-picker";
 import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistribution";
 import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
@@ -32,12 +31,19 @@ import { RiskReductionTrends } from "@/components/reports/RiskReductionTrends";
 import { EffectivenessEvaluationTable } from "@/components/reports/EffectivenessEvaluationTable";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
 import { toast } from "sonner";
+import { DateRange } from "@/types/date";
 
 export default function GestaoRiscos() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeRiskTab, setActiveRiskTab] = useState("identificacao");
+  const [activeReportTab, setActiveReportTab] = useState("panorama");
   const [riskType, setRiskType] = useState("todos");
   const { userRole } = useAuth();
+
+  const [dateRange, setDateRange] = useState<DateRange>({ from: new Date(2025, 0, 1), to: new Date() });
+  const [selectedSector, setSelectedSector] = useState("all");
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
 
   const [matrixSize, setMatrixSize] = useState(3);
   const defaultLabels = (size: number, prefix: string) =>
@@ -87,6 +93,13 @@ export default function GestaoRiscos() {
       setCalculatedRiskValue(risk);
     }
   }, [selectedProbabilityIndex, selectedSeverityIndex, riskMatrix]);
+
+  const reportFilters = {
+    dateRange,
+    selectedSector,
+    selectedRole,
+    selectedCompany
+  };
 
   if (userRole !== "superadmin") {
     return (
@@ -770,36 +783,123 @@ export default function GestaoRiscos() {
         </TabsContent>
 
         <TabsContent value="relatorios" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Relatórios de Riscos Psicossociais</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <ReportFilters />
-                <DateRange />
-                <RiskLevelDistribution />
-                <SectorRiskFactors />
-                <RoleRiskComparison />
-                <RisksProgressTimeline />
-                <RiskTypeDistribution />
-                <RisksByCategory />
-                <RiskIdentificationTable />
-                <RiskMatrixReport />
-                <RiskAnalysisSummary />
-                <RiskAnalysisTable />
-                <ActionPlanSummary />
-                <ActionsByResponsible />
-                <ActionPlanTable />
-                <ActionImplementationStatus />
-                <ActionImplementationTimeline />
-                <ImplementationDetailsTable />
-                <EffectivenessMetrics />
-                <RiskReductionTrends />
-                <EffectivenessEvaluationTable />
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Relatórios de Riscos Psicossociais</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline">
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimir
+              </Button>
+              <Button>
+                <Download className="mr-2 h-4 w-4" />
+                Exportar PDF
+              </Button>
+            </div>
+          </div>
+
+          <ReportFilters 
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            selectedSector={selectedSector}
+            setSelectedSector={setSelectedSector}
+            selectedRole={selectedRole}
+            setSelectedRole={setSelectedRole}
+            selectedCompany={selectedCompany}
+            onCompanyChange={(value) => setSelectedCompany(value)}
+          />
+
+          <Tabs 
+            defaultValue="panorama" 
+            onValueChange={setActiveReportTab} 
+            value={activeReportTab}
+            className="mt-6"
+          >
+            <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsTrigger value="panorama">Panorama Geral</TabsTrigger>
+              <TabsTrigger value="identificacao">1. Identificação</TabsTrigger>
+              <TabsTrigger value="analise">2. Análise</TabsTrigger>
+              <TabsTrigger value="planejamento">3. Planejamento</TabsTrigger>
+              <TabsTrigger value="implementacao-eficacia">4-5. Implementaç��o e Eficácia</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="panorama" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-muted-foreground">Total de riscos</div>
+                    <div className="text-3xl font-bold">82</div>
+                    <div className="text-sm text-green-600">+4 este mês</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-muted-foreground">Riscos críticos</div>
+                    <div className="text-3xl font-bold text-red-600">36</div>
+                    <div className="text-sm text-red-600">+2 este mês</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-muted-foreground">Riscos psicossociais</div>
+                    <div className="text-3xl font-bold text-amber-600">15</div>
+                    <div className="text-sm text-blue-600">Em avaliação</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-muted-foreground">Ações pendentes</div>
+                    <div className="text-3xl font-bold text-orange-600">24</div>
+                    <div className="text-sm text-red-600">8 atrasadas</div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <RiskTypeDistribution filters={reportFilters} />
+                <RisksByCategory filters={reportFilters} />
+              </div>
+
+              <RisksProgressTimeline filters={reportFilters} />
+              <RoleRiskComparison filters={reportFilters} />
+            </TabsContent>
+
+            <TabsContent value="identificacao" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <RiskMatrixReport filters={reportFilters} />
+                <SectorRiskFactors filters={reportFilters} />
+              </div>
+              <RiskIdentificationTable filters={reportFilters} />
+            </TabsContent>
+
+            <TabsContent value="analise" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <RiskAnalysisSummary filters={reportFilters} />
+                <RoleRiskComparison filters={reportFilters} />
+              </div>
+              <RiskAnalysisTable filters={reportFilters} />
+            </TabsContent>
+
+            <TabsContent value="planejamento" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ActionPlanSummary filters={reportFilters} />
+                <ActionsByResponsible filters={reportFilters} />
+              </div>
+              <ActionPlanTable filters={reportFilters} />
+            </TabsContent>
+
+            <TabsContent value="implementacao-eficacia" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ActionImplementationStatus filters={reportFilters} />
+                <EffectivenessMetrics filters={reportFilters} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ActionImplementationTimeline filters={reportFilters} />
+                <RiskReductionTrends filters={reportFilters} />
+              </div>
+              <ImplementationDetailsTable filters={reportFilters} />
+              <EffectivenessEvaluationTable filters={reportFilters} />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="configuracoes" className="space-y-6 mt-6">

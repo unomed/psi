@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DateRange } from "react-day-picker";
+import { DateRange } from "@/types/date";
 
 interface RiskMatrixReportProps {
   filters: {

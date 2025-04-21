@@ -1,19 +1,7 @@
 
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRange } from "@/types/date";
 import { Badge } from "@/components/ui/badge";
-import { DateRange } from "react-day-picker";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 
 interface EffectivenessEvaluationTableProps {
   filters: {
@@ -25,102 +13,61 @@ interface EffectivenessEvaluationTableProps {
 }
 
 export function EffectivenessEvaluationTable({ filters }: EffectivenessEvaluationTableProps) {
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
   const evaluations = [
-    { 
-      id: "PS001", 
-      description: "Sobrecarga de trabalho no setor de atendimento",
-      sector: "Atendimento",
-      indicators: [
-        { name: "Afastamentos por estresse", before: "7%", after: "5%", variation: -2, trend: "down" },
-        { name: "Horas extras mensais", before: "16h", after: "10h", variation: -6, trend: "down" },
-        { name: "Turnover no setor", before: "23%", after: "18%", variation: -5, trend: "down" },
-        { name: "Satisfação (1-10)", before: "5,2", after: "6,8", variation: 1.6, trend: "up" }
-      ],
-      status: "Parcialmente controlado",
-      effectiveness: "Média"
+    {
+      riskId: "PS001",
+      description: "Sobrecarga de trabalho",
+      beforeRiskLevel: 8,
+      afterRiskLevel: 5,
+      targetRiskLevel: 3,
+      evaluatedAt: "15/06/2025",
+      effectiveness: "Média",
+      additionalActions: "Realizar ajustes na distribuição de tarefas",
+      status: "Em progresso"
     },
-    { 
-      id: "PS002", 
-      description: "Assédio moral na equipe comercial",
-      sector: "Comercial",
-      indicators: [
-        { name: "Conflitos reportados", before: "12", after: "4", variation: -8, trend: "down" },
-        { name: "Queixas formais", before: "5", after: "1", variation: -4, trend: "down" },
-        { name: "Clima organizacional", before: "6,1", after: "7,5", variation: 1.4, trend: "up" },
-        { name: "Turnover no setor", before: "25%", after: "18%", variation: -7, trend: "down" }
-      ],
-      status: "Bem controlado",
-      effectiveness: "Alta"
+    {
+      riskId: "PS002",
+      description: "Assédio moral",
+      beforeRiskLevel: 9,
+      afterRiskLevel: 4,
+      targetRiskLevel: 2,
+      evaluatedAt: "20/06/2025",
+      effectiveness: "Alta",
+      additionalActions: "Manter monitoramento regular",
+      status: "Em progresso"
     },
-    { 
-      id: "ER001", 
-      description: "Postura inadequada no setor administrativo",
-      sector: "Administrativo",
-      indicators: [
-        { name: "Queixas de dor", before: "65%", after: "40%", variation: -25, trend: "down" },
-        { name: "Afastamentos", before: "3", after: "1", variation: -2, trend: "down" },
-        { name: "Produtividade", before: "82%", after: "88%", variation: 6, trend: "up" }
-      ],
-      status: "Bem controlado",
-      effectiveness: "Alta"
+    {
+      riskId: "PS003",
+      description: "Baixa autonomia",
+      beforeRiskLevel: 7,
+      afterRiskLevel: 2,
+      targetRiskLevel: 2,
+      evaluatedAt: "01/06/2025",
+      effectiveness: "Alta",
+      additionalActions: "Nenhuma ação adicional necessária",
+      status: "Concluído"
     },
-    { 
-      id: "AC001", 
-      description: "Risco de queda na escada de acesso",
-      sector: "Produção",
-      indicators: [
-        { name: "Incidentes reportados", before: "3", after: "0", variation: -3, trend: "down" },
-        { name: "Quase-acidentes", before: "5", after: "1", variation: -4, trend: "down" },
-        { name: "Percepção de segurança", before: "5,8", after: "8,2", variation: 2.4, trend: "up" }
-      ],
-      status: "Totalmente controlado",
-      effectiveness: "Alta"
+    {
+      riskId: "PS004",
+      description: "Falta de reconhecimento",
+      beforeRiskLevel: 6,
+      afterRiskLevel: 3,
+      targetRiskLevel: 2,
+      evaluatedAt: "10/06/2025",
+      effectiveness: "Média",
+      additionalActions: "Implementar programa de reconhecimento",
+      status: "Em progresso"
     },
   ];
-  
-  const statusOptions = [
-    { value: "all", label: "Todos os status" },
-    { value: "Totalmente controlado", label: "Totalmente controlado" },
-    { value: "Bem controlado", label: "Bem controlado" },
-    { value: "Parcialmente controlado", label: "Parcialmente controlado" },
-    { value: "Não controlado", label: "Não controlado" },
-  ];
-  
-  const filteredEvaluations = evaluations.filter(evaluation => {
-    const matchesStatus = statusFilter === "all" || evaluation.status === statusFilter;
-    const matchesSearch = search === "" || 
-      evaluation.description.toLowerCase().includes(search.toLowerCase()) ||
-      evaluation.id.toLowerCase().includes(search.toLowerCase()) ||
-      evaluation.sector.toLowerCase().includes(search.toLowerCase());
-    
-    return matchesStatus && matchesSearch;
-  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Totalmente controlado":
-        return "success";
-      case "Bem controlado":
-        return "success";
-      case "Parcialmente controlado":
-        return "warning";
-      case "Não controlado":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getEffectivenessColor = (effectiveness: string) => {
+  // Função para determinar a cor do badge baseado na efetividade
+  const getEffectivenessBadgeVariant = (effectiveness: string) => {
     switch (effectiveness) {
       case "Alta":
         return "success";
       case "Média":
-        return "warning";
+        return "default";
       case "Baixa":
         return "destructive";
       default:
@@ -128,90 +75,78 @@ export function EffectivenessEvaluationTable({ filters }: EffectivenessEvaluatio
     }
   };
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case "up":
-        return <ArrowUp className="h-4 w-4 text-green-600" />;
-      case "down":
-        return <ArrowDown className="h-4 w-4 text-red-600" />;
+  // Função para determinar a cor do badge baseado no status
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "Concluído":
+        return "success";
+      case "Em progresso":
+        return "default";
+      case "Não iniciado":
+        return "secondary";
       default:
-        return <Minus className="h-4 w-4 text-gray-400" />;
+        return "secondary";
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Avaliação de Eficácia</CardTitle>
-          <div className="flex space-x-2">
-            <div className="w-[250px]">
-              <SearchableSelect
-                options={statusOptions}
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-                placeholder="Filtrar por status"
-              />
-            </div>
-            <div className="w-[250px]">
-              <Input
-                placeholder="Buscar avaliação..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
+        <CardTitle>Avaliação de Eficácia</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-8">
-          {filteredEvaluations.map((evaluation) => (
-            <div key={evaluation.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold">{evaluation.id}</span>
-                    <Badge variant={getStatusColor(evaluation.status) as any}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">Risco</th>
+                <th className="text-center p-2">Nível Anterior</th>
+                <th className="text-center p-2">Nível Atual</th>
+                <th className="text-center p-2">Meta</th>
+                <th className="text-left p-2">Data de Avaliação</th>
+                <th className="text-center p-2">Eficácia</th>
+                <th className="text-left p-2">Ações Adicionais</th>
+                <th className="text-center p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {evaluations.map((evaluation) => (
+                <tr key={evaluation.riskId} className="border-b">
+                  <td className="p-2">
+                    <div className="font-medium">{evaluation.riskId}</div>
+                    <div className="text-sm text-muted-foreground">{evaluation.description}</div>
+                  </td>
+                  <td className="text-center p-2">
+                    <span className="inline-block w-8 h-8 rounded-full bg-red-100 text-red-800 flex items-center justify-center font-bold">
+                      {evaluation.beforeRiskLevel}
+                    </span>
+                  </td>
+                  <td className="text-center p-2">
+                    <span className="inline-block w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                      {evaluation.afterRiskLevel}
+                    </span>
+                  </td>
+                  <td className="text-center p-2">
+                    <span className="inline-block w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold">
+                      {evaluation.targetRiskLevel}
+                    </span>
+                  </td>
+                  <td className="p-2">{evaluation.evaluatedAt}</td>
+                  <td className="text-center p-2">
+                    <Badge variant={getEffectivenessBadgeVariant(evaluation.effectiveness) as any}>
+                      {evaluation.effectiveness}
+                    </Badge>
+                  </td>
+                  <td className="p-2">{evaluation.additionalActions}</td>
+                  <td className="text-center p-2">
+                    <Badge variant={getStatusBadgeVariant(evaluation.status) as any}>
                       {evaluation.status}
                     </Badge>
-                    <Badge variant={getEffectivenessColor(evaluation.effectiveness) as any}>
-                      Eficácia {evaluation.effectiveness}
-                    </Badge>
-                  </div>
-                  <div className="text-lg font-medium mt-1">{evaluation.description}</div>
-                  <div className="text-sm text-muted-foreground">Setor: {evaluation.sector}</div>
-                </div>
-              </div>
-              
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Indicador</TableHead>
-                    <TableHead className="text-center">Antes</TableHead>
-                    <TableHead className="text-center">Depois</TableHead>
-                    <TableHead className="text-center">Variação</TableHead>
-                    <TableHead className="text-center">Tendência</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {evaluation.indicators.map((indicator, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{indicator.name}</TableCell>
-                      <TableCell className="text-center">{indicator.before}</TableCell>
-                      <TableCell className="text-center">{indicator.after}</TableCell>
-                      <TableCell className={`text-center ${indicator.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                        {indicator.variation > 0 ? '+' : ''}{indicator.variation}
-                        {typeof indicator.variation === 'number' && indicator.variation % 1 === 0 ? '' : '%'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {getTrendIcon(indicator.trend)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

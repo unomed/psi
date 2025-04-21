@@ -11,7 +11,7 @@ import {
   Tooltip, 
   Legend 
 } from "recharts";
-import { DateRange } from "react-day-picker";
+import { DateRange } from "@/types/date";
 
 interface RisksByCategoryProps {
   filters: {

@@ -1,18 +1,7 @@
 
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRange } from "@/types/date";
 import { Badge } from "@/components/ui/badge";
-import { DateRange } from "react-day-picker";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 
 interface ActionPlanTableProps {
   filters: {
@@ -24,45 +13,56 @@ interface ActionPlanTableProps {
 }
 
 export function ActionPlanTable({ filters }: ActionPlanTableProps) {
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
-  const actions = [
-    { id: "A001", risk: "PS001", description: "Implementar sistema de priorização de tarefas", responsible: "Maria Silva (RH)", deadline: "15/06/2025", status: "Não iniciada", priority: "Alta" },
-    { id: "A002", risk: "PS001", description: "Realizar reuniões semanais com equipe", responsible: "Carlos Mendes (Supervisor)", deadline: "01/06/2025", status: "Em andamento", priority: "Média" },
-    { id: "A003", risk: "PS001", description: "Implementar pausas obrigatórias no sistema", responsible: "Joana Lima (TI)", deadline: "30/06/2025", status: "Não iniciada", priority: "Alta" },
-    { id: "A004", risk: "PS002", description: "Treinamento sobre assédio moral", responsible: "Maria Silva (RH)", deadline: "20/05/2025", status: "Concluída", priority: "Alta" },
-    { id: "A005", risk: "ER001", description: "Ajustar ergonomia dos postos de trabalho", responsible: "João Pereira (SESMT)", deadline: "10/06/2025", status: "Em andamento", priority: "Média" },
-    { id: "A006", risk: "AC001", description: "Instalar fitas antiderrapantes na escada", responsible: "Carlos Santos (Segurança)", deadline: "05/05/2025", status: "Concluída", priority: "Alta" },
+  const actionPlans = [
+    {
+      riskId: "PS001",
+      riskDescription: "Sobrecarga de trabalho",
+      action: "Implementar sistema de priorização de tarefas",
+      responsible: "Maria Silva (RH)",
+      deadline: "15/06/2025",
+      status: "Não iniciada"
+    },
+    {
+      riskId: "PS001",
+      riskDescription: "Sobrecarga de trabalho",
+      action: "Realizar reuniões semanais com equipe",
+      responsible: "Carlos Mendes (Supervisor)",
+      deadline: "01/06/2025",
+      status: "Em andamento"
+    },
+    {
+      riskId: "PS001",
+      riskDescription: "Sobrecarga de trabalho",
+      action: "Implementar pausas obrigatórias no sistema",
+      responsible: "Joana Lima (TI)",
+      deadline: "30/06/2025",
+      status: "Não iniciada"
+    },
+    {
+      riskId: "PS002",
+      riskDescription: "Assédio moral",
+      action: "Treinamento de lideranças sobre assédio",
+      responsible: "Paulo Freitas (RH)",
+      deadline: "10/07/2025",
+      status: "Não iniciada"
+    },
+    {
+      riskId: "PS003",
+      riskDescription: "Falta de autonomia",
+      action: "Redesenho de processos de trabalho",
+      responsible: "Sandra Moura (Consultoria)",
+      deadline: "20/08/2025",
+      status: "Não iniciada"
+    },
   ];
-  
-  const statusOptions = [
-    { value: "all", label: "Todos os status" },
-    { value: "Não iniciada", label: "Não iniciada" },
-    { value: "Em andamento", label: "Em andamento" },
-    { value: "Concluída", label: "Concluída" },
-    { value: "Atrasada", label: "Atrasada" },
-    { value: "Cancelada", label: "Cancelada" },
-  ];
-  
-  const filteredActions = actions.filter(action => {
-    const matchesStatus = statusFilter === "all" || action.status === statusFilter;
-    const matchesSearch = search === "" || 
-      action.description.toLowerCase().includes(search.toLowerCase()) ||
-      action.id.toLowerCase().includes(search.toLowerCase()) ||
-      action.responsible.toLowerCase().includes(search.toLowerCase()) ||
-      action.risk.toLowerCase().includes(search.toLowerCase());
-    
-    return matchesStatus && matchesSearch;
-  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Concluída":
         return "success";
       case "Em andamento":
-        return "warning";
+        return "default";
       case "Não iniciada":
         return "secondary";
       case "Atrasada":
@@ -70,82 +70,47 @@ export function ActionPlanTable({ filters }: ActionPlanTableProps) {
       case "Cancelada":
         return "outline";
       default:
-        return "secondary";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Alta":
-        return "destructive";
-      case "Média":
-        return "warning";
-      case "Baixa":
-        return "secondary";
-      default:
-        return "secondary";
+        return "default";
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Plano de Ação</CardTitle>
-          <div className="flex space-x-2">
-            <div className="w-[200px]">
-              <SearchableSelect
-                options={statusOptions}
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-                placeholder="Filtrar por status"
-              />
-            </div>
-            <div className="w-[250px]">
-              <Input
-                placeholder="Buscar ação..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
+        <CardTitle>Planos de Ação</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Risco</TableHead>
-              <TableHead>Ação</TableHead>
-              <TableHead>Responsável</TableHead>
-              <TableHead>Prazo</TableHead>
-              <TableHead>Prioridade</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredActions.map((action) => (
-              <TableRow key={action.id}>
-                <TableCell className="font-medium">{action.id}</TableCell>
-                <TableCell>{action.risk}</TableCell>
-                <TableCell>{action.description}</TableCell>
-                <TableCell>{action.responsible}</TableCell>
-                <TableCell>{action.deadline}</TableCell>
-                <TableCell>
-                  <Badge variant={getPriorityColor(action.priority) as any}>
-                    {action.priority}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getStatusColor(action.status) as any}>
-                    {action.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">Risco</th>
+                <th className="text-left p-2">Ação</th>
+                <th className="text-left p-2">Responsável</th>
+                <th className="text-left p-2">Prazo</th>
+                <th className="text-left p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {actionPlans.map((plan, index) => (
+                <tr key={index} className="border-b">
+                  <td className="p-2">
+                    <div className="font-medium">{plan.riskId}</div>
+                    <div className="text-sm text-muted-foreground">{plan.riskDescription}</div>
+                  </td>
+                  <td className="p-2">{plan.action}</td>
+                  <td className="p-2">{plan.responsible}</td>
+                  <td className="p-2">{plan.deadline}</td>
+                  <td className="p-2">
+                    <Badge variant={getStatusColor(plan.status) as any}>
+                      {plan.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );

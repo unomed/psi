@@ -2,10 +2,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DateRange } from "react-day-picker";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Dispatch, SetStateAction } from "react";
 import { CompanyAccess } from "@/hooks/useUserRole";
+import { DateRange } from "@/types/date";
 
 interface ReportFiltersProps {
   dateRange: DateRange;

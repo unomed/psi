@@ -11,7 +11,7 @@ import {
   Legend,
   ReferenceLine
 } from "recharts";
-import { DateRange } from "react-day-picker";
+import { DateRange } from "@/types/date";
 
 interface RiskReductionTrendsProps {
   filters: {
@@ -48,13 +48,18 @@ export function RiskReductionTrends({ filters }: RiskReductionTrendsProps) {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis domain={[0, 10]} />
-              <Tooltip formatter={(value, name) => [value, `Risco ${name.toUpperCase()}`]} />
+              <Tooltip formatter={(value, name) => {
+                if (typeof name === 'string') {
+                  return [value, `Risco ${name}`]
+                }
+                return [value, `Risco`]
+              }} />
               <Legend />
               <ReferenceLine y={3} stroke="green" strokeDasharray="3 3" label={{ value: 'Meta', position: 'right' }} />
-              <Line type="monotone" dataKey="ps001" name="ps001" stroke="#8884d8" strokeWidth={2} />
-              <Line type="monotone" dataKey="ps002" name="ps002" stroke="#82ca9d" strokeWidth={2} />
-              <Line type="monotone" dataKey="er001" name="er001" stroke="#ff7300" strokeWidth={2} />
-              <Line type="monotone" dataKey="ac001" name="ac001" stroke="#0088FE" strokeWidth={2} />
+              <Line type="monotone" dataKey="ps001" name="PS001" stroke="#8884d8" strokeWidth={2} />
+              <Line type="monotone" dataKey="ps002" name="PS002" stroke="#82ca9d" strokeWidth={2} />
+              <Line type="monotone" dataKey="er001" name="ER001" stroke="#ff7300" strokeWidth={2} />
+              <Line type="monotone" dataKey="ac001" name="AC001" stroke="#0088FE" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>

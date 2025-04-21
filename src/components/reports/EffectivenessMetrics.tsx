@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DateRange } from "react-day-picker";
+import { DateRange } from "@/types/date";
 
 interface EffectivenessMetricsProps {
   filters: {
@@ -15,71 +15,69 @@ interface EffectivenessMetricsProps {
 export function EffectivenessMetrics({ filters }: EffectivenessMetricsProps) {
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
   const metrics = [
-    { 
-      id: "PS001", 
-      description: "Sobrecarga de trabalho no setor de atendimento",
-      before: 8,
-      after: 6,
-      target: 4,
+    {
+      riskId: "PS001",
+      description: "Sobrecarga de trabalho",
+      beforeRiskLevel: 8,
+      currentRiskLevel: 5,
+      targetRiskLevel: 3,
+      effectiveness: "Média",
       status: "Em progresso",
-      controlStatus: "Parcialmente controlado"
     },
-    { 
-      id: "PS002", 
-      description: "Assédio moral na equipe comercial",
-      before: 9,
-      after: 5,
-      target: 3,
-      status: "Satisfatório",
-      controlStatus: "Bem controlado"
+    {
+      riskId: "PS002",
+      description: "Assédio moral",
+      beforeRiskLevel: 9,
+      currentRiskLevel: 4,
+      targetRiskLevel: 2,
+      effectiveness: "Alta",
+      status: "Em progresso",
     },
-    { 
-      id: "ER001", 
-      description: "Postura inadequada no setor administrativo",
-      before: 6,
-      after: 4,
-      target: 3,
-      status: "Satisfatório",
-      controlStatus: "Bem controlado"
+    {
+      riskId: "PS003",
+      description: "Baixa autonomia",
+      beforeRiskLevel: 7,
+      currentRiskLevel: 2,
+      targetRiskLevel: 2,
+      effectiveness: "Alta",
+      status: "Concluído",
     },
-    { 
-      id: "AC001", 
-      description: "Risco de queda na escada de acesso",
-      before: 8,
-      after: 3,
-      target: 2,
-      status: "Excelente",
-      controlStatus: "Totalmente controlado"
+    {
+      riskId: "PS004",
+      description: "Falta de reconhecimento",
+      beforeRiskLevel: 6,
+      currentRiskLevel: 3,
+      targetRiskLevel: 2,
+      effectiveness: "Média",
+      status: "Em progresso",
     },
   ];
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Excelente":
-        return <Badge variant="success">{status}</Badge>;
-      case "Satisfatório":
-        return <Badge variant="success">{status}</Badge>;
-      case "Em progresso":
-        return <Badge variant="warning">{status}</Badge>;
-      case "Insatisfatório":
-        return <Badge variant="destructive">{status}</Badge>;
+  // Função para determinar a cor do badge baseado na efetividade
+  const getEffectivenessBadgeVariant = (effectiveness: string) => {
+    switch (effectiveness) {
+      case "Alta":
+        return "success";
+      case "Média":
+        return "default";
+      case "Baixa":
+        return "destructive";
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return "secondary";
     }
   };
 
-  const getControlStatusBadge = (status: string) => {
+  // Função para determinar a cor do badge baseado no status
+  const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case "Totalmente controlado":
-        return <Badge variant="success">{status}</Badge>;
-      case "Bem controlado":
-        return <Badge variant="success">{status}</Badge>;
-      case "Parcialmente controlado":
-        return <Badge variant="warning">{status}</Badge>;
-      case "Não controlado":
-        return <Badge variant="destructive">{status}</Badge>;
+      case "Concluído":
+        return "success";
+      case "Em progresso":
+        return "default";
+      case "Atrasado":
+        return "destructive";
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return "secondary";
     }
   };
 
@@ -89,45 +87,54 @@ export function EffectivenessMetrics({ filters }: EffectivenessMetricsProps) {
         <CardTitle>Métricas de Eficácia</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {metrics.map((metric) => (
-            <div key={metric.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <div className="font-bold">{metric.id}</div>
-                  <div className="text-sm">{metric.description}</div>
-                </div>
-                <div className="flex space-x-2">
-                  {getStatusBadge(metric.status)}
-                  {getControlStatusBadge(metric.controlStatus)}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <div className="p-2 border rounded bg-amber-50">
-                  <div className="text-center">
-                    <div className="text-sm text-amber-600 font-semibold">Antes</div>
-                    <div className="text-xl font-bold">{metric.before}</div>
-                    <div className="text-xs text-muted-foreground">Nível de Risco</div>
-                  </div>
-                </div>
-                <div className="p-2 border rounded bg-blue-50">
-                  <div className="text-center">
-                    <div className="text-sm text-blue-600 font-semibold">Atual</div>
-                    <div className="text-xl font-bold">{metric.after}</div>
-                    <div className="text-xs text-muted-foreground">Nível de Risco</div>
-                  </div>
-                </div>
-                <div className="p-2 border rounded bg-green-50">
-                  <div className="text-center">
-                    <div className="text-sm text-green-600 font-semibold">Meta</div>
-                    <div className="text-xl font-bold">{metric.target}</div>
-                    <div className="text-xs text-muted-foreground">Nível de Risco</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="space-y-4">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">Risco</th>
+                <th className="text-center p-2">Nível Anterior</th>
+                <th className="text-center p-2">Nível Atual</th>
+                <th className="text-center p-2">Meta</th>
+                <th className="text-center p-2">Eficácia</th>
+                <th className="text-center p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.map((metric) => (
+                <tr key={metric.riskId} className="border-b">
+                  <td className="p-2">
+                    <div className="font-medium">{metric.riskId}</div>
+                    <div className="text-sm text-muted-foreground">{metric.description}</div>
+                  </td>
+                  <td className="text-center p-2">
+                    <span className="inline-block w-8 h-8 rounded-full bg-red-100 text-red-800 flex items-center justify-center font-bold">
+                      {metric.beforeRiskLevel}
+                    </span>
+                  </td>
+                  <td className="text-center p-2">
+                    <span className="inline-block w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                      {metric.currentRiskLevel}
+                    </span>
+                  </td>
+                  <td className="text-center p-2">
+                    <span className="inline-block w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold">
+                      {metric.targetRiskLevel}
+                    </span>
+                  </td>
+                  <td className="text-center p-2">
+                    <Badge variant={getEffectivenessBadgeVariant(metric.effectiveness)}>
+                      {metric.effectiveness}
+                    </Badge>
+                  </td>
+                  <td className="text-center p-2">
+                    <Badge variant={getStatusBadgeVariant(metric.status)}>
+                      {metric.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

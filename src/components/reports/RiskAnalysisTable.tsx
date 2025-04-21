@@ -1,18 +1,7 @@
 
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRange } from "@/types/date";
 import { Badge } from "@/components/ui/badge";
-import { DateRange } from "react-day-picker";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 
 interface RiskAnalysisTableProps {
   filters: {
@@ -24,107 +13,104 @@ interface RiskAnalysisTableProps {
 }
 
 export function RiskAnalysisTable({ filters }: RiskAnalysisTableProps) {
-  const [riskLevelFilter, setRiskLevelFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
-  const risks = [
-    { id: "PS001", description: "Sobrecarga de trabalho no setor de atendimento", sector: "Atendimento", severity: "Alta", probability: "Média", riskLevel: "Alto", value: 9 },
-    { id: "PS002", description: "Assédio moral na equipe comercial", sector: "Comercial", severity: "Alta", probability: "Alta", riskLevel: "Crítico", value: 12 },
-    { id: "ER001", description: "Postura inadequada no setor administrativo", sector: "Administrativo", severity: "Baixa", probability: "Alta", riskLevel: "Médio", value: 6 },
-    { id: "AC001", description: "Risco de queda na escada de acesso", sector: "Produção", severity: "Alta", probability: "Baixa", riskLevel: "Médio", value: 6 },
-    { id: "QM001", description: "Exposição a solventes no laboratório", sector: "Laboratório", severity: "Média", probability: "Média", riskLevel: "Médio", value: 6 },
-    { id: "PS003", description: "Falta de autonomia na equipe de desenvolvimento", sector: "TI", severity: "Baixa", probability: "Baixa", riskLevel: "Baixo", value: 2 },
+  const analysisData = [
+    {
+      id: "PS001",
+      description: "Sobrecarga de trabalho",
+      severity: "Alta",
+      probability: "Média",
+      riskLevel: 9,
+      consequences: "Estresse, burnout, afastamentos",
+      controlStrategy: "Mitigar"
+    },
+    {
+      id: "PS002",
+      description: "Assédio moral",
+      severity: "Alta",
+      probability: "Média",
+      riskLevel: 9,
+      consequences: "Ansiedade, depressão, turnover",
+      controlStrategy: "Evitar"
+    },
+    {
+      id: "PS003",
+      description: "Falta de autonomia",
+      severity: "Média",
+      probability: "Alta",
+      riskLevel: 6,
+      consequences: "Desmotivação, turnover",
+      controlStrategy: "Mitigar"
+    },
+    {
+      id: "PS004",
+      description: "Falta de reconhecimento",
+      severity: "Média",
+      probability: "Média",
+      riskLevel: 4,
+      consequences: "Desmotivação, baixa produtividade",
+      controlStrategy: "Mitigar"
+    },
+    {
+      id: "PS005",
+      description: "Conflitos interpessoais",
+      severity: "Média",
+      probability: "Baixa",
+      riskLevel: 2,
+      consequences: "Clima organizacional ruim",
+      controlStrategy: "Reter"
+    },
   ];
-  
-  const riskLevelOptions = [
-    { value: "all", label: "Todos os níveis" },
-    { value: "Crítico", label: "Crítico" },
-    { value: "Alto", label: "Alto" },
-    { value: "Médio", label: "Médio" },
-    { value: "Baixo", label: "Baixo" },
-  ];
-  
-  const filteredRisks = risks.filter(risk => {
-    const matchesLevel = riskLevelFilter === "all" || risk.riskLevel === riskLevelFilter;
-    const matchesSearch = search === "" || 
-      risk.description.toLowerCase().includes(search.toLowerCase()) ||
-      risk.id.toLowerCase().includes(search.toLowerCase()) ||
-      risk.sector.toLowerCase().includes(search.toLowerCase());
-    
-    return matchesLevel && matchesSearch;
-  });
 
-  const getRiskLevelColor = (level: string) => {
-    switch (level) {
-      case "Crítico":
-        return "destructive";
-      case "Alto":
-        return "destructive";
-      case "Médio":
-        return "warning";
-      case "Baixo":
-        return "success";
-      default:
-        return "secondary";
-    }
+  const getRiskLevelClass = (level: number) => {
+    if (level >= 8) return "bg-red-100 text-red-800";
+    if (level >= 4) return "bg-amber-100 text-amber-800";
+    return "bg-green-100 text-green-800";
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Análise de Riscos</CardTitle>
-          <div className="flex space-x-2">
-            <div className="w-[200px]">
-              <SearchableSelect
-                options={riskLevelOptions}
-                value={riskLevelFilter}
-                onValueChange={setRiskLevelFilter}
-                placeholder="Filtrar por nível"
-              />
-            </div>
-            <div className="w-[250px]">
-              <Input
-                placeholder="Buscar risco..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
+        <CardTitle>Análise de Riscos</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead>Setor</TableHead>
-              <TableHead>Severidade</TableHead>
-              <TableHead>Probabilidade</TableHead>
-              <TableHead>Nível de Risco</TableHead>
-              <TableHead>Valor</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredRisks.map((risk) => (
-              <TableRow key={risk.id}>
-                <TableCell className="font-medium">{risk.id}</TableCell>
-                <TableCell>{risk.description}</TableCell>
-                <TableCell>{risk.sector}</TableCell>
-                <TableCell>{risk.severity}</TableCell>
-                <TableCell>{risk.probability}</TableCell>
-                <TableCell>
-                  <Badge variant={getRiskLevelColor(risk.riskLevel) as any}>
-                    {risk.riskLevel}
-                  </Badge>
-                </TableCell>
-                <TableCell className="font-bold">{risk.value}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">ID</th>
+                <th className="text-left p-2">Descrição</th>
+                <th className="text-center p-2">Severidade</th>
+                <th className="text-center p-2">Probabilidade</th>
+                <th className="text-center p-2">Nível</th>
+                <th className="text-left p-2">Consequências</th>
+                <th className="text-center p-2">Estratégia</th>
+              </tr>
+            </thead>
+            <tbody>
+              {analysisData.map((item) => (
+                <tr key={item.id} className="border-b">
+                  <td className="p-2">{item.id}</td>
+                  <td className="p-2">{item.description}</td>
+                  <td className="p-2 text-center">{item.severity}</td>
+                  <td className="p-2 text-center">{item.probability}</td>
+                  <td className="p-2 text-center">
+                    <span className={`inline-block w-8 h-8 rounded-full ${getRiskLevelClass(item.riskLevel)} flex items-center justify-center font-bold`}>
+                      {item.riskLevel}
+                    </span>
+                  </td>
+                  <td className="p-2">{item.consequences}</td>
+                  <td className="p-2 text-center">
+                    <Badge variant={item.controlStrategy === "Evitar" ? "destructive" : 
+                           item.controlStrategy === "Mitigar" ? "default" : "outline"}>
+                      {item.controlStrategy}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );

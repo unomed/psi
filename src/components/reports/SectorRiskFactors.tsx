@@ -10,7 +10,7 @@ import {
   Legend,
   CartesianGrid
 } from "recharts";
-import { DateRange } from "react-day-picker";
+import { DateRange } from "@/types/date";
 
 interface SectorRiskFactorsProps {
   filters: {

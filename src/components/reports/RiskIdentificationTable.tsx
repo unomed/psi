@@ -1,18 +1,7 @@
 
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRange } from "@/types/date";
 import { Badge } from "@/components/ui/badge";
-import { DateRange } from "react-day-picker";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
 
 interface RiskIdentificationTableProps {
   filters: {
@@ -24,92 +13,110 @@ interface RiskIdentificationTableProps {
 }
 
 export function RiskIdentificationTable({ filters }: RiskIdentificationTableProps) {
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  
   // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
   const risks = [
-    { id: "PS001", type: "Psicossocial", description: "Sobrecarga de trabalho no setor de atendimento", sector: "Atendimento", date: "15/03/2025", category: "Sobrecarga" },
-    { id: "PS002", type: "Psicossocial", description: "Assédio moral na equipe comercial", sector: "Comercial", date: "20/03/2025", category: "Assédio" },
-    { id: "ER001", type: "Ergonômico", description: "Postura inadequada no setor administrativo", sector: "Administrativo", date: "10/03/2025", category: "Postura" },
-    { id: "AC001", type: "Acidente", description: "Risco de queda na escada de acesso", sector: "Produção", date: "05/03/2025", category: "Queda" },
-    { id: "QM001", type: "Químico", description: "Exposição a solventes no laboratório", sector: "Laboratório", date: "01/03/2025", category: "Solventes" },
-    { id: "PS003", type: "Psicossocial", description: "Falta de autonomia na equipe de desenvolvimento", sector: "TI", date: "12/03/2025", category: "Autonomia" },
+    {
+      id: "PS001",
+      description: "Sobrecarga de trabalho",
+      type: "Psicossocial",
+      sector: "Atendimento",
+      role: "Atendente",
+      identifiedAt: "12/01/2025",
+      status: "Em análise"
+    },
+    {
+      id: "PS002",
+      description: "Assédio moral",
+      type: "Psicossocial",
+      sector: "Administrativo",
+      role: "Assistente",
+      identifiedAt: "15/01/2025",
+      status: "Em análise"
+    },
+    {
+      id: "FI001",
+      description: "Ruído excessivo",
+      type: "Físico",
+      sector: "Produção",
+      role: "Operador",
+      identifiedAt: "20/01/2025",
+      status: "Em análise"
+    },
+    {
+      id: "ER001",
+      description: "Postura inadequada",
+      type: "Ergonômico",
+      sector: "TI",
+      role: "Analista",
+      identifiedAt: "25/01/2025",
+      status: "Em análise"
+    },
+    {
+      id: "PS003",
+      description: "Falta de autonomia",
+      type: "Psicossocial",
+      sector: "Comercial",
+      role: "Vendedor",
+      identifiedAt: "01/02/2025",
+      status: "Em análise"
+    },
   ];
-  
-  const typeOptions = [
-    { value: "all", label: "Todos os tipos" },
-    { value: "Psicossocial", label: "Psicossocial" },
-    { value: "Ergonômico", label: "Ergonômico" },
-    { value: "Acidente", label: "Acidente" },
-    { value: "Químico", label: "Químico" },
-    { value: "Físico", label: "Físico" },
-    { value: "Biológico", label: "Biológico" },
-  ];
-  
-  const filteredRisks = risks.filter(risk => {
-    const matchesType = typeFilter === "all" || risk.type === typeFilter;
-    const matchesSearch = search === "" || 
-      risk.description.toLowerCase().includes(search.toLowerCase()) ||
-      risk.id.toLowerCase().includes(search.toLowerCase()) ||
-      risk.sector.toLowerCase().includes(search.toLowerCase());
-    
-    return matchesType && matchesSearch;
-  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Identificado":
+        return "default";
+      case "Em análise":
+        return "secondary";
+      case "Planejado":
+        return "outline";
+      case "Em implementação":
+        return "default";
+      case "Controlado":
+        return "success";
+      default:
+        return "default";
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Riscos Identificados</CardTitle>
-          <div className="flex space-x-2">
-            <div className="w-[200px]">
-              <SearchableSelect
-                options={typeOptions}
-                value={typeFilter}
-                onValueChange={setTypeFilter}
-                placeholder="Filtrar por tipo"
-              />
-            </div>
-            <div className="w-[250px]">
-              <Input
-                placeholder="Buscar risco..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
+        <CardTitle>Riscos Identificados</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Setor</TableHead>
-              <TableHead>Data</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredRisks.map((risk) => (
-              <TableRow key={risk.id}>
-                <TableCell className="font-medium">{risk.id}</TableCell>
-                <TableCell>
-                  <Badge variant={risk.type === "Psicossocial" ? "destructive" : "secondary"}>
-                    {risk.type}
-                  </Badge>
-                </TableCell>
-                <TableCell>{risk.description}</TableCell>
-                <TableCell>{risk.category}</TableCell>
-                <TableCell>{risk.sector}</TableCell>
-                <TableCell>{risk.date}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-2">ID</th>
+                <th className="text-left p-2">Descrição</th>
+                <th className="text-left p-2">Tipo</th>
+                <th className="text-left p-2">Setor</th>
+                <th className="text-left p-2">Função</th>
+                <th className="text-left p-2">Data de Identificação</th>
+                <th className="text-left p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {risks.map((risk) => (
+                <tr key={risk.id} className="border-b">
+                  <td className="p-2">{risk.id}</td>
+                  <td className="p-2">{risk.description}</td>
+                  <td className="p-2">{risk.type}</td>
+                  <td className="p-2">{risk.sector}</td>
+                  <td className="p-2">{risk.role}</td>
+                  <td className="p-2">{risk.identifiedAt}</td>
+                  <td className="p-2">
+                    <Badge variant={getStatusColor(risk.status) as any}>
+                      {risk.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );
