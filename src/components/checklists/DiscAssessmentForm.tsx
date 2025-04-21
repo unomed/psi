@@ -67,7 +67,7 @@ export function DiscAssessmentForm({
       // Calculate weighted scores for each factor
       template.questions.forEach(question => {
         // Only process if it's a DISC question
-        if (template.type === "disc") {
+        if (template.type === "disc" && 'targetFactor' in question && 'weight' in question) {
           const discQuestion = question as DiscQuestion;
           const response = responses[question.id] || 0;
           if (discQuestion.targetFactor && discQuestion.weight) {

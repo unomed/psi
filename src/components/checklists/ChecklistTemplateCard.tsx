@@ -23,13 +23,13 @@ export function ChecklistTemplateCard({
   
   // Only calculate DISC factors if it's a DISC type template
   const dFactorCount = template.type === "disc" ? 
-    template.questions.filter(q => (q as DiscQuestion).targetFactor === "D").length : 0;
+    template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "D").length : 0;
   const iFactorCount = template.type === "disc" ? 
-    template.questions.filter(q => (q as DiscQuestion).targetFactor === "I").length : 0;
+    template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "I").length : 0;
   const sFactorCount = template.type === "disc" ? 
-    template.questions.filter(q => (q as DiscQuestion).targetFactor === "S").length : 0;
+    template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "S").length : 0;
   const cFactorCount = template.type === "disc" ? 
-    template.questions.filter(q => (q as DiscQuestion).targetFactor === "C").length : 0;
+    template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "C").length : 0;
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -58,9 +58,15 @@ export function ChecklistTemplateCard({
         )}
         {template.type === "psicossocial" && (
           <div className="text-sm">
-            <span>Categorias: {Array.from(new Set(template.questions.map(q => 
-              template.type === "psicossocial" ? (q as PsicossocialQuestion).category : ""
-            )).filter(Boolean)).length}</span>
+            <span>Categorias: {
+              Array.from(
+                new Set(
+                  template.questions
+                    .filter(q => 'category' in q)
+                    .map(q => (q as PsicossocialQuestion).category)
+                )
+              ).length
+            }</span>
             <span className="ml-3">Perguntas: {template.questions.length}</span>
           </div>
         )}
