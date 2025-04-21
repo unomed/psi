@@ -49,6 +49,17 @@ interface ChecklistTemplateFormProps {
   isEditing?: boolean;
 }
 
+const psicoScaleType = [
+  { value: "psicossocial", label: "Psicossocial (1-Nunca/Quase nunca ... 5-Sempre/Quase sempre)" },
+];
+
+const scaleTypeOptions = [
+  { value: "binary", label: "Sim/Não" },
+  { value: "likert", label: "Likert (1-5)" },
+  { value: "numeric", label: "Numérico" },
+  ...psicoScaleType
+];
+
 export function ChecklistTemplateForm({ 
   defaultValues, 
   onSubmit, 
@@ -58,7 +69,13 @@ export function ChecklistTemplateForm({
 }: ChecklistTemplateFormProps) {
   const { hasRole } = useAuth();
   const [canEditStandard, setCanEditStandard] = useState(false);
-  
+  const [method, setMethod] = useState<string>(
+    defaultValues?.type || existingTemplate?.type || 'disc'
+  );
+  const [selectedScale, setSelectedScale] = useState<string>(
+    defaultValues?.scaleType || existingTemplate?.scaleType || (defaultValues?.type === "custom" ? "psicossocial" : "binary")
+  );
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,6 +96,17 @@ export function ChecklistTemplateForm({
     checkPermissions();
   }, [hasRole]);
   
+  useEffect(() => {
+    if (method === "custom") {
+      setSelectedScale("psicossocial");
+      form.setValue("scaleType", "psicossocial");
+    } else {
+      setSelectedScale("binary");
+      form.setValue("scaleType", "binary");
+    }
+    // eslint-disable-next-line
+  }, [method]);
+
   const handleSubmit = async (data: FormValues) => {
     try {
       if ((existingTemplate?.is_standard || defaultValues?.is_standard) && !canEditStandard) {
@@ -92,7 +120,11 @@ export function ChecklistTemplateForm({
         return;
       }
       
-      onSubmit(data);
+      onSubmit({
+        ...data,
+        type: method,
+        scaleType: selectedScale,
+      });
       
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -139,50 +171,47 @@ export function ChecklistTemplateForm({
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="disc">DISC</SelectItem>
-                    <SelectItem value="custom">Personalizado</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Tipo</FormLabel>
+            <Select value={method} onValueChange={(val) => setMethod(val)}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="disc">DISC</SelectItem>
+                <SelectItem value="custom">Personalizado/Psicossocial</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
 
-          <FormField
-            control={form.control}
-            name="scaleType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Escala</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a escala" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="binary">Sim/Não</SelectItem>
-                    <SelectItem value="likert">Likert (1-5)</SelectItem>
-                    <SelectItem value="numeric">Numérico</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormItem>
+            <FormLabel>Escala</FormLabel>
+            <Select value={selectedScale} onValueChange={(val) => {
+              setSelectedScale(val);
+              form.setValue("scaleType", val);
+            }}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a escala" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {method === "custom" ? (
+                  psicoScaleType.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))
+                ) : (
+                  scaleTypeOptions.filter(opt => opt.value !== "psicossocial").map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
         </div>
 
         <FormField
