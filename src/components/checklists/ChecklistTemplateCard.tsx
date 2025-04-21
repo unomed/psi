@@ -31,6 +31,16 @@ export function ChecklistTemplateCard({
   const cFactorCount = template.type === "disc" ? 
     template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "C").length : 0;
 
+  // Para templates psicossociais, contar categorias
+  const psicossocialCategories = template.type === "psicossocial" ?
+    Array.from(
+      new Set(
+        template.questions
+          .filter(q => 'category' in q)
+          .map(q => (q as PsicossocialQuestion).category)
+      )
+    ) : [];
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -58,15 +68,7 @@ export function ChecklistTemplateCard({
         )}
         {template.type === "psicossocial" && (
           <div className="text-sm">
-            <span>Categorias: {
-              Array.from(
-                new Set(
-                  template.questions
-                    .filter(q => 'category' in q)
-                    .map(q => (q as PsicossocialQuestion).category)
-                )
-              ).length
-            }</span>
+            <span>Categorias: {psicossocialCategories.length}</span>
             <span className="ml-3">Perguntas: {template.questions.length}</span>
           </div>
         )}

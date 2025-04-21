@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   ChecklistTemplate, 
   ChecklistResult, 
-  DiscFactorType 
+  DiscFactorType,
+  PsicossocialQuestion
 } from "@/types";
 import { QuestionStep } from "./assessment/QuestionStep";
 import { CompletionStep } from "./assessment/CompletionStep";
@@ -67,7 +68,7 @@ export function DiscAssessmentForm({
       // Calculate weighted scores for each factor
       template.questions.forEach(question => {
         // Only process if it's a DISC question
-        if (template.type === "disc" && 'targetFactor' in question && 'weight' in question) {
+        if ('targetFactor' in question && 'weight' in question) {
           const discQuestion = question as DiscQuestion;
           const response = responses[question.id] || 0;
           if (discQuestion.targetFactor && discQuestion.weight) {
@@ -100,13 +101,61 @@ export function DiscAssessmentForm({
         results: factorScores,
         dominantFactor
       };
-    } else {
-      // For non-DISC templates, return a simpler result structure
+    } else if (template.type === "psicossocial") {
+      // Para questionários psicossociais, calcular por categoria
+      const categorizedResults: Record<string, number> = {};
+      const categoryCount: Record<string, number> = {};
+      
+      template.questions.forEach(question => {
+        if ('category' in question) {
+          const psicossocialQuestion = question as PsicossocialQuestion;
+          const response = responses[question.id] || 0;
+          const category = psicossocialQuestion.category;
+          
+          if (!categorizedResults[category]) {
+            categorizedResults[category] = 0;
+            categoryCount[category] = 0;
+          }
+          
+          categorizedResults[category] += response;
+          categoryCount[category]++;
+        }
+      });
+      
+      // Calcular média por categoria
+      Object.keys(categorizedResults).forEach(category => {
+        if (categoryCount[category] > 0) {
+          categorizedResults[category] = Math.round(categorizedResults[category] / categoryCount[category] * 100) / 100;
+        }
+      });
+      
+      // Encontrar categoria dominante
+      let dominantCategory = "";
+      let highestScore = 0;
+      
+      Object.keys(categorizedResults).forEach(category => {
+        if (categorizedResults[category] > highestScore) {
+          dominantCategory = category;
+          highestScore = categorizedResults[category];
+        }
+      });
+      
       return {
         templateId: template.id,
         employeeName: employeeName.trim() || "Anônimo",
-        results: { D: 0, I: 0, S: 0, C: 0 },
-        dominantFactor: DiscFactorType.D
+        results: categorizedResults,
+        dominantFactor: dominantCategory || "Indefinido",
+        categorizedResults
+      };
+    } else {
+      // Para questionários personalizados
+      const totalScore = Object.values(responses).reduce((sum, value) => sum + value, 0);
+      
+      return {
+        templateId: template.id,
+        employeeName: employeeName.trim() || "Anônimo",
+        results: { totalScore },
+        dominantFactor: "Personalizado"
       };
     }
   };
@@ -116,6 +165,20 @@ export function DiscAssessmentForm({
     onSubmit(result);
   };
 
+  // Adaptar a questão para o formato necessário pelo QuestionStep
+  const adaptQuestionForDisplay = (question: ChecklistQuestion) => {
+    if ('targetFactor' in question) {
+      return question as DiscQuestion;
+    } else {
+      // Converter pergunta psicossocial para formato compatível com o QuestionStep
+      return {
+        ...question,
+        targetFactor: DiscFactorType.D, // valor padrão
+        weight: 1
+      } as DiscQuestion;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -123,7 +186,7 @@ export function DiscAssessmentForm({
           {!isLastQuestion ? (
             currentQuestion && (
               <QuestionStep
-                question={'targetFactor' in currentQuestion ? currentQuestion as DiscQuestion : { ...currentQuestion, targetFactor: DiscFactorType.D, weight: 1 } as DiscQuestion}
+                question={adaptQuestionForDisplay(currentQuestion)}
                 currentStep={currentStep}
                 totalSteps={template.questions.length}
                 selectedValue={responses[currentQuestion.id]?.toString()}

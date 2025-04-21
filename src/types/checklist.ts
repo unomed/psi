@@ -7,6 +7,7 @@ export interface PsicossocialQuestion {
   id: string;
   text: string;
   category: string;
+  weight?: number;
 }
 
 export type ChecklistTemplateType = "disc" | "custom" | "psicossocial";
@@ -38,8 +39,9 @@ export interface ChecklistResult {
     I: number;
     S: number;
     C: number;
-  };
-  dominantFactor: DiscFactorType;
+  } | Record<string, number>; // Adicionando suporte para resultados categorizados
+  dominantFactor: DiscFactorType | string; // Pode ser um fator DISC ou categoria psicossocial
+  categorizedResults?: Record<string, number>; // Resultados agrupados por categoria
   completedAt: Date;
 }
 
