@@ -23,6 +23,30 @@ export function DiscResultSummary({ result, onDownload }: DiscResultSummaryProps
     [DiscFactorType.C]: Math.round((result.results.C / totalPoints) * 100) || 0
   };
 
+  // Helper function to safely get color based on factor
+  const getSafeFactorColor = (factor: string | DiscFactorType) => {
+    // Check if the factor is a valid DiscFactorType
+    if (factor === DiscFactorType.D || 
+        factor === DiscFactorType.I || 
+        factor === DiscFactorType.S || 
+        factor === DiscFactorType.C) {
+      return getFactorColor(factor as DiscFactorType);
+    }
+    // For non-DISC factors (like from psicossocial assessments), return a default color
+    return "text-gray-700";
+  };
+
+  // Helper function to safely get factor name
+  const getSafeFactorName = (factor: string | DiscFactorType) => {
+    if (factor === DiscFactorType.D || 
+        factor === DiscFactorType.I || 
+        factor === DiscFactorType.S || 
+        factor === DiscFactorType.C) {
+      return discFactors[factor as DiscFactorType]?.name || factor;
+    }
+    return factor; // Return the category name for non-DISC factors
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -38,8 +62,8 @@ export function DiscResultSummary({ result, onDownload }: DiscResultSummaryProps
         <div className="space-y-4">
           <h3 className="text-lg font-medium">
             Perfil dominante: 
-            <span className={getFactorColor(result.dominantFactor)}>
-              {" "}{result.dominantFactor} - {discFactors[result.dominantFactor].name}
+            <span className={getSafeFactorColor(result.dominantFactor)}>
+              {" "}{result.dominantFactor} - {getSafeFactorName(result.dominantFactor)}
             </span>
           </h3>
           

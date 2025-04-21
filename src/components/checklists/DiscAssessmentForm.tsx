@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   ChecklistTemplate, 
   ChecklistResult, 
   DiscFactorType,
-  PsicossocialQuestion
+  PsicossocialQuestion,
+  ChecklistQuestion
 } from "@/types";
 import { QuestionStep } from "./assessment/QuestionStep";
 import { CompletionStep } from "./assessment/CompletionStep";
@@ -57,7 +57,6 @@ export function DiscAssessmentForm({
 
   const calculateResults = () => {
     if (template.type === "disc") {
-      // Calculate DISC results
       const factorScores = {
         [DiscFactorType.D]: 0,
         [DiscFactorType.I]: 0,
@@ -65,9 +64,7 @@ export function DiscAssessmentForm({
         [DiscFactorType.C]: 0
       };
       
-      // Calculate weighted scores for each factor
       template.questions.forEach(question => {
-        // Only process if it's a DISC question
         if ('targetFactor' in question && 'weight' in question) {
           const discQuestion = question as DiscQuestion;
           const response = responses[question.id] || 0;
@@ -78,7 +75,6 @@ export function DiscAssessmentForm({
         }
       });
       
-      // Find dominant factor
       let dominantFactor: DiscFactorType = DiscFactorType.D;
       let highestScore = factorScores[DiscFactorType.D];
       
@@ -102,7 +98,6 @@ export function DiscAssessmentForm({
         dominantFactor
       };
     } else if (template.type === "psicossocial") {
-      // Para questionários psicossociais, calcular por categoria
       const categorizedResults: Record<string, number> = {};
       const categoryCount: Record<string, number> = {};
       
@@ -122,14 +117,12 @@ export function DiscAssessmentForm({
         }
       });
       
-      // Calcular média por categoria
       Object.keys(categorizedResults).forEach(category => {
         if (categoryCount[category] > 0) {
           categorizedResults[category] = Math.round(categorizedResults[category] / categoryCount[category] * 100) / 100;
         }
       });
       
-      // Encontrar categoria dominante
       let dominantCategory = "";
       let highestScore = 0;
       
@@ -148,7 +141,6 @@ export function DiscAssessmentForm({
         categorizedResults
       };
     } else {
-      // Para questionários personalizados
       const totalScore = Object.values(responses).reduce((sum, value) => sum + value, 0);
       
       return {
@@ -165,15 +157,13 @@ export function DiscAssessmentForm({
     onSubmit(result);
   };
 
-  // Adaptar a questão para o formato necessário pelo QuestionStep
   const adaptQuestionForDisplay = (question: ChecklistQuestion) => {
     if ('targetFactor' in question) {
       return question as DiscQuestion;
     } else {
-      // Converter pergunta psicossocial para formato compatível com o QuestionStep
       return {
         ...question,
-        targetFactor: DiscFactorType.D, // valor padrão
+        targetFactor: DiscFactorType.D,
         weight: 1
       } as DiscQuestion;
     }
