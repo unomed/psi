@@ -4,11 +4,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, Download, BarChart3 } from "lucide-react";
+import { Shield, Download, BarChart3, Printer } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import RiskMatrixConfigurator from "@/components/risks/RiskMatrixConfigurator";
 import RiskMatrixSettingsForm from "@/components/settings/RiskMatrixSettingsForm";
 import RiskAnalysisForm from "@/components/risks/RiskAnalysisForm";
+import { ReportFilters } from "@/components/reports/ReportFilters";
+import { DateRange } from "react-day-picker";
+import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistribution";
+import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
+import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
+import { RisksProgressTimeline } from "@/components/reports/RisksProgressTimeline";
+import { RiskTypeDistribution } from "@/components/reports/RiskTypeDistribution";
+import { RisksByCategory } from "@/components/reports/RisksByCategory";
+import { RiskIdentificationTable } from "@/components/reports/RiskIdentificationTable";
+import { RiskMatrixReport } from "@/components/reports/RiskMatrixReport";
+import { RiskAnalysisSummary } from "@/components/reports/RiskAnalysisSummary";
+import { RiskAnalysisTable } from "@/components/reports/RiskAnalysisTable";
+import { ActionPlanSummary } from "@/components/reports/ActionPlanSummary";
+import { ActionsByResponsible } from "@/components/reports/ActionsByResponsible";
+import { ActionPlanTable } from "@/components/reports/ActionPlanTable";
+import { ActionImplementationStatus } from "@/components/reports/ActionImplementationStatus";
+import { ActionImplementationTimeline } from "@/components/reports/ActionImplementationTimeline";
+import { ImplementationDetailsTable } from "@/components/reports/ImplementationDetailsTable";
+import { EffectivenessMetrics } from "@/components/reports/EffectivenessMetrics";
+import { RiskReductionTrends } from "@/components/reports/RiskReductionTrends";
+import { EffectivenessEvaluationTable } from "@/components/reports/EffectivenessEvaluationTable";
+import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { toast } from "sonner";
 
 export default function GestaoRiscos() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -16,7 +39,6 @@ export default function GestaoRiscos() {
   const [riskType, setRiskType] = useState("todos");
   const { userRole } = useAuth();
 
-  // Matrix configurator state for "Análise"
   const [matrixSize, setMatrixSize] = useState(3);
   const defaultLabels = (size: number, prefix: string) =>
     Array.from({ length: size }, (_, i) => `${prefix} ${i + 1}`);
@@ -31,7 +53,6 @@ export default function GestaoRiscos() {
     )
   );
 
-  // When matrix size changes, reset labels and matrix values
   useEffect(() => {
     setRowLabels(defaultLabels(matrixSize, "Severidade"));
     setColLabels(defaultLabels(matrixSize, "Probabilidade"));
@@ -42,13 +63,10 @@ export default function GestaoRiscos() {
     );
   }, [matrixSize]);
 
-  // State to capture dropdown selection for Análise step
-  const [selectedSeverityIndex, setSelectedSeverityIndex] = useState(0); // index from 0
-  const [selectedProbabilityIndex, setSelectedProbabilityIndex] = useState(0); // index from 0
+  const [selectedSeverityIndex, setSelectedSeverityIndex] = useState(0);
+  const [selectedProbabilityIndex, setSelectedProbabilityIndex] = useState(0);
   const [calculatedRiskValue, setCalculatedRiskValue] = useState(0);
 
-  // Options for Severity and Probability dropdowns - linked to current matrix labels
-  // For demonstration, descriptions are static, you could make this dynamic
   const severityOptions = rowLabels.map((label, i) => ({
     label,
     description: `Nível ${i + 1} de severidade`,
@@ -59,7 +77,6 @@ export default function GestaoRiscos() {
   }));
 
   useEffect(() => {
-    // Calculate risk value from current matrix based on selected indexes
     if (
       selectedSeverityIndex >= 0 &&
       selectedSeverityIndex < riskMatrix.length &&
@@ -147,7 +164,6 @@ export default function GestaoRiscos() {
             <CardContent>
               <div className="relative">
                 <div className="grid grid-cols-3 gap-1 w-full">
-                  {/* Alto impacto */}
                   <div className="bg-amber-100 p-4 rounded border border-gray-200 flex flex-col items-center">
                     <div className="font-bold">Mitigar</div>
                     <div className="text-xl font-bold mt-2">09</div>
@@ -161,7 +177,6 @@ export default function GestaoRiscos() {
                     <div className="text-xl font-bold mt-2">09</div>
                   </div>
                   
-                  {/* Impacto médio */}
                   <div className="bg-green-100 p-4 rounded border border-gray-200 flex flex-col items-center">
                     <div className="font-bold">Reter</div>
                     <div className="text-xl font-bold mt-2">08</div>
@@ -175,7 +190,6 @@ export default function GestaoRiscos() {
                     <div className="text-xl font-bold mt-2">16</div>
                   </div>
                   
-                  {/* Baixo impacto */}
                   <div className="bg-green-100 p-4 rounded border border-gray-200 flex flex-col items-center">
                     <div className="font-bold">Reter</div>
                     <div className="text-xl font-bold mt-2">05</div>
@@ -762,7 +776,27 @@ export default function GestaoRiscos() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p>Funcionalidade em desenvolvimento...</p>
+                <ReportFilters />
+                <DateRange />
+                <RiskLevelDistribution />
+                <SectorRiskFactors />
+                <RoleRiskComparison />
+                <RisksProgressTimeline />
+                <RiskTypeDistribution />
+                <RisksByCategory />
+                <RiskIdentificationTable />
+                <RiskMatrixReport />
+                <RiskAnalysisSummary />
+                <RiskAnalysisTable />
+                <ActionPlanSummary />
+                <ActionsByResponsible />
+                <ActionPlanTable />
+                <ActionImplementationStatus />
+                <ActionImplementationTimeline />
+                <ImplementationDetailsTable />
+                <EffectivenessMetrics />
+                <RiskReductionTrends />
+                <EffectivenessEvaluationTable />
               </div>
             </CardContent>
           </Card>
