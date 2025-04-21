@@ -27,6 +27,64 @@ import { Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 import { ScaleType } from "@/types";
+import { PsicossocialQuestion } from '@/types/checklist';
+
+const PSICOSSOCIAL_TEMPLATE: PsicossocialQuestion[] = [
+  // Demandas de Trabalho
+  { category: "Demandas de Trabalho", id: "1", text: "Tenho tempo suficiente para realizar minhas tarefas diárias" },
+  { category: "Demandas de Trabalho", id: "2", text: "O volume de trabalho é adequado para o tempo disponível" },
+  { category: "Demandas de Trabalho", id: "3", text: "Preciso trabalhar muito rapidamente para cumprir meus prazos" },
+  { category: "Demandas de Trabalho", id: "4", text: "Consigo fazer pausas quando necessário" },
+  { category: "Demandas de Trabalho", id: "5", text: "Sinto-me pressionado pelas metas e indicadores de desempenho" },
+  // Controle e Autonomia
+  { category: "Controle e Autonomia", id: "6", text: "Tenho liberdade para decidir como realizar meu trabalho" },
+  { category: "Controle e Autonomia", id: "7", text: "Posso influenciar decisões importantes relacionadas ao meu trabalho" },
+  { category: "Controle e Autonomia", id: "8", text: "Minhas sugestões de melhorias são consideradas" },
+  { category: "Controle e Autonomia", id: "9", text: "Tenho flexibilidade para organizar meu próprio tempo" },
+  { category: "Controle e Autonomia", id: "10", text: "Minhas atividades são excessivamente controladas ou monitoradas" },
+  // Suporte Social
+  { category: "Suporte Social", id: "11", text: "Recebo ajuda e apoio dos meus colegas quando preciso" },
+  { category: "Suporte Social", id: "12", text: "Meu superior imediato me dá o suporte necessário" },
+  { category: "Suporte Social", id: "13", text: "Existe cooperação entre os membros da equipe" },
+  { category: "Suporte Social", id: "14", text: "Tenho acesso aos recursos necessários para realizar meu trabalho" },
+  { category: "Suporte Social", id: "15", text: "As dificuldades são discutidas abertamente e recebem atenção" },
+  // Relacionamentos Interpessoais
+  { category: "Relacionamentos Interpessoais", id: "16", text: "O ambiente de trabalho é respeitoso entre todos" },
+  { category: "Relacionamentos Interpessoais", id: "17", text: "Já presenciei ou sofri situações de assédio moral" },
+  { category: "Relacionamentos Interpessoais", id: "18", text: "Há conflitos frequentes entre colegas ou setores" },
+  { category: "Relacionamentos Interpessoais", id: "19", text: "Recebo tratamento justo e respeitoso da chefia" },
+  { category: "Relacionamentos Interpessoais", id: "20", text: "Existe competição excessiva entre colegas" },
+  // Clareza de Papel
+  { category: "Clareza de Papel", id: "21", text: "Sei exatamente quais são minhas responsabilidades" },
+  { category: "Clareza de Papel", id: "22", text: "Os objetivos do meu trabalho são claros" },
+  { category: "Clareza de Papel", id: "23", text: "Recebo informações contraditórias sobre o que devo fazer" },
+  { category: "Clareza de Papel", id: "24", text: "Existem expectativas claras sobre meu desempenho" },
+  { category: "Clareza de Papel", id: "25", text: "Entendo como meu trabalho contribui para os objetivos da empresa" },
+  // Reconhecimento e Recompensas
+  { category: "Reconhecimento e Recompensas", id: "26", text: "Meu trabalho é valorizado e reconhecido" },
+  { category: "Reconhecimento e Recompensas", id: "27", text: "As oportunidades de crescimento são justas e transparentes" },
+  { category: "Reconhecimento e Recompensas", id: "28", text: "A remuneração é compatível com minhas responsabilidades" },
+  { category: "Reconhecimento e Recompensas", id: "29", text: "Recebo feedback construtivo sobre meu desempenho" },
+  { category: "Reconhecimento e Recompensas", id: "30", text: "Vejo possibilidades de desenvolvimento profissional" },
+  // Gestão de Mudanças
+  { category: "Gestão de Mudanças", id: "31", text: "Mudanças organizacionais são comunicadas com antecedência" },
+  { category: "Gestão de Mudanças", id: "32", text: "Recebo treinamento adequado para lidar com novas demandas" },
+  { category: "Gestão de Mudanças", id: "33", text: "Tenho oportunidade de opinar nas mudanças que afetam meu trabalho" },
+  { category: "Gestão de Mudanças", id: "34", text: "As mudanças são implementadas de forma planejada" },
+  { category: "Gestão de Mudanças", id: "35", text: "Me sinto inseguro quando ocorrem mudanças na empresa" },
+  // Equilíbrio Trabalho-Vida
+  { category: "Equilíbrio Trabalho-Vida", id: "36", text: "Consigo desconectar do trabalho em meu tempo livre" },
+  { category: "Equilíbrio Trabalho-Vida", id: "37", text: "Preciso estender meu horário para concluir minhas atividades" },
+  { category: "Equilíbrio Trabalho-Vida", id: "38", text: "O trabalho interfere na minha vida pessoal/familiar" },
+  { category: "Equilíbrio Trabalho-Vida", id: "39", text: "Consigo conciliar compromissos pessoais com o trabalho" },
+  { category: "Equilíbrio Trabalho-Vida", id: "40", text: "Sinto-me cansado demais após o trabalho para realizar atividades pessoais" },
+  // Impactos na Saúde
+  { category: "Impactos na Saúde", id: "41", text: "Sinto dificuldade para dormir devido a preocupações com o trabalho" },
+  { category: "Impactos na Saúde", id: "42", text: "Experimentei sintomas físicos relacionados ao estresse (dores, problemas digestivos, etc.)" },
+  { category: "Impactos na Saúde", id: "43", text: "Sinto-me emocionalmente esgotado ao final do dia" },
+  { category: "Impactos na Saúde", id: "44", text: "Tenho dificuldade em me concentrar no trabalho" },
+  { category: "Impactos na Saúde", id: "45", text: "Sinto-me desmotivado ou sem energia para trabalhar" },
+];
 
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
@@ -88,14 +146,17 @@ export function ChecklistTemplateForm({
   
   useEffect(() => {
     if (method === "psicossocial") {
-      setSelectedScale("psicossocial");
-      form.setValue("scaleType", "psicossocial");
+      setSelectedScale(ScaleType.Psicossocial);
+      form.setValue("scaleType", ScaleType.Psicossocial);
+      form.setValue("questions", PSICOSSOCIAL_TEMPLATE);
     } else if (method === "custom") {
-      setSelectedScale("likert");
-      form.setValue("scaleType", "likert");
+      setSelectedScale(ScaleType.Likert);
+      form.setValue("scaleType", ScaleType.Likert);
+      form.setValue("questions", []);
     } else {
-      setSelectedScale("binary");
-      form.setValue("scaleType", "binary");
+      setSelectedScale(ScaleType.YesNo);
+      form.setValue("scaleType", ScaleType.YesNo);
+      form.setValue("questions", []);
     }
     // eslint-disable-next-line
   }, [method]);
@@ -216,13 +277,24 @@ export function ChecklistTemplateForm({
               <FormLabel>Perguntas</FormLabel>
               <FormDescription>
                 {method === "psicossocial"
-                  ? "Perguntas são definidas de acordo com as categorias psicossociais."
+                  ? "Categorias e perguntas serão geradas conforme o padrão psicossocial."
                   : "Adicione as perguntas do seu checklist personalizado."}
               </FormDescription>
               <FormControl>
                 {method === "psicossocial" ? (
                   <div>
-                    <p>Categorias e perguntas serão geradas conforme o padrão psicossocial.</p>
+                    {PSICOSSOCIAL_TEMPLATE.reduce((cats, q) => 
+                      cats.includes(q.category) ? cats : [...cats, q.category], [] as string[]
+                    ).map(cat => (
+                      <div key={cat} className="mb-2">
+                        <div className="font-semibold">{cat}</div>
+                        <ul className="ml-4 list-disc">
+                          {PSICOSSOCIAL_TEMPLATE.filter(q => q.category === cat).map(q => (
+                            <li key={q.id}>{q.text}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div>

@@ -2,12 +2,24 @@
 import { DiscFactorType, DiscQuestion } from "./disc";
 import { ScaleType } from "./index";
 
+// For Psicossocial, question is basic and grouped
+export interface PsicossocialQuestion {
+  id: string;
+  text: string;
+  category: string;
+}
+
+export type ChecklistTemplateType = "disc" | "custom" | "psicossocial";
+
+export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion;
+
+// For disc + custom: DiscQuestion[]; for psicossocial: PsicossocialQuestion[]
 export interface ChecklistTemplate {
   id: string;
   title: string;
   description: string;
-  type: "disc" | "custom";
-  questions: DiscQuestion[];
+  type: ChecklistTemplateType;
+  questions: ChecklistQuestion[];
   createdAt: Date;
   scaleType?: ScaleType;
   isStandard?: boolean;
@@ -32,3 +44,4 @@ export interface ChecklistResult {
 
 // Re-export types from disc and scale that are used with checklist
 export type { DiscQuestion } from "./disc";
+

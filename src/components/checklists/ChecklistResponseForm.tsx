@@ -1,12 +1,11 @@
-
 import React, { useState } from "react";
-import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
+import { ChecklistTemplate, PsicossocialQuestion } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
 import { DiscFactorType, ScaleType } from "@/types";
 
 interface ChecklistResponseFormProps {
   template: ChecklistTemplate;
-  onSubmit: (result: Omit<ChecklistResult, "id" | "completedAt">) => void;
+  onSubmit: (result: Omit<any, "id" | "completedAt">) => void;
   onCancel?: () => void;
 }
 
@@ -18,13 +17,11 @@ const PSICOSSOCIAL_LABELS = [
   "Sempre/Quase sempre",
 ];
 
-// Exemplo de estrutura para perguntas psicossociais com categorias
 interface PsicossocialCategory {
   name: string;
   questions: { id: string; text: string }[];
 }
 
-// Mock para exibir perguntas psicossociais
 const PSICOSSOCIAL_CATEGORIES: PsicossocialCategory[] = [
   {
     name: "Demandas de Trabalho",
@@ -36,7 +33,6 @@ const PSICOSSOCIAL_CATEGORIES: PsicossocialCategory[] = [
       { id: "5", text: "Sinto-me pressionado pelas metas e indicadores de desempenho" },
     ],
   },
-  // ...adicione as outras categorias seguindo o mesmo padrão (veja exemplo abaixo)
   {
     name: "Controle e Autonomia",
     questions: [
@@ -47,7 +43,6 @@ const PSICOSSOCIAL_CATEGORIES: PsicossocialCategory[] = [
       { id: "10", text: "Minhas atividades são excessivamente controladas ou monitoradas" },
     ],
   },
-  // Demais categorias...
 ];
 
 export function ChecklistResponseForm({
@@ -88,20 +83,11 @@ export function ChecklistResponseForm({
     ];
   }
 
-  const handleChange = (qid: string, value: number) => {
-    setResponses((prev) => ({ ...prev, [qid]: value }));
-  };
-
-  let questionList = template.questions.map(q => ({ ...q, category: "" }));
-  // Montar perguntas por categoria se for psicossocial
-  if (template.scaleType === ScaleType.Psicossocial) {
-    // Monta pergunta por categorias (fixa para demo, depois pode ser flexível)
-    questionList = PSICOSSOCIAL_CATEGORIES.flatMap(category => 
-      category.questions.map(q => ({
-        ...q,
-        category: category.name
-      }))
-    );
+  let questionList: PsicossocialQuestion[] | any[] = [];
+  if (template.scaleType === ScaleType.Psicossocial || template.type === "psicossocial") {
+    questionList = (template.questions as PsicossocialQuestion[]);
+  } else {
+    questionList = template.questions;
   }
 
   const allAnswered = questionList.every(q => responses[q.id] !== undefined);
@@ -118,10 +104,8 @@ export function ChecklistResponseForm({
     onSubmit({
       templateId: template.id,
       employeeName: employeeName.trim() || "Anônimo",
-      // Só envia results DISC se for checklist DISC
-      results: discResults || { D: 0, I: 0, S: 0, C: 0 },
+      results: discResults || {},
       dominantFactor: DiscFactorType.D,
-      // Para psicossocial/personalizado, resultado real deve ser calculado conforme regras
     });
   };
 
@@ -136,14 +120,13 @@ export function ChecklistResponseForm({
           onChange={(e) => setEmployeeName(e.target.value)}
         />
       </div>
-      {template.scaleType === ScaleType.Psicossocial ? (
-        // Exibe categorias, perguntas e opções psicossociais
-        PSICOSSOCIAL_CATEGORIES.map((cat, cIdx) => (
-          <div key={cat.name} className="mb-4 border rounded-lg p-4">
-            <div className="font-semibold mb-2">{cat.name}</div>
-            {cat.questions.map((q, qIdx) => (
+      {template.scaleType === ScaleType.Psicossocial || template.type === "psicossocial" ? (
+        [...new Set(questionList.map(q => q.category))].map((cat, cIdx) => (
+          <div key={cat} className="mb-4 border rounded-lg p-4">
+            <div className="font-semibold mb-2">{cat}</div>
+            {questionList.filter(q => q.category === cat).map((q, qIdx) => (
               <div key={q.id} className="mb-2">
-                <p className="font-medium">{qIdx + 1 + cIdx * 5}. {q.text}</p>
+                <p className="font-medium">{q.text}</p>
                 <div className="flex flex-wrap gap-3 mt-1">
                   {options.map((opt) => (
                     <label key={opt.value} className="inline-flex items-center gap-1">
@@ -152,7 +135,7 @@ export function ChecklistResponseForm({
                         name={`q_${q.id}`}
                         value={opt.value}
                         checked={responses[q.id] === opt.value}
-                        onChange={() => handleChange(q.id, opt.value)}
+                        onChange={() => setResponses(prev => ({ ...prev, [q.id]: opt.value }))}
                         className="accent-primary"
                         required
                       />
@@ -176,7 +159,7 @@ export function ChecklistResponseForm({
                     name={`q_${question.id}`}
                     value={opt.value}
                     checked={responses[question.id] === opt.value}
-                    onChange={() => handleChange(question.id, opt.value)}
+                    onChange={() => setResponses(prev => ({ ...prev, [question.id]: opt.value }))}
                     className="accent-primary"
                     required
                   />
