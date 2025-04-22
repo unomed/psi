@@ -10,6 +10,7 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { DiscFactorType } from "@/types";
 
 interface DiscResultDisplayProps {
   result: ChecklistResult;
@@ -111,16 +112,24 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
         // Renderização original para DISC
         <>
           <div className="grid grid-cols-2 gap-6">
-            <DiscFactorProgress
-              factors={{
-                D: result.results.D,
-                I: result.results.I,
-                S: result.results.S,
-                C: result.results.C
-              }}
-              dominantFactor={result.dominantFactor}
-            />
-            <DiscFactorDetails factor={result.dominantFactor} />
+            {/* Fix: Match component props to expected interface */}
+            <div>
+              {Object.entries(result.results).map(([factor, value]) => {
+                if (factor === 'D' || factor === 'I' || factor === 'S' || factor === 'C') {
+                  // Calculate percentage (assuming max score is 100)
+                  const percentage = Math.round(value * 100);
+                  return (
+                    <DiscFactorProgress 
+                      key={factor}
+                      factor={factor as DiscFactorType} 
+                      percentage={percentage} 
+                    />
+                  );
+                }
+                return null;
+              })}
+            </div>
+            <DiscFactorDetails dominantFactor={result.dominantFactor} />
           </div>
         </>
       ) : (

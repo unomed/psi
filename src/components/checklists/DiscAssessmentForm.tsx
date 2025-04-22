@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
@@ -237,10 +238,10 @@ export function DiscAssessmentForm({ template, onSubmit, onCancel }: DiscAssessm
         </Tabs>
       );
     } else if (template.type === "disc") {
-      const dQuestions = getQuestionsByFactor("D");
-      const iQuestions = getQuestionsByFactor("I");
-      const sQuestions = getQuestionsByFactor("S");
-      const cQuestions = getQuestionsByFactor("C");
+      const dQuestions = getQuestionsByFactor(DiscFactorType.D);
+      const iQuestions = getQuestionsByFactor(DiscFactorType.I);
+      const sQuestions = getQuestionsByFactor(DiscFactorType.S);
+      const cQuestions = getQuestionsByFactor(DiscFactorType.C);
       
       return (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
