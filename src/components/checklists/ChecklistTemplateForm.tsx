@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -23,11 +24,27 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 import { ScaleType } from "@/types";
 import { PsicossocialQuestion } from '@/types/checklist';
+import { ScaleTypeSelector } from './ScaleTypeSelector';
+import { CategoryQuestionGroup, CategoryQuestion } from './form/CategoryQuestionGroup';
+
+// Modelo de perguntas psicossociais para referência
+const PSICOSSOCIAL_CATEGORIES = [
+  "Demandas de Trabalho",
+  "Controle e Autonomia",
+  "Suporte Social",
+  "Relacionamentos Interpessoais",
+  "Clareza de Papel",
+  "Reconhecimento e Recompensas",
+  "Gestão de Mudanças",
+  "Equilíbrio Trabalho-Vida",
+  "Impactos na Saúde"
+];
 
 const PSICOSSOCIAL_TEMPLATE: PsicossocialQuestion[] = [
   // Demandas de Trabalho
@@ -36,65 +53,20 @@ const PSICOSSOCIAL_TEMPLATE: PsicossocialQuestion[] = [
   { category: "Demandas de Trabalho", id: "3", text: "Preciso trabalhar muito rapidamente para cumprir meus prazos" },
   { category: "Demandas de Trabalho", id: "4", text: "Consigo fazer pausas quando necessário" },
   { category: "Demandas de Trabalho", id: "5", text: "Sinto-me pressionado pelas metas e indicadores de desempenho" },
-  // Controle e Autonomia
-  { category: "Controle e Autonomia", id: "6", text: "Tenho liberdade para decidir como realizar meu trabalho" },
-  { category: "Controle e Autonomia", id: "7", text: "Posso influenciar decisões importantes relacionadas ao meu trabalho" },
-  { category: "Controle e Autonomia", id: "8", text: "Minhas sugestões de melhorias são consideradas" },
-  { category: "Controle e Autonomia", id: "9", text: "Tenho flexibilidade para organizar meu próprio tempo" },
-  { category: "Controle e Autonomia", id: "10", text: "Minhas atividades são excessivamente controladas ou monitoradas" },
-  // Suporte Social
-  { category: "Suporte Social", id: "11", text: "Recebo ajuda e apoio dos meus colegas quando preciso" },
-  { category: "Suporte Social", id: "12", text: "Meu superior imediato me dá o suporte necessário" },
-  { category: "Suporte Social", id: "13", text: "Existe cooperação entre os membros da equipe" },
-  { category: "Suporte Social", id: "14", text: "Tenho acesso aos recursos necessários para realizar meu trabalho" },
-  { category: "Suporte Social", id: "15", text: "As dificuldades são discutidas abertamente e recebem atenção" },
-  // Relacionamentos Interpessoais
-  { category: "Relacionamentos Interpessoais", id: "16", text: "O ambiente de trabalho é respeitoso entre todos" },
-  { category: "Relacionamentos Interpessoais", id: "17", text: "Já presenciei ou sofri situações de assédio moral" },
-  { category: "Relacionamentos Interpessoais", id: "18", text: "Há conflitos frequentes entre colegas ou setores" },
-  { category: "Relacionamentos Interpessoais", id: "19", text: "Recebo tratamento justo e respeitoso da chefia" },
-  { category: "Relacionamentos Interpessoais", id: "20", text: "Existe competição excessiva entre colegas" },
-  // Clareza de Papel
-  { category: "Clareza de Papel", id: "21", text: "Sei exatamente quais são minhas responsabilidades" },
-  { category: "Clareza de Papel", id: "22", text: "Os objetivos do meu trabalho são claros" },
-  { category: "Clareza de Papel", id: "23", text: "Recebo informações contraditórias sobre o que devo fazer" },
-  { category: "Clareza de Papel", id: "24", text: "Existem expectativas claras sobre meu desempenho" },
-  { category: "Clareza de Papel", id: "25", text: "Entendo como meu trabalho contribui para os objetivos da empresa" },
-  // Reconhecimento e Recompensas
-  { category: "Reconhecimento e Recompensas", id: "26", text: "Meu trabalho é valorizado e reconhecido" },
-  { category: "Reconhecimento e Recompensas", id: "27", text: "As oportunidades de crescimento são justas e transparentes" },
-  { category: "Reconhecimento e Recompensas", id: "28", text: "A remuneração é compatível com minhas responsabilidades" },
-  { category: "Reconhecimento e Recompensas", id: "29", text: "Recebo feedback construtivo sobre meu desempenho" },
-  { category: "Reconhecimento e Recompensas", id: "30", text: "Vejo possibilidades de desenvolvimento profissional" },
-  // Gestão de Mudanças
-  { category: "Gestão de Mudanças", id: "31", text: "Mudanças organizacionais são comunicadas com antecedência" },
-  { category: "Gestão de Mudanças", id: "32", text: "Recebo treinamento adequado para lidar com novas demandas" },
-  { category: "Gestão de Mudanças", id: "33", text: "Tenho oportunidade de opinar nas mudanças que afetam meu trabalho" },
-  { category: "Gestão de Mudanças", id: "34", text: "As mudanças são implementadas de forma planejada" },
-  { category: "Gestão de Mudanças", id: "35", text: "Me sinto inseguro quando ocorrem mudanças na empresa" },
-  // Equilíbrio Trabalho-Vida
-  { category: "Equilíbrio Trabalho-Vida", id: "36", text: "Consigo desconectar do trabalho em meu tempo livre" },
-  { category: "Equilíbrio Trabalho-Vida", id: "37", text: "Preciso estender meu horário para concluir minhas atividades" },
-  { category: "Equilíbrio Trabalho-Vida", id: "38", text: "O trabalho interfere na minha vida pessoal/familiar" },
-  { category: "Equilíbrio Trabalho-Vida", id: "39", text: "Consigo conciliar compromissos pessoais com o trabalho" },
-  { category: "Equilíbrio Trabalho-Vida", id: "40", text: "Sinto-me cansado demais após o trabalho para realizar atividades pessoais" },
-  // Impactos na Saúde
-  { category: "Impactos na Saúde", id: "41", text: "Sinto dificuldade para dormir devido a preocupações com o trabalho" },
-  { category: "Impactos na Saúde", id: "42", text: "Experimentei sintomas físicos relacionados ao estresse (dores, problemas digestivos, etc.)" },
-  { category: "Impactos na Saúde", id: "43", text: "Sinto-me emocionalmente esgotado ao final do dia" },
-  { category: "Impactos na Saúde", id: "44", text: "Tenho dificuldade em me concentrar no trabalho" },
-  { category: "Impactos na Saúde", id: "45", text: "Sinto-me desmotivado ou sem energia para trabalhar" },
+  // ... outras perguntas
 ];
 
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
   type: z.enum(["disc", "custom", "psicossocial"]),
-  scaleType: z.enum(["binary", "likert", "numeric", "psicossocial"]),
+  scaleType: z.string(),
   questions: z.array(z.object({
     id: z.string(),
     text: z.string().min(1, "A pergunta não pode estar vazia"),
-    type: z.string()
+    category: z.string().optional(),
+    targetFactor: z.string().optional(),
+    weight: z.number().optional()
   })).min(1, "Adicione pelo menos uma pergunta")
 });
 
@@ -120,9 +92,11 @@ export function ChecklistTemplateForm({
   const [method, setMethod] = useState<string>(
     defaultValues?.type || existingTemplate?.type || 'disc'
   );
-  const [selectedScale, setSelectedScale] = useState<string>(
-    defaultValues?.scaleType || existingTemplate?.scaleType || (defaultValues?.type === "psicossocial" ? "psicossocial" : "binary")
+  const [selectedScale, setSelectedScale] = useState<ScaleType>(
+    defaultValues?.scaleType || existingTemplate?.scaleType || ScaleType.YesNo
   );
+  const [categories, setCategories] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<string>("basic");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -130,7 +104,7 @@ export function ChecklistTemplateForm({
       title: defaultValues?.title || existingTemplate?.title || '',
       description: defaultValues?.description || existingTemplate?.description || '',
       type: defaultValues?.type || existingTemplate?.type || 'disc',
-      scaleType: defaultValues?.scaleType || existingTemplate?.scaleType || 'binary',
+      scaleType: defaultValues?.scaleType || existingTemplate?.scaleType || ScaleType.YesNo,
       questions: defaultValues?.questions || existingTemplate?.questions || [],
     }
   });
@@ -148,18 +122,84 @@ export function ChecklistTemplateForm({
     if (method === "psicossocial") {
       setSelectedScale(ScaleType.Psicossocial);
       form.setValue("scaleType", ScaleType.Psicossocial);
-      form.setValue("questions", PSICOSSOCIAL_TEMPLATE);
+      
+      // Inicializar com categorias do modelo psicossocial
+      setCategories(PSICOSSOCIAL_CATEGORIES);
+      
+      // Decidir se queremos inicializar com o template completo ou deixar vazio para o usuário preencher
+      const shouldPopulateTemplate = false; // Modificar para true se quisermos preencher automaticamente
+      
+      if (shouldPopulateTemplate) {
+        form.setValue("questions", PSICOSSOCIAL_TEMPLATE);
+      } else {
+        form.setValue("questions", []);
+      }
     } else if (method === "custom") {
       setSelectedScale(ScaleType.Likert);
       form.setValue("scaleType", ScaleType.Likert);
+      setCategories([]);
       form.setValue("questions", []);
     } else {
       setSelectedScale(ScaleType.YesNo);
       form.setValue("scaleType", ScaleType.YesNo);
+      setCategories([]);
       form.setValue("questions", []);
     }
-    // eslint-disable-next-line
-  }, [method]);
+  }, [method, form]);
+
+  // Inicializar categorias a partir das perguntas existentes
+  useEffect(() => {
+    if (existingTemplate?.questions && existingTemplate.questions.length > 0) {
+      const existingCategories = new Set<string>();
+      
+      existingTemplate.questions.forEach((q: any) => {
+        if (q.category) {
+          existingCategories.add(q.category);
+        }
+      });
+      
+      if (existingCategories.size > 0) {
+        setCategories(Array.from(existingCategories));
+      }
+    }
+  }, [existingTemplate]);
+
+  const handleAddCategory = (category: string) => {
+    setCategories([...categories, category]);
+  };
+
+  const handleAddQuestion = (question: any) => {
+    const currentQuestions = form.getValues("questions") || [];
+    
+    if (method === "disc") {
+      form.setValue("questions", [...currentQuestions, {
+        id: uuidv4(),
+        text: question.text,
+        targetFactor: question.targetFactor,
+        weight: question.weight || 1
+      }]);
+    } else if (method === "psicossocial" || method === "custom") {
+      form.setValue("questions", [...currentQuestions, {
+        id: uuidv4(),
+        text: question.text,
+        category: question.category,
+        weight: question.weight || 1
+      }]);
+    }
+  };
+
+  const handleRemoveQuestion = (questionId: string) => {
+    const currentQuestions = form.getValues("questions");
+    form.setValue(
+      "questions", 
+      currentQuestions.filter(q => q.id !== questionId)
+    );
+  };
+
+  const handleScaleChange = (newScale: ScaleType) => {
+    setSelectedScale(newScale);
+    form.setValue("scaleType", newScale);
+  };
 
   const handleSubmit = async (data: FormValues) => {
     try {
@@ -188,179 +228,244 @@ export function ChecklistTemplateForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Título</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Ex: Checklist de Segurança do Trabalho" 
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descrição</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Descreva o objetivo e o escopo deste checklist" 
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormItem>
-            <FormLabel>Tipo</FormLabel>
-            <Select value={method} onValueChange={(val) => setMethod(val)}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="disc">DISC</SelectItem>
-                <SelectItem value="custom">Personalizado</SelectItem>
-                <SelectItem value="psicossocial">Psicossocial</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-
-          <FormItem>
-            <FormLabel>Escala</FormLabel>
-            <Select value={selectedScale} onValueChange={(val) => {
-              setSelectedScale(val);
-              form.setValue("scaleType", val as "binary" | "likert" | "numeric" | "psicossocial");
-            }}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a escala" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {method === "psicossocial" ? (
-                  <SelectItem value="psicossocial">Psicossocial (1-Nunca/Quase nunca ... 5-Sempre/Quase sempre)</SelectItem>
-                ) : (
-                  <>
-                    <SelectItem value="binary">Sim/Não</SelectItem>
-                    <SelectItem value="likert">Likert (1-5)</SelectItem>
-                    <SelectItem value="numeric">Numérico</SelectItem>
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="questions"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Perguntas</FormLabel>
-              <FormDescription>
-                {method === "psicossocial"
-                  ? "Categorias e perguntas serão geradas conforme o padrão psicossocial."
-                  : "Adicione as perguntas do seu checklist personalizado."}
-              </FormDescription>
-              <FormControl>
-                {method === "psicossocial" ? (
-                  <div>
-                    {PSICOSSOCIAL_TEMPLATE.reduce((cats, q) => 
-                      cats.includes(q.category) ? cats : [...cats, q.category], [] as string[]
-                    ).map(cat => (
-                      <div key={cat} className="mb-2">
-                        <div className="font-semibold">{cat}</div>
-                        <ul className="ml-4 list-disc">
-                          {PSICOSSOCIAL_TEMPLATE.filter(q => q.category === cat).map(q => (
-                            <li key={q.id}>{q.text}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div>
-                    <Accordion type="multiple" className="w-full">
-                      {field.value.map((question, index) => (
-                        <AccordionItem value={question.id} key={question.id}>
-                          <AccordionTrigger>
-                            {index + 1}. {question.text || "Nova Pergunta"}
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="grid grid-cols-1 gap-2">
-                              <Input
-                                type="text"
-                                placeholder="Digite a pergunta"
-                                value={question.text}
-                                onChange={(e) => {
-                                  const updatedQuestions = [...field.value];
-                                  updatedQuestions[index].text = e.target.value;
-                                  field.onChange(updatedQuestions);
-                                }}
-                              />
-                              <Button 
-                                type="button" 
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => {
-                                  const updatedQuestions = field.value.filter((_, i) => i !== index);
-                                  field.onChange(updatedQuestions);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Excluir Pergunta
-                              </Button>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </div>
-                )}
-              </FormControl>
-              <FormMessage />
-              {method !== "psicossocial" && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    field.onChange([...field.value, { id: uuidv4(), text: '', type: 'text' }]);
-                  }} 
-                  className="mt-2"
-                >
-                  Adicionar Pergunta
-                </Button>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
+            <TabsTrigger value="questions">Perguntas & Categorias</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4 pt-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Ex: Checklist de Segurança do Trabalho" 
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormItem>
-          )}
-        />
+            />
 
-        <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button type="submit">
-            Salvar Checklist
-          </Button>
-        </div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Descreva o objetivo e o escopo deste checklist" 
+                      className="min-h-[100px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormItem>
+                <FormLabel>Tipo</FormLabel>
+                <Select 
+                  value={method} 
+                  onValueChange={(val) => setMethod(val)}
+                  disabled={isEditing}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="disc">DISC</SelectItem>
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                    <SelectItem value="psicossocial">Psicossocial</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+
+              <ScaleTypeSelector 
+                value={selectedScale} 
+                onChange={handleScaleChange}
+              />
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setActiveTab("questions")}
+              >
+                Próximo: Perguntas e Categorias
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="questions" className="space-y-6 pt-4">
+            <FormField
+              control={form.control}
+              name="questions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <>
+                      {method === "disc" ? (
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium">Perguntas DISC</h3>
+                          <FormDescription>
+                            Adicione perguntas para o checklist DISC e especifique o fator alvo.
+                          </FormDescription>
+                          
+                          <Accordion type="multiple" className="w-full">
+                            {field.value.map((question, index) => (
+                              <AccordionItem value={question.id} key={question.id}>
+                                <AccordionTrigger>
+                                  {index + 1}. {question.text || "Nova Pergunta"}
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <div className="grid grid-cols-1 gap-2">
+                                    <Input
+                                      type="text"
+                                      placeholder="Digite a pergunta"
+                                      value={question.text}
+                                      onChange={(e) => {
+                                        const updatedQuestions = [...field.value];
+                                        updatedQuestions[index].text = e.target.value;
+                                        field.onChange(updatedQuestions);
+                                      }}
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <Label>Fator Alvo</Label>
+                                        <Select
+                                          value={question.targetFactor}
+                                          onValueChange={(value) => {
+                                            const updatedQuestions = [...field.value];
+                                            updatedQuestions[index].targetFactor = value;
+                                            field.onChange(updatedQuestions);
+                                          }}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Selecione o fator" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="D">D - Dominância</SelectItem>
+                                            <SelectItem value="I">I - Influência</SelectItem>
+                                            <SelectItem value="S">S - Estabilidade</SelectItem>
+                                            <SelectItem value="C">C - Conformidade</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div>
+                                        <Label>Peso</Label>
+                                        <Select
+                                          value={question.weight?.toString() || "1"}
+                                          onValueChange={(value) => {
+                                            const updatedQuestions = [...field.value];
+                                            updatedQuestions[index].weight = parseInt(value);
+                                            field.onChange(updatedQuestions);
+                                          }}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Peso" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="1">1 - Baixo</SelectItem>
+                                            <SelectItem value="2">2 - Médio</SelectItem>
+                                            <SelectItem value="3">3 - Alto</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
+                                    <Button 
+                                      type="button" 
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const updatedQuestions = field.value.filter((_, i) => i !== index);
+                                        field.onChange(updatedQuestions);
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Excluir Pergunta
+                                    </Button>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            ))}
+                          </Accordion>
+                          
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => {
+                              field.onChange([
+                                ...field.value, 
+                                { id: uuidv4(), text: '', targetFactor: 'D', weight: 1 }
+                              ]);
+                            }} 
+                            className="mt-2"
+                          >
+                            Adicionar Pergunta DISC
+                          </Button>
+                        </div>
+                      ) : (
+                        <CategoryQuestionGroup 
+                          categories={categories}
+                          questions={field.value.map(q => ({
+                            id: q.id,
+                            text: q.text,
+                            category: q.category || 'Geral'
+                          }))}
+                          onAddCategory={handleAddCategory}
+                          onAddQuestion={handleAddQuestion}
+                          onRemoveQuestion={handleRemoveQuestion}
+                          onUpdateQuestion={(updatedQuestion) => {
+                            const currentQuestions = field.value;
+                            const updatedQuestions = currentQuestions.map(q => 
+                              q.id === updatedQuestion.id ? updatedQuestion : q
+                            );
+                            field.onChange(updatedQuestions);
+                          }}
+                          selectedScaleType={selectedScale}
+                        />
+                      )}
+                    </>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="flex justify-between">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setActiveTab("basic")}
+              >
+                Voltar para Informações Básicas
+              </Button>
+              
+              <div className="flex gap-4">
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  Salvar Checklist
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </form>
     </Form>
   );

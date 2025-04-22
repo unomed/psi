@@ -2,7 +2,7 @@
 import { ScaleType } from './index';
 
 // Database scale types (from Supabase)
-export type DbScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom";
+export type DbScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom" | "numeric";
 
 // Mapping between app scale types and DB scale types
 export const scaleTypeToDbScaleType = (scaleType: ScaleType): DbScaleType => {
@@ -27,6 +27,8 @@ export const scaleTypeToDbScaleType = (scaleType: ScaleType): DbScaleType => {
       return "custom";
     case ScaleType.Psicossocial:
       return "custom";
+    case ScaleType.Numeric:
+      return "numeric";
     default:
       return "likert5";
   }
@@ -42,12 +44,14 @@ export const dbScaleTypeToScaleType = (dbScaleType: DbScaleType | string): Scale
       return ScaleType.YesNo;
     case "frequency":
       return ScaleType.Frequency;
-    case "custom":
-      return ScaleType.Custom;
+    case "numeric":
+      return ScaleType.Numeric;
     case "stanine":
     case "percentile":
     case "tscore":
     case "range10":
+      return ScaleType.Custom;
+    case "custom":
       return ScaleType.Custom;
     default:
       return ScaleType.Likert;

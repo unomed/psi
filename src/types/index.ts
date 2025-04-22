@@ -16,7 +16,8 @@ export enum ScaleType {
   Probability = "probability",
   Impact = "impact",
   RiskLevel = "risk_level",
-  Psicossocial = "psicossocial", // NOVO: psicossocial separado de custom
+  Psicossocial = "psicossocial",
+  Numeric = "numeric"
 }
 
 // Export DiscFactorType from disc.ts
