@@ -1,4 +1,3 @@
-
 import { ChecklistResult } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
 import { DiscFactorDetails } from "./disc/DiscFactorDetails";
@@ -112,7 +111,6 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
         // Renderização original para DISC
         <>
           <div className="grid grid-cols-2 gap-6">
-            {/* Fix: Match component props to expected interface */}
             <div>
               {Object.entries(result.results).map(([factor, value]) => {
                 if (factor === 'D' || factor === 'I' || factor === 'S' || factor === 'C') {

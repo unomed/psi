@@ -11,7 +11,7 @@ interface DiscFactorCardProps {
 }
 
 export function DiscFactorCard({ factor, className }: DiscFactorCardProps) {
-  // Fix: Add null check for factor to prevent "Cannot read properties of undefined (reading 'type')"
+  // Add null check for factor to prevent "Cannot read properties of undefined (reading 'type')"
   if (!factor) {
     return (
       <Card className={cn("border bg-gray-50", className)}>
