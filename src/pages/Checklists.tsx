@@ -19,8 +19,8 @@ export default function Checklists() {
   const [isAssessmentDialogOpen, setIsAssessmentDialogOpen] = useState(false);
 
   const {
-    checklists,
-    results,
+    checklists = [], // Add default empty array
+    results = [], // Add default empty array
     isLoading,
     handleCreateTemplate,
     handleUpdateTemplate,

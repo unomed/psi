@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
 import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
-import { saveScheduledAssessment } from "@/services/checklistService";
+import { saveScheduledAssessment } from "@/services/checklist";
 import { validateAssessmentDate } from "@/utils/dateUtils";
 
 export function useScheduleOperations({

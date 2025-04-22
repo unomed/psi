@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ChecklistResult } from "@/types/checklist";
-import { fetchAssessmentResults } from "@/services/checklistService";
+import { fetchAssessmentResults } from "@/services/checklist";
 
 export function useChecklistResults() {
   const { 

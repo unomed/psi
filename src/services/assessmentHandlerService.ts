@@ -1,7 +1,7 @@
 
 import { toast } from "sonner";
 import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types";
-import { saveScheduledAssessment } from "@/services/checklistService";
+import { saveScheduledAssessment } from "@/services/checklist";
 import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
 import { supabase } from "@/integrations/supabase/client";
 

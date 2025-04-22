@@ -3,7 +3,7 @@ import { useChecklistTemplates } from "./checklist/useChecklistTemplates";
 import { useChecklistResults } from "./checklist/useChecklistResults";
 import { useScheduledAssessments } from "./checklist/useScheduledAssessments";
 import { ChecklistResult } from "@/types/checklist";
-import { saveAssessmentResult } from "@/services/checklistService";
+import { saveAssessmentResult } from "@/services/checklist";
 import { toast } from "sonner";
 
 interface UseChecklistDataProps {

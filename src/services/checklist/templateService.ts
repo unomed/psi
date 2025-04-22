@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion, ScaleType } from "@/types";
-import { scaleTypeToDbScaleType } from "@/types/scale";
+import { scaleTypeToDbScaleType, dbScaleTypeToScaleType } from "@/types/scale";
 import { DbTemplateType } from "./types";
 import { mapAppTemplateTypeToDb, mapDbTemplateTypeToApp } from "./utils";
 
@@ -48,7 +48,7 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       title: template.title,
       description: template.description || "",
       type: templateType,
-      scaleType: template.scale_type,
+      scaleType: dbScaleTypeToScaleType(template.scale_type), // Convert DB scale type to app scale type
       isStandard: template.is_standard || false,
       companyId: template.company_id,
       derivedFromId: template.derived_from_id,

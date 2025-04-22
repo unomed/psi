@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchChecklistTemplates } from "@/services/checklistService";
+import { fetchChecklistTemplates } from "@/services/checklist";
 import { useAssessmentState } from "@/hooks/useAssessmentState";
 import { useAssessmentDialogs } from "@/hooks/assessments/useAssessmentDialogs";
 import { useAssessmentSelection } from "@/hooks/assessments/useAssessmentSelection";
@@ -11,6 +11,7 @@ import { AssessmentErrorBoundary } from "@/components/assessments/error-boundary
 import { AssessmentActions } from "@/components/assessments/AssessmentActions";
 import { AssessmentTabs } from "@/components/assessments/AssessmentTabs";
 import { AssessmentDialogsContainer } from "@/components/assessments/handlers/AssessmentDialogsContainer";
+import { ChecklistTemplate } from "@/types";
 
 interface AssessmentHandlerRootProps {
   companyId: string | null;

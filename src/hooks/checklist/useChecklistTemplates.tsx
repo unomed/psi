@@ -7,7 +7,7 @@ import {
   deleteChecklistTemplate,
   copyTemplateForCompany,
   saveChecklistTemplate 
-} from "@/services/checklistService";
+} from "@/services/checklist";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
