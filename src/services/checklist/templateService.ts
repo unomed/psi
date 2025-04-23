@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion, ScaleType } from "@/types";
 import { scaleTypeToDbScaleType, dbScaleTypeToScaleType } from "@/types/scale";
@@ -132,52 +131,6 @@ export async function saveChecklistTemplate(
   return templateId;
 }
 
-export async function updateChecklistTemplate(
-  templateId: string, 
-  template: Partial<ChecklistTemplate>
-): Promise<string> {
-  const { companyId, createdAt, isStandard, questions, scaleType, type, ...otherProps } = template;
-  
-  const updateData: any = {
-    ...otherProps,
-    updated_at: new Date().toISOString()
-  };
-  
-  if (scaleType) {
-    updateData.scale_type = scaleTypeToDbScaleType(scaleType);
-  }
-  
-  if (isStandard !== undefined) {
-    updateData.is_standard = isStandard;
-  }
-  
-  if (companyId) {
-    updateData.company_id = companyId;
-  }
-  
-  if (type) {
-    updateData.type = mapAppTemplateTypeToDb(type);
-  }
-
-  const { data, error } = await supabase
-    .from('checklist_templates')
-    .update(updateData)
-    .eq('id', templateId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error updating checklist template:", error);
-    throw error;
-  }
-
-  if (questions) {
-    await updateTemplateQuestions(templateId, questions, type || "disc");
-  }
-
-  return data.id;
-}
-
 async function updateTemplateQuestions(
   templateId: string, 
   questions: (DiscQuestion | PsicossocialQuestion)[], 
@@ -231,6 +184,52 @@ async function updateTemplateQuestions(
     console.error("Error inserting new questions:", insertError);
     throw insertError;
   }
+}
+
+export async function updateChecklistTemplate(
+  templateId: string, 
+  template: Partial<ChecklistTemplate>
+): Promise<string> {
+  const { companyId, createdAt, isStandard, questions, scaleType, type, ...otherProps } = template;
+  
+  const updateData: any = {
+    ...otherProps,
+    updated_at: new Date().toISOString()
+  };
+  
+  if (scaleType) {
+    updateData.scale_type = scaleTypeToDbScaleType(scaleType);
+  }
+  
+  if (isStandard !== undefined) {
+    updateData.is_standard = isStandard;
+  }
+  
+  if (companyId) {
+    updateData.company_id = companyId;
+  }
+  
+  if (type) {
+    updateData.type = mapAppTemplateTypeToDb(type);
+  }
+
+  const { data, error } = await supabase
+    .from('checklist_templates')
+    .update(updateData)
+    .eq('id', templateId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating checklist template:", error);
+    throw error;
+  }
+
+  if (questions) {
+    await updateTemplateQuestions(templateId, questions, type || "disc");
+  }
+
+  return data.id;
 }
 
 export async function deleteChecklistTemplate(templateId: string): Promise<void> {
