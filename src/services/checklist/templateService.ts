@@ -65,10 +65,10 @@ export async function saveChecklistTemplate(
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
   const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
-  // Using the correct column names expected by Supabase
+  // Make sure to use the correct column names that match the Supabase database schema
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
-    .insert({
+    .insert([{
       title: template.title,
       description: template.description,
       type: dbTemplateType,
@@ -76,7 +76,7 @@ export async function saveChecklistTemplate(
       is_active: true,
       is_standard: isStandard,
       company_id: template.companyId
-    })
+    }])
     .select()
     .single();
 
