@@ -48,7 +48,7 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       title: template.title,
       description: template.description || "",
       type: templateType,
-      scaleType: dbScaleTypeToScaleType(template.scale_type), // Convert DB scale type to app scale type
+      scaleType: dbScaleTypeToScaleType(template.scale_type), 
       isStandard: template.is_standard || false,
       companyId: template.company_id,
       derivedFromId: template.derived_from_id,
@@ -65,10 +65,10 @@ export async function saveChecklistTemplate(
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
   const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
-  // Fix: Use a single object for the insert method
+  // Fix: Use correct column names for Supabase schema and ensure single object format
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
-    .insert({
+    .insert([{
       title: template.title,
       description: template.description,
       type: dbTemplateType,
@@ -76,7 +76,7 @@ export async function saveChecklistTemplate(
       is_active: true,
       is_standard: isStandard,
       company_id: template.companyId
-    })
+    }])
     .select()
     .single();
 
