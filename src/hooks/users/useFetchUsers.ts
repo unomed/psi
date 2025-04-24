@@ -2,97 +2,43 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, ProfileWithEmail } from "./types";
+import { User } from "./types";
 
-export function useFetchUsers() {
+export const useFetchUsers = () => {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ["users"],
     queryFn: async () => {
-      try {
-        // Fetch user emails and metadata from auth.users via profiles_with_emails view
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles_with_emails')
-          .select('*');
+      // Get profiles and user roles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*, user_roles(role)');
 
-        if (profilesError) {
-          toast.error('Erro ao carregar usuários');
-          throw profilesError;
-        }
-
-        // Fetch user display names and active status from profiles table
-        const { data: userProfiles, error: profileNamesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, is_active');
-
-        if (profileNamesError) {
-          toast.error('Erro ao carregar nomes dos usuários');
-          throw profileNamesError;
-        }
-
-        // Create a map of profile IDs to user data for easy lookup
-        const profileDataMap = new Map();
-        if (userProfiles) {
-          userProfiles.forEach((profile: any) => {
-            profileDataMap.set(profile.id, {
-              full_name: profile.full_name,
-              is_active: profile.is_active
-            });
-          });
-        }
-
-        const { data: userRoles, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('user_id, role');
-
-        if (rolesError) {
-          toast.error('Erro ao carregar funções dos usuários');
-          throw rolesError;
-        }
-
-        const { data: userCompanies, error: companiesError } = await supabase
-          .from('user_companies')
-          .select('user_id, company_id');
-
-        if (companiesError) {
-          toast.error('Erro ao carregar empresas dos usuários');
-          throw companiesError;
-        }
-
-        const { data: companies, error: companyNamesError } = await supabase
-          .from('companies')
-          .select('id, name');
-
-        if (companyNamesError) {
-          toast.error('Erro ao carregar nomes das empresas');
-          throw companyNamesError;
-        }
-
-        return profiles.map((profile: ProfileWithEmail) => {
-          const userRole = userRoles.find(r => r.user_id === profile.id);
-          const userCompanyIds = userCompanies
-            .filter(uc => uc.user_id === profile.id)
-            .map(uc => uc.company_id);
-
-          const companyNames = companies
-            .filter(c => userCompanyIds.includes(c.id))
-            .map(c => c.name);
-
-          const profileData = profileDataMap.get(profile.id) || {};
-
-          return {
-            id: profile.id,
-            email: profile.email || '',
-            full_name: profileData.full_name || '',
-            role: userRole?.role || 'evaluator',
-            companies: companyNames,
-            is_active: profileData.is_active ?? true
-          };
-        });
-      } catch (error) {
-        console.error('Error fetching users data:', error);
-        toast.error('Erro ao carregar dados dos usuários');
-        throw error;
+      if (profilesError) {
+        toast.error("Erro ao carregar usuários");
+        throw profilesError;
       }
+
+      // Use our secure function to get emails
+      const userIds = profiles.map(profile => profile.id);
+      const { data: emailData, error: emailError } = await supabase
+        .rpc('get_user_emails', { user_ids: userIds });
+
+      if (emailError) {
+        toast.error("Erro ao carregar emails dos usuários");
+        throw emailError;
+      }
+
+      // Map the data together
+      return profiles.map(profile => {
+        const emailInfo = emailData.find(e => e.id === profile.id);
+        return {
+          id: profile.id,
+          full_name: profile.full_name,
+          email: emailInfo?.email || '',
+          role: profile.user_roles?.[0]?.role || 'user',
+          is_active: profile.is_active
+        } as User;
+      });
     }
   });
-}
+};

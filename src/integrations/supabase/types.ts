@@ -1023,7 +1023,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_with_emails: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          is_active: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       associate_user_with_company: {
