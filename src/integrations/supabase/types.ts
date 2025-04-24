@@ -1023,13 +1023,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_with_emails: {
-        Row: {
-          email: string | null
-          id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       associate_user_with_company: {

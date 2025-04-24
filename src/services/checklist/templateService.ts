@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion, ScaleType } from "@/types";
 import { scaleTypeToDbScaleType, dbScaleTypeToScaleType } from "@/types/scale";
@@ -65,10 +64,9 @@ export async function saveChecklistTemplate(
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
   const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
-  // Fix: Use correct column names for Supabase schema and ensure single object format
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
-    .insert([{
+    .insert({
       title: template.title,
       description: template.description,
       type: dbTemplateType,
@@ -76,7 +74,7 @@ export async function saveChecklistTemplate(
       is_active: true,
       is_standard: isStandard,
       company_id: template.companyId
-    }])
+    })
     .select()
     .single();
 
