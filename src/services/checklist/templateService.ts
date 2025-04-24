@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion, ScaleType } from "@/types";
 import { scaleTypeToDbScaleType, dbScaleTypeToScaleType } from "@/types/scale";
@@ -64,7 +65,7 @@ export async function saveChecklistTemplate(
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
   const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
-  // Make sure to use the correct column names that match the Supabase database schema
+  // Fix: Use a single object for the insert method
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
     .insert({
