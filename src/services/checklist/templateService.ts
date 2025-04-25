@@ -68,7 +68,7 @@ export async function saveChecklistTemplate(
     title: template.title,
     description: template.description,
     type: dbTemplateType,
-    scale_type: dbScaleType,
+    scale_type: dbScaleType as string,
     is_active: true,
     is_standard: isStandard,
     company_id: template.companyId,
