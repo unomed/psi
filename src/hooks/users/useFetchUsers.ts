@@ -35,6 +35,7 @@ export const useFetchUsers = () => {
           id: profile.id,
           full_name: profile.full_name,
           email: emailInfo?.email || '',
+          // Use optional chaining and provide a default 'user' role
           role: profile.user_roles?.[0]?.role || 'user',
           is_active: profile.is_active
         } as User;

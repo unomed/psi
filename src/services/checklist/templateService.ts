@@ -71,7 +71,9 @@ export async function saveChecklistTemplate(
     scale_type: dbScaleType,
     is_active: true,
     is_standard: isStandard,
-    company_id: template.companyId
+    company_id: template.companyId,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
 
   const { data: templateData, error: templateError } = await supabase
