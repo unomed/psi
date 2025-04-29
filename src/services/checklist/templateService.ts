@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion, ScaleType } from "@/types";
 import { scaleTypeToDbScaleType, dbScaleTypeToScaleType } from "@/types/scale";
@@ -64,11 +65,15 @@ export async function saveChecklistTemplate(
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
   const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
+  // Define expected database enum values
+  type ValidScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom" | "numeric";
+  
+  // Create templateInsert object with correctly typed scale_type
   const templateInsert = {
     title: template.title,
     description: template.description,
     type: dbTemplateType,
-    scale_type: dbScaleType as string,
+    scale_type: dbScaleType as ValidScaleType,
     is_active: true,
     is_standard: isStandard,
     company_id: template.companyId,
@@ -201,7 +206,9 @@ export async function updateChecklistTemplate(
   };
   
   if (scaleType) {
-    updateData.scale_type = scaleTypeToDbScaleType(scaleType);
+    // Use the same ValidScaleType as above
+    type ValidScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom" | "numeric";
+    updateData.scale_type = scaleTypeToDbScaleType(scaleType) as ValidScaleType;
   }
   
   if (isStandard !== undefined) {
@@ -256,3 +263,4 @@ export async function deleteChecklistTemplate(templateId: string): Promise<void>
     throw templateDeleteError;
   }
 }
+
