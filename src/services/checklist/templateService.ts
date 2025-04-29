@@ -76,12 +76,22 @@ export async function saveChecklistTemplate(
     safeDbScaleType = dbScaleType as SupabaseScaleType;
   }
   
-  // Create templateInsert object with safely typed scale_type
+  // Define valid template types for Supabase
+  const validDbTemplateTypes = ["custom", "srq20", "phq9", "gad7", "mbi", "audit", "pss", "copsoq", "jcq", "eri", "disc"] as const;
+  type SupabaseTemplateType = typeof validDbTemplateTypes[number];
+  
+  // Handle the case where our template type isn't in Supabase's enum
+  let safeDbTemplateType: SupabaseTemplateType = "custom";
+  if (validDbTemplateTypes.includes(dbTemplateType as any)) {
+    safeDbTemplateType = dbTemplateType as SupabaseTemplateType;
+  }
+  
+  // Create templateInsert object with safely typed properties
   const templateInsert = {
     title: template.title,
     description: template.description,
-    type: dbTemplateType,
-    scale_type: safeDbScaleType, // Now correctly typed for Supabase
+    type: safeDbTemplateType,
+    scale_type: safeDbScaleType,
     is_active: true,
     is_standard: isStandard,
     company_id: template.companyId,
@@ -237,7 +247,18 @@ export async function updateChecklistTemplate(
   }
   
   if (type) {
-    updateData.type = mapAppTemplateTypeToDb(type);
+    const dbTemplateType = mapAppTemplateTypeToDb(type);
+    
+    // Same approach as in saveChecklistTemplate
+    const validDbTemplateTypes = ["custom", "srq20", "phq9", "gad7", "mbi", "audit", "pss", "copsoq", "jcq", "eri", "disc"] as const;
+    type SupabaseTemplateType = typeof validDbTemplateTypes[number];
+    
+    let safeDbTemplateType: SupabaseTemplateType = "custom";
+    if (validDbTemplateTypes.includes(dbTemplateType as any)) {
+      safeDbTemplateType = dbTemplateType as SupabaseTemplateType;
+    }
+    
+    updateData.type = safeDbTemplateType;
   }
 
   const { data, error } = await supabase
