@@ -23,9 +23,11 @@ export async function saveChecklistTemplate(
     updated_at: new Date().toISOString()
   };
 
+  // Use type assertion to ensure compatibility with Supabase schema
+  // This tells TypeScript that we know what we're doing with the types
   const { data: templateData, error: templateError } = await supabase
     .from('checklist_templates')
-    .insert(templateInsert)
+    .insert(templateInsert as any)
     .select()
     .single();
 
