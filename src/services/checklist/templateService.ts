@@ -65,15 +65,23 @@ export async function saveChecklistTemplate(
   const dbScaleType = scaleTypeToDbScaleType(template.scaleType || ScaleType.Likert);
   const dbTemplateType = mapAppTemplateTypeToDb(template.type);
   
-  // Define expected database enum values
-  type ValidScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom" | "numeric";
+  // Using type assertion for accepted Supabase scale types
+  // These must match the enum values in the database
+  const validDbScaleTypes = ["likert5", "likert7", "binary", "range10", "frequency", "stanine", "percentile", "tscore", "custom"] as const;
+  type SupabaseScaleType = typeof validDbScaleTypes[number];
   
-  // Create templateInsert object with correctly typed scale_type
+  // Handle the case where our scaleType returns "numeric" which isn't in Supabase's enum
+  let safeDbScaleType: SupabaseScaleType = "custom";
+  if (validDbScaleTypes.includes(dbScaleType as any)) {
+    safeDbScaleType = dbScaleType as SupabaseScaleType;
+  }
+  
+  // Create templateInsert object with safely typed scale_type
   const templateInsert = {
     title: template.title,
     description: template.description,
     type: dbTemplateType,
-    scale_type: dbScaleType as ValidScaleType,
+    scale_type: safeDbScaleType, // Now correctly typed for Supabase
     is_active: true,
     is_standard: isStandard,
     company_id: template.companyId,
@@ -206,9 +214,18 @@ export async function updateChecklistTemplate(
   };
   
   if (scaleType) {
-    // Use the same ValidScaleType as above
-    type ValidScaleType = "likert5" | "likert7" | "binary" | "range10" | "frequency" | "stanine" | "percentile" | "tscore" | "custom" | "numeric";
-    updateData.scale_type = scaleTypeToDbScaleType(scaleType) as ValidScaleType;
+    const dbScaleType = scaleTypeToDbScaleType(scaleType);
+    
+    // Same approach as in saveChecklistTemplate
+    const validDbScaleTypes = ["likert5", "likert7", "binary", "range10", "frequency", "stanine", "percentile", "tscore", "custom"] as const;
+    type SupabaseScaleType = typeof validDbScaleTypes[number];
+    
+    let safeDbScaleType: SupabaseScaleType = "custom";
+    if (validDbScaleTypes.includes(dbScaleType as any)) {
+      safeDbScaleType = dbScaleType as SupabaseScaleType;
+    }
+    
+    updateData.scale_type = safeDbScaleType;
   }
   
   if (isStandard !== undefined) {
@@ -263,4 +280,3 @@ export async function deleteChecklistTemplate(templateId: string): Promise<void>
     throw templateDeleteError;
   }
 }
-
