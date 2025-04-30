@@ -75,18 +75,27 @@ export function useChecklistTemplates() {
     try {
       const isSuperAdmin = await hasRole('superadmin');
       
-      // Verification logic for permissions
-      if (template.isStandard && !isSuperAdmin) {
+      // Para superadmins, permitir excluir qualquer template
+      if (isSuperAdmin) {
+        console.log("SuperAdmin excluindo template:", template.id);
+        await deleteChecklistTemplate(template.id);
+        toast.success("Modelo de checklist excluído com sucesso!");
+        await refetchChecklists();
+        return true;
+      }
+      
+      // Para usuários não superadmin, verificar permissões
+      if (template.isStandard) {
         toast.error("Apenas superadmins podem excluir modelos padrão.");
         return false;
       }
       
-      if (template.companyId && template.companyId !== user?.id && !isSuperAdmin) {
+      if (template.companyId && template.companyId !== user?.id) {
         toast.error("Você só pode excluir seus próprios modelos.");
         return false;
       }
 
-      console.log("Excluindo template:", template.id, "isSuperAdmin:", isSuperAdmin);
+      console.log("Usuário excluindo template:", template.id);
       await deleteChecklistTemplate(template.id);
       
       toast.success("Modelo de checklist excluído com sucesso!");

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export default function Checklists() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("all"); // Mostrar todos os checklists por padrão
+  const [activeTab, setActiveTab] = useState("all");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
@@ -20,8 +20,8 @@ export default function Checklists() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const {
-    checklists = [], // Add default empty array
-    results = [], // Add default empty array
+    checklists = [],
+    results = [],
     isLoading,
     handleCreateTemplate,
     handleUpdateTemplate,
@@ -51,7 +51,6 @@ export default function Checklists() {
   const handleStartAssessment = (template: ChecklistTemplate) => {
     setSelectedTemplate(template);
     setIsAssessmentDialogOpen(true);
-    // Toast para informar que a avaliação está sendo iniciada
     toast.success(`Iniciando avaliação para ${template.title}`);
   };
 
@@ -78,8 +77,8 @@ export default function Checklists() {
       // Construir o objeto de resultado para salvar
       const assessmentResult = {
         templateId: selectedTemplate.id,
-        employeeName: "Teste", // Em produção, usaria o usuário real ou selecionado
-        employeeId: "", // Em produção, usaria o ID do funcionário selecionado
+        employeeName: "Teste",
+        employeeId: "",
         results: resultData.results,
         dominantFactor: resultData.dominantFactor,
         categorizedResults: resultData.categorizedResults || {},

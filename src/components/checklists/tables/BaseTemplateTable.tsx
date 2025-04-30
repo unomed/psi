@@ -164,6 +164,7 @@ export function BaseTemplateTable({
                         <AlertDialogAction 
                           onClick={() => onDeleteTemplate(template)}
                           disabled={isDeleting}
+                          className="bg-destructive hover:bg-destructive/90"
                         >
                           {isDeleting ? "Excluindo..." : "Excluir"}
                         </AlertDialogAction>
