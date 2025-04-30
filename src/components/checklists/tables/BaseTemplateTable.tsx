@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, Pencil, Trash2 } from "lucide-react";
+import { Copy, Pencil, Trash2, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +26,7 @@ export interface BaseTemplateTableProps {
   onCopyTemplate: (template: ChecklistTemplate) => void;
   onStartAssessment: (template: ChecklistTemplate) => void;
   showCategories?: boolean;
+  isDeleting?: boolean;
 }
 
 export function BaseTemplateTable({
@@ -36,6 +37,7 @@ export function BaseTemplateTable({
   onCopyTemplate,
   onStartAssessment,
   showCategories = false,
+  isDeleting = false,
 }: BaseTemplateTableProps) {
   const renderFactorBadges = (template: ChecklistTemplate) => {
     if (template.type === "disc") {
@@ -131,9 +133,23 @@ export function BaseTemplateTable({
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Excluir
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-destructive hover:bg-destructive/10"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Excluindo...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </>
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -145,8 +161,11 @@ export function BaseTemplateTable({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDeleteTemplate(template)}>
-                          Excluir
+                        <AlertDialogAction 
+                          onClick={() => onDeleteTemplate(template)}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? "Excluindo..." : "Excluir"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

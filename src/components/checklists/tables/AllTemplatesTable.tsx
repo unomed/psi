@@ -8,6 +8,7 @@ interface AllTemplatesTableProps {
   onDeleteTemplate: (template: ChecklistTemplate) => void;
   onCopyTemplate: (template: ChecklistTemplate) => void;
   onStartAssessment: (template: ChecklistTemplate) => void;
+  isDeleting?: boolean;
 }
 
 export function AllTemplatesTable({
@@ -16,6 +17,7 @@ export function AllTemplatesTable({
   onDeleteTemplate,
   onCopyTemplate,
   onStartAssessment,
+  isDeleting = false,
 }: AllTemplatesTableProps) {
   return (
     <BaseTemplateTable
@@ -26,6 +28,7 @@ export function AllTemplatesTable({
       onCopyTemplate={onCopyTemplate}
       onStartAssessment={onStartAssessment}
       showCategories={true}
+      isDeleting={isDeleting}
     />
   );
 }

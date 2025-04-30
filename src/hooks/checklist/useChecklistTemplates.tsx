@@ -38,17 +38,19 @@ export function useChecklistTemplates() {
   };
 
   const handleUpdateTemplate = async (template: ChecklistTemplate) => {
-    if (template.isStandard && !(await hasRole('superadmin'))) {
-      toast.error("Apenas superadmins podem editar modelos padrão.");
-      return false;
-    }
-    
-    if (template.companyId && template.companyId !== user?.id) {
-      toast.error("Você só pode editar seus próprios modelos.");
-      return false;
-    }
-
     try {
+      const isSuperAdmin = await hasRole('superadmin');
+      
+      if (template.isStandard && !isSuperAdmin) {
+        toast.error("Apenas superadmins podem editar modelos padrão.");
+        return false;
+      }
+      
+      if (template.companyId && template.companyId !== user?.id && !isSuperAdmin) {
+        toast.error("Você só pode editar seus próprios modelos.");
+        return false;
+      }
+
       console.log("Atualizando template:", template);
       // Usando apenas o ID e os campos a serem atualizados
       const result = await updateChecklistTemplate(template.id, {
@@ -70,23 +72,30 @@ export function useChecklistTemplates() {
   };
 
   const handleDeleteTemplate = async (template: ChecklistTemplate) => {
-    if (template.isStandard && !(await hasRole('superadmin'))) {
-      toast.error("Apenas superadmins podem excluir modelos padrão.");
-      return;
-    }
-    
-    if (template.companyId && template.companyId !== user?.id) {
-      toast.error("Você só pode excluir seus próprios modelos.");
-      return;
-    }
-
     try {
+      const isSuperAdmin = await hasRole('superadmin');
+      
+      // Verification logic for permissions
+      if (template.isStandard && !isSuperAdmin) {
+        toast.error("Apenas superadmins podem excluir modelos padrão.");
+        return false;
+      }
+      
+      if (template.companyId && template.companyId !== user?.id && !isSuperAdmin) {
+        toast.error("Você só pode excluir seus próprios modelos.");
+        return false;
+      }
+
+      console.log("Excluindo template:", template.id, "isSuperAdmin:", isSuperAdmin);
       await deleteChecklistTemplate(template.id);
+      
       toast.success("Modelo de checklist excluído com sucesso!");
-      refetchChecklists();
+      await refetchChecklists();
+      return true;
     } catch (error) {
       console.error("Error deleting template:", error);
-      toast.error("Erro ao excluir modelo de checklist.");
+      toast.error(error instanceof Error ? error.message : "Erro ao excluir modelo de checklist.");
+      return false;
     }
   };
 

@@ -8,6 +8,7 @@ interface TemplatesTableProps {
   onDeleteTemplate: (template: ChecklistTemplate) => void;
   onCopyTemplate: (template: ChecklistTemplate) => void;
   onStartAssessment: (template: ChecklistTemplate) => void;
+  isDeleting?: boolean;
 }
 
 export function TemplatesTable({
@@ -16,6 +17,7 @@ export function TemplatesTable({
   onDeleteTemplate,
   onCopyTemplate,
   onStartAssessment,
+  isDeleting = false,
 }: TemplatesTableProps) {
   const discTemplates = templates.filter(template => template.type === "disc");
 
@@ -28,6 +30,7 @@ export function TemplatesTable({
       onCopyTemplate={onCopyTemplate}
       onStartAssessment={onStartAssessment}
       showCategories={false}
+      isDeleting={isDeleting}
     />
   );
 }

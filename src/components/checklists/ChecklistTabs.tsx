@@ -18,6 +18,7 @@ interface ChecklistTabsProps {
   onStartAssessment: (template: ChecklistTemplate) => void;
   onViewResult: (result: ChecklistResult) => void;
   onCreateTemplate: () => void;
+  isDeleting?: boolean;
 }
 
 export function ChecklistTabs({
@@ -30,7 +31,8 @@ export function ChecklistTabs({
   onCopyTemplate,
   onStartAssessment,
   onViewResult,
-  onCreateTemplate
+  onCreateTemplate,
+  isDeleting = false
 }: ChecklistTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -62,6 +64,7 @@ export function ChecklistTabs({
             onDeleteTemplate={onDeleteTemplate}
             onCopyTemplate={onCopyTemplate}
             onStartAssessment={onStartAssessment}
+            isDeleting={isDeleting}
           />
         )}
       </TabsContent>
@@ -79,6 +82,7 @@ export function ChecklistTabs({
             onDeleteTemplate={onDeleteTemplate}
             onCopyTemplate={onCopyTemplate}
             onStartAssessment={onStartAssessment}
+            isDeleting={isDeleting}
           />
         )}
       </TabsContent>

@@ -17,6 +17,7 @@ export default function Checklists() {
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAssessmentDialogOpen, setIsAssessmentDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     checklists = [], // Add default empty array
@@ -26,7 +27,8 @@ export default function Checklists() {
     handleUpdateTemplate,
     handleDeleteTemplate,
     handleCopyTemplate,
-    handleSaveAssessmentResult
+    handleSaveAssessmentResult,
+    refetchChecklists
   } = useChecklistData();
 
   const handleCloseFormDialog = () => {
@@ -51,6 +53,22 @@ export default function Checklists() {
     setIsAssessmentDialogOpen(true);
     // Toast para informar que a avaliação está sendo iniciada
     toast.success(`Iniciando avaliação para ${template.title}`);
+  };
+
+  const handleDelete = async (template: ChecklistTemplate) => {
+    if (isDeleting) return;
+    
+    try {
+      setIsDeleting(true);
+      const success = await handleDeleteTemplate(template);
+      
+      if (success) {
+        // Refetch to ensure UI is updated
+        await refetchChecklists();
+      }
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleSubmitAssessment = async (resultData: any) => {
@@ -123,7 +141,7 @@ export default function Checklists() {
           checklists={checklists}
           results={results}
           onEditTemplate={handleEditTemplate}
-          onDeleteTemplate={handleDeleteTemplate}
+          onDeleteTemplate={handleDelete}
           onCopyTemplate={handleCopyTemplate}
           onStartAssessment={handleStartAssessment}
           onViewResult={handleViewResult}
@@ -132,6 +150,7 @@ export default function Checklists() {
             setSelectedTemplate(null);
             setIsFormDialogOpen(true);
           }}
+          isDeleting={isDeleting}
         />
       )}
       
