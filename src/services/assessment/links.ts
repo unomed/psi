@@ -25,11 +25,11 @@ export async function generateAssessmentLink(
     // Generate a unique token
     const token = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
     
-    // Set expiration date (7 days from now)
+    // Set expiration date (30 days from now instead of 7)
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    expiresAt.setDate(expiresAt.getDate() + 30);
     
-    // Save link in assessment_links table
+    // Save link in assessment_links table with better error handling
     const { data, error } = await supabase
       .from('assessment_links')
       .insert({
@@ -42,7 +42,16 @@ export async function generateAssessmentLink(
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erro detalhado ao gerar link:", error);
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error("Nenhum dado retornado após inserir o link de avaliação");
+    }
+
+    console.log("Link gerado com sucesso:", data);
 
     // Return the complete URL with the custom domain
     return `https://avaliacao.unomed.med.br/avaliacao/${token}`;
@@ -81,19 +90,27 @@ export async function updateAssessmentStatus(
 
 export async function checkLinkValidity(token: string): Promise<boolean> {
   try {
+    // Melhorar a verificação incluindo logs detalhados
+    console.log("Verificando validade do token:", token);
+    
     const { data, error } = await supabase
       .from('assessment_links')
-      .select()
+      .select('*')
       .eq('token', token)
       .is('used_at', null)
       .gt('expires_at', new Date().toISOString())
       .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erro ao verificar token:", error);
+      return false;
+    }
 
+    console.log("Resultado da verificação do token:", data);
+    
     return !!data;
   } catch (error) {
-    console.error("Erro ao verificar validade do link:", error);
+    console.error("Exceção ao verificar validade do link:", error);
     return false;
   }
 }
@@ -105,7 +122,12 @@ export async function markLinkAsUsed(token: string): Promise<void> {
       .update({ used_at: new Date().toISOString() })
       .eq('token', token);
 
-    if (error) throw error;
+    if (error) {
+      console.error("Erro ao marcar link como usado:", error);
+      throw error;
+    }
+    
+    console.log("Link marcado como usado com sucesso:", token);
   } catch (error) {
     console.error("Erro ao marcar link como usado:", error);
     throw error;

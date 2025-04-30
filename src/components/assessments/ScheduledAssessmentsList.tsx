@@ -25,29 +25,47 @@ export function ScheduledAssessmentsList({
   const handleShareClick = async (assessment: ScheduledAssessment) => {
     setSelectedAssessment(assessment);
     if (assessment.linkUrl) {
+      // Se já existe um link, use-o
       setGeneratedLink(assessment.linkUrl);
+      setIsDialogOpen(true);
+      return;
     }
     setIsDialogOpen(true);
   };
 
   const handleConfirmShare = async () => {
-    if (!selectedAssessment || !selectedAssessment.employeeId || !selectedAssessment.templateId) return;
+    if (!selectedAssessment || !selectedAssessment.employeeId || !selectedAssessment.templateId) {
+      toast.error("Dados incompletos para gerar o link");
+      return;
+    }
     
     try {
       setIsGenerating(true);
+      console.log("Gerando link para avaliação:", {
+        employeeId: selectedAssessment.employeeId,
+        templateId: selectedAssessment.templateId
+      });
+      
       const link = await generateAssessmentLink(
         selectedAssessment.employeeId,
         selectedAssessment.templateId
       );
       
       if (link) {
+        console.log("Link gerado com sucesso:", link);
         setGeneratedLink(link);
-        await onShareAssessment?.(selectedAssessment.id);
+        
+        if (onShareAssessment) {
+          await onShareAssessment(selectedAssessment.id);
+        }
+        
         toast.success("Link gerado com sucesso!");
+      } else {
+        toast.error("Falha ao gerar o link");
       }
     } catch (error) {
-      console.error("Erro ao gerar link de avaliação:", error);
-      toast.error("Erro ao gerar link de avaliação");
+      console.error("Erro detalhado ao gerar link de avaliação:", error);
+      toast.error("Erro ao gerar link de avaliação. Tente novamente.");
     } finally {
       setIsGenerating(false);
     }

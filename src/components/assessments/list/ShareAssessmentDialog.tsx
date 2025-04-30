@@ -25,6 +25,7 @@ export function ShareAssessmentDialog({
 }: ShareAssessmentDialogProps) {
   const handleCopyLink = () => {
     if (!generatedLink) return;
+    
     navigator.clipboard.writeText(generatedLink);
     toast.success("Link copiado para a área de transferência!");
   };
@@ -42,6 +43,16 @@ export function ShareAssessmentDialog({
     }
     
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+  };
+
+  const getExpiryInfo = () => {
+    if (!generatedLink) return null;
+    
+    return (
+      <p className="text-xs text-muted-foreground mt-2">
+        Este link estará válido por 30 dias. O funcionário pode usá-lo apenas uma vez.
+      </p>
+    );
   };
 
   return (
@@ -82,6 +93,8 @@ export function ShareAssessmentDialog({
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
+              
+              {getExpiryInfo()}
               
               {assessment?.phoneNumber && (
                 <Button 
