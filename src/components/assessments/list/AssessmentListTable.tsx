@@ -1,80 +1,101 @@
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AssessmentListActions } from "./AssessmentListActions";
+import { DataTable } from "@/components/ui/data-table";
+import { formatDate } from "@/utils/dateFormat";
 import { ScheduledAssessment } from "@/types";
+import { AssessmentListActions } from "./AssessmentListActions";
 
 interface AssessmentListTableProps {
   assessments: ScheduledAssessment[];
   type: "scheduled" | "completed";
   onShareClick: (assessment: ScheduledAssessment) => void;
   onShareAssessment?: (assessmentId: string) => Promise<void>;
+  onDeleteAssessment?: (assessmentId: string) => Promise<void>;
+  onSendEmail?: (assessmentId: string) => Promise<void>;
+  isProcessing?: {[key: string]: boolean};
 }
 
-export function AssessmentListTable({ 
+export function AssessmentListTable({
   assessments,
   type,
   onShareClick,
-  onShareAssessment
+  onShareAssessment,
+  onDeleteAssessment,
+  onSendEmail,
+  isProcessing = {}
 }: AssessmentListTableProps) {
-  if (assessments.length === 0) {
-    return (
-      <div className="text-center py-6 text-muted-foreground">
-        {type === "scheduled" 
-          ? "Nenhuma avaliação agendada" 
-          : "Nenhuma avaliação concluída"}
-      </div>
-    );
-  }
+  const columns = [
+    {
+      accessorKey: "scheduledDate",
+      header: "Data Agendada",
+      cell: ({ row }: { row: any }) => {
+        return <div>{formatDate(row.original.scheduledDate)}</div>;
+      },
+    },
+    {
+      accessorKey: "employees.name",
+      header: "Funcionário",
+      cell: ({ row }: { row: any }) => {
+        return <div className="font-medium">{row.original.employees?.name || "N/A"}</div>;
+      },
+    },
+    {
+      accessorKey: "checklist_templates.title",
+      header: "Template",
+      cell: ({ row }: { row: any }) => {
+        return <div>{row.original.checklist_templates?.title || "N/A"}</div>;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }: { row: any }) => {
+        const status = row.original.status;
+        let statusLabel = "Desconhecido";
+        let statusClass = "bg-gray-200";
+        
+        if (status === "scheduled") {
+          statusLabel = "Agendado";
+          statusClass = "bg-blue-100 text-blue-800";
+        } else if (status === "sent") {
+          statusLabel = "Enviado";
+          statusClass = "bg-yellow-100 text-yellow-800";
+        } else if (status === "completed") {
+          statusLabel = "Concluído";
+          statusClass = "bg-green-100 text-green-800";
+        }
+        
+        return (
+          <div className={`px-2 py-1 rounded-full text-xs font-medium inline-block ${statusClass}`}>
+            {statusLabel}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "actions",
+      header: "Ações",
+      cell: ({ row }: { row: any }) => {
+        const assessment = row.original;
+        const isProcessingItem = isProcessing[assessment.id] || false;
+        
+        return (
+          <AssessmentListActions
+            assessment={assessment}
+            type={type}
+            onShareClick={onShareClick}
+            onShareAssessment={onShareAssessment}
+            onDeleteAssessment={isProcessingItem ? undefined : onDeleteAssessment}
+            onSendEmail={isProcessingItem ? undefined : onSendEmail}
+          />
+        );
+      },
+    },
+  ];
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Funcionário</TableHead>
-            <TableHead>Modelo</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {assessments.map((assessment) => (
-            <TableRow key={assessment.id}>
-              <TableCell>
-                {assessment.employees?.name || "Funcionário não encontrado"}
-              </TableCell>
-              <TableCell>
-                {assessment.checklist_templates?.title || "Modelo não encontrado"}
-              </TableCell>
-              <TableCell>
-                {format(assessment.scheduledDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-              </TableCell>
-              <TableCell>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                  ${assessment.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' : ''}
-                  ${assessment.status === 'sent' ? 'bg-blue-100 text-blue-800' : ''}
-                  ${assessment.status === 'completed' ? 'bg-green-100 text-green-800' : ''}`}
-                >
-                  {assessment.status === 'scheduled' ? 'Agendado' : ''}
-                  {assessment.status === 'sent' ? 'Enviado' : ''}
-                  {assessment.status === 'completed' ? 'Concluído' : ''}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <AssessmentListActions
-                  assessment={assessment}
-                  type={type}
-                  onShareClick={onShareClick}
-                  onShareAssessment={onShareAssessment}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable
+      columns={columns}
+      data={assessments}
+    />
   );
 }

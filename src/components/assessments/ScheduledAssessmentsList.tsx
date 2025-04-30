@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { ScheduledAssessment } from "@/types";
-import { generateAssessmentLink } from "@/services/assessment/links";
+import { generateAssessmentLink, deleteAssessment, sendAssessmentEmail } from "@/services/assessment/links";
 import { toast } from "sonner";
 import { AssessmentListTable } from "./list/AssessmentListTable";
 import { ShareAssessmentDialog } from "./list/ShareAssessmentDialog";
@@ -21,11 +21,12 @@ export function ScheduledAssessmentsList({
   const [selectedAssessment, setSelectedAssessment] = useState<ScheduledAssessment | null>(null);
   const [generatedLink, setGeneratedLink] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<{[key: string]: boolean}>({});
 
   const handleShareClick = async (assessment: ScheduledAssessment) => {
     setSelectedAssessment(assessment);
     if (assessment.linkUrl) {
-      // Se já existe um link, use-o
+      // If link already exists, use it
       setGeneratedLink(assessment.linkUrl);
       setIsDialogOpen(true);
       return;
@@ -43,7 +44,8 @@ export function ScheduledAssessmentsList({
       setIsGenerating(true);
       console.log("Gerando link para avaliação:", {
         employeeId: selectedAssessment.employeeId,
-        templateId: selectedAssessment.templateId
+        templateId: selectedAssessment.templateId,
+        assessmentId: selectedAssessment.id
       });
       
       const link = await generateAssessmentLink(
@@ -71,6 +73,36 @@ export function ScheduledAssessmentsList({
     }
   };
 
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    try {
+      setIsProcessing(prev => ({ ...prev, [assessmentId]: true }));
+      await deleteAssessment(assessmentId);
+      // Refresh the list after deletion - you might want to implement a more elegant way
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error deleting assessment:", error);
+    } finally {
+      setIsProcessing(prev => ({ ...prev, [assessmentId]: false }));
+    }
+  };
+
+  const handleSendEmail = async (assessmentId: string) => {
+    try {
+      setIsProcessing(prev => ({ ...prev, [assessmentId]: true }));
+      await sendAssessmentEmail(assessmentId);
+      // Refresh the list after sending email
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Error sending email:", error);
+    } finally {
+      setIsProcessing(prev => ({ ...prev, [assessmentId]: false }));
+    }
+  };
+
   return (
     <>
       <AssessmentListTable
@@ -78,6 +110,9 @@ export function ScheduledAssessmentsList({
         type={type}
         onShareClick={handleShareClick}
         onShareAssessment={onShareAssessment}
+        onDeleteAssessment={handleDeleteAssessment}
+        onSendEmail={handleSendEmail}
+        isProcessing={isProcessing}
       />
 
       <ShareAssessmentDialog

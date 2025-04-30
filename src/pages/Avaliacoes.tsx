@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { generateAssessmentLink, updateAssessmentStatus } from "@/services/assessment/links";
+import { generateAssessmentLink, updateAssessmentStatus, deleteAssessment, sendAssessmentEmail } from "@/services/assessment/links";
 import { ShareLinkDialog } from "@/components/assessments/ShareLinkDialog";
 
 export default function Avaliacoes() {
@@ -19,6 +19,7 @@ export default function Avaliacoes() {
     const saved = localStorage.getItem('selectedCompany');
     return saved || null;
   });
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { userRole, userCompanies } = useAuth();
   const { verifyCompanyAccess } = useCompanyAccessCheck();
@@ -54,43 +55,76 @@ export default function Avaliacoes() {
 
   const handleShareAssessment = async (assessment: any) => {
     try {
+      setIsProcessing(true);
       // Verificar se temos todos os dados necessários
       if (!assessment.employeeId || !assessment.templateId) {
         toast.error("Dados do funcionário ou template incompletos");
         return;
       }
 
-      const link = await generateAssessmentLink(
-        assessment.employeeId,
-        assessment.templateId
-      );
+      console.log("Handling assessment share:", assessment);
+
+      let linkToUse = assessment.linkUrl;
       
-      if (link) {
-        await updateAssessmentStatus(assessment.id, link);
-        setGeneratedLink(link);
-        setSelectedAssessment(assessment);
-        setIsShareDialogOpen(true);
+      // If no link exists, generate one
+      if (!linkToUse) {
+        const link = await generateAssessmentLink(
+          assessment.employeeId,
+          assessment.templateId
+        );
         
-        // Forçar uma atualização da página após 1 segundo para mostrar o status atualizado
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        if (link) {
+          await updateAssessmentStatus(assessment.id, link);
+          linkToUse = link;
+        } else {
+          throw new Error("Falha ao gerar o link");
+        }
       }
+      
+      setGeneratedLink(linkToUse);
+      setSelectedAssessment(assessment);
+      setIsShareDialogOpen(true);
     } catch (error) {
       console.error("Erro ao compartilhar avaliação:", error);
       toast.error("Erro ao gerar link de compartilhamento");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleSendEmail = async () => {
-    if (selectedAssessment) {
-      try {
-        //await handleSendEmail(selectedAssessment.id);
-        toast.success("Email enviado com sucesso!");
-      } catch (error) {
-        console.error("Erro ao enviar email:", error);
-        toast.error("Erro ao enviar email");
-      }
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    try {
+      setIsProcessing(true);
+      await deleteAssessment(assessmentId);
+      toast.success("Agendamento excluído com sucesso!");
+      
+      // Forçar uma atualização da página após excluir
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Erro ao excluir agendamento:", error);
+      toast.error("Erro ao excluir agendamento");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSendEmail = async (assessmentId: string) => {
+    try {
+      setIsProcessing(true);
+      await sendAssessmentEmail(assessmentId);
+      toast.success("Email enviado com sucesso!");
+      
+      // Forçar uma atualização da página após enviar o email
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error("Erro ao enviar email:", error);
+      toast.error("Erro ao enviar email");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -125,7 +159,13 @@ export default function Avaliacoes() {
       )}
       
       <AssessmentErrorBoundary>
-        <AssessmentHandler companyId={selectedCompany} onShareAssessment={handleShareAssessment} />
+        <AssessmentHandler 
+          companyId={selectedCompany} 
+          onShareAssessment={handleShareAssessment}
+          onDeleteAssessment={handleDeleteAssessment}
+          onSendEmail={handleSendEmail}
+          isProcessing={isProcessing}
+        />
       </AssessmentErrorBoundary>
       
       <ShareLinkDialog
@@ -133,7 +173,7 @@ export default function Avaliacoes() {
         onClose={() => setIsShareDialogOpen(false)}
         employeeName={selectedAssessment?.employees?.name || ""}
         assessmentLink={generatedLink}
-        onSendEmail={handleSendEmail}
+        onSendEmail={() => selectedAssessment && handleSendEmail(selectedAssessment.id)}
       />
     </div>
   );

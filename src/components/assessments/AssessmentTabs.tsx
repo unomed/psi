@@ -11,10 +11,19 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface AssessmentTabsProps {
   companyId?: string | null;
-  onShareAssessment?: (assessmentId: string) => Promise<void>;
+  onShareAssessment?: (assessment: any) => Promise<void>;
+  onDeleteAssessment?: (assessmentId: string) => Promise<void>;
+  onSendEmail?: (assessmentId: string) => Promise<void>;
+  isProcessing?: boolean;
 }
 
-export function AssessmentTabs({ companyId, onShareAssessment }: AssessmentTabsProps) {
+export function AssessmentTabs({ 
+  companyId, 
+  onShareAssessment,
+  onDeleteAssessment,
+  onSendEmail,
+  isProcessing
+}: AssessmentTabsProps) {
   const { userRole } = useAuth();
   
   const { data: scheduledAssessments = [], isLoading } = useQuery({
@@ -84,7 +93,7 @@ export function AssessmentTabs({ companyId, onShareAssessment }: AssessmentTabsP
   });
 
   const scheduledItems = scheduledAssessments.filter(
-    assessment => assessment.status === 'scheduled'
+    assessment => assessment.status === 'scheduled' || assessment.status === 'sent'
   );
 
   const completedItems = scheduledAssessments.filter(

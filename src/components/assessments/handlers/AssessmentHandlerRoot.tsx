@@ -16,9 +16,18 @@ import { ChecklistTemplate } from "@/types";
 interface AssessmentHandlerRootProps {
   companyId: string | null;
   onShareAssessment?: (assessment: any) => Promise<void>;
+  onDeleteAssessment?: (assessmentId: string) => Promise<void>;
+  onSendEmail?: (assessmentId: string) => Promise<void>;
+  isProcessing?: boolean;
 }
 
-export function AssessmentHandlerRoot({ companyId, onShareAssessment }: AssessmentHandlerRootProps) {
+export function AssessmentHandlerRoot({ 
+  companyId, 
+  onShareAssessment,
+  onDeleteAssessment,
+  onSendEmail,
+  isProcessing 
+}: AssessmentHandlerRootProps) {
   const {
     scheduledAssessments,
     handleSaveSchedule: saveSchedule,
@@ -68,23 +77,17 @@ export function AssessmentHandlerRoot({ companyId, onShareAssessment }: Assessme
     }
   };
 
-  // Custom share handler that uses the passed onShareAssessment if provided
-  const handleShareAssessment = async (assessmentId: string) => {
-    if (onShareAssessment) {
-      const assessment = scheduledAssessments.find(a => a.id === assessmentId);
-      if (assessment) {
-        await onShareAssessment(assessment);
-      }
-    } else {
-      handlers.handleShareAssessment(assessmentId);
-    }
-  };
-
   return (
     <AssessmentErrorBoundary>
       <div className="space-y-8">
         <AssessmentActions onNewAssessment={handlers.handleNewAssessment} />
-        <AssessmentTabs companyId={companyId} onShareAssessment={handleShareAssessment} />
+        <AssessmentTabs 
+          companyId={companyId} 
+          onShareAssessment={onShareAssessment}
+          onDeleteAssessment={onDeleteAssessment}
+          onSendEmail={onSendEmail}
+          isProcessing={isProcessing}
+        />
         <AssessmentDialogsContainer
           dialogState={dialogState}
           handlers={handlers}
