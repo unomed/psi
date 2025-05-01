@@ -9,13 +9,19 @@ export * from './core';
 
 // Assessment communication (email, sharing)
 export { 
-  generateAssessmentLink,
-  updateAssessmentStatus,
-  deleteAssessment
+  generateAssessmentLinkFromId,
+  sendAssessmentEmail
 } from './communication';
 
 // Named exports from links service
-export * from './links';
+export {
+  generateAssessmentLink,
+  updateAssessmentStatus,
+  deleteAssessment,
+  checkLinkValidity,
+  markLinkAsUsed,
+  sendAssessmentEmail as sendEmail
+} from './links';
 
 // Results management
 export * from './results';
