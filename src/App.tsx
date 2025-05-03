@@ -28,6 +28,7 @@ import UserManagementPage from "./pages/configuracoes/UserManagementPage";
 import PermissionsPage from "./pages/configuracoes/PermissionsPage";
 import GestaoRiscos from "./pages/GestaoRiscos";
 import PlanoAcao from "./pages/PlanoAcao";
+import Perfil from "./pages/Perfil";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,15 @@ const App = () => (
               <RouteGuard>
                 <MainLayout>
                   <Dashboard />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            
+            {/* Profile page - accessible to authenticated users with specific roles */}
+            <Route path="/perfil" element={
+              <RouteGuard allowedRoles={['superadmin', 'admin', 'evaluator']}>
+                <MainLayout>
+                  <Perfil />
                 </MainLayout>
               </RouteGuard>
             } />
