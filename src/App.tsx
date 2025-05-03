@@ -22,6 +22,7 @@ import { RouteGuard } from "./components/auth/RouteGuard";
 import AssessmentCriteriaPage from "./pages/configuracoes/AssessmentCriteriaPage";
 import EmailServerPage from "./pages/configuracoes/EmailServerPage";
 import EmailTemplatesPage from "./pages/configuracoes/EmailTemplatesPage";
+import EmailPage from "./pages/configuracoes/EmailPage";
 import NotificationsPage from "./pages/configuracoes/NotificationsPage";
 import PeriodicityPage from "./pages/configuracoes/PeriodicityPage";
 import UserManagementPage from "./pages/configuracoes/UserManagementPage";
@@ -137,6 +138,13 @@ const App = () => (
               <RouteGuard requirePermission="view_settings">
                 <MainLayout>
                   <AssessmentCriteriaPage />
+                </MainLayout>
+              </RouteGuard>
+            } />
+            <Route path="/configuracoes/email" element={
+              <RouteGuard requirePermission="view_settings">
+                <MainLayout>
+                  <EmailPage />
                 </MainLayout>
               </RouteGuard>
             } />

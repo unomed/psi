@@ -10,6 +10,13 @@ export const settingsMenuItems = [
     roles: ["superadmin"]
   },
   {
+    title: "Email",
+    icon: Mail,
+    path: "/configuracoes/email",
+    permission: "view_settings",
+    roles: ["superadmin"]
+  },
+  {
     title: "Servidor de Email",
     icon: Server,
     path: "/configuracoes/servidor-email",
