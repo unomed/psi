@@ -6,7 +6,11 @@ import { UserProfileMenu } from "./UserProfileMenu";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { NotificationProvider } from "@/components/notifications/NotificationService";
 
-export default function MainLayout() {
+interface MainLayoutProps {
+  children?: React.ReactNode;
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <NotificationProvider>
       <SidebarProvider>
@@ -21,7 +25,7 @@ export default function MainLayout() {
               </div>
             </header>
             <div className="flex-1 p-6">
-              <Outlet />
+              {children || <Outlet />}
             </div>
           </main>
         </div>

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
+import MainLayout from "@/components/layout/MainLayout";
 
 // Pages
 import Index from "./pages/Index";
@@ -38,10 +39,12 @@ function App() {
                 <Route path="/auth/register" element={<Register />} />
                 <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
                 
-                {/* Rotas protegidas */}
+                {/* Rotas protegidas com MainLayout */}
                 <Route path="/*" element={
                   <RouteGuard>
-                    <MainRoutes />
+                    <MainLayout>
+                      <MainRoutes />
+                    </MainLayout>
                   </RouteGuard>
                 } />
               </Routes>

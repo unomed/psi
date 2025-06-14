@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";
 import Funcionarios from "@/pages/Funcionarios";
@@ -19,7 +19,13 @@ import NotFound from "@/pages/NotFound";
 export function MainRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
+      {/* Rota raiz redireciona para dashboard */}
+      <Route index element={<Navigate to="/dashboard" replace />} />
+      
+      {/* Rota específica do dashboard */}
+      <Route path="/dashboard" element={<Dashboard />} />
+      
+      {/* Outras rotas */}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/funcionarios" element={<Funcionarios />} />
       <Route path="/setores" element={<Setores />} />
@@ -33,7 +39,9 @@ export function MainRoutes() {
       <Route path="/plano-acao" element={<PlanoAcao />} />
       <Route path="/relatorios" element={<Relatorios />} />
       <Route path="/perfil" element={<Perfil />} />
-      <Route path="*" element={<NotFound />} />
+      
+      {/* Catch all - redireciona para dashboard */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
