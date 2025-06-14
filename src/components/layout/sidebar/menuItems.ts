@@ -19,61 +19,85 @@ export const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
     icon: BarChart3,
-    path: "/dashboard"
+    href: "/dashboard",
+    path: "/dashboard",
+    roles: ["superadmin", "admin", "user"]
   },
   {
     title: "Empresas",
     icon: Building2,
-    path: "/empresas"
+    href: "/empresas",
+    path: "/empresas",
+    roles: ["superadmin"]
   },
   {
     title: "Funcionários",
     icon: Users,
-    path: "/funcionarios"
+    href: "/funcionarios",
+    path: "/funcionarios",
+    roles: ["superadmin", "admin"]
   },
   {
     title: "Setores",
     icon: MapPin,
-    path: "/setores"
+    href: "/setores",
+    path: "/setores",
+    roles: ["superadmin", "admin"]
   },
   {
     title: "Funções",
     icon: Briefcase,
-    path: "/funcoes"
+    href: "/funcoes",
+    path: "/funcoes",
+    roles: ["superadmin", "admin"]
   },
   {
     title: "Checklists",
     icon: CheckSquare,
-    path: "/checklists"
+    href: "/templates",
+    path: "/templates",
+    roles: ["superadmin", "admin", "user"]
   },
   {
     title: "Avaliações",
     icon: UserCheck,
-    path: "/avaliacoes"
+    href: "/avaliacoes",
+    path: "/avaliacoes",
+    roles: ["superadmin", "admin", "user"]
   },
   {
     title: "Resultados",
     icon: TrendingUp,
-    path: "/resultados"
+    href: "/resultados",
+    path: "/resultados",
+    roles: ["superadmin", "admin", "user"]
   },
   {
     title: "Gestão de Riscos",
     icon: Shield,
-    path: "/gestao-riscos"
+    href: "/gestao-riscos",
+    path: "/gestao-riscos",
+    roles: ["superadmin", "admin"]
   },
   {
     title: "Plano de Ação",
     icon: FileText,
-    path: "/plano-acao"
+    href: "/plano-acao",
+    path: "/plano-acao",
+    roles: ["superadmin", "admin"]
   },
   {
     title: "Relatórios",
     icon: BarChart3,
-    path: "/relatorios"
+    href: "/relatorios",
+    path: "/relatorios",
+    roles: ["superadmin", "admin"]
   },
   {
     title: "Faturamento",
     icon: CreditCard,
-    path: "/faturamento"
+    href: "/faturamento",
+    path: "/faturamento",
+    roles: ["superadmin"]
   }
 ];

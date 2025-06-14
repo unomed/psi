@@ -1,215 +1,128 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUsers, User } from "@/hooks/users/useUsers";
-import { Skeleton } from "@/components/ui/skeleton";
-import { UserTable } from "./users/UserTable";
-import { UserHeader } from "./users/UserHeader";
-import { UserFormDialog } from "./users/UserFormDialog";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useState, useEffect } from "react";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useUsers } from "@/hooks/users/useUsers";
+import { UserFormDialog } from "./users/UserFormDialog";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { useDeleteUser } from "@/hooks/users/useDeleteUser";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserManagementSettings() {
-  const { users, isLoading, deleteUser, updateUserRole, createUser } = useUsers();
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [deletingUser, setDeletingUser] = useState<any | null>(null);
+  const { users, isLoading, refetch } = useUsers();
+  const { deleteUser } = useDeleteUser();
 
-  const handleAddUser = () => {
-    setIsAddOpen(true);
-  };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
-  const handleEditUser = (user: User) => {
-    setSelectedUser(user);
-    setIsEditOpen(true);
-  };
-
-  const handleDeleteUser = (user: User) => {
-    setSelectedUser(user);
-    setIsDeleteOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (selectedUser) {
+  const handleDeleteUser = async () => {
+    if (deletingUser) {
       try {
-        await deleteUser.mutateAsync(selectedUser.id);
-        setIsDeleteOpen(false);
-        setSelectedUser(null);
+        await deleteUser(deletingUser.id);
+        toast.success("Usuário deletado com sucesso!");
+        setDeletingUser(null);
+        refetch(); // Refresh the user list
       } catch (error) {
-        console.error('Error deleting user:', error);
+        console.error("Erro ao deletar usuário:", error);
+        toast.error("Erro ao deletar usuário");
       }
     }
   };
 
-  const handleCreateUser = async (data: any) => {
-    try {
-      console.log('Creating user with data:', data);
-      await createUser.mutateAsync({
-        email: data.email,
-        full_name: data.full_name,
-        role: data.role,
-        companyIds: data.companyIds || [],
-      });
-      setIsAddOpen(false);
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
-    }
-  };
-
-  const handleUpdateUser = async (data: any) => {
-    if (selectedUser) {
-      try {
-        console.log('Updating user with data:', {
-          userId: selectedUser.id,
-          role: data.role,
-          companyIds: data.companyIds,
-        });
-        
-        await updateUserRole.mutateAsync({
-          userId: selectedUser.id,
-          role: data.role,
-          companyIds: data.companyIds || [],
-        });
-        
-        setIsEditOpen(false);
-        setSelectedUser(null);
-      } catch (error) {
-        console.error('Error updating user:', error);
-        toast.error('Erro ao atualizar função do usuário');
-        throw error;
-      }
-    }
-  };
-
-  const handleToggleActive = async (user: User) => {
-    try {
-      const newStatus = !user.is_active;
-      
-      // Show immediate feedback with optimistic update
-      toast.promise(
-        async () => {
-          const { error } = await supabase
-            .from('profiles')
-            .update({ is_active: newStatus })
-            .eq('id', user.id);
-
-          if (error) {
-            throw error;
-          }
-          
-          // Invalidate queries to refresh the data
-          await queryClient.invalidateQueries({ queryKey: ['users'] });
-          
-          return { success: true };
-        },
-        {
-          loading: `${newStatus ? 'Ativando' : 'Desativando'} usuário...`,
-          success: `Usuário ${newStatus ? 'ativado' : 'desativado'} com sucesso`,
-          error: (error) => {
-            console.error('Error toggling user active status:', error);
-            return `Erro ao ${newStatus ? 'ativar' : 'desativar'} usuário`;
-          }
-        }
-      );
-    } catch (error) {
-      console.error('Error in handleToggleActive:', error);
-      toast.error('Erro ao alterar status do usuário');
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'email', headerName: 'Email', width: 200 },
+    { field: 'full_name', headerName: 'Nome Completo', width: 200 },
+    {
+      field: 'role',
+      headerName: 'Função',
+      width: 120,
+      valueGetter: (params) => params.row.role,
+    },
+    {
+      field: 'company',
+      headerName: 'Empresa',
+      width: 150,
+      valueGetter: (params) => params.row.company?.name || 'Nenhuma',
+    },
+    {
+      field: 'actions',
+      headerName: 'Ações',
+      width: 150,
+      renderCell: (params: GridRenderCellParams) => (
+        <div className="flex gap-2">
+          <Button size="icon" onClick={() => {
+            setEditingUser(params.row);
+            setIsEditDialogOpen(true);
+          }}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="icon">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta ação irá deletar o usuário permanentemente. Tem certeza que deseja continuar?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteUser}>Deletar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gestão de Usuários</CardTitle>
-        <CardDescription>
-          Gerencie usuários e suas permissões no sistema
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <UserHeader onAddUser={handleAddUser} />
-        <UserTable 
-          users={users || []} 
-          onEditUser={handleEditUser} 
-          onDeleteUser={handleDeleteUser}
-          onToggleActive={handleToggleActive}
-        />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold">Gerenciar Usuários</h2>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Criar Usuário
+        </Button>
+      </div>
 
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={users || []}
+          columns={columns}
+          loading={isLoading}
+          getRowId={(row) => row.id}
+        />
+      </div>
+
+      {/* Dialogs - using isOpen instead of open */}
+      <UserFormDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        mode="create"
+      />
+
+      {editingUser && (
         <UserFormDialog
-          open={isAddOpen}
-          onClose={() => setIsAddOpen(false)}
-          onSubmit={handleCreateUser}
-          title="Adicionar Usuário"
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setEditingUser(null);
+          }}
+          user={editingUser}
+          mode="edit"
         />
-
-        {selectedUser && (
-          <UserFormDialog
-            open={isEditOpen}
-            onClose={() => {
-              setIsEditOpen(false);
-              setSelectedUser(null);
-            }}
-            onSubmit={handleUpdateUser}
-            user={selectedUser}
-            title="Editar Usuário"
-          />
-        )}
-
-        <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsDeleteOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleConfirmDelete}
-              >
-                Excluir
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

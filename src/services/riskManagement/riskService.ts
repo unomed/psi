@@ -23,76 +23,88 @@ export interface RiskFactor {
   description: string;
 }
 
-export async function createRiskAssessment(data: Omit<RiskAssessment, 'id' | 'created_at' | 'updated_at'>) {
-  const { data: result, error } = await supabase
-    .from('risk_assessments')
-    .insert({
-      company_id: data.company_id,
-      employee_id: data.employee_id,
-      assessment_date: data.assessment_date.toISOString(),
-      risk_level: data.risk_level,
-      risk_factors: data.risk_factors,
-      mitigation_actions: data.mitigation_actions,
-      status: data.status,
-      next_assessment_date: data.next_assessment_date?.toISOString(),
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return result;
-}
-
+// For now, we'll use assessment_responses to simulate risk assessments
+// since the risk_assessments table doesn't exist yet
 export async function getRiskAssessments(companyId?: string) {
-  let query = supabase
-    .from('risk_assessments')
-    .select(`
-      *,
-      employees(name, sector_id, role_id),
-      sectors(name),
-      roles(name)
-    `)
-    .order('assessment_date', { ascending: false });
+  try {
+    let query = supabase
+      .from('assessment_responses')
+      .select(`
+        *,
+        employees!inner(
+          id, name, company_id, role_id, sector_id,
+          roles(name),
+          sectors(name)
+        )
+      `)
+      .order('completed_at', { ascending: false });
 
-  if (companyId) {
-    query = query.eq('company_id', companyId);
+    if (companyId) {
+      query = query.eq('employees.company_id', companyId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    // Transform assessment responses into risk assessments format
+    return data?.map(response => ({
+      id: response.id,
+      company_id: response.employees?.company_id || '',
+      employee_id: response.employee_id || '',
+      assessment_date: new Date(response.completed_at),
+      risk_level: response.percentile >= 70 ? 'high' : response.percentile >= 30 ? 'medium' : 'low',
+      risk_factors: ['Avaliação Psicossocial'],
+      mitigation_actions: [],
+      status: 'completed',
+      created_at: new Date(response.completed_at),
+      updated_at: new Date(response.completed_at),
+      employee: response.employees
+    })) || [];
+  } catch (error) {
+    console.error("Error fetching risk assessments:", error);
+    return [];
   }
-
-  const { data, error } = await query;
-  if (error) throw error;
-  return data;
-}
-
-export async function updateRiskAssessment(id: string, updates: Partial<RiskAssessment>) {
-  const { data, error } = await supabase
-    .from('risk_assessments')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteRiskAssessment(id: string) {
-  const { error } = await supabase
-    .from('risk_assessments')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
 }
 
 export async function getRiskFactors() {
-  const { data, error } = await supabase
-    .from('risk_factors')
-    .select('*')
-    .order('category', { ascending: true });
+  // Return mock risk factors for now
+  return [
+    {
+      id: '1',
+      name: 'Stress Ocupacional',
+      category: 'Psicossocial',
+      weight: 1.0,
+      description: 'Nível de stress relacionado ao trabalho'
+    },
+    {
+      id: '2',
+      name: 'Carga de Trabalho',
+      category: 'Organizacional',
+      weight: 0.8,
+      description: 'Intensidade da carga de trabalho'
+    },
+    {
+      id: '3',
+      name: 'Relacionamento Interpessoal',
+      category: 'Social',
+      weight: 0.7,
+      description: 'Qualidade dos relacionamentos no trabalho'
+    }
+  ];
+}
 
-  if (error) throw error;
-  return data;
+// Placeholder functions for future implementation
+export async function createRiskAssessment(data: any) {
+  console.log("Risk assessment creation not implemented yet:", data);
+  throw new Error("Risk assessment creation not implemented yet");
+}
+
+export async function updateRiskAssessment(id: string, updates: any) {
+  console.log("Risk assessment update not implemented yet:", id, updates);
+  throw new Error("Risk assessment update not implemented yet");
+}
+
+export async function deleteRiskAssessment(id: string) {
+  console.log("Risk assessment deletion not implemented yet:", id);
+  throw new Error("Risk assessment deletion not implemented yet");
 }

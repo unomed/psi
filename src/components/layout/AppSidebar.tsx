@@ -18,11 +18,20 @@ export function AppSidebar() {
   const { userRole } = useAuth();
   const { hasPermission } = useCheckPermission();
 
-  const filteredMenuItems = menuItems.filter(item => 
-    userRole && 
-    item.roles.includes(userRole) && 
-    hasPermission(item.permission || item.href)
-  );
+  const filteredMenuItems = menuItems.filter(item => {
+    // Check if user role exists and item has roles array
+    if (!userRole || !item.roles || !Array.isArray(item.roles)) {
+      return false;
+    }
+    
+    // Check if user role is included in item roles
+    const hasRole = item.roles.includes(userRole);
+    
+    // Check permission if item has a permission property
+    const hasPermissionCheck = item.permission ? hasPermission(item.permission) : hasPermission(item.href || item.path);
+    
+    return hasRole && hasPermissionCheck;
+  });
 
   return (
     <Sidebar className="border-r">
@@ -38,7 +47,7 @@ export function AppSidebar() {
                   key={item.title}
                   title={item.title}
                   icon={item.icon}
-                  path={item.href}
+                  path={item.href || item.path}
                 />
               ))}
               

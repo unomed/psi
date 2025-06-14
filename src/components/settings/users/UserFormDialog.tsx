@@ -46,8 +46,8 @@ interface UserFormDialogProps {
 export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { companies } = useCompanies();
-  const { createUser } = useCreateUser();
-  const { updateUserRole } = useUpdateUserRole();
+  const createUserMutation = useCreateUser();
+  const updateUserRoleMutation = useUpdateUserRole();
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -63,7 +63,7 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
     setIsSubmitting(true);
     try {
       if (mode === "create") {
-        await createUser({
+        await createUserMutation.mutateAsync({
           email: data.email,
           full_name: data.full_name,
           role: data.role,
@@ -71,7 +71,10 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
         });
         toast.success("Usuário criado com sucesso!");
       } else {
-        await updateUserRole(user.id, data.role);
+        await updateUserRoleMutation.mutateAsync({
+          userId: user.id,
+          role: data.role
+        });
         toast.success("Usuário atualizado com sucesso!");
       }
       onClose();
