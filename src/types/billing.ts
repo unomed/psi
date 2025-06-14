@@ -1,38 +1,39 @@
 
-export type PlanType = "basic" | "professional" | "enterprise" | "custom";
-export type BillingCycle = "monthly" | "quarterly" | "annual";
-export type SubscriptionStatus = "active" | "suspended" | "cancelled" | "trial";
-export type InvoiceStatus = "pending" | "paid" | "overdue" | "cancelled";
+export type PlanType = "pay_per_assessment" | "credits" | "hybrid" | "volume";
+export type BillingStatus = "pending" | "charged" | "credited" | "failed";
+export type InvoiceStatus = "pending" | "sent" | "paid" | "overdue" | "cancelled";
+export type PaymentStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
 
 export interface BillingPlan {
   id: string;
   name: string;
   type: PlanType;
-  price_per_company: number;
-  price_per_employee: number;
-  max_companies: number | null; // null = unlimited
-  max_employees: number | null; // null = unlimited
-  features: string[];
-  description: string;
+  assessment_price: number;
   is_active: boolean;
+  bulk_discounts: BulkDiscount[];
+  description?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface Subscription {
+export interface BulkDiscount {
+  quantity: number;
+  unit_price: number;
+  discount_percent: number;
+}
+
+export interface CompanyBilling {
   id: string;
   company_id: string;
-  plan_id: string;
-  billing_cycle: BillingCycle;
-  status: SubscriptionStatus;
-  start_date: string;
-  end_date: string | null;
-  next_billing_date: string;
-  trial_end_date: string | null;
-  monthly_amount: number;
+  billing_plan_id: string;
+  assessment_credit_balance: number;
+  auto_recharge_enabled: boolean;
+  auto_recharge_threshold: number;
+  auto_recharge_amount: number;
+  payment_method?: string;
+  stripe_customer_id?: string;
   created_at: string;
   updated_at: string;
-  // Relations
   billing_plans?: BillingPlan;
   companies?: {
     name: string;
@@ -40,54 +41,61 @@ export interface Subscription {
   };
 }
 
+export interface AssessmentBillingRecord {
+  id: string;
+  assessment_response_id: string;
+  company_id: string;
+  amount_charged: number;
+  billing_status: BillingStatus;
+  invoice_id?: string;
+  charged_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Invoice {
   id: string;
   company_id: string;
-  subscription_id: string;
   invoice_number: string;
-  amount: number;
-  due_date: string;
-  paid_date: string | null;
-  status: InvoiceStatus;
   billing_period_start: string;
   billing_period_end: string;
-  companies_count: number;
-  employees_count: number;
-  description: string | null;
+  total_amount: number;
+  assessment_count: number;
+  unit_price: number;
+  discounts_applied: number;
+  status: InvoiceStatus;
+  due_date: string;
+  paid_at?: string;
   created_at: string;
   updated_at: string;
-  // Relations
-  companies?: {
-    name: string;
-    cnpj: string;
-  };
-  subscriptions?: Subscription;
-}
-
-export interface BillingUsage {
-  id: string;
-  company_id: string;
-  month_year: string; // Format: YYYY-MM
-  companies_count: number;
-  employees_count: number;
-  calculated_amount: number;
-  created_at: string;
-  updated_at: string;
-  // Relations
   companies?: {
     name: string;
     cnpj: string;
   };
 }
 
-export interface PaymentMethod {
+export interface PaymentTransaction {
   id: string;
   company_id: string;
-  type: "credit_card" | "bank_transfer" | "pix";
-  card_last_four?: string;
-  card_brand?: string;
-  is_default: boolean;
-  is_active: boolean;
+  invoice_id?: string;
+  amount: number;
+  payment_method: string;
+  stripe_payment_id?: string;
+  status: PaymentStatus;
+  processed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreditPurchase {
+  id: string;
+  company_id: string;
+  credits_purchased: number;
+  amount_paid: number;
+  unit_price: number;
+  payment_transaction_id?: string;
+  stripe_session_id?: string;
+  status: PaymentStatus;
   created_at: string;
   updated_at: string;
 }

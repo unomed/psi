@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      assessment_billing_records: {
+        Row: {
+          amount_charged: number
+          assessment_response_id: string
+          billing_status: string
+          charged_at: string | null
+          company_id: string
+          created_at: string
+          id: string
+          invoice_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_charged: number
+          assessment_response_id: string
+          billing_status?: string
+          charged_at?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_charged?: number
+          assessment_response_id?: string
+          billing_status?: string
+          charged_at?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_billing_records_assessment_response_id_fkey"
+            columns: ["assessment_response_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_billing_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_criteria_settings: {
         Row: {
           company_risk_calculation_type: string | null
@@ -229,6 +280,42 @@ export type Database = {
           },
         ]
       }
+      billing_plans: {
+        Row: {
+          assessment_price: number
+          bulk_discounts: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_price?: number
+          bulk_discounts?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_price?: number
+          bulk_discounts?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       checklist_templates: {
         Row: {
           company_id: string | null
@@ -353,6 +440,117 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      company_billing: {
+        Row: {
+          assessment_credit_balance: number
+          auto_recharge_amount: number | null
+          auto_recharge_enabled: boolean
+          auto_recharge_threshold: number | null
+          billing_plan_id: string
+          company_id: string
+          created_at: string
+          id: string
+          payment_method: string | null
+          stripe_customer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assessment_credit_balance?: number
+          auto_recharge_amount?: number | null
+          auto_recharge_enabled?: boolean
+          auto_recharge_threshold?: number | null
+          billing_plan_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assessment_credit_balance?: number
+          auto_recharge_amount?: number | null
+          auto_recharge_enabled?: boolean
+          auto_recharge_threshold?: number | null
+          billing_plan_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          stripe_customer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_billing_billing_plan_id_fkey"
+            columns: ["billing_plan_id"]
+            isOneToOne: false
+            referencedRelation: "billing_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_billing_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_purchases: {
+        Row: {
+          amount_paid: number
+          company_id: string
+          created_at: string
+          credits_purchased: number
+          id: string
+          payment_transaction_id: string | null
+          status: string
+          stripe_session_id: string | null
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          amount_paid: number
+          company_id: string
+          created_at?: string
+          credits_purchased: number
+          id?: string
+          payment_transaction_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          amount_paid?: number
+          company_id?: string
+          created_at?: string
+          credits_purchased?: number
+          id?: string
+          payment_transaction_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_purchases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_purchases_payment_transaction_id_fkey"
+            columns: ["payment_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_server_settings: {
         Row: {
@@ -514,6 +712,65 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          assessment_count: number
+          billing_period_end: string
+          billing_period_start: string
+          company_id: string
+          created_at: string
+          discounts_applied: number | null
+          due_date: string
+          id: string
+          invoice_number: string
+          paid_at: string | null
+          status: string
+          total_amount: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          assessment_count?: number
+          billing_period_end: string
+          billing_period_start: string
+          company_id: string
+          created_at?: string
+          discounts_applied?: number | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          paid_at?: string | null
+          status?: string
+          total_amount: number
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          assessment_count?: number
+          billing_period_end?: string
+          billing_period_start?: string
+          company_id?: string
+          created_at?: string
+          discounts_applied?: number | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          paid_at?: string | null
+          status?: string
+          total_amount?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_settings: {
         Row: {
           company_id: string | null
@@ -563,6 +820,60 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string
+          id: string
+          invoice_id: string | null
+          payment_method: string
+          processed_at: string | null
+          status: string
+          stripe_payment_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          payment_method: string
+          processed_at?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          payment_method?: string
+          processed_at?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -1063,6 +1374,10 @@ export type Database = {
       dissociate_user_from_company: {
         Args: { _user_id: string; _company_id: string }
         Returns: boolean
+      }
+      generate_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_user_emails: {
         Args: { user_ids: string[] }
