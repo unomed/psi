@@ -82,14 +82,14 @@ export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: Em
 
         <div className="space-y-2">
           <Label>Empresa</Label>
-          <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+          <Select value={selectedCompany || undefined} onValueChange={setSelectedCompany}>
             <SelectTrigger>
               <SelectValue placeholder="Todas as empresas" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as empresas</SelectItem>
+              <SelectItem value="all">Todas as empresas</SelectItem>
               {companies?.map(company => (
-                <SelectItem key={company.id} value={company.id}>
+                <SelectItem key={company.id} value={company.id || `company-${Math.random()}`}>
                   {company.name}
                 </SelectItem>
               ))}
@@ -99,14 +99,14 @@ export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: Em
 
         <div className="space-y-2">
           <Label>Setor</Label>
-          <Select value={selectedSector} onValueChange={setSelectedSector}>
+          <Select value={selectedSector || undefined} onValueChange={setSelectedSector}>
             <SelectTrigger>
               <SelectValue placeholder="Todos os setores" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os setores</SelectItem>
+              <SelectItem value="all">Todos os setores</SelectItem>
               {sectors?.map(sector => (
-                <SelectItem key={sector.id} value={sector.id}>
+                <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
                   {sector.name}
                 </SelectItem>
               ))}
@@ -116,14 +116,14 @@ export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: Em
 
         <div className="space-y-2">
           <Label>Função</Label>
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
+          <Select value={selectedRole || undefined} onValueChange={setSelectedRole}>
             <SelectTrigger>
               <SelectValue placeholder="Todas as funções" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as funções</SelectItem>
+              <SelectItem value="all">Todas as funções</SelectItem>
               {roles?.map(role => (
-                <SelectItem key={role.id} value={role.id}>
+                <SelectItem key={role.id} value={role.id || `role-${Math.random()}`}>
                   {role.name}
                 </SelectItem>
               ))}

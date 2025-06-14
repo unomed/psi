@@ -77,8 +77,8 @@ export function SchedulingDetailsTab({
       <div className="space-y-2">
         <Label htmlFor="recurrence">Recorrência</Label>
         <Select 
+          value={recurrenceType || undefined}
           onValueChange={(value) => setRecurrenceType(value as RecurrenceType)} 
-          defaultValue="none"
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione o tipo de recorrência" />

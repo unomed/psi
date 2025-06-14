@@ -42,7 +42,7 @@ export function AssessmentPeriodicitySection({
     <div className="space-y-2">
       <Label htmlFor="recurrence">Periodicidade</Label>
       <Select 
-        value={recurrenceType} 
+        value={recurrenceType || undefined} 
         onValueChange={(value) => onRecurrenceChange(value as RecurrenceType)}
       >
         <SelectTrigger>
