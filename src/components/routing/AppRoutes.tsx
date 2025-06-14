@@ -1,3 +1,4 @@
+
 import {
   Routes,
   Route,
@@ -19,7 +20,6 @@ import AssessmentScheduling from "@/pages/AssessmentScheduling";
 import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
 import Relatorios from "@/pages/Relatorios";
-import PlanoAcao from "@/pages/PlanoAcao";
 import PlanoAcaoV2 from "@/pages/PlanoAcaoV2";
 import GestaoRiscos from "@/pages/GestaoRiscos";
 import Faturamento from "@/pages/Faturamento";
@@ -142,16 +142,6 @@ export function AppRoutes() {
       />
       <Route 
         path="/plano-acao" 
-        element={
-          <MainLayout>
-            <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
-              <PlanoAcao />
-            </RouteGuard>
-          </MainLayout>
-        } 
-      />
-      <Route 
-        path="/plano-acao-v2" 
         element={
           <MainLayout>
             <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
