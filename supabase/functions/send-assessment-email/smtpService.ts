@@ -18,14 +18,20 @@ export interface EmailContent {
 }
 
 export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent): Promise<boolean> {
-  try {
-    console.log('Configurando conexão SMTP...', {
-      server: config.server,
-      port: config.port,
-      username: config.username,
-      useTLS: config.useTLS ?? true
-    });
+  console.log('=== SMTP SERVICE STARTED ===');
+  console.log('SMTP Configuration:', {
+    server: config.server,
+    port: config.port,
+    username: config.username,
+    senderEmail: config.senderEmail,
+    senderName: config.senderName,
+    useTLS: config.useTLS ?? true,
+    hasPassword: !!config.password
+  });
 
+  try {
+    console.log('Preparing email headers and body...');
+    
     // Preparar headers do email
     const boundary = `boundary_${Date.now()}_${Math.random().toString(36)}`;
     const messageId = `<${Date.now()}.${Math.random().toString(36)}@${config.server}>`;
@@ -61,21 +67,25 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
     ].join('\r\n');
 
     const fullMessage = emailHeaders + emailBody;
+    console.log('Email message prepared, size:', fullMessage.length, 'characters');
 
+    console.log('Attempting to connect to SMTP server...');
     // Conectar ao servidor SMTP
     const connection = await Deno.connect({
       hostname: config.server,
       port: config.port,
     });
 
-    console.log('Conectado ao servidor SMTP');
+    console.log('Connected to SMTP server successfully');
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
 
     // Função para enviar comando e ler resposta
     async function sendCommand(command: string): Promise<string> {
-      console.log('SMTP Command:', command.replace(/PASS.*/, 'PASS [HIDDEN]'));
+      const logCommand = command.replace(/PASS.*/, 'PASS [HIDDEN]').replace(/AUTH LOGIN.*/, 'AUTH LOGIN [HIDDEN]');
+      console.log('SMTP Command:', logCommand);
+      
       await connection.write(encoder.encode(command + '\r\n'));
       
       const buffer = new Uint8Array(1024);
@@ -86,6 +96,8 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
     }
 
     try {
+      console.log('Starting SMTP communication...');
+      
       // Iniciar comunicação SMTP
       let response = await sendCommand('EHLO localhost');
       if (!response.startsWith('250')) {
@@ -94,14 +106,16 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
 
       // STARTTLS se disponível e necessário
       if (config.useTLS !== false && config.port !== 25) {
+        console.log('Attempting STARTTLS...');
         response = await sendCommand('STARTTLS');
         if (response.startsWith('220')) {
-          console.log('STARTTLS iniciado');
-          // Aqui normalmente precisaríamos fazer upgrade da conexão para TLS
-          // Por simplicidade, vamos continuar sem TLS para testes locais
+          console.log('STARTTLS accepted (note: TLS upgrade not fully implemented in this version)');
+        } else {
+          console.log('STARTTLS not supported or failed, continuing without TLS');
         }
       }
 
+      console.log('Starting authentication...');
       // Autenticação
       response = await sendCommand('AUTH LOGIN');
       if (!response.startsWith('334')) {
@@ -122,8 +136,9 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
         throw new Error(`Password authentication failed: ${response}`);
       }
 
-      console.log('Autenticação SMTP bem-sucedida');
+      console.log('SMTP authentication successful');
 
+      console.log('Sending email...');
       // Enviar email
       response = await sendCommand(`MAIL FROM:<${config.senderEmail}>`);
       if (!response.startsWith('250')) {
@@ -141,6 +156,7 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
       }
 
       // Enviar o conteúdo do email
+      console.log('Sending email content...');
       await connection.write(encoder.encode(fullMessage + '\r\n.\r\n'));
       
       const dataBuffer = new Uint8Array(1024);
@@ -155,20 +171,32 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
       // Finalizar conexão
       await sendCommand('QUIT');
       
-      console.log('Email enviado com sucesso via SMTP');
+      console.log('Email sent successfully via SMTP');
       return true;
 
     } finally {
-      connection.close();
+      try {
+        connection.close();
+        console.log('SMTP connection closed');
+      } catch (closeError) {
+        console.warn('Error closing SMTP connection:', closeError);
+      }
     }
 
   } catch (error) {
-    console.error('Erro no envio SMTP:', error);
+    console.error('=== SMTP SENDING ERROR ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error details:', error);
     
-    // Fallback: tentar usar fetch para simulação em desenvolvimento
-    if (Deno.env.get('ENVIRONMENT') === 'development') {
-      console.log('Modo desenvolvimento: simulando envio de email');
-      console.log('Email que seria enviado:', {
+    // Check if we're in development mode
+    const isDevelopment = Deno.env.get('ENVIRONMENT') === 'development' || 
+                         Deno.env.get('DENO_DEPLOYMENT_ID') === undefined;
+    
+    if (isDevelopment) {
+      console.log('=== DEVELOPMENT MODE FALLBACK ===');
+      console.log('SMTP failed, but simulating success in development mode');
+      console.log('Email that would have been sent:', {
         to: email.to,
         subject: email.subject,
         from: `${config.senderName} <${config.senderEmail}>`,
@@ -177,6 +205,7 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
       return true;
     }
     
+    // In production, return false to indicate failure
     return false;
   }
 }

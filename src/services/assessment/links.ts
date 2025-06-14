@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
+import { verifyEmailConfiguration } from "./emailVerification";
 
 export async function generateAssessmentLink(
   employeeId: string,
@@ -240,6 +240,22 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
   try {
     console.log("Sending email for assessment:", assessmentId);
     
+    // Verificar configurações de email primeiro
+    console.log("Verifying email configuration...");
+    const emailConfig = await verifyEmailConfiguration();
+    
+    if (!emailConfig.hasSettings) {
+      toast.error("Configurações de email não encontradas. Configure primeiro em Configurações > Email.");
+      throw new Error("Configurações de email não encontradas");
+    }
+    
+    if (!emailConfig.isComplete) {
+      toast.error(`Configurações de email incompletas: ${emailConfig.missingFields.join(', ')}`);
+      throw new Error("Configurações de email incompletas");
+    }
+    
+    console.log("Email configuration verified successfully");
+    
     // Garantir que templates padrão existam
     await createDefaultEmailTemplates();
     
@@ -274,18 +290,25 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
       .single();
       
     if (employeeError || !employee?.email) {
+      console.error("Employee error:", employeeError);
+      toast.error("Email do funcionário não encontrado");
       throw new Error("Email do funcionário não encontrado");
     }
+    
+    console.log("Employee data retrieved:", { name: employee.name, hasEmail: !!employee.email });
     
     // Generate link if not exists
     let linkUrl = assessment.link_url;
     if (!linkUrl) {
+      console.log("Generating assessment link...");
       linkUrl = await generateAssessmentLink(assessment.employee_id, assessment.template_id);
       if (!linkUrl) {
         throw new Error("Falha ao gerar link de avaliação");
       }
+      console.log("Assessment link generated successfully");
     }
     
+    console.log("Calling send-assessment-email edge function...");
     // Call the edge function to send email
     const { data, error } = await supabase.functions.invoke('send-assessment-email', {
       body: {
@@ -301,19 +324,29 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
 
     if (error) {
       console.error("Error calling send-assessment-email function:", error);
+      toast.error(`Erro ao enviar email: ${error.message}`);
       throw new Error(`Erro ao enviar email: ${error.message}`);
     }
 
     if (!data?.success) {
+      console.error("Edge function returned unsuccessful result:", data);
+      toast.error(data?.error || "Falha ao enviar email");
       throw new Error(data?.error || "Falha ao enviar email");
     }
     
     console.log("Assessment email sent successfully");
-    toast.success("Email enviado com sucesso!");
+    
+    if (data.isDevelopment) {
+      toast.success("Email simulado com sucesso (modo desenvolvimento)!");
+    } else {
+      toast.success("Email enviado com sucesso!");
+    }
     
   } catch (error) {
     console.error("Error in sendAssessmentEmail:", error);
-    toast.error("Erro ao enviar email de avaliação");
+    if (!error.message.includes("Email do funcionário") && !error.message.includes("Configurações de email")) {
+      toast.error("Erro ao enviar email de avaliação");
+    }
     throw error;
   }
 }
