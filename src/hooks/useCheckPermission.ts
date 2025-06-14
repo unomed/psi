@@ -33,7 +33,6 @@ export function useCheckPermission() {
           setPermissions(null);
         } else {
           console.log("Permissions data:", data.permissions);
-          // Type checking and conversion to ensure we have the correct type
           if (data.permissions && typeof data.permissions === 'object') {
             setPermissions(data.permissions as Record<string, boolean>);
           } else {
@@ -56,40 +55,12 @@ export function useCheckPermission() {
     // If superadmin, always grant access
     if (userRole === 'superadmin') return true;
     
-    // For debugging
     console.log(`Checking permission ${permissionKey} for role ${userRole}:`, 
-      permissions ? JSON.stringify(permissions[permissionKey]) : "no permissions data");
+      permissions ? permissions[permissionKey] : "no permissions data");
     
     // Check if key directly exists in permissions object
     if (permissions && permissions[permissionKey] === true) {
       return true;
-    }
-    
-    // Handle the nested structure format
-    // For backward compatibility with the original structure format
-    if (permissions) {
-      // Convert numeric keys to array entries if needed
-      // Only include entries that are objects and not null
-      const resourcesArray = Object.entries(permissions)
-        .filter(([key]) => !isNaN(Number(key)))
-        .map(([_, value]) => {
-          // Only map objects, skip boolean values
-          return typeof value === 'object' && value !== null ? value as PermissionItem : null;
-        })
-        .filter((item): item is PermissionItem => item !== null && typeof item === 'object');
-        
-      // Check if permission exists in nested structure
-      for (const item of resourcesArray) {
-        if (item && 
-            'resource' in item && 
-            'actions' in item && 
-            Array.isArray(item.actions)) {
-          const [action, resource] = permissionKey.split('_');
-          if (item.resource === resource && item.actions.includes(action)) {
-            return true;
-          }
-        }
-      }
     }
     
     return false;

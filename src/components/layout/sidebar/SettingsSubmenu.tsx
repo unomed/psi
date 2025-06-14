@@ -24,11 +24,14 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
     }
   }, [isSettingsRoute, isOpen]);
   
-  const filteredSettingsItems = settingsMenuItems.filter(item => 
-    userRole && 
-    item.roles.includes(userRole) && 
-    hasPermission(item.permission)
-  );
+  const filteredSettingsItems = settingsMenuItems.filter(item => {
+    const hasRole = userRole && item.roles.includes(userRole);
+    const hasPermissionCheck = hasPermission(item.permission);
+    
+    console.log(`Settings item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
+    
+    return hasRole && hasPermissionCheck;
+  });
 
   if (filteredSettingsItems.length === 0) return null;
 

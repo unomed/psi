@@ -16,7 +16,21 @@ import { menuItems } from "./sidebar/menuItems";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
-  const { hasPermission } = useCheckPermission();
+  const { hasPermission, loadingPermission } = useCheckPermission();
+
+  // Show loading state while permissions are being fetched
+  if (loadingPermission) {
+    return (
+      <Sidebar className="border-r">
+        <SidebarHeader />
+        <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
+          <SidebarGroup className="flex-1">
+            <SidebarGroupLabel>Carregando...</SidebarGroupLabel>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
   const filteredMenuItems = menuItems.filter(item => {
     // Check if user role exists and item has roles array
@@ -28,10 +42,14 @@ export function AppSidebar() {
     const hasRole = item.roles.includes(userRole);
     
     // Check permission if item has a permission property
-    const hasPermissionCheck = item.permission ? hasPermission(item.permission) : hasPermission(item.href || item.path);
+    const hasPermissionCheck = item.permission ? hasPermission(item.permission) : true;
+    
+    console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
     
     return hasRole && hasPermissionCheck;
   });
+
+  console.log(`Filtered menu items for role ${userRole}:`, filteredMenuItems.map(item => item.title));
 
   return (
     <Sidebar className="border-r">
