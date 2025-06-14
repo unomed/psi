@@ -5,14 +5,14 @@ import { SidebarMenuSubItemComponent } from "./SidebarMenuItem";
 import { CollapsibleMenuItem } from "./CollapsibleMenuItem";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
-import { settingsMenuItems } from "./settingsItems";
+import { settingsItems } from "./settingsItems";
 
 export function SettingsSubmenu() {
   const { userRole } = useAuth();
   const { hasPermission } = useCheckPermission();
   const location = useLocation();
 
-  const filteredItems = settingsMenuItems.filter((item) => {
+  const filteredItems = settingsItems.filter((item) => {
     const hasRole = !item.roles || item.roles.includes(userRole!);
     const hasItemPermission = !item.permission || hasPermission(item.permission);
     
@@ -32,10 +32,10 @@ export function SettingsSubmenu() {
     >
       {filteredItems.map((item) => (
         <SidebarMenuSubItemComponent
-          key={item.path}
+          key={item.url}
           title={item.title}
-          href={item.path}
-          isActive={location.pathname === item.path}
+          href={item.url}
+          isActive={location.pathname === item.url}
         />
       ))}
     </CollapsibleMenuItem>
