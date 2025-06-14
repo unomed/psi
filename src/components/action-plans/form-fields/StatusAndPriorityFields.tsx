@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Control } from 'react-hook-form';
 import {
@@ -21,10 +22,6 @@ interface StatusAndPriorityFieldsProps {
 }
 
 export function StatusAndPriorityFields({ control }: StatusAndPriorityFieldsProps) {
-  // The values "draft", "active", "completed", "cancelled", "low", "medium", "high", "critical" are all valid non-empty strings.
-  // No changes needed here unless the `defaultValue` for the Select itself becomes problematic,
-  // but the error is about SelectItem values.
-  // Using undefined for field.value if it's empty allows placeholder to show.
   return (
     <>
       <FormField
@@ -33,7 +30,7 @@ export function StatusAndPriorityFields({ control }: StatusAndPriorityFieldsProp
         render={({ field }) => (
           <FormItem>
             <FormLabel>Status</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value || "draft"} value={field.value || undefined}>
+            <Select onValueChange={field.onChange} defaultValue={field.value || "draft"}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
@@ -57,7 +54,7 @@ export function StatusAndPriorityFields({ control }: StatusAndPriorityFieldsProp
         render={({ field }) => (
           <FormItem>
             <FormLabel>Prioridade</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value || "medium"} value={field.value || undefined}>
+            <Select onValueChange={field.onChange} defaultValue={field.value || "medium"}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />

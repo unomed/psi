@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,6 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import { useRoles } from "@/hooks/useRoles";
 import { Employee } from "@/types/employee";
-import { SafeSelect } from "@/components/ui/SafeSelect";
 
 interface EmployeeSelectionStepProps {
   selectedEmployee: Employee | null;
@@ -20,51 +20,40 @@ interface EmployeeSelectionStepProps {
 
 export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: EmployeeSelectionStepProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompanyFilter, setSelectedCompanyFilter] = useState<string | undefined>(undefined);
-  const [selectedSectorFilter, setSelectedSectorFilter] = useState<string | undefined>(undefined);
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string | undefined>(undefined);
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [selectedSector, setSelectedSector] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>("");
 
   const { employees, isLoading: loadingEmployees } = useEmployees();
   const { companies } = useCompanies();
   const { sectors } = useSectors();
   const { roles } = useRoles();
 
-  const filteredEmployees = (employees || []).filter(employee => {
-    if (!employee || !employee.id || String(employee.id).trim() === "") return false;
-
+  // Filtrar funcionários
+  const filteredEmployees = employees?.filter(employee => {
     const matchesSearch = searchTerm === "" || 
-      (employee.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (employee.cpf || "").includes(searchTerm) ||
-      (employee.email || "").toLowerCase().includes(searchTerm.toLowerCase());
+      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.cpf.includes(searchTerm) ||
+      employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCompany = !selectedCompanyFilter || employee.company_id === selectedCompanyFilter;
-    const matchesSector = !selectedSectorFilter || employee.sector_id === selectedSectorFilter;
-    const matchesRole = !selectedRoleFilter || employee.role_id === selectedRoleFilter;
+    const matchesCompany = !selectedCompany || employee.company_id === selectedCompany;
+    const matchesSector = !selectedSector || employee.sector_id === selectedSector;
+    const matchesRole = !selectedRole || employee.role_id === selectedRole;
 
     return matchesSearch && matchesCompany && matchesSector && matchesRole;
   });
 
-  const getCompanyName = (companyId: string | null | undefined) => {
-    if (!companyId) return "N/A";
+  const getCompanyName = (companyId: string) => {
     return companies?.find(c => c.id === companyId)?.name || "Empresa não encontrada";
   };
 
-  const getSectorName = (sectorId: string | null | undefined) => {
-    if (!sectorId) return "N/A";
+  const getSectorName = (sectorId: string) => {
     return sectors?.find(s => s.id === sectorId)?.name || "Setor não encontrado";
   };
 
-  const getRoleName = (roleId: string | null | undefined) => {
-    if (!roleId) return "N/A";
+  const getRoleName = (roleId: string) => {
     return roles?.find(r => r.id === roleId)?.name || "Função não encontrada";
   };
-
-  const companyOptions = [{ id: "all-companies-placeholder", name: "Todas as empresas" }, ...(companies || [])]
-    .filter(c => c && c.id && String(c.id).trim() !== "");
-  const sectorOptions = [{ id: "all-sectors-placeholder", name: "Todos os setores" }, ...(sectors || [])]
-    .filter(s => s && s.id && String(s.id).trim() !== "");
-  const roleOptions = [{ id: "all-roles-placeholder", name: "Todas as funções" }, ...(roles || [])]
-    .filter(r => r && r.id && String(r.id).trim() !== "");
 
   return (
     <div className="space-y-6">
@@ -75,6 +64,7 @@ export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: Em
         </p>
       </div>
 
+      {/* Filtros */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="space-y-2">
           <Label htmlFor="search">Buscar</Label>
@@ -92,41 +82,57 @@ export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: Em
 
         <div className="space-y-2">
           <Label>Empresa</Label>
-          <SafeSelect
-            data={companyOptions}
-            value={selectedCompanyFilter}
-            onChange={(val) => setSelectedCompanyFilter(val === "all-companies-placeholder" ? undefined : val)}
-            placeholder="Todas as empresas"
-            valueField="id"
-            labelField="name"
-          />
+          <Select value={selectedCompany || undefined} onValueChange={setSelectedCompany}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas as empresas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as empresas</SelectItem>
+              {companies?.map(company => (
+                <SelectItem key={company.id} value={company.id || `company-${Math.random()}`}>
+                  {company.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
           <Label>Setor</Label>
-          <SafeSelect
-            data={sectorOptions}
-            value={selectedSectorFilter}
-            onChange={(val) => setSelectedSectorFilter(val === "all-sectors-placeholder" ? undefined : val)}
-            placeholder="Todos os setores"
-            valueField="id"
-            labelField="name"
-          />
+          <Select value={selectedSector || undefined} onValueChange={setSelectedSector}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todos os setores" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os setores</SelectItem>
+              {sectors?.map(sector => (
+                <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
+                  {sector.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
           <Label>Função</Label>
-          <SafeSelect
-            data={roleOptions}
-            value={selectedRoleFilter}
-            onChange={(val) => setSelectedRoleFilter(val === "all-roles-placeholder" ? undefined : val)}
-            placeholder="Todas as funções"
-            valueField="id"
-            labelField="name"
-          />
+          <Select value={selectedRole || undefined} onValueChange={setSelectedRole}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas as funções" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as funções</SelectItem>
+              {roles?.map(role => (
+                <SelectItem key={role.id} value={role.id || `role-${Math.random()}`}>
+                  {role.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
+      {/* Lista de funcionários */}
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {loadingEmployees ? (
           <div className="text-center py-8">Carregando funcionários...</div>

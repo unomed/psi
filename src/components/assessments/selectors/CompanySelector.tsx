@@ -2,10 +2,15 @@
 import React from "react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SafeSelect } from "@/components/ui/SafeSelect";
-import type { Company } from "@/types/company";
 
 interface CompanySelectorProps {
   selectedCompany: string | null;
@@ -25,6 +30,15 @@ export function CompanySelector({
         (authUserCompanies || []).some(userCompany => userCompany.companyId === company.id)
       );
 
+  const baseValidCompanies = (companiesForUser || []).filter(company =>
+    company &&
+    company.id !== null &&
+    company.id !== undefined &&
+    String(company.id).trim() !== "" &&
+    company.name &&
+    String(company.name).trim() !== ""
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -37,15 +51,35 @@ export function CompanySelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>
-      <SafeSelect
-        data={companiesForUser}
-        value={selectedCompany}
-        onChange={onCompanyChange}
-        placeholder="Selecione uma empresa"
-        valueField="id"
-        labelField="name"
-        className="w-full"
-      />
+      <Select
+        value={selectedCompany || "no-company-selected"}
+        onValueChange={onCompanyChange}
+      >
+        <SelectTrigger id="company">
+          <SelectValue placeholder="Selecione uma empresa" />
+        </SelectTrigger>
+        <SelectContent>
+          {baseValidCompanies.length > 0 ? (
+            baseValidCompanies.map((company) => {
+              const companyIdStr = String(company.id);
+              if (companyIdStr.trim() === "") {
+                console.error("[Assessments/CompanySelector] Attempting to render SelectItem with empty value for company:", company);
+                return null;
+              }
+              return (
+                <SelectItem key={companyIdStr} value={companyIdStr}>
+                  {company.name}
+                </SelectItem>
+              );
+            }).filter(Boolean)
+          ) : (
+            <SelectItem value="no-companies-available" disabled>
+              Nenhuma empresa disponível
+            </SelectItem>
+          )}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
+

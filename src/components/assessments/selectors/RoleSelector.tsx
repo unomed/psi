@@ -1,10 +1,15 @@
 
 import React from "react";
 import { useRoles } from "@/hooks/useRoles";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SafeSelect } from "@/components/ui/SafeSelect";
-import type { Role } from "@/types/role";
 
 interface RoleSelectorProps {
   selectedSector: string | null;
@@ -19,9 +24,18 @@ export function RoleSelector({
 }: RoleSelectorProps) {
   const { roles, isLoading } = useRoles();
 
-  const filteredRoles = selectedSector
+  const baseFilteredRoles = selectedSector
     ? (roles || []).filter(role => role.sectorId === selectedSector)
     : [];
+
+  const validRoles = baseFilteredRoles.filter(role =>
+    role &&
+    role.id !== null &&
+    role.id !== undefined &&
+    String(role.id).trim() !== "" &&
+    role.name &&
+    String(role.name).trim() !== ""
+  );
 
   if (isLoading) {
     return (
@@ -35,16 +49,36 @@ export function RoleSelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="role">Função</Label>
-      <SafeSelect
-        data={filteredRoles}
-        value={selectedRole}
-        onChange={onRoleChange}
-        placeholder={selectedSector ? "Selecione uma função" : "Selecione um setor primeiro"}
-        valueField="id"
-        labelField="name"
+      <Select
+        value={selectedRole || "no-role-selected"}
+        onValueChange={onRoleChange}
         disabled={!selectedSector}
-        className="w-full"
-      />
+      >
+        <SelectTrigger id="role">
+          <SelectValue placeholder="Selecione uma função" />
+        </SelectTrigger>
+        <SelectContent>
+          {validRoles.length > 0 ? (
+            validRoles.map((role) => {
+              const roleIdStr = String(role.id);
+              if (roleIdStr.trim() === "") {
+                console.error("[Assessments/RoleSelector] Attempting to render SelectItem with empty value for role:", role);
+                return null;
+              }
+              return (
+                <SelectItem key={roleIdStr} value={roleIdStr}>
+                  {role.name}
+                </SelectItem>
+              );
+            }).filter(Boolean)
+          ) : (
+            <SelectItem value="no-roles-available" disabled>
+              {selectedSector ? "Nenhuma função encontrada" : "Selecione um setor primeiro"}
+            </SelectItem>
+          )}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
+
