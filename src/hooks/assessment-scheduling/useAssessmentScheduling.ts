@@ -1,9 +1,10 @@
+
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RecurrenceType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { sendNotifications } from "@/services/assessment/communication";
 import { generateUniqueAssessmentLink } from "@/services/assessment/linkGeneration";
 
 interface ScheduleAssessmentData {
@@ -19,11 +20,30 @@ interface ScheduleAssessmentData {
   templateTitle: string;
 }
 
+interface SchedulingDetails {
+  scheduledDate?: Date;
+  recurrenceType: RecurrenceType;
+  phoneNumber: string;
+  sendEmail: boolean;
+  sendWhatsApp: boolean;
+}
+
 export function useAssessmentScheduling() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  // State management for the scheduling workflow
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [schedulingDetails, setSchedulingDetails] = useState<SchedulingDetails>({
+    scheduledDate: undefined,
+    recurrenceType: "none",
+    phoneNumber: "",
+    sendEmail: true,
+    sendWhatsApp: false
+  });
 
-  const scheduleAssessment = useMutation({
+  const scheduleAssessmentMutation = useMutation({
     mutationFn: async (assessmentData: ScheduleAssessmentData) => {
       try {
         // First, generate the assessment link
@@ -130,8 +150,35 @@ export function useAssessmentScheduling() {
     toast.success("Notificações enviadas com sucesso!");
   };
 
+  const scheduleAssessment = async () => {
+    if (!selectedEmployee || !selectedTemplate || !schedulingDetails.scheduledDate) {
+      throw new Error("Dados incompletos para agendamento");
+    }
+
+    const assessmentData: ScheduleAssessmentData = {
+      employeeId: selectedEmployee.id,
+      templateId: selectedTemplate.id,
+      scheduledDate: schedulingDetails.scheduledDate,
+      recurrenceType: schedulingDetails.recurrenceType,
+      phoneNumber: schedulingDetails.phoneNumber,
+      sendEmail: schedulingDetails.sendEmail,
+      sendWhatsApp: schedulingDetails.sendWhatsApp,
+      companyId: selectedEmployee.companyId || selectedEmployee.company_id,
+      employeeName: selectedEmployee.name,
+      templateTitle: selectedTemplate.title
+    };
+
+    return scheduleAssessmentMutation.mutateAsync(assessmentData);
+  };
+
   return {
+    selectedEmployee,
+    setSelectedEmployee,
+    selectedTemplate,
+    setSelectedTemplate,
+    schedulingDetails,
+    setSchedulingDetails,
     scheduleAssessment,
-    isLoading: scheduleAssessment.isLoading
+    isLoading: scheduleAssessmentMutation.isPending
   };
 }

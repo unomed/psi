@@ -1,3 +1,4 @@
+
 import { 
   LayoutDashboard, 
   Building2, 
@@ -73,3 +74,12 @@ export const menuItems: MenuItem[] = [
     requireCompanyAccess: true,
   },
 ];
+
+// Export as mainMenuItems for compatibility
+export const mainMenuItems = menuItems.map(item => ({
+  title: item.label,
+  icon: item.icon,
+  path: item.href,
+  roles: item.requiredRole ? [item.requiredRole] : ['admin', 'user', 'superadmin'],
+  permission: 'view_dashboard'
+}));

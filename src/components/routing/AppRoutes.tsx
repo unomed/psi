@@ -1,11 +1,12 @@
+
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate
 } from "react-router-dom";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { RouteGuard } from "./RouteGuard";
+import MainLayout from "@/components/layout/MainLayout";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 import { SettingsRoutes } from "./SettingsRoutes";
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";

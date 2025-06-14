@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, FileText, TrendingUp } from "lucide-react";
 import { AssessmentResultsTable } from "@/components/assessments/assessment-results/AssessmentResultsTable";
 import { AssessmentAnalytics } from "@/components/assessments/assessment-analytics/AssessmentAnalytics";
-import { DashboardCompanySelector } from "@/components/dashboard/DashboardCompanySelector";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AssessmentResults() {
+  const { userRole } = useAuth();
   const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
     const saved = localStorage.getItem('selectedCompany');
     return saved || null;
@@ -17,6 +18,11 @@ export default function AssessmentResults() {
     setSelectedCompany(companyId);
     localStorage.setItem('selectedCompany', companyId);
   };
+
+  // Mock userCompanies - in a real app this would come from a hook
+  const userCompanies = [
+    { companyId: selectedCompany || '1', companyName: 'Empresa Principal' }
+  ];
 
   return (
     <div className="space-y-6">
@@ -28,11 +34,23 @@ export default function AssessmentResults() {
         </p>
       </div>
 
-      {/* Company Selector */}
-      <DashboardCompanySelector 
-        selectedCompany={selectedCompany}
-        onCompanyChange={handleCompanyChange}
-      />
+      {/* Company Selector - only show for superadmin */}
+      {userRole === 'superadmin' && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">Selecionar empresa:</label>
+          <select
+            className="border rounded p-2 w-full max-w-md"
+            value={selectedCompany || ""}
+            onChange={(e) => handleCompanyChange(e.target.value)}
+          >
+            {userCompanies.map((company) => (
+              <option key={company.companyId} value={company.companyId}>
+                {company.companyName}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs defaultValue="results" className="space-y-6">

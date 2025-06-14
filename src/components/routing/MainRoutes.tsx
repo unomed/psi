@@ -1,14 +1,15 @@
+
 import { Routes, Route } from "react-router-dom";
-import { RouteGuard } from "./RouteGuard";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 import { SettingsRoutes } from "./SettingsRoutes";
-import { Dashboard } from "@/pages/Dashboard";
-import { Empresas } from "@/pages/Empresas";
-import { Funcionarios } from "@/pages/Funcionarios";
-import { Setores } from "@/pages/Setores";
-import { Funcoes } from "@/pages/Funcoes";
-import { Checklists } from "@/pages/Checklists";
-import { Avaliacoes } from "@/pages/Avaliacoes";
-import { AssessmentScheduling } from "@/pages/AssessmentScheduling";
+import Dashboard from "@/pages/Dashboard";
+import Empresas from "@/pages/Empresas";
+import Funcionarios from "@/pages/Funcionarios";
+import Setores from "@/pages/Setores";
+import Funcoes from "@/pages/Funcoes";
+import Checklists from "@/pages/Checklists";
+import Avaliacoes from "@/pages/Avaliacoes";
+import AssessmentScheduling from "@/pages/AssessmentScheduling";
 
 // Add the new import
 import PublicAssessment from "@/pages/PublicAssessment";

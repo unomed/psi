@@ -23,8 +23,7 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
         .from('assessment_responses')
         .select(`
           *,
-          checklist_templates(title, type),
-          employees(name, email)
+          checklist_templates(title, type)
         `)
         .order('completed_at', { ascending: false });
 
@@ -37,7 +36,9 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
 
         if (companyEmployees) {
           const employeeIds = companyEmployees.map(emp => emp.id);
-          query = query.in('employee_id', employeeIds);
+          if (employeeIds.length > 0) {
+            query = query.in('employee_id', employeeIds);
+          }
         }
       }
 
@@ -124,7 +125,7 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>
-                        {result.employees?.name || result.employee_name || 'Anônimo'}
+                        {result.employee_name || 'Anônimo'}
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
