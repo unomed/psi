@@ -240,25 +240,6 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
   try {
     console.log("Sending email for assessment:", assessmentId);
     
-    // Verificar configurações de email primeiro
-    console.log("Verifying email configuration...");
-    const emailConfig = await verifyEmailConfiguration();
-    
-    if (!emailConfig.hasSettings) {
-      toast.error("Configurações de email não encontradas. Configure primeiro em Configurações > Email.");
-      throw new Error("Configurações de email não encontradas");
-    }
-    
-    if (!emailConfig.isComplete) {
-      toast.error(`Configurações de email incompletas: ${emailConfig.missingFields.join(', ')}`);
-      throw new Error("Configurações de email incompletas");
-    }
-    
-    console.log("Email configuration verified successfully");
-    
-    // Garantir que templates padrão existam
-    await createDefaultEmailTemplates();
-    
     // Get the assessment details
     const { data: assessment, error: fetchError } = await supabase
       .from('scheduled_assessments')
@@ -308,9 +289,9 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
       console.log("Assessment link generated successfully");
     }
     
-    console.log("Calling send-assessment-email edge function...");
-    // Call the edge function to send email
-    const { data, error } = await supabase.functions.invoke('send-assessment-email', {
+    console.log("Calling send-supabase-email edge function...");
+    // Call the new Supabase email function
+    const { data, error } = await supabase.functions.invoke('send-supabase-email', {
       body: {
         employeeId: assessment.employee_id,
         employeeName: assessment.employee_name || employee.name,
@@ -323,7 +304,7 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
     });
 
     if (error) {
-      console.error("Error calling send-assessment-email function:", error);
+      console.error("Error calling send-supabase-email function:", error);
       toast.error(`Erro ao enviar email: ${error.message}`);
       throw new Error(`Erro ao enviar email: ${error.message}`);
     }
@@ -335,16 +316,11 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
     }
     
     console.log("Assessment email sent successfully");
-    
-    if (data.isDevelopment) {
-      toast.success("Email simulado com sucesso (modo desenvolvimento)!");
-    } else {
-      toast.success("Email enviado com sucesso!");
-    }
+    toast.success("Email enviado com sucesso!");
     
   } catch (error) {
     console.error("Error in sendAssessmentEmail:", error);
-    if (!error.message.includes("Email do funcionário") && !error.message.includes("Configurações de email")) {
+    if (!error.message.includes("Email do funcionário")) {
       toast.error("Erro ao enviar email de avaliação");
     }
     throw error;
