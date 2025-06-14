@@ -20,7 +20,7 @@ import AssessmentScheduling from "@/pages/AssessmentScheduling";
 import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
 import Relatorios from "@/pages/Relatorios";
-import PlanoAcaoV2 from "@/pages/PlanoAcaoV2";
+import PlanoAcao from "@/pages/PlanoAcao";
 import GestaoRiscos from "@/pages/GestaoRiscos";
 import Faturamento from "@/pages/Faturamento";
 
@@ -145,7 +145,7 @@ export function AppRoutes() {
         element={
           <MainLayout>
             <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
-              <PlanoAcaoV2 />
+              <PlanoAcao />
             </RouteGuard>
           </MainLayout>
         } 
