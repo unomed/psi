@@ -183,13 +183,13 @@ export function usePsychosocialRisk(companyId?: string) {
       const { data, error } = await supabase
         .from('psychosocial_risk_analysis')
         .insert({
-          company_id: targetCompanyId,
+          company_id: targetCompanyId!,
           sector_id: analysisData.sector_id,
           role_id: analysisData.role_id,
           assessment_response_id: analysisData.assessment_response_id,
-          category: analysisData.category,
-          exposure_level: analysisData.exposure_level,
-          risk_score: analysisData.risk_score,
+          category: analysisData.category as 'organizacao_trabalho' | 'condicoes_ambientais' | 'relacoes_socioprofissionais' | 'reconhecimento_crescimento' | 'elo_trabalho_vida_social',
+          exposure_level: analysisData.exposure_level as 'baixo' | 'medio' | 'alto' | 'critico',
+          risk_score: analysisData.risk_score!,
           contributing_factors: analysisData.contributing_factors || [],
           recommended_actions: analysisData.recommended_actions || [],
           mandatory_measures: analysisData.mandatory_measures || [],

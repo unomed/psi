@@ -159,7 +159,7 @@ export function NR01ActionPlansFilter({ actionPlans, onPlanSelect }: NR01ActionP
                             {plan.sector_name || 'Geral'}
                           </p>
                         </div>
-                        <Badge className={getStatusColor(plan.status)} size="sm">
+                        <Badge className={getStatusColor(plan.status)}>
                           {plan.status === 'active' ? 'Ativo' : 
                            plan.status === 'completed' ? 'Concluído' :
                            plan.status === 'draft' ? 'Rascunho' : 'Cancelado'}
@@ -194,7 +194,7 @@ export function NR01ActionPlansFilter({ actionPlans, onPlanSelect }: NR01ActionP
                     <div key={plan.id} className="p-3 border rounded-lg hover:bg-gray-50">
                       <div className="flex justify-between items-start mb-2">
                         <h5 className="font-medium text-sm line-clamp-1">{plan.title}</h5>
-                        <Badge className={getStatusColor(plan.status)} size="sm">
+                        <Badge className={getStatusColor(plan.status)}>
                           {plan.status === 'completed' ? <CheckCircle className="h-3 w-3" /> : null}
                         </Badge>
                       </div>

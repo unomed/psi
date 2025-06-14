@@ -181,7 +181,6 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
                           </p>
                         </div>
                         <Badge 
-                          size="sm"
                           style={{ 
                             backgroundColor: exposureLevels[analysis.exposure_level as keyof typeof exposureLevels]?.color,
                             color: 'white'
