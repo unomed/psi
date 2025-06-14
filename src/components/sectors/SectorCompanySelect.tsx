@@ -1,3 +1,4 @@
+
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SafeSelect } from "@/components/ui/SafeSelect";
@@ -19,7 +20,7 @@ export function SectorCompanySelect({ companies, selectedCompany, onCompanyChang
   return (
     <div className="flex items-center space-x-4 mb-6">
       <div className="w-72">
-        <SafeSelect<CompanyData>
+        <SafeSelect
           data={companies}
           value={selectedCompany}
           onChange={onCompanyChange}

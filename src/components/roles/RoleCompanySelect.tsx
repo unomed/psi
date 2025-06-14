@@ -1,3 +1,4 @@
+
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SafeSelect } from "@/components/ui/SafeSelect";
@@ -35,7 +36,7 @@ export function RoleCompanySelect({
     <div className="flex items-center space-x-4 mb-6">
       <div className="space-y-4 w-full md:w-auto md:space-y-0 md:space-x-4 md:flex md:items-center">
         <div className="w-full md:w-64">
-          <SafeSelect<CompanyData>
+          <SafeSelect
             data={companies}
             value={selectedCompany}
             onChange={onCompanyChange}
@@ -47,14 +48,14 @@ export function RoleCompanySelect({
 
         {selectedCompany && (
           <div className="w-full md:w-64">
-            <SafeSelect<SectorForRoleSelect>
+            <SafeSelect
               data={filteredSectors}
               value={selectedSector}
               onChange={onSectorChange}
               placeholder="Selecione um setor"
               valueField="id"
               labelField="name"
-              disabled={filteredSectors.length === 0} // Disable if no sectors for the company
+              disabled={filteredSectors.length === 0}
             />
           </div>
         )}
