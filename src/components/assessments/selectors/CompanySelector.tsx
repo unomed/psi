@@ -52,11 +52,14 @@ export function CompanySelector({
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
-          {availableCompanies.map((company) => (
-            <SelectItem key={company.id} value={company.id || `company-${Math.random()}`}>
-              {company.name}
-            </SelectItem>
-          ))}
+          {availableCompanies.map((company) => {
+            const companyId = company.id || `company-${company.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            return (
+              <SelectItem key={companyId} value={companyId}>
+                {company.name}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

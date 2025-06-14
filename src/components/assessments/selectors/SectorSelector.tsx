@@ -50,11 +50,14 @@ export function SectorSelector({
           <SelectValue placeholder="Selecione um setor" />
         </SelectTrigger>
         <SelectContent>
-          {filteredSectors.map((sector) => (
-            <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
-              {sector.name}
-            </SelectItem>
-          ))}
+          {filteredSectors.map((sector) => {
+            const sectorId = sector.id || `sector-${sector.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            return (
+              <SelectItem key={sectorId} value={sectorId}>
+                {sector.name}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

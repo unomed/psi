@@ -50,11 +50,14 @@ export function RoleSelector({
           <SelectValue placeholder="Selecione uma função" />
         </SelectTrigger>
         <SelectContent>
-          {filteredRoles.map((role) => (
-            <SelectItem key={role.id} value={role.id || `role-${Math.random()}`}>
-              {role.name}
-            </SelectItem>
-          ))}
+          {filteredRoles.map((role) => {
+            const roleId = role.id || `role-${role.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            return (
+              <SelectItem key={roleId} value={roleId}>
+                {role.name}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

@@ -50,11 +50,14 @@ export function EmployeeSelector({
           <SelectValue placeholder="Selecione um funcionário" />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees.map((employee) => (
-            <SelectItem key={employee.id} value={employee.id || `employee-${Math.random()}`}>
-              {employee.name}
-            </SelectItem>
-          ))}
+          {filteredEmployees.map((employee) => {
+            const employeeId = employee.id || `employee-${employee.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            return (
+              <SelectItem key={employeeId} value={employeeId}>
+                {employee.name}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

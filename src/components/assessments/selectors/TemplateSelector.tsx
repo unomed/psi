@@ -45,13 +45,16 @@ export function TemplateSelector({
         </SelectTrigger>
         <SelectContent>
           {templates.length > 0 ? (
-            templates.map((template) => (
-              <SelectItem key={template.id} value={template.id || `template-${Math.random()}`}>
-                {template.title}
-              </SelectItem>
-            ))
+            templates.map((template) => {
+              const templateId = template.id || `template-${template.title?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+              return (
+                <SelectItem key={templateId} value={templateId}>
+                  {template.title}
+                </SelectItem>
+              );
+            })
           ) : (
-            <SelectItem key="no-template" value="no-template">
+            <SelectItem value="no-templates-available" disabled>
               Nenhum modelo encontrado
             </SelectItem>
           )}
