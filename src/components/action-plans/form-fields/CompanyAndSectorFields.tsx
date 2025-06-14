@@ -60,18 +60,25 @@ export function CompanyAndSectorFields({
           render={({ field }) => (
             <FormItem className="md:col-span-2">
               <FormLabel>Empresa</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value || "no-company-selected"}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a empresa" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {userCompanies?.map((company) => (
-                    <SelectItem key={company.companyId} value={company.companyId}>
-                      {company.companyName}
-                    </SelectItem>
-                  ))}
+                  {userCompanies?.map((company) => {
+                    const companyId = company.companyId || `company-fallback-${Date.now()}`;
+                    if (!companyId || companyId.trim() === '') {
+                      console.error('Empty company ID detected in CompanyAndSectorFields:', company);
+                      return null;
+                    }
+                    return (
+                      <SelectItem key={companyId} value={companyId}>
+                        {company.companyName || 'Empresa sem nome'}
+                      </SelectItem>
+                    );
+                  }).filter(Boolean)}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -86,18 +93,25 @@ export function CompanyAndSectorFields({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Setor</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} defaultValue={field.value || "no-sector-selected"}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o setor" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {filteredSectors.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.name}
-                  </SelectItem>
-                ))}
+                {filteredSectors.map((sector) => {
+                  const sectorId = sector.id || `sector-fallback-${Date.now()}`;
+                  if (!sectorId || sectorId.trim() === '') {
+                    console.error('Empty sector ID detected in CompanyAndSectorFields:', sector);
+                    return null;
+                  }
+                  return (
+                    <SelectItem key={sectorId} value={sectorId}>
+                      {sector.name || 'Setor sem nome'}
+                    </SelectItem>
+                  );
+                }).filter(Boolean)}
               </SelectContent>
             </Select>
             <FormMessage />

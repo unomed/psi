@@ -30,7 +30,7 @@ export function StatusAndPriorityFields({ control }: StatusAndPriorityFieldsProp
         render={({ field }) => (
           <FormItem>
             <FormLabel>Status</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} defaultValue={field.value || "draft"}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o status" />
@@ -54,7 +54,7 @@ export function StatusAndPriorityFields({ control }: StatusAndPriorityFieldsProp
         render={({ field }) => (
           <FormItem>
             <FormLabel>Prioridade</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} defaultValue={field.value || "medium"}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />

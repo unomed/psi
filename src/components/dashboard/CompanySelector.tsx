@@ -25,19 +25,26 @@ export function CompanySelector() {
   return (
     <div className="flex items-center gap-2 mb-4">
       <Building2 className="h-4 w-4" />
-      <Select value={selectedCompanyId || ""} onValueChange={setSelectedCompanyId}>
+      <Select value={selectedCompanyId || "all-companies"} onValueChange={setSelectedCompanyId}>
         <SelectTrigger className="w-64">
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
           {canAccessAllCompanies() && (
-            <SelectItem value="">Todas as empresas</SelectItem>
+            <SelectItem value="all-companies">Todas as empresas</SelectItem>
           )}
-          {availableCompanies.map((company) => (
-            <SelectItem key={company.companyId} value={company.companyId}>
-              {company.companyName}
-            </SelectItem>
-          ))}
+          {availableCompanies.map((company) => {
+            const companyId = company.companyId || `company-fallback-${Date.now()}`;
+            if (!companyId || companyId.trim() === '') {
+              console.error('Empty company ID detected in CompanySelector:', company);
+              return null;
+            }
+            return (
+              <SelectItem key={companyId} value={companyId}>
+                {company.companyName || 'Empresa sem nome'}
+              </SelectItem>
+            );
+          }).filter(Boolean)}
         </SelectContent>
       </Select>
     </div>
