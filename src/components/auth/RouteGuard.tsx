@@ -6,6 +6,7 @@ import { useCompanyAccess } from '@/hooks/useCompanyAccess';
 import { RoleCheck } from './RoleCheck';
 import { LoadingSpinner } from './LoadingSpinner';
 import { toast } from 'sonner';
+import { useRef, useEffect } from 'react';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -24,27 +25,70 @@ export function RouteGuard({
   const { hasPermission, loadingPermission } = useCheckPermission();
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
-
-  // Debug logs
-  console.log('[RouteGuard] Verificando acesso para rota:', location.pathname);
-  console.log('[RouteGuard] Perfil do usuário:', userRole);
-  console.log('[RouteGuard] Permissão requerida:', requirePermission);
-  console.log('[RouteGuard] Acesso à empresa requerido:', requireCompanyAccess);
-  console.log('[RouteGuard] Empresas do usuário:', userCompanies);
   
-  // Show loading while checking permissions and access
+  // Proteção contra loop infinito
+  const redirectAttempts = useRef(0);
+  const lastRedirectTime = useRef(0);
+  const maxRedirectAttempts = 3;
+  const redirectCooldown = 2000; // 2 segundos
+
+  // Verificar se já passou tempo suficiente desde o último redirecionamento
+  const canRedirect = () => {
+    const now = Date.now();
+    const timeSinceLastRedirect = now - lastRedirectTime.current;
+    
+    if (timeSinceLastRedirect > redirectCooldown) {
+      redirectAttempts.current = 0;
+    }
+    
+    return redirectAttempts.current < maxRedirectAttempts && timeSinceLastRedirect > 500;
+  };
+
+  // Função para executar redirecionamento seguro
+  const safeRedirect = (path: string, reason: string) => {
+    if (canRedirect()) {
+      console.log(`[RouteGuard] Redirecionando para ${path} - Razão: ${reason}`);
+      redirectAttempts.current++;
+      lastRedirectTime.current = Date.now();
+      return true;
+    }
+    console.warn(`[RouteGuard] Redirecionamento bloqueado para evitar loop - Tentativas: ${redirectAttempts.current}`);
+    return false;
+  };
+
+  // Debug logs - mais controlados
+  useEffect(() => {
+    console.log('[RouteGuard] Estado atual:', {
+      rota: location.pathname,
+      user: !!user,
+      userRole,
+      loading,
+      loadingPermission,
+      checkingAccess,
+      redirectAttempts: redirectAttempts.current
+    });
+  }, [location.pathname, user, userRole, loading, loadingPermission, checkingAccess]);
+
+  // Mostrar loading enquanto verifica permissões e acesso
   if (loading || loadingPermission || checkingAccess) {
+    console.log('[RouteGuard] Aguardando carregamento...');
     return <LoadingSpinner />;
   }
 
-  // Check authentication
+  // Verificar autenticação - primeira prioridade
   if (!user) {
-    console.log('[RouteGuard] Usuário não autenticado, redirecionando para login');
-    toast.error('Você precisa estar logado para acessar esta página');
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    console.log('[RouteGuard] Usuário não autenticado');
+    
+    if (safeRedirect('/auth/login', 'Usuário não autenticado')) {
+      toast.error('Você precisa estar logado para acessar esta página');
+      return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    }
+    
+    // Se não pode redirecionar (para evitar loop), mostrar loading
+    return <LoadingSpinner />;
   }
 
-  // Special handling for dashboard - always allow if user is authenticated
+  // Tratamento especial para dashboard - sempre permitir se autenticado
   if (location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard')) {
     console.log('[RouteGuard] Rota de dashboard, permitindo acesso');
     return (
@@ -54,52 +98,53 @@ export function RouteGuard({
     );
   }
 
-  // Check permission based on permission settings (only if not dashboard)
+  // Verificar permissão específica (apenas se não for dashboard)
   if (requirePermission && !hasPermission(requirePermission)) {
-    console.error(`[RouteGuard] Permissão negada: ${requirePermission} não está habilitada para o perfil ${userRole}`);
-    toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  // For routes that require company access
-  if (requireCompanyAccess) {
-    // Superadmin always has access
-    if (userRole === 'superadmin') {
-      console.log('[RouteGuard] Usuário é superadmin, concedendo acesso à rota com requireCompanyAccess');
-    } else {
-      // For other roles, check if they have at least one company
-      if (!userCompanies || userCompanies.length === 0) {
-        console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada');
-        toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
-        return <Navigate to="/dashboard" replace />;
-      }
-      
-      // Additional check using the useCompanyAccess hook
-      if (!hasAccess) {
-        console.error(`[RouteGuard] Acesso negado pela verificação de empresa`);
-        toast.error('Acesso negado: Você não tem acesso necessário para esta funcionalidade');
-        return <Navigate to="/dashboard" replace />;
-      }
-    }
-  }
-
-  // For company-related routes that don't have explicit requireCompanyAccess but need company access
-  const routesRequiringCompanyAccess = ['/empresas', '/funcionarios', '/setores', '/funcoes', '/avaliacoes', '/relatorios', '/gestao-riscos', '/plano-acao'];
-  const currentPath = location.pathname;
-  
-  if (routesRequiringCompanyAccess.some(route => currentPath.startsWith(route)) && !requireCompanyAccess && userRole !== 'superadmin') {
-    // Check if user has at least one associated company
-    if (!userCompanies || userCompanies.length === 0) {
-      console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada para rota que requer empresa');
-      toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
+    console.log(`[RouteGuard] Permissão negada: ${requirePermission} para perfil ${userRole}`);
+    
+    if (safeRedirect('/dashboard', `Permissão negada: ${requirePermission}`)) {
+      toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
       return <Navigate to="/dashboard" replace />;
     }
+    
+    return <LoadingSpinner />;
   }
 
-  // Log final decision
+  // Verificar acesso à empresa (apenas se requireCompanyAccess for especificado)
+  if (requireCompanyAccess === "any") {
+    // Superadmin sempre tem acesso
+    if (userRole === 'superadmin') {
+      console.log('[RouteGuard] Usuário é superadmin, concedendo acesso');
+    } else {
+      // Para outros perfis, verificar se tem pelo menos uma empresa
+      if (!userCompanies || userCompanies.length === 0) {
+        console.log('[RouteGuard] Usuário não tem empresas associadas');
+        
+        if (safeRedirect('/dashboard', 'Sem empresas associadas')) {
+          toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
+          return <Navigate to="/dashboard" replace />;
+        }
+        
+        return <LoadingSpinner />;
+      }
+      
+      // Verificação adicional usando o hook useCompanyAccess
+      if (!hasAccess) {
+        console.log('[RouteGuard] Verificação de acesso à empresa falhou');
+        
+        if (safeRedirect('/dashboard', 'Acesso à empresa negado')) {
+          toast.error('Acesso negado: Você não tem acesso necessário para esta funcionalidade');
+          return <Navigate to="/dashboard" replace />;
+        }
+        
+        return <LoadingSpinner />;
+      }
+    }
+  }
+
   console.log(`[RouteGuard] Acesso concedido para rota: ${location.pathname}`);
   
-  // Check role-based access
+  // Verificar acesso baseado em papel
   return (
     <RoleCheck allowedRoles={allowedRoles}>
       {children}
