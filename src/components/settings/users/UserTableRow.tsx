@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
 import {
@@ -9,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User } from "@/types";
+import { User } from "@/hooks/users/types";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,9 +20,12 @@ import { Badge } from "@/components/ui/badge";
 interface UserTableRowProps {
   user: User;
   isLoading?: boolean;
+  onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
+  onToggleActive: (user: User) => void;
 }
 
-export function UserTableRow({ user, isLoading }: UserTableRowProps) {
+export function UserTableRow({ user, isLoading, onEdit, onDelete, onToggleActive }: UserTableRowProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
@@ -33,6 +37,7 @@ export function UserTableRow({ user, isLoading }: UserTableRowProps) {
     onSuccess: () => {
       toast.success("Usuário excluído com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      onDelete(user);
     },
     onError: (error: any) => {
       toast.error(`Erro ao excluir usuário: ${error.message}`);
@@ -66,12 +71,12 @@ export function UserTableRow({ user, isLoading }: UserTableRowProps) {
 
   return (
     <tr>
-      <td>{user.name}</td>
+      <td>{user.full_name}</td>
       <td>{user.email}</td>
       <td>{user.role}</td>
       <td>
-        <Badge variant={user.status === 'active' ? "default" : "destructive"}>
-          {user.status === 'active' ? 'Ativo' : 'Inativo'}
+        <Badge variant={user.is_active ? "default" : "destructive"}>
+          {user.is_active ? 'Ativo' : 'Inativo'}
         </Badge>
       </td>
       <td>
@@ -84,7 +89,7 @@ export function UserTableRow({ user, isLoading }: UserTableRowProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(user)}>
               <Edit className="mr-2 h-4 w-4" /> Editar
             </DropdownMenuItem>
             <DropdownMenuSeparator />

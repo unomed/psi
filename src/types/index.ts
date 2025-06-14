@@ -26,6 +26,9 @@ export { DiscFactorType } from './disc';
 // Add AppRole type for auth
 export type AppRole = 'superadmin' | 'admin' | 'evaluator' | 'user';
 
+// Export User type from users
+export type { User } from '../hooks/users/types';
+
 // Export all types from subdirectories to make them available through @/types
 export * from './assessment';
 export * from './checklist';

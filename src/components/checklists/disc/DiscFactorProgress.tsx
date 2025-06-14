@@ -1,22 +1,22 @@
 
 import { Progress } from "@/components/ui/progress";
-import { DiscFactorData } from "./DiscFactorsData";
+import { discFactors, getFactorProgressColor, DiscFactorType } from "./DiscFactorsData";
 
 interface DiscFactorProgressProps {
-  factor: DiscFactorData;
-  score: number;
-  maxScore: number;
+  factor: DiscFactorType;
+  percentage: number;
 }
 
-export function DiscFactorProgress({ factor, score, maxScore }: DiscFactorProgressProps) {
-  const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+export function DiscFactorProgress({ factor, percentage }: DiscFactorProgressProps) {
+  const factorData = discFactors[factor];
+  const progressColor = getFactorProgressColor(factor);
   
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium">{factor.name}</span>
+        <span className="text-sm font-medium">{factorData.name}</span>
         <span className="text-sm text-muted-foreground">
-          {score}/{maxScore}
+          {percentage}%
         </span>
       </div>
       <Progress 
@@ -24,7 +24,7 @@ export function DiscFactorProgress({ factor, score, maxScore }: DiscFactorProgre
         className="h-2"
       />
       <p className="text-xs text-muted-foreground">
-        {factor.description}
+        {factorData.description}
       </p>
     </div>
   );

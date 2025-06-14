@@ -54,12 +54,18 @@ export function useEmployeeMood(employeeId: string) {
 
       if (error) throw error;
       if (data && data.length > 0) {
-        // Mapear os dados do banco para o tipo MoodStats
+        // Mapear os dados do banco para o tipo MoodStats com type safety
+        const rawData = data[0];
+        const moodTrend = rawData.mood_trend as 'melhorando' | 'piorando' | 'estável';
+        const moodDistribution = typeof rawData.mood_distribution === 'string' 
+          ? JSON.parse(rawData.mood_distribution) 
+          : rawData.mood_distribution as Record<string, number>;
+        
         const stats: MoodStats = {
-          avgMood: data[0].avg_mood,
-          moodTrend: data[0].mood_trend,
-          totalLogs: data[0].total_logs,
-          moodDistribution: data[0].mood_distribution
+          avgMood: rawData.avg_mood,
+          moodTrend,
+          totalLogs: rawData.total_logs,
+          moodDistribution
         };
         setMoodStats(stats);
       }

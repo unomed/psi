@@ -1,6 +1,11 @@
 
 import { DiscFactor, DiscFactorType } from "@/types";
 
+export interface DiscFactorData {
+  name: string;
+  description: string;
+}
+
 // DISC factor explanations
 export const discFactors: Record<DiscFactorType, DiscFactor> = {
   [DiscFactorType.D]: {
