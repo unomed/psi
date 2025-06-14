@@ -8,6 +8,8 @@ import { ProcessingProgressBar } from "./processing-monitor/ProcessingProgressBa
 import { ProcessingLogsList } from "./processing-monitor/ProcessingLogsList";
 import { ProcessingAlerts } from "./processing-monitor/ProcessingAlerts";
 import { SimulateProcessingButton } from "./processing-monitor/SimulateProcessingButton";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { RiskErrorBoundary } from "./error-boundary/RiskErrorBoundary";
 
 interface PsychosocialProcessingMonitorProps {
   companyId?: string;
@@ -26,49 +28,50 @@ export function PsychosocialProcessingMonitor({ companyId }: PsychosocialProcess
             <Activity className="h-5 w-5" />
             Monitor de Processamento
           </CardTitle>
+          <CardDescription>
+            Status em tempo real do processamento automático
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="h-4 bg-gray-200 rounded animate-pulse" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse" />
-          </div>
+          <LoadingSkeleton variant="card" lines={6} />
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
-          Monitor de Processamento
-        </CardTitle>
-        <CardDescription>
-          Status em tempo real do processamento automático
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Estatísticas gerais */}
-        <ProcessingStatistics stats={stats} />
+    <RiskErrorBoundary>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Monitor de Processamento
+          </CardTitle>
+          <CardDescription>
+            Status em tempo real do processamento automático
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Estatísticas gerais */}
+          <ProcessingStatistics stats={stats} />
 
-        {/* Progress bar */}
-        <ProcessingProgressBar stats={stats} />
+          {/* Progress bar */}
+          <ProcessingProgressBar stats={stats} />
 
-        {/* Logs recentes */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium">Processamentos Recentes</h4>
-            <SimulateProcessingButton companyId={companyId} />
+          {/* Logs recentes */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium">Processamentos Recentes</h4>
+              <SimulateProcessingButton companyId={companyId} />
+            </div>
+
+            <ProcessingLogsList logs={recentLogs} />
           </div>
 
-          <ProcessingLogsList logs={recentLogs} />
-        </div>
-
-        {/* Alertas */}
-        <ProcessingAlerts stats={stats} />
-      </CardContent>
-    </Card>
+          {/* Alertas */}
+          <ProcessingAlerts stats={stats} />
+        </CardContent>
+      </Card>
+    </RiskErrorBoundary>
   );
 }
