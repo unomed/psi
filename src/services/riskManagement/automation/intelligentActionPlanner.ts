@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CalculationResult } from "./advancedCalculationEngine";
 
@@ -100,7 +99,7 @@ export class IntelligentActionPlanner {
   ): Promise<GeneratedActionPlan | null> {
     
     try {
-      // Buscar template mais adequado
+      // Buscar template mais adequado - sem conversão de tipos forçada
       const template = await this.findBestTemplate(
         companyId,
         result.category,
@@ -153,29 +152,32 @@ export class IntelligentActionPlanner {
   ): Promise<ActionPlanTemplate | null> {
     
     try {
-      // Buscar template específico para empresa/setor
-      const { data: companyTemplates } = await supabase
-        .from('nr01_action_templates')
-        .select('*')
-        .eq('company_id', companyId)
-        .eq('category', category)
-        .eq('exposure_level', riskLevel)
-        .order('priority', { ascending: false });
-
-      if (companyTemplates && companyTemplates.length > 0) {
-        return companyTemplates[0] as ActionPlanTemplate;
-      }
-
-      // Buscar template genérico
+      // Buscar template sem conversão de tipos - usar string diretamente
       const { data: genericTemplates } = await supabase
         .from('nr01_action_templates')
         .select('*')
-        .is('company_id', null)
         .eq('category', category)
         .eq('exposure_level', riskLevel)
-        .order('priority', { ascending: false });
+        .order('is_mandatory', { ascending: false });
 
-      return genericTemplates?.[0] as ActionPlanTemplate || null;
+      if (genericTemplates && genericTemplates.length > 0) {
+        // Converter manualmente para ActionPlanTemplate
+        const template = genericTemplates[0];
+        return {
+          id: template.id,
+          category: template.category,
+          risk_level: template.exposure_level,
+          template_name: template.template_name,
+          description: template.description || '',
+          actions: [], // Será preenchido depois
+          timeline_days: template.recommended_timeline_days || 90,
+          priority: 'medium',
+          required_resources: [],
+          success_metrics: []
+        };
+      }
+
+      return null;
 
     } catch (error) {
       console.error('Error finding template:', error);

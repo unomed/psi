@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { AdvancedCalculationEngine } from "./advancedCalculationEngine";
 import { IntelligentActionPlanner } from "./intelligentActionPlanner";
@@ -7,8 +6,8 @@ export interface ProcessingJob {
   id: string;
   assessment_response_id: string;
   company_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'error';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: string; // Mudei para string genérico
+  priority: string; // Mudei para string genérico
   created_at: string;
   started_at?: string;
   completed_at?: string;
@@ -181,10 +180,6 @@ export class BackgroundProcessor {
 
       // Salvar análises de risco
       for (const result of calculationResults) {
-        // Converter strings para tipos válidos
-        const categoryType = result.category as 'organizacao_trabalho' | 'condicoes_ambientais' | 'relacoes_socioprofissionais' | 'reconhecimento_crescimento' | 'elo_trabalho_vida_social';
-        const exposureLevel = result.risk_level as 'baixo' | 'medio' | 'alto' | 'critico';
-
         const { error: analysisError } = await supabase
           .from('psychosocial_risk_analysis')
           .insert({
@@ -192,8 +187,8 @@ export class BackgroundProcessor {
             sector_id: employee?.sector_id,
             role_id: employee?.role_id,
             assessment_response_id: job.assessment_response_id,
-            category: categoryType,
-            exposure_level: exposureLevel,
+            category: result.category as any,
+            exposure_level: result.risk_level as any,
             risk_score: result.sector_adjusted_score,
             contributing_factors: result.contributing_factors,
             recommended_actions: result.recommended_actions,
@@ -339,7 +334,7 @@ export class BackgroundProcessor {
   // Atualizar status do job
   private static async updateJobStatus(
     jobId: string, 
-    status: 'pending' | 'processing' | 'completed' | 'error',
+    status: string,
     additionalFields: Record<string, any> = {}
   ) {
     await supabase

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface CategoryWeight {
@@ -64,12 +63,22 @@ export class AdvancedCalculationEngine {
         .eq('company_id', companyId);
 
       // Buscar perfil de risco do setor (opcional)
-      const { data: sectorProfile } = await supabase
+      const { data: sectorProfileData } = await supabase
         .from('sector_risk_profiles')
         .select('*')
         .eq('company_id', companyId)
         .eq('sector_id', employee?.sector_id)
         .single();
+
+      // Converter perfil do setor para tipo esperado
+      let sectorProfile: SectorRiskProfile | undefined;
+      if (sectorProfileData) {
+        sectorProfile = {
+          sector_id: sectorProfileData.sector_id,
+          risk_multipliers: (sectorProfileData.risk_multipliers as any) || {},
+          baseline_scores: (sectorProfileData.baseline_scores as any) || {}
+        };
+      }
 
       const responses = assessmentData.response_data as Record<string, any>;
       const results: CalculationResult[] = [];
@@ -289,16 +298,12 @@ export class AdvancedCalculationEngine {
   ): Promise<string[]> {
     
     try {
-      // Usar types válidos do Supabase
-      const categoryType = category as 'organizacao_trabalho' | 'condicoes_ambientais' | 'relacoes_socioprofissionais' | 'reconhecimento_crescimento' | 'elo_trabalho_vida_social';
-      const exposureLevel = riskLevel as 'baixo' | 'medio' | 'alto' | 'critico';
-
-      // Buscar templates de ação específicos
+      // Buscar templates de ação específicos sem conversão de tipos
       const { data: actionTemplates } = await supabase
         .from('nr01_action_templates')
         .select('*')
-        .eq('category', categoryType)
-        .eq('exposure_level', exposureLevel);
+        .eq('category', category)
+        .eq('exposure_level', riskLevel);
 
       if (actionTemplates && actionTemplates.length > 0) {
         return actionTemplates.map(template => template.template_name);
