@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ActionPlanFormData } from '../schemas/actionPlanSchema';
-import type { CompanyData } from '@/components/companies/CompanyCard';
 
 interface Sector {
   id: string;
@@ -24,10 +23,15 @@ interface Sector {
   companyId: string;
 }
 
+interface UserCompany {
+  companyId: string;
+  companyName: string;
+}
+
 interface CompanyAndSectorFieldsProps {
   control: Control<ActionPlanFormData>;
   shouldShowCompanySelect: boolean;
-  userCompanies?: CompanyData[];
+  userCompanies?: UserCompany[];
   sectors: Sector[];
 }
 
@@ -64,8 +68,8 @@ export function CompanyAndSectorFields({
                 </FormControl>
                 <SelectContent>
                   {userCompanies?.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
+                    <SelectItem key={company.companyId} value={company.companyId}>
+                      {company.companyName}
                     </SelectItem>
                   ))}
                 </SelectContent>
