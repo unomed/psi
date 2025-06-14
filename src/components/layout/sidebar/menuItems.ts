@@ -1,75 +1,75 @@
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Users, 
+  MapPin, 
+  Briefcase, 
+  FileText, 
+  ClipboardList, 
+  Calendar,
+  BarChart3,
+  Settings 
+} from "lucide-react";
 
-import { BarChart3, Building2, Users, FolderKanban, ClipboardList, FileCheck, PieChart, Shield, ListChecks } from "lucide-react";
+export interface MenuItem {
+  label: string;
+  icon: any;
+  href: string;
+  requiredRole?: string;
+  requireCompanyAccess?: boolean;
+}
 
-export const mainMenuItems = [
+export const menuItems: MenuItem[] = [
   {
-    title: "Dashboard",
-    icon: BarChart3,
-    path: "/dashboard",
-    permission: "view_dashboard",
-    roles: ["superadmin", "admin", "evaluator", "user", "profissionais"]
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    href: "/dashboard",
   },
   {
-    title: "Empresas",
+    label: "Empresas",
     icon: Building2,
-    path: "/empresas",
-    permission: "view_companies",
-    roles: ["superadmin", "admin"]
+    href: "/empresas",
+    requiredRole: "superadmin",
   },
   {
-    title: "Funcionários",
+    label: "Funcionários",
     icon: Users,
-    path: "/funcionarios",
-    permission: "view_employees",
-    roles: ["superadmin", "admin"]
+    href: "/funcionarios",
+    requireCompanyAccess: true,
   },
   {
-    title: "Setores",
-    icon: FolderKanban,
-    path: "/setores",
-    permission: "view_sectors",
-    roles: ["superadmin", "admin"]
+    label: "Setores",
+    icon: MapPin,
+    href: "/setores",
+    requireCompanyAccess: true,
   },
   {
-    title: "Funções",
-    icon: FolderKanban,
-    path: "/funcoes",
-    permission: "view_functions",
-    roles: ["superadmin", "admin"]
+    label: "Funções",
+    icon: Briefcase,
+    href: "/funcoes",
+    requireCompanyAccess: true,
   },
   {
-    title: "Gestão de Riscos",
-    icon: Shield,
-    path: "/gestao-de-riscos",
-    permission: "view_risk_management",
-    roles: ["superadmin"],
+    label: "Templates",
+    icon: FileText,
+    href: "/templates",
   },
   {
-    title: "Plano de Ação",
-    icon: ListChecks,
-    path: "/plano-de-acao",
-    permission: "view_action_plan",
-    roles: ["superadmin", "admin"]
-  },
-  {
-    title: "Checklists",
+    label: "Avaliações",
     icon: ClipboardList,
-    path: "/checklists",
-    permission: "view_checklists",
-    roles: ["superadmin", "admin", "evaluator"]
+    href: "/avaliacoes",
+    requireCompanyAccess: true,
   },
   {
-    title: "Avaliações",
-    icon: FileCheck,
-    path: "/avaliacoes",
-    permission: "view_assessments",
-    roles: ["superadmin", "admin", "evaluator", "profissionais"]
+    label: "Agendamentos",
+    icon: Calendar,
+    href: "/agendamentos",
+    requireCompanyAccess: true,
   },
   {
-    title: "Relatórios",
-    icon: PieChart,
-    path: "/relatorios",
-    permission: "view_reports",
-    roles: ["superadmin", "admin"]
-  }
+    label: "Resultados",
+    icon: BarChart3,
+    href: "/resultados",
+    requireCompanyAccess: true,
+  },
 ];
