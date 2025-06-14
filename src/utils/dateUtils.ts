@@ -1,113 +1,109 @@
-/**
- * Utilities for date handling and validation
- */
+
+import { isValid, parseISO, format, startOfDay } from 'date-fns';
 
 /**
- * Checks if the provided value is a valid Date object
+ * Valida se uma data é válida
  */
-export const isValidDate = (date: any): boolean => {
-  return date instanceof Date && !isNaN(date.getTime());
-};
+export function isValidDate(date: Date | string | null | undefined): boolean {
+  if (!date) return false;
+  
+  if (typeof date === 'string') {
+    try {
+      const parsed = parseISO(date);
+      return isValid(parsed);
+    } catch {
+      return false;
+    }
+  }
+  
+  return isValid(date);
+}
 
 /**
- * Creates a new Date instance with time set to 00:00:00
- * This helps avoid reference issues and ensures consistent date handling
+ * Cria uma data segura removendo timezone issues
  */
-export const createSafeDate = (date: Date): Date => {
-  const safeDate = new Date(date.getTime());
-  safeDate.setHours(0, 0, 0, 0);
-  return safeDate;
-};
+export function createSafeDate(date: Date | string): Date {
+  if (typeof date === 'string') {
+    return startOfDay(parseISO(date));
+  }
+  return startOfDay(date);
+}
 
 /**
- * Parses a date string in DD/MM/YYYY format
- * Returns undefined if the format is invalid
+ * Valida uma data para agendamento de avaliação
  */
-export const parseDateString = (dateString: string): Date | undefined => {
-  if (dateString.trim() === '') {
-    return undefined;
-  }
-  
-  const parts = dateString.split('/');
-  if (parts.length !== 3) {
-    return undefined;
-  }
-  
-  const day = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in Date
-  const year = parseInt(parts[2], 10);
-  
-  if (isNaN(day) || isNaN(month) || isNaN(year)) {
-    return undefined;
-  }
-  
-  const parsedDate = new Date(year, month, day);
-  
-  // Validate that the parsed date matches the input
-  // This catches invalid dates like 31/02/2025
-  if (
-    parsedDate.getDate() !== day || 
-    parsedDate.getMonth() !== month || 
-    parsedDate.getFullYear() !== year
-  ) {
-    return undefined;
-  }
-  
-  parsedDate.setHours(0, 0, 0, 0);
-  return parsedDate;
-};
-
-/**
- * Validates a date against a disabled dates function
- */
-export const isDateEnabled = (
-  date: Date | undefined, 
-  disabledFn?: (date: Date) => boolean
-): boolean => {
-  if (!date || !isValidDate(date)) {
-    return false;
-  }
-  
-  if (disabledFn && disabledFn(date)) {
-    return false;
-  }
-  
-  return true;
-};
-
-/**
- * Complete validation for assessment dates
- * Returns validation errors or null if valid
- */
-export const validateAssessmentDate = (date: Date | undefined): string | null => {
+export function validateAssessmentDate(date: Date | undefined): string | null {
   if (!date) {
-    return "Selecione uma data para a avaliação.";
+    return "Selecione uma data para a avaliação";
   }
-  
+
   if (!isValidDate(date)) {
-    return "A data selecionada é inválida.";
+    return "A data selecionada é inválida";
   }
+
+  const today = startOfDay(new Date());
+  const selectedDate = startOfDay(date);
   
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  if (date < today) {
-    return "A data não pode ser anterior à data atual.";
+  if (selectedDate < today) {
+    return "A data não pode ser anterior à data atual";
   }
+
+  // Verificar se a data não é muito longe no futuro (1 ano)
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
   
+  if (selectedDate > startOfDay(oneYearFromNow)) {
+    return "A data não pode ser mais de 1 ano no futuro";
+  }
+
   return null;
-};
+}
 
 /**
- * Format a date object for display using the pt-BR locale
+ * Formata uma data para exibição no formato brasileiro
  */
-export const formatDateForDisplay = (date: Date | undefined): string => {
-  if (!date || !isValidDate(date)) {
-    return 'Data não selecionada';
+export function formatDateBR(date: Date | string): string {
+  if (!isValidDate(date)) {
+    return "Data inválida";
   }
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-};
+
+  const safeDate = typeof date === 'string' ? parseISO(date) : date;
+  return format(safeDate, 'dd/MM/yyyy');
+}
+
+/**
+ * Formata uma data para exibição com hora no formato brasileiro
+ */
+export function formatDateTimeBR(date: Date | string): string {
+  if (!isValidDate(date)) {
+    return "Data inválida";
+  }
+
+  const safeDate = typeof date === 'string' ? parseISO(date) : date;
+  return format(safeDate, 'dd/MM/yyyy HH:mm');
+}
+
+/**
+ * Calcula a diferença em dias entre duas datas
+ */
+export function daysDifference(date1: Date | string, date2: Date | string): number {
+  if (!isValidDate(date1) || !isValidDate(date2)) {
+    return 0;
+  }
+
+  const d1 = typeof date1 === 'string' ? parseISO(date1) : date1;
+  const d2 = typeof date2 === 'string' ? parseISO(date2) : date2;
+  
+  const diffTime = Math.abs(d2.getTime() - d1.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Adiciona dias a uma data
+ */
+export function addDays(date: Date | string, days: number): Date {
+  const baseDate = typeof date === 'string' ? parseISO(date) : new Date(date);
+  const result = new Date(baseDate);
+  result.setDate(result.getDate() + days);
+  return result;
+}
