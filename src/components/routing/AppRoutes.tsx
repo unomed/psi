@@ -16,6 +16,7 @@ import Setores from "@/pages/Setores";
 import Funcoes from "@/pages/Funcoes";
 import Checklists from "@/pages/Checklists";
 import Avaliacoes from "@/pages/Avaliacoes";
+import AssessmentScheduling from "@/pages/AssessmentScheduling";
 import Relatorios from "@/pages/Relatorios";
 import GestaoRiscos from "@/pages/GestaoRiscos";
 import PlanoAcao from "@/pages/PlanoAcao";
@@ -104,6 +105,16 @@ export const AppRoutes = () => {
           </MainLayout>
         </RouteGuard>
       } />
+      
+      {/* Nova rota para agendamento integrado */}
+      <Route path="/agendamento" element={
+        <RouteGuard requirePermission="view_assessments">
+          <MainLayout>
+            <AssessmentScheduling />
+          </MainLayout>
+        </RouteGuard>
+      } />
+      
       <Route path="/relatorios" element={
         <RouteGuard requirePermission="view_reports">
           <MainLayout>

@@ -52,10 +52,10 @@ export default function Dashboard() {
       color: "bg-blue-500"
     },
     {
-      title: "Agendar Avaliação", 
-      description: "Agendar nova avaliação",
+      title: "Agendamento Integrado", 
+      description: "Sistema completo de agendamento",
       icon: Calendar,
-      href: "/avaliacoes",
+      href: "/agendamento",
       color: "bg-green-500"
     },
     {
@@ -230,9 +230,9 @@ export default function Dashboard() {
             {pendingAssessments === 0 && totalEmployees > 0 && (
               <div className="flex items-center justify-between">
                 <span>Agendar primeira avaliação</span>
-                <Link to="/avaliacoes">
+                <Link to="/agendamento">
                   <Button size="sm" variant="outline">
-                    Agendar Avaliação
+                    Sistema de Agendamento
                   </Button>
                 </Link>
               </div>
