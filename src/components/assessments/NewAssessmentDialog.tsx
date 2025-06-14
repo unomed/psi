@@ -271,10 +271,12 @@ export function NewAssessmentDialog({
                   <SelectValue placeholder="Selecione a periodicidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  {recurrenceOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
+                  {recurrenceOptions
+                    .filter(option => option.value && option.value.trim() !== "")
+                    .map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

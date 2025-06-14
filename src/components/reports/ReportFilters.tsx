@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -64,22 +63,24 @@ export function ReportFilters({
     <Card>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Seletor de Empresa (apenas se o usuário tiver empresas associadas) */}
+          {/* Seletor de Empresa */}
           {onCompanyChange && validCompanies && validCompanies.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
               <Select 
-                value={selectedCompany || "default-company"} 
+                value={selectedCompany || validCompanies[0]?.companyId} 
                 onValueChange={onCompanyChange}
               >
                 <SelectTrigger id="company">
                   <SelectValue placeholder="Selecione uma empresa" />
                 </SelectTrigger>
                 <SelectContent>
-                  {validCompanies.map(company => (
-                    <SelectItem key={company.companyId} value={company.companyId}>
-                      {company.companyName}
-                    </SelectItem>
+                  {validCompanies
+                    .filter(company => company.companyId && company.companyId.toString().trim() !== "")
+                    .map(company => (
+                      <SelectItem key={company.companyId} value={String(company.companyId)}>
+                        {company.companyName}
+                      </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -101,10 +102,12 @@ export function ReportFilters({
                 <SelectValue placeholder="Todos os Setores" />
               </SelectTrigger>
               <SelectContent>
-                {sectors.map(sector => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.name}
-                  </SelectItem>
+                {sectors
+                  .filter(sector => sector.id && sector.id.trim() !== "")
+                  .map(sector => (
+                    <SelectItem key={sector.id} value={sector.id}>
+                      {sector.name}
+                    </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -117,10 +120,12 @@ export function ReportFilters({
                 <SelectValue placeholder="Todas as Funções" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map(role => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
-                  </SelectItem>
+                {roles
+                  .filter(role => role.id && role.id.trim() !== "")
+                  .map(role => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
                 ))}
               </SelectContent>
             </Select>

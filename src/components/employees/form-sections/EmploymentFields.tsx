@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -97,11 +96,13 @@ export function EmploymentFields({
                 </SelectTrigger>
                 <SelectContent>
                   {companyItems.length > 0 ? (
-                    companyItems.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))
+                    companyItems
+                      .filter(company => company.id && company.id.trim() !== "")
+                      .map((company) => (
+                        <SelectItem key={company.id} value={String(company.id)}>
+                          {company.name}
+                        </SelectItem>
+                      ))
                   ) : (
                     <SelectItem value="no-companies-available" disabled>
                       Nenhuma empresa disponível
@@ -114,7 +115,7 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
-      
+      {/* Sector Select */}
       <FormField
         control={form.control}
         name="sector_id"
@@ -128,8 +129,6 @@ export function EmploymentFields({
                   if (value !== "no-sector-selected") {
                     field.onChange(value);
                     onSectorChange(value);
-                    
-                    // Clear role when sector changes
                     form.setValue("role_id", "");
                   }
                 }}
@@ -140,11 +139,13 @@ export function EmploymentFields({
                 </SelectTrigger>
                 <SelectContent>
                   {sectorItems.length > 0 ? (
-                    sectorItems.map((sector) => (
-                      <SelectItem key={sector.id} value={sector.id}>
-                        {sector.name}
-                      </SelectItem>
-                    ))
+                    sectorItems
+                      .filter(sector => sector.id && sector.id.trim() !== "")
+                      .map((sector) => (
+                        <SelectItem key={sector.id} value={String(sector.id)}>
+                          {sector.name}
+                        </SelectItem>
+                      ))
                   ) : (
                     <SelectItem value="no-sectors-available" disabled>
                       {selectedCompany ? "Nenhum setor encontrado" : "Selecione uma empresa primeiro"}
@@ -157,7 +158,7 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
-      
+      {/* Role Select */}
       <FormField
         control={form.control}
         name="role_id"
@@ -179,11 +180,13 @@ export function EmploymentFields({
                 </SelectTrigger>
                 <SelectContent>
                   {roleItems.length > 0 ? (
-                    roleItems.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))
+                    roleItems
+                      .filter(role => role.id && role.id.trim() !== "")
+                      .map((role) => (
+                        <SelectItem key={role.id} value={String(role.id)}>
+                          {role.name}
+                        </SelectItem>
+                      ))
                   ) : (
                     <SelectItem value="no-roles-available" disabled>
                       {selectedCompany ? "Nenhuma função encontrada" : "Selecione uma empresa primeiro"}
@@ -196,25 +199,7 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
-      
-      <FormField
-        control={form.control}
-        name="start_date"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Data de Admissão</FormLabel>
-            <FormControl>
-              <DatePicker
-                date={field.value}
-                onSelect={field.onChange}
-                allowInput={true}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
+      {/* statusOptions */}
       <FormField
         control={form.control}
         name="status"
@@ -230,10 +215,12 @@ export function EmploymentFields({
                   <SelectValue placeholder="Selecione um status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
+                  {statusOptions
+                    .filter(option => option.value && option.value.trim() !== "")
+                    .map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
