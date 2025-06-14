@@ -13,7 +13,7 @@ import {
   CheckCircle, 
   AlertTriangle,
   Cpu,
-  Queue
+  ListChecks // Substituindo Queue por ListChecks
 } from "lucide-react";
 import { useBackgroundProcessor } from "@/hooks/usePsychosocialAutomation/useBackgroundProcessor";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
@@ -122,7 +122,7 @@ export function BackgroundProcessingMonitor() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Fila de Processamento</CardTitle>
-            <Queue className="h-4 w-4 text-blue-600" />
+            <ListChecks className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">

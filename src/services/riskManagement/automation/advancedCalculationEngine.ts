@@ -52,42 +52,57 @@ export class AdvancedCalculationEngine {
 
       if (assessmentError) throw assessmentError;
 
-      // Buscar configurações de peso por categoria
+      // Corrigir acesso aos dados do funcionário
+      const employee = Array.isArray(assessmentData.employees) 
+        ? assessmentData.employees[0] 
+        : assessmentData.employees;
+
+      // Buscar configurações de peso por categoria (usar tabelas existentes como fallback)
       const { data: categoryWeights } = await supabase
-        .from('psychosocial_category_weights')
+        .from('psychosocial_criteria')
         .select('*')
         .eq('company_id', companyId);
 
-      // Buscar perfil de risco do setor
+      // Buscar perfil de risco do setor (opcional)
       const { data: sectorProfile } = await supabase
         .from('sector_risk_profiles')
         .select('*')
         .eq('company_id', companyId)
-        .eq('sector_id', assessmentData.employees.sector_id)
+        .eq('sector_id', employee?.sector_id)
         .single();
 
       const responses = assessmentData.response_data as Record<string, any>;
       const results: CalculationResult[] = [];
 
-      // Categorias principais do Manual MTE
+      // Categorias principais do Manual MTE (usando valores válidos)
       const categories = [
-        'exigencias_trabalho',
-        'exigencias_emocionais', 
-        'autonomia_desenvolvimento',
-        'relacoes_sociais_lideranca',
-        'reconhecimento_conflitos',
-        'inseguranca'
+        'organizacao_trabalho',
+        'condicoes_ambientais', 
+        'relacoes_socioprofissionais',
+        'reconhecimento_crescimento',
+        'elo_trabalho_vida_social'
       ];
 
       for (const category of categories) {
-        const categoryWeight = categoryWeights?.find(cw => cw.category === category);
+        // Encontrar configuração correspondente
+        const categoryConfig = categoryWeights?.find(cw => 
+          cw.category.toString() === category || 
+          cw.factor_name.toLowerCase().includes(category.split('_')[0])
+        );
+        
         const result = await this.calculateCategoryRisk(
           category,
           responses,
-          categoryWeight,
+          categoryConfig ? {
+            category: category,
+            weight: Number(categoryConfig.weight || 1.0),
+            critical_threshold: categoryConfig.threshold_high || 80,
+            high_threshold: categoryConfig.threshold_medium || 60,
+            medium_threshold: categoryConfig.threshold_low || 40
+          } : undefined,
           sectorProfile,
-          assessmentData.employees.sector_id,
-          assessmentData.employees.role_id
+          employee?.sector_id,
+          employee?.role_id
         );
         results.push(result);
       }
@@ -164,12 +179,11 @@ export class AdvancedCalculationEngine {
   // Mapear questões por categoria conforme Manual MTE
   private static getCategoryQuestions(category: string): string[] {
     const questionMap: Record<string, string[]> = {
-      'exigencias_trabalho': ['q1', 'q2', 'q3', 'q4', 'q5'],
-      'exigencias_emocionais': ['q6', 'q7', 'q8', 'q9'],
-      'autonomia_desenvolvimento': ['q10', 'q11', 'q12', 'q13'],
-      'relacoes_sociais_lideranca': ['q14', 'q15', 'q16', 'q17'],
-      'reconhecimento_conflitos': ['q18', 'q19', 'q20', 'q21'],
-      'inseguranca': ['q22', 'q23', 'q24', 'q25']
+      'organizacao_trabalho': ['q1', 'q2', 'q3', 'q4', 'q5'],
+      'condicoes_ambientais': ['q6', 'q7', 'q8', 'q9'],
+      'relacoes_socioprofissionais': ['q10', 'q11', 'q12', 'q13'],
+      'reconhecimento_crescimento': ['q14', 'q15', 'q16', 'q17'],
+      'elo_trabalho_vida_social': ['q18', 'q19', 'q20', 'q21']
     };
     return questionMap[category] || [];
   }
@@ -225,41 +239,35 @@ export class AdvancedCalculationEngine {
 
     // Mapear fatores por categoria
     const categoryFactors: Record<string, string[]> = {
-      'exigencias_trabalho': [
+      'organizacao_trabalho': [
         'Sobrecarga de trabalho',
         'Prazos irrealistas',
         'Complexidade excessiva',
         'Interrupções frequentes'
       ],
-      'exigencias_emocionais': [
-        'Lidar com público difícil',
-        'Pressão emocional',
+      'condicoes_ambientais': [
+        'Ambiente físico inadequado',
+        'Ruído excessivo',
+        'Iluminação deficiente',
+        'Temperatura inadequada'
+      ],
+      'relacoes_socioprofissionais': [
         'Conflitos interpessoais',
-        'Responsabilidade por outros'
-      ],
-      'autonomia_desenvolvimento': [
-        'Baixa autonomia decisória',
-        'Falta de desenvolvimento',
-        'Tarefas monótonas',
-        'Pouco controle sobre trabalho'
-      ],
-      'relacoes_sociais_lideranca': [
-        'Conflitos com chefia',
         'Isolamento social',
         'Falta de suporte',
         'Comunicação deficiente'
       ],
-      'reconhecimento_conflitos': [
+      'reconhecimento_crescimento': [
         'Falta de reconhecimento',
-        'Conflitos de valores',
-        'Injustiça organizacional',
+        'Ausência de feedback',
+        'Limitadas oportunidades de crescimento',
         'Desvalorização profissional'
       ],
-      'inseguranca': [
-        'Insegurança no emprego',
-        'Mudanças organizacionais',
-        'Falta de estabilidade',
-        'Incerteza sobre futuro'
+      'elo_trabalho_vida_social': [
+        'Desequilíbrio trabalho-vida',
+        'Horários incompatíveis',
+        'Pressão por disponibilidade',
+        'Conflito de papéis'
       ]
     };
 
@@ -281,12 +289,16 @@ export class AdvancedCalculationEngine {
   ): Promise<string[]> {
     
     try {
+      // Usar types válidos do Supabase
+      const categoryType = category as 'organizacao_trabalho' | 'condicoes_ambientais' | 'relacoes_socioprofissionais' | 'reconhecimento_crescimento' | 'elo_trabalho_vida_social';
+      const exposureLevel = riskLevel as 'baixo' | 'medio' | 'alto' | 'critico';
+
       // Buscar templates de ação específicos
       const { data: actionTemplates } = await supabase
         .from('nr01_action_templates')
         .select('*')
-        .eq('category', category)
-        .eq('exposure_level', riskLevel);
+        .eq('category', categoryType)
+        .eq('exposure_level', exposureLevel);
 
       if (actionTemplates && actionTemplates.length > 0) {
         return actionTemplates.map(template => template.template_name);
@@ -305,7 +317,7 @@ export class AdvancedCalculationEngine {
   // Ações padrão por categoria
   private static getDefaultActions(category: string, riskLevel: string): string[] {
     const actionMap: Record<string, Record<string, string[]>> = {
-      'exigencias_trabalho': {
+      'organizacao_trabalho': {
         'critico': [
           'Redistribuir carga de trabalho imediatamente',
           'Contratar pessoal adicional',
@@ -325,24 +337,24 @@ export class AdvancedCalculationEngine {
           'Manter monitoramento preventivo'
         ]
       },
-      'exigencias_emocionais': {
+      'condicoes_ambientais': {
         'critico': [
-          'Suporte psicológico imediato',
-          'Afastamento temporário se necessário',
-          'Intervenção especializada'
+          'Intervenção imediata no ambiente',
+          'Avaliação ergonômica completa',
+          'Adequação de infraestrutura'
         ],
         'alto': [
-          'Programa de apoio emocional',
-          'Treinamento em gestão de estresse',
-          'Suporte psicológico'
+          'Melhorias no ambiente físico',
+          'Controle de ruído e iluminação',
+          'Equipamentos ergonômicos'
         ],
         'medio': [
-          'Workshops de bem-estar',
-          'Grupos de apoio',
-          'Técnicas de relaxamento'
+          'Monitorar condições ambientais',
+          'Ajustes pontuais no ambiente',
+          'Treinamento ergonômico'
         ],
         'baixo': [
-          'Atividades de bem-estar preventivas'
+          'Manter padrões ambientais'
         ]
       }
       // Adicionar outras categorias...

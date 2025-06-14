@@ -1270,6 +1270,50 @@ export type Database = {
         }
         Relationships: []
       }
+      psychosocial_category_weights: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          critical_threshold: number
+          high_threshold: number
+          id: string
+          medium_threshold: number
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          category: string
+          company_id: string
+          created_at?: string
+          critical_threshold?: number
+          high_threshold?: number
+          id?: string
+          medium_threshold?: number
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          critical_threshold?: number
+          high_threshold?: number
+          id?: string
+          medium_threshold?: number
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "psychosocial_category_weights_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       psychosocial_criteria: {
         Row: {
           category: Database["public"]["Enums"]["psychosocial_risk_category"]
@@ -1370,6 +1414,63 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      psychosocial_processing_jobs: {
+        Row: {
+          assessment_response_id: string
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          max_retries: number
+          priority: string
+          retry_count: number
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          assessment_response_id: string
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          priority?: string
+          retry_count?: number
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          assessment_response_id?: string
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_retries?: number
+          priority?: string
+          retry_count?: number
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "psychosocial_processing_jobs_assessment_response_id_fkey"
+            columns: ["assessment_response_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "psychosocial_processing_jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       psychosocial_processing_logs: {
         Row: {
@@ -1847,6 +1948,51 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sector_risk_profiles: {
+        Row: {
+          baseline_scores: Json
+          company_id: string
+          created_at: string
+          id: string
+          risk_multipliers: Json
+          sector_id: string
+          updated_at: string
+        }
+        Insert: {
+          baseline_scores?: Json
+          company_id: string
+          created_at?: string
+          id?: string
+          risk_multipliers?: Json
+          sector_id: string
+          updated_at?: string
+        }
+        Update: {
+          baseline_scores?: Json
+          company_id?: string
+          created_at?: string
+          id?: string
+          risk_multipliers?: Json
+          sector_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sector_risk_profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sector_risk_profiles_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
             referencedColumns: ["id"]
           },
         ]

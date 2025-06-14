@@ -162,12 +162,17 @@ export class BackgroundProcessor {
 
       if (assessmentError) throw assessmentError;
 
+      // Corrigir acesso aos dados do funcionário
+      const employee = Array.isArray(assessmentData.employees) 
+        ? assessmentData.employees[0] 
+        : assessmentData.employees;
+
       // Executar cálculo avançado
       const calculationResults = await AdvancedCalculationEngine.calculatePsychosocialRisk(
         job.assessment_response_id,
         job.company_id,
-        assessmentData.employees.sector_id,
-        assessmentData.employees.role_id
+        employee?.sector_id,
+        employee?.role_id
       );
 
       let analysesCreated = 0;
@@ -176,17 +181,20 @@ export class BackgroundProcessor {
 
       // Salvar análises de risco
       for (const result of calculationResults) {
+        // Converter strings para tipos válidos
+        const categoryType = result.category as 'organizacao_trabalho' | 'condicoes_ambientais' | 'relacoes_socioprofissionais' | 'reconhecimento_crescimento' | 'elo_trabalho_vida_social';
+        const exposureLevel = result.risk_level as 'baixo' | 'medio' | 'alto' | 'critico';
+
         const { error: analysisError } = await supabase
           .from('psychosocial_risk_analysis')
           .insert({
             company_id: job.company_id,
-            sector_id: assessmentData.employees.sector_id,
-            role_id: assessmentData.employees.role_id,
+            sector_id: employee?.sector_id,
+            role_id: employee?.role_id,
             assessment_response_id: job.assessment_response_id,
-            category: result.category,
-            exposure_level: result.risk_level,
+            category: categoryType,
+            exposure_level: exposureLevel,
             risk_score: result.sector_adjusted_score,
-            confidence_level: result.confidence_level,
             contributing_factors: result.contributing_factors,
             recommended_actions: result.recommended_actions,
             evaluation_date: new Date().toISOString().split('T')[0],
@@ -210,8 +218,8 @@ export class BackgroundProcessor {
       if (automationConfig?.auto_generate_action_plans) {
         const actionPlans = await IntelligentActionPlanner.generateActionPlan(
           job.company_id,
-          assessmentData.employees.sector_id,
-          assessmentData.employees.role_id,
+          employee?.sector_id,
+          employee?.role_id,
           calculationResults,
           job.assessment_response_id
         );
@@ -226,7 +234,7 @@ export class BackgroundProcessor {
               description: plan.description,
               status: 'draft',
               priority: plan.priority,
-              sector_id: assessmentData.employees.sector_id,
+              sector_id: employee?.sector_id,
               start_date: new Date().toISOString().split('T')[0],
               due_date: this.addDays(new Date(), plan.estimated_completion_days).toISOString().split('T')[0],
               risk_level: 'alto' // Simplificado
@@ -269,11 +277,11 @@ export class BackgroundProcessor {
               notification_type: criticalResults.length > 0 ? 'critical_risk' : 'high_risk',
               priority: criticalResults.length > 0 ? 'critical' : 'high',
               title: `Risco ${criticalResults.length > 0 ? 'Crítico' : 'Alto'} Identificado`,
-              message: `Foram identificados riscos psicossociais ${criticalResults.length > 0 ? 'críticos' : 'altos'} para o colaborador ${assessmentData.employees.name}`,
+              message: `Foram identificados riscos psicossociais ${criticalResults.length > 0 ? 'críticos' : 'altos'} para o colaborador ${employee?.name}`,
               recipients: automationConfig.notification_recipients || [],
               metadata: {
                 assessment_id: job.assessment_response_id,
-                employee_name: assessmentData.employees.name,
+                employee_name: employee?.name,
                 risk_categories: calculationResults.map(r => r.category)
               }
             });
