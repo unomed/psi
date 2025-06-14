@@ -1,6 +1,4 @@
-
-import { renderHook } from '@testing-library/react';
-import { waitFor } from '@testing-library/dom';
+import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePsychosocialRisk } from './usePsychosocialRisk';
 import { supabase } from '@/integrations/supabase/client';
