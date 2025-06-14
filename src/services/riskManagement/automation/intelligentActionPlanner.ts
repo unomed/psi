@@ -1,407 +1,228 @@
-import { supabase } from "@/integrations/supabase/client";
-import { CalculationResult } from "./advancedCalculationEngine";
 
-export interface ActionPlanTemplate {
+import { supabase } from "@/integrations/supabase/client";
+
+export interface ActionTemplate {
   id: string;
-  category: string;
-  risk_level: string;
-  sector_type?: string;
   template_name: string;
+  category: string;
+  exposure_level: string;
   description: string;
-  actions: ActionItem[];
-  timeline_days: number;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  required_resources: string[];
-  success_metrics: string[];
+  is_mandatory: boolean;
+  recommended_timeline_days: number;
+  template_actions: ActionItem[];
+  legal_requirements?: string;
+  responsible_roles?: string[];
 }
 
 export interface ActionItem {
   title: string;
   description: string;
+  mandatory: boolean;
+  timeline_days: number;
   responsible_role: string;
   estimated_hours: number;
-  dependencies: string[];
-  timeline_days: number;
-  mandatory: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  dependencies?: string[];
 }
 
 export interface GeneratedActionPlan {
+  id: string;
   title: string;
   description: string;
-  priority: string;
-  estimated_completion_days: number;
-  total_estimated_hours: number;
-  actions: ActionItem[];
-  success_metrics: string[];
-  monitoring_frequency: number;
+  items: ActionItem[];
+  timeline_days: number;
+  estimated_cost?: number;
+  compliance_requirements: string[];
 }
 
 export class IntelligentActionPlanner {
-  // Gerar plano de ação inteligente baseado nos resultados
-  static async generateActionPlan(
+  
+  async getTemplatesForRisk(category: string, exposureLevel: string): Promise<ActionTemplate[]> {
+    const { data, error } = await supabase
+      .from('nr01_action_templates')
+      .select('*')
+      .eq('category', category)
+      .eq('exposure_level', exposureLevel)
+      .order('is_mandatory', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async generateActionPlan(
+    riskAnalysisId: string,
+    category: string,
+    exposureLevel: string,
     companyId: string,
-    sectorId: string,
-    roleId: string,
-    calculationResults: CalculationResult[],
-    assessmentResponseId: string
-  ): Promise<GeneratedActionPlan[]> {
+    sectorId?: string
+  ): Promise<GeneratedActionPlan> {
     
-    const plans: GeneratedActionPlan[] = [];
+    // Get base templates
+    const templates = await this.getTemplatesForRisk(category, exposureLevel);
     
-    // Filtrar apenas resultados com risco alto ou crítico
-    const highRiskResults = calculationResults.filter(
-      result => result.risk_level === 'alto' || result.risk_level === 'critico'
+    if (!templates.length) {
+      throw new Error(`No action templates found for ${category} - ${exposureLevel}`);
+    }
+
+    // Select the most appropriate template
+    const selectedTemplate = this.selectBestTemplate(templates, exposureLevel);
+    
+    // Get sector-specific modifications if available
+    const sectorModifications = sectorId ? 
+      await this.getSectorModifications(companyId, sectorId, category) : null;
+
+    // Generate the action plan
+    const actionPlan = await this.createActionPlan(
+      selectedTemplate,
+      sectorModifications,
+      riskAnalysisId,
+      companyId,
+      sectorId
     );
 
-    for (const result of highRiskResults) {
-      try {
-        const plan = await this.createCategoryActionPlan(
-          companyId,
-          sectorId,
-          roleId,
-          result,
-          assessmentResponseId
-        );
-        
-        if (plan) {
-          plans.push(plan);
-        }
-      } catch (error) {
-        console.error(`Error creating action plan for category ${result.category}:`, error);
-      }
-    }
-
-    // Se múltiplas categorias de alto risco, criar plano integrado
-    if (highRiskResults.length > 1) {
-      const integratedPlan = await this.createIntegratedActionPlan(
-        companyId,
-        sectorId,
-        roleId,
-        highRiskResults,
-        assessmentResponseId
-      );
-      
-      if (integratedPlan) {
-        plans.push(integratedPlan);
-      }
-    }
-
-    return plans;
+    return actionPlan;
   }
 
-  // Criar plano de ação para categoria específica
-  private static async createCategoryActionPlan(
+  private selectBestTemplate(templates: ActionTemplate[], exposureLevel: string): ActionTemplate {
+    // Prioritize mandatory templates for critical/high risks
+    if (exposureLevel === 'critico' || exposureLevel === 'alto') {
+      const mandatoryTemplate = templates.find(t => t.is_mandatory);
+      if (mandatoryTemplate) return mandatoryTemplate;
+    }
+
+    // Return the first template (they're ordered by is_mandatory desc)
+    return templates[0];
+  }
+
+  private async getSectorModifications(
+    companyId: string, 
+    sectorId: string, 
+    category: string
+  ): Promise<any> {
+    const { data } = await supabase
+      .from('sector_risk_profiles')
+      .select('risk_multipliers, baseline_scores')
+      .eq('company_id', companyId)
+      .eq('sector_id', sectorId)
+      .single();
+
+    return data;
+  }
+
+  private async createActionPlan(
+    template: ActionTemplate,
+    sectorModifications: any,
+    riskAnalysisId: string,
     companyId: string,
-    sectorId: string,
-    roleId: string,
-    result: CalculationResult,
-    assessmentResponseId: string
-  ): Promise<GeneratedActionPlan | null> {
+    sectorId?: string
+  ): Promise<GeneratedActionPlan> {
+
+    // Enhance template actions with sector-specific adjustments
+    const enhancedActions = this.enhanceActions(template.template_actions, sectorModifications);
+
+    // Calculate timeline and cost estimates
+    const timeline = this.calculateTimeline(enhancedActions);
+    const estimatedCost = this.estimateCost(enhancedActions);
+
+    // Create the action plan in database
+    const planTitle = `${template.template_name} - Análise ${riskAnalysisId.slice(0, 8)}`;
     
-    try {
-      // Buscar template mais adequado - sem conversão de tipos forçada
-      const template = await this.findBestTemplate(
-        companyId,
-        result.category,
-        result.risk_level,
-        sectorId
-      );
-
-      if (!template) {
-        // Criar plano básico se não houver template
-        return this.createBasicActionPlan(result);
-      }
-
-      // Personalizar template baseado nos fatores contribuintes
-      const customizedActions = this.customizeActions(
-        template.actions,
-        result.contributing_factors,
-        result.risk_level
-      );
-
-      // Calcular cronograma inteligente
-      const timeline = this.calculateIntelligentTimeline(
-        result.risk_level,
-        customizedActions,
-        result.confidence_level
-      );
-
-      return {
-        title: `${template.template_name} - ${result.category}`,
-        description: this.generatePlanDescription(template, result),
-        priority: this.determinePlanPriority(result.risk_level, result.confidence_level),
-        estimated_completion_days: timeline.total_days,
-        total_estimated_hours: timeline.total_hours,
-        actions: customizedActions,
-        success_metrics: this.generateSuccessMetrics(result),
-        monitoring_frequency: this.calculateMonitoringFrequency(result.risk_level)
-      };
-
-    } catch (error) {
-      console.error('Error creating category action plan:', error);
-      return null;
-    }
-  }
-
-  // Buscar o melhor template
-  private static async findBestTemplate(
-    companyId: string,
-    category: string,
-    riskLevel: string,
-    sectorId: string
-  ): Promise<ActionPlanTemplate | null> {
-    
-    try {
-      // Buscar template com type assertion
-      const { data: genericTemplates } = await supabase
-        .from('nr01_action_templates')
-        .select('*')
-        .eq('category', category as any)
-        .eq('exposure_level', riskLevel as any)
-        .order('is_mandatory', { ascending: false });
-
-      if (genericTemplates && genericTemplates.length > 0) {
-        // Converter manualmente para ActionPlanTemplate
-        const template = genericTemplates[0];
-        return {
-          id: template.id,
-          category: template.category,
-          risk_level: template.exposure_level,
-          template_name: template.template_name,
-          description: template.description || '',
-          actions: [], // Será preenchido depois
-          timeline_days: template.recommended_timeline_days || 90,
-          priority: 'medium',
-          required_resources: [],
-          success_metrics: []
-        };
-      }
-
-      return null;
-
-    } catch (error) {
-      console.error('Error finding template:', error);
-      return null;
-    }
-  }
-
-  // Customizar ações baseado nos fatores contribuintes
-  private static customizeActions(
-    templateActions: ActionItem[],
-    contributingFactors: string[],
-    riskLevel: string
-  ): ActionItem[] {
-    
-    const customizedActions = [...templateActions];
-
-    // Adicionar ações específicas baseadas nos fatores
-    contributingFactors.forEach(factor => {
-      const specificAction = this.getFactorSpecificAction(factor, riskLevel);
-      if (specificAction) {
-        customizedActions.push(specificAction);
+    const { data: actionPlan, error } = await supabase.rpc('create_action_plan', {
+      plan_data: {
+        title: planTitle,
+        description: `${template.description}\n\nPlano gerado automaticamente baseado na análise de risco psicossocial conforme NR-01.`,
+        company_id: companyId,
+        sector_id: sectorId,
+        status: 'draft',
+        priority: template.exposure_level === 'critico' ? 'high' : 'medium',
+        risk_level: template.exposure_level,
+        budget_allocated: estimatedCost,
+        start_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + timeline * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       }
     });
 
-    // Priorizar ações baseado no nível de risco
-    return customizedActions
-      .sort((a, b) => {
-        if (a.mandatory && !b.mandatory) return -1;
-        if (!a.mandatory && b.mandatory) return 1;
-        return a.timeline_days - b.timeline_days;
-      })
-      .slice(0, riskLevel === 'critico' ? 10 : 6); // Limitar número de ações
-  }
+    if (error) throw error;
 
-  // Obter ação específica para fator
-  private static getFactorSpecificAction(factor: string, riskLevel: string): ActionItem | null {
-    const factorActionMap: Record<string, ActionItem> = {
-      'Sobrecarga de trabalho': {
-        title: 'Redistribuir carga de trabalho',
-        description: 'Analisar e redistribuir tarefas para equilibrar demanda',
-        responsible_role: 'Gestor direto',
-        estimated_hours: riskLevel === 'critico' ? 8 : 4,
-        dependencies: [],
-        timeline_days: riskLevel === 'critico' ? 3 : 7,
-        mandatory: riskLevel === 'critico'
-      },
-      'Falta de reconhecimento': {
-        title: 'Implementar programa de reconhecimento',
-        description: 'Criar sistema de feedback e reconhecimento regular',
-        responsible_role: 'RH',
-        estimated_hours: 16,
-        dependencies: ['Aprovação da gestão'],
-        timeline_days: 14,
-        mandatory: false
-      }
-      // Adicionar mais mapeamentos...
-    };
-
-    return factorActionMap[factor] || null;
-  }
-
-  // Calcular cronograma inteligente
-  private static calculateIntelligentTimeline(
-    riskLevel: string,
-    actions: ActionItem[],
-    confidenceLevel: number
-  ) {
-    const urgencyMultiplier = riskLevel === 'critico' ? 0.5 : riskLevel === 'alto' ? 0.7 : 1.0;
-    const confidenceMultiplier = confidenceLevel > 80 ? 1.0 : 1.2;
-
-    const totalHours = actions.reduce((sum, action) => sum + action.estimated_hours, 0);
-    const baseDays = Math.max(...actions.map(action => action.timeline_days));
-
-    return {
-      total_hours: Math.round(totalHours * confidenceMultiplier),
-      total_days: Math.round(baseDays * urgencyMultiplier * confidenceMultiplier)
-    };
-  }
-
-  // Gerar descrição do plano
-  private static generatePlanDescription(template: ActionPlanTemplate, result: CalculationResult): string {
-    return `${template.description}
-
-Score de risco: ${Math.round(result.sector_adjusted_score)}/100
-Nível de confiança: ${result.confidence_level}%
-Fatores contribuintes: ${result.contributing_factors.join(', ')}
-
-Este plano foi gerado automaticamente baseado na análise de risco psicossocial conforme NR-01.`;
-  }
-
-  // Determinar prioridade do plano
-  private static determinePlanPriority(riskLevel: string, confidenceLevel: number): string {
-    if (riskLevel === 'critico') return 'critical';
-    if (riskLevel === 'alto' && confidenceLevel > 80) return 'high';
-    if (riskLevel === 'alto') return 'medium';
-    return 'low';
-  }
-
-  // Gerar métricas de sucesso
-  private static generateSuccessMetrics(result: CalculationResult): string[] {
-    const baseMetrics = [
-      `Reduzir score de ${result.category} para abaixo de ${Math.round(result.sector_adjusted_score * 0.7)}`,
-      'Aumentar satisfação do colaborador em 20%',
-      'Reduzir indicadores de estresse'
-    ];
-
-    // Adicionar métricas específicas por categoria
-    const categoryMetrics: Record<string, string[]> = {
-      'exigencias_trabalho': [
-        'Reduzir horas extras em 30%',
-        'Aumentar produtividade mantendo bem-estar'
-      ],
-      'exigencias_emocionais': [
-        'Reduzir absenteísmo por motivos de saúde',
-        'Melhorar avaliação de clima organizacional'
-      ]
-      // Adicionar outras categorias...
-    };
-
-    return [...baseMetrics, ...(categoryMetrics[result.category] || [])];
-  }
-
-  // Calcular frequência de monitoramento
-  private static calculateMonitoringFrequency(riskLevel: string): number {
-    // Retorna dias entre monitoramentos
-    switch (riskLevel) {
-      case 'critico': return 7;  // Semanal
-      case 'alto': return 14;    // Quinzenal
-      case 'medio': return 30;   // Mensal
-      default: return 90;        // Trimestral
-    }
-  }
-
-  // Criar plano básico quando não há template
-  private static createBasicActionPlan(result: CalculationResult): GeneratedActionPlan {
-    const basicActions: ActionItem[] = [
-      {
-        title: 'Avaliação detalhada',
-        description: `Realizar avaliação detalhada da categoria ${result.category}`,
-        responsible_role: 'SESMT',
-        estimated_hours: 4,
-        dependencies: [],
-        timeline_days: 7,
-        mandatory: true
-      },
-      {
-        title: 'Medidas de controle imediatas',
-        description: 'Implementar medidas de controle conforme NR-01',
-        responsible_role: 'Gestor direto',
-        estimated_hours: 8,
-        dependencies: ['Avaliação detalhada'],
-        timeline_days: 14,
-        mandatory: result.risk_level === 'critico'
-      }
-    ];
-
-    return {
-      title: `Plano de Ação - ${result.category}`,
-      description: `Plano básico para controle de risco ${result.risk_level} na categoria ${result.category}`,
-      priority: result.risk_level === 'critico' ? 'critical' : 'high',
-      estimated_completion_days: 21,
-      total_estimated_hours: 12,
-      actions: basicActions,
-      success_metrics: this.generateSuccessMetrics(result),
-      monitoring_frequency: this.calculateMonitoringFrequency(result.risk_level)
-    };
-  }
-
-  // Criar plano integrado para múltiplas categorias
-  private static async createIntegratedActionPlan(
-    companyId: string,
-    sectorId: string,
-    roleId: string,
-    results: CalculationResult[],
-    assessmentResponseId: string
-  ): Promise<GeneratedActionPlan | null> {
-    
-    try {
-      const highestRisk = results.reduce((max, result) => 
-        result.sector_adjusted_score > max.sector_adjusted_score ? result : max
-      );
-
-      const allFactors = results.flatMap(r => r.contributing_factors);
-      const uniqueFactors = [...new Set(allFactors)];
-
-      const integratedActions: ActionItem[] = [
-        {
-          title: 'Análise integrada de riscos psicossociais',
-          description: 'Avaliação holística de múltiplos fatores de risco identificados',
-          responsible_role: 'SESMT',
-          estimated_hours: 12,
-          dependencies: [],
-          timeline_days: 5,
-          mandatory: true
-        },
-        {
-          title: 'Plano de intervenção multifatorial',
-          description: 'Implementação coordenada de medidas para múltiplas categorias',
-          responsible_role: 'Comitê de SST',
-          estimated_hours: 24,
-          dependencies: ['Análise integrada de riscos psicossociais'],
-          timeline_days: 21,
-          mandatory: true
+    // Create action plan items
+    for (const action of enhancedActions) {
+      await supabase.rpc('create_action_plan_item', {
+        item_data: {
+          action_plan_id: actionPlan,
+          title: action.title,
+          description: action.description,
+          status: 'pending',
+          priority: action.priority || 'medium',
+          responsible_name: action.responsible_role,
+          estimated_hours: action.estimated_hours,
+          due_date: new Date(Date.now() + action.timeline_days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         }
-      ];
-
-      return {
-        title: 'Plano Integrado de Controle de Riscos Psicossociais',
-        description: `Plano integrado para controle de múltiplos fatores de risco psicossocial identificados. Categorias afetadas: ${results.map(r => r.category).join(', ')}`,
-        priority: 'critical',
-        estimated_completion_days: 30,
-        total_estimated_hours: 36,
-        actions: integratedActions,
-        success_metrics: [
-          'Reduzir scores globais de risco em 25%',
-          'Melhorar indicadores de bem-estar organizacional',
-          'Aumentar engajamento dos colaboradores'
-        ],
-        monitoring_frequency: 7 // Semanal para planos integrados
-      };
-
-    } catch (error) {
-      console.error('Error creating integrated action plan:', error);
-      return null;
+      });
     }
+
+    return {
+      id: actionPlan,
+      title: planTitle,
+      description: template.description,
+      items: enhancedActions,
+      timeline_days: timeline,
+      estimated_cost: estimatedCost,
+      compliance_requirements: this.extractComplianceRequirements(template)
+    };
+  }
+
+  private enhanceActions(baseActions: ActionItem[], sectorModifications: any): ActionItem[] {
+    return baseActions.map(action => {
+      let enhancedAction = { ...action };
+
+      // Apply sector-specific multipliers if available
+      if (sectorModifications?.risk_multipliers) {
+        const multiplier = sectorModifications.risk_multipliers[action.responsible_role] || 1;
+        enhancedAction.estimated_hours = Math.round(action.estimated_hours * multiplier);
+      }
+
+      // Add priority based on timeline and criticality
+      if (!enhancedAction.priority) {
+        enhancedAction.priority = action.timeline_days <= 3 ? 'high' : 
+                                action.timeline_days <= 7 ? 'medium' : 'low';
+      }
+
+      return enhancedAction;
+    });
+  }
+
+  private calculateTimeline(actions: ActionItem[]): number {
+    return Math.max(...actions.map(a => a.timeline_days));
+  }
+
+  private estimateCost(actions: ActionItem[]): number {
+    // Simple cost estimation: R$ 100 per hour
+    const totalHours = actions.reduce((sum, action) => sum + action.estimated_hours, 0);
+    return totalHours * 100;
+  }
+
+  private extractComplianceRequirements(template: ActionTemplate): string[] {
+    const requirements = ['NR-01 - Disposições Gerais e Gerenciamento de Riscos Ocupacionais'];
+    
+    if (template.legal_requirements) {
+      requirements.push(template.legal_requirements);
+    }
+
+    // Add category-specific requirements
+    switch (template.category) {
+      case 'organizacao_trabalho':
+        requirements.push('CLT Art. 157 - Normas de segurança do trabalho');
+        break;
+      case 'condicoes_ambientais':
+        requirements.push('NR-17 - Ergonomia');
+        break;
+      case 'relacoes_socioprofissionais':
+        requirements.push('Lei 13.467/2017 - Reforma Trabalhista');
+        break;
+    }
+
+    return requirements;
   }
 }
+
+export const intelligentActionPlanner = new IntelligentActionPlanner();

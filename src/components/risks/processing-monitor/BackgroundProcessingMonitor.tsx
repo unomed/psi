@@ -13,7 +13,7 @@ import {
   CheckCircle, 
   AlertTriangle,
   Cpu,
-  ListChecks // Substituindo Queue por ListChecks
+  ListChecks
 } from "lucide-react";
 import { useBackgroundProcessor } from "@/hooks/usePsychosocialAutomation/useBackgroundProcessor";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";

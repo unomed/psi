@@ -1001,6 +1001,7 @@ export type Database = {
           mandatory_actions: Json
           recommended_timeline_days: number | null
           responsible_roles: Json | null
+          template_actions: Json
           template_name: string
           updated_at: string | null
         }
@@ -1015,6 +1016,7 @@ export type Database = {
           mandatory_actions?: Json
           recommended_timeline_days?: number | null
           responsible_roles?: Json | null
+          template_actions?: Json
           template_name: string
           updated_at?: string | null
         }
@@ -1029,6 +1031,7 @@ export type Database = {
           mandatory_actions?: Json
           recommended_timeline_days?: number | null
           responsible_roles?: Json | null
+          template_actions?: Json
           template_name?: string
           updated_at?: string | null
         }

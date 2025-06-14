@@ -1,370 +1,303 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
-export interface CategoryWeight {
-  category: string;
-  weight: number;
-  critical_threshold: number;
-  high_threshold: number;
-  medium_threshold: number;
+export interface RiskCalculationInput {
+  assessmentResponseId: string;
+  companyId: string;
+  sectorId?: string;
+  roleId?: string;
+  responses: Record<string, any>;
 }
 
-export interface SectorRiskProfile {
-  sector_id: string;
-  risk_multipliers: Record<string, number>;
-  baseline_scores: Record<string, number>;
+export interface RiskCalculationResult {
+  category: string;
+  riskScore: number;
+  exposureLevel: 'baixo' | 'medio' | 'alto' | 'critico';
+  contributingFactors: string[];
+  recommendedActions: string[];
+  confidence: number; // 0-1 scale
+  sectorAdjustment?: number;
+  roleAdjustment?: number;
 }
 
-export interface CalculationResult {
-  category: string;
-  raw_score: number;
-  weighted_score: number;
-  sector_adjusted_score: number;
-  risk_level: 'baixo' | 'medio' | 'alto' | 'critico';
-  confidence_level: number;
-  contributing_factors: string[];
-  recommended_actions: string[];
+export interface CalculationContext {
+  companyThresholds: {
+    threshold_low: number;
+    threshold_medium: number;
+    threshold_high: number;
+  };
+  sectorProfile?: {
+    risk_multipliers: Record<string, number>;
+    baseline_scores: Record<string, number>;
+  };
+  categoryWeights: Record<string, number>;
 }
 
 export class AdvancedCalculationEngine {
-  // Calcular risco psicossocial com algoritmo avançado
-  static async calculatePsychosocialRisk(
-    assessmentResponseId: string,
-    companyId: string,
-    sectorId?: string,
-    roleId?: string
-  ): Promise<CalculationResult[]> {
-    try {
-      // Buscar dados da avaliação
-      const { data: assessmentData, error: assessmentError } = await supabase
-        .from('assessment_responses')
-        .select(`
-          *,
-          employees!inner(
-            sector_id,
-            role_id,
-            sectors(name),
-            roles(name)
-          )
-        `)
-        .eq('id', assessmentResponseId)
-        .single();
+  
+  async calculatePsychosocialRisk(input: RiskCalculationInput): Promise<RiskCalculationResult[]> {
+    const context = await this.buildCalculationContext(input);
+    const results: RiskCalculationResult[] = [];
 
-      if (assessmentError) throw assessmentError;
+    // Get psychosocial categories to calculate
+    const categories = await this.getPsychosocialCategories();
 
-      // Corrigir acesso aos dados do funcionário
-      const employee = Array.isArray(assessmentData.employees) 
-        ? assessmentData.employees[0] 
-        : assessmentData.employees;
-
-      // Buscar configurações de peso por categoria (usar tabelas existentes como fallback)
-      const { data: categoryWeights } = await supabase
-        .from('psychosocial_criteria')
-        .select('*')
-        .eq('company_id', companyId);
-
-      // Buscar perfil de risco do setor (opcional)
-      const { data: sectorProfileData } = await supabase
-        .from('sector_risk_profiles')
-        .select('*')
-        .eq('company_id', companyId)
-        .eq('sector_id', employee?.sector_id)
-        .single();
-
-      // Converter perfil do setor para tipo esperado
-      let sectorProfile: SectorRiskProfile | undefined;
-      if (sectorProfileData) {
-        sectorProfile = {
-          sector_id: sectorProfileData.sector_id,
-          risk_multipliers: (sectorProfileData.risk_multipliers as any) || {},
-          baseline_scores: (sectorProfileData.baseline_scores as any) || {}
-        };
-      }
-
-      const responses = assessmentData.response_data as Record<string, any>;
-      const results: CalculationResult[] = [];
-
-      // Categorias principais do Manual MTE (usando valores válidos)
-      const categories = [
-        'organizacao_trabalho',
-        'condicoes_ambientais', 
-        'relacoes_socioprofissionais',
-        'reconhecimento_crescimento',
-        'elo_trabalho_vida_social'
-      ];
-
-      for (const category of categories) {
-        // Encontrar configuração correspondente
-        const categoryConfig = categoryWeights?.find(cw => 
-          cw.category.toString() === category || 
-          cw.factor_name.toLowerCase().includes(category.split('_')[0])
-        );
-        
-        const result = await this.calculateCategoryRisk(
-          category,
-          responses,
-          categoryConfig ? {
-            category: category,
-            weight: Number(categoryConfig.weight || 1.0),
-            critical_threshold: categoryConfig.threshold_high || 80,
-            high_threshold: categoryConfig.threshold_medium || 60,
-            medium_threshold: categoryConfig.threshold_low || 40
-          } : undefined,
-          sectorProfile,
-          employee?.sector_id,
-          employee?.role_id
-        );
-        results.push(result);
-      }
-
-      return results;
-    } catch (error) {
-      console.error('Error in advanced calculation:', error);
-      throw error;
+    for (const category of categories) {
+      const result = await this.calculateCategoryRisk(input, category, context);
+      results.push(result);
     }
+
+    return results;
   }
 
-  // Calcular risco por categoria específica
-  private static async calculateCategoryRisk(
+  private async buildCalculationContext(input: RiskCalculationInput): Promise<CalculationContext> {
+    // Get company thresholds
+    const { data: config } = await supabase
+      .from('psychosocial_risk_config')
+      .select('threshold_low, threshold_medium, threshold_high')
+      .eq('company_id', input.companyId)
+      .single();
+
+    let companyThresholds = {
+      threshold_low: 25,
+      threshold_medium: 50,
+      threshold_high: 75
+    };
+
+    if (config) {
+      companyThresholds = {
+        threshold_low: config.threshold_low,
+        threshold_medium: config.threshold_medium,
+        threshold_high: config.threshold_high
+      };
+    }
+
+    // Get sector profile if available
+    let sectorProfile;
+    if (input.sectorId) {
+      const { data: profile } = await supabase
+        .from('sector_risk_profiles')
+        .select('risk_multipliers, baseline_scores')
+        .eq('company_id', input.companyId)
+        .eq('sector_id', input.sectorId)
+        .single();
+
+      sectorProfile = profile || undefined;
+    }
+
+    // Get category weights
+    const { data: weights } = await supabase
+      .from('psychosocial_category_weights')
+      .select('category, weight')
+      .eq('company_id', input.companyId);
+
+    const categoryWeights: Record<string, number> = {};
+    weights?.forEach(w => {
+      categoryWeights[w.category] = w.weight;
+    });
+
+    return {
+      companyThresholds,
+      sectorProfile,
+      categoryWeights
+    };
+  }
+
+  private async getPsychosocialCategories(): Promise<string[]> {
+    // Standard NR-01 psychosocial risk categories
+    return [
+      'organizacao_trabalho',
+      'condicoes_ambientais',
+      'relacoes_socioprofissionais',
+      'reconhecimento_crescimento',
+      'autonomia_controle'
+    ];
+  }
+
+  private async calculateCategoryRisk(
+    input: RiskCalculationInput,
     category: string,
-    responses: Record<string, any>,
-    categoryWeight?: CategoryWeight,
-    sectorProfile?: SectorRiskProfile,
-    sectorId?: string,
-    roleId?: string
-  ): Promise<CalculationResult> {
+    context: CalculationContext
+  ): Promise<RiskCalculationResult> {
     
-    // Extrair respostas da categoria
-    const categoryResponses = this.extractCategoryResponses(responses, category);
+    // Extract responses for this category
+    const categoryResponses = this.extractCategoryResponses(input.responses, category);
     
-    // Calcular score bruto
-    const rawScore = this.calculateRawScore(categoryResponses);
+    // Calculate base score
+    let baseScore = this.calculateBaseScore(categoryResponses);
     
-    // Aplicar peso da categoria
-    const weight = categoryWeight?.weight || 1.0;
-    const weightedScore = rawScore * weight;
+    // Apply sector adjustments
+    const sectorAdjustment = this.applySectorAdjustment(baseScore, category, context.sectorProfile);
     
-    // Ajustar por perfil do setor
-    const sectorMultiplier = sectorProfile?.risk_multipliers?.[category] || 1.0;
-    const sectorAdjustedScore = weightedScore * sectorMultiplier;
+    // Apply company-specific weights
+    const weight = context.categoryWeights[category] || 1.0;
+    const adjustedScore = (baseScore + sectorAdjustment) * weight;
     
-    // Determinar nível de risco
-    const riskLevel = this.determineRiskLevel(sectorAdjustedScore, categoryWeight);
+    // Determine exposure level
+    const exposureLevel = this.determineExposureLevel(adjustedScore, context.companyThresholds);
     
-    // Calcular confiança
-    const confidenceLevel = this.calculateConfidence(categoryResponses, sectorProfile);
-    
-    // Identificar fatores contribuintes
+    // Identify contributing factors
     const contributingFactors = this.identifyContributingFactors(categoryResponses, category);
     
-    // Gerar ações recomendadas
-    const recommendedActions = await this.generateRecommendedActions(
-      category,
-      riskLevel,
-      contributingFactors,
-      sectorId,
-      roleId
-    );
+    // Generate recommendations
+    const recommendedActions = await this.generateRecommendations(category, exposureLevel, contributingFactors);
+    
+    // Calculate confidence score
+    const confidence = this.calculateConfidence(categoryResponses, adjustedScore);
 
     return {
       category,
-      raw_score: rawScore,
-      weighted_score: weightedScore,
-      sector_adjusted_score: sectorAdjustedScore,
-      risk_level: riskLevel,
-      confidence_level: confidenceLevel,
-      contributing_factors: contributingFactors,
-      recommended_actions: recommendedActions
+      riskScore: Math.round(adjustedScore * 100) / 100,
+      exposureLevel,
+      contributingFactors,
+      recommendedActions,
+      confidence,
+      sectorAdjustment
     };
   }
 
-  // Extrair respostas por categoria
-  private static extractCategoryResponses(responses: Record<string, any>, category: string): number[] {
-    const categoryQuestions = this.getCategoryQuestions(category);
-    return categoryQuestions
-      .map(questionId => responses[questionId])
-      .filter(response => typeof response === 'number');
+  private extractCategoryResponses(responses: Record<string, any>, category: string): Record<string, number> {
+    // Extract responses related to specific category
+    // This would map question IDs to their category
+    const categoryResponses: Record<string, number> = {};
+    
+    // Simple mapping - in real implementation, this would be based on question categorization
+    Object.entries(responses).forEach(([questionId, value]) => {
+      if (this.questionBelongsToCategory(questionId, category)) {
+        categoryResponses[questionId] = typeof value === 'number' ? value : parseInt(value) || 0;
+      }
+    });
+
+    return categoryResponses;
   }
 
-  // Mapear questões por categoria conforme Manual MTE
-  private static getCategoryQuestions(category: string): string[] {
-    const questionMap: Record<string, string[]> = {
+  private questionBelongsToCategory(questionId: string, category: string): boolean {
+    // Simplified category mapping - in real implementation, this would query the database
+    const categoryMappings: Record<string, string[]> = {
       'organizacao_trabalho': ['q1', 'q2', 'q3', 'q4', 'q5'],
-      'condicoes_ambientais': ['q6', 'q7', 'q8', 'q9'],
-      'relacoes_socioprofissionais': ['q10', 'q11', 'q12', 'q13'],
-      'reconhecimento_crescimento': ['q14', 'q15', 'q16', 'q17'],
-      'elo_trabalho_vida_social': ['q18', 'q19', 'q20', 'q21']
+      'condicoes_ambientais': ['q6', 'q7', 'q8', 'q9', 'q10'],
+      'relacoes_socioprofissionais': ['q11', 'q12', 'q13', 'q14', 'q15'],
+      'reconhecimento_crescimento': ['q16', 'q17', 'q18', 'q19', 'q20'],
+      'autonomia_controle': ['q21', 'q22', 'q23', 'q24', 'q25']
     };
-    return questionMap[category] || [];
+
+    return categoryMappings[category]?.includes(questionId) || false;
   }
 
-  // Calcular score bruto com ponderação
-  private static calculateRawScore(responses: number[]): number {
-    if (responses.length === 0) return 0;
+  private calculateBaseScore(responses: Record<string, number>): number {
+    if (Object.keys(responses).length === 0) return 0;
     
-    const sum = responses.reduce((acc, response) => acc + response, 0);
-    const average = sum / responses.length;
+    const values = Object.values(responses);
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    const average = sum / values.length;
     
-    // Normalizar para escala 0-100
-    return Math.min(100, Math.max(0, (average / 5) * 100));
+    // Convert to 0-100 scale (assuming 1-5 Likert scale)
+    return (average - 1) * 25;
   }
 
-  // Determinar nível de risco baseado em thresholds
-  private static determineRiskLevel(score: number, categoryWeight?: CategoryWeight): 'baixo' | 'medio' | 'alto' | 'critico' {
-    const criticalThreshold = categoryWeight?.critical_threshold || 80;
-    const highThreshold = categoryWeight?.high_threshold || 60;
-    const mediumThreshold = categoryWeight?.medium_threshold || 40;
-
-    if (score >= criticalThreshold) return 'critico';
-    if (score >= highThreshold) return 'alto';
-    if (score >= mediumThreshold) return 'medio';
-    return 'baixo';
+  private applySectorAdjustment(baseScore: number, category: string, sectorProfile?: any): number {
+    if (!sectorProfile?.risk_multipliers) return 0;
+    
+    const multiplier = sectorProfile.risk_multipliers[category] || 1.0;
+    const baseline = sectorProfile.baseline_scores?.[category] || 0;
+    
+    return (baseScore * multiplier) - baseScore + baseline;
   }
 
-  // Calcular nível de confiança
-  private static calculateConfidence(responses: number[], sectorProfile?: SectorRiskProfile): number {
-    if (responses.length === 0) return 0;
-    
-    // Confiança baseada na quantidade de respostas e variabilidade
-    const completeness = Math.min(1, responses.length / 25); // Assumindo 25 questões ideais
-    const variance = this.calculateVariance(responses);
-    const consistency = Math.max(0, 1 - (variance / 10)); // Normalizar variância
-    
-    return Math.round((completeness + consistency) * 50);
+  private determineExposureLevel(
+    score: number, 
+    thresholds: { threshold_low: number; threshold_medium: number; threshold_high: number }
+  ): 'baixo' | 'medio' | 'alto' | 'critico' {
+    if (score <= thresholds.threshold_low) return 'baixo';
+    if (score <= thresholds.threshold_medium) return 'medio';
+    if (score <= thresholds.threshold_high) return 'alto';
+    return 'critico';
   }
 
-  // Calcular variância das respostas
-  private static calculateVariance(values: number[]): number {
-    if (values.length === 0) return 0;
-    
-    const mean = values.reduce((acc, val) => acc + val, 0) / values.length;
-    const squaredDiffs = values.map(val => Math.pow(val - mean, 2));
-    return squaredDiffs.reduce((acc, val) => acc + val, 0) / values.length;
-  }
-
-  // Identificar fatores contribuintes
-  private static identifyContributingFactors(responses: number[], category: string): string[] {
+  private identifyContributingFactors(responses: Record<string, number>, category: string): string[] {
     const factors: string[] = [];
-    const avgScore = responses.reduce((acc, val) => acc + val, 0) / responses.length;
-
-    // Mapear fatores por categoria
-    const categoryFactors: Record<string, string[]> = {
-      'organizacao_trabalho': [
-        'Sobrecarga de trabalho',
-        'Prazos irrealistas',
-        'Complexidade excessiva',
-        'Interrupções frequentes'
-      ],
-      'condicoes_ambientais': [
-        'Ambiente físico inadequado',
-        'Ruído excessivo',
-        'Iluminação deficiente',
-        'Temperatura inadequada'
-      ],
-      'relacoes_socioprofissionais': [
-        'Conflitos interpessoais',
-        'Isolamento social',
-        'Falta de suporte',
-        'Comunicação deficiente'
-      ],
-      'reconhecimento_crescimento': [
-        'Falta de reconhecimento',
-        'Ausência de feedback',
-        'Limitadas oportunidades de crescimento',
-        'Desvalorização profissional'
-      ],
-      'elo_trabalho_vida_social': [
-        'Desequilíbrio trabalho-vida',
-        'Horários incompatíveis',
-        'Pressão por disponibilidade',
-        'Conflito de papéis'
-      ]
-    };
-
-    // Adicionar fatores baseado no score (score alto = fator presente)
-    if (avgScore >= 3.5) {
-      factors.push(...(categoryFactors[category] || []));
-    }
-
-    return factors;
-  }
-
-  // Gerar ações recomendadas
-  private static async generateRecommendedActions(
-    category: string,
-    riskLevel: string,
-    contributingFactors: string[],
-    sectorId?: string,
-    roleId?: string
-  ): Promise<string[]> {
     
-    try {
-      // Buscar templates de ação específicos com type assertion
-      const { data: actionTemplates } = await supabase
-        .from('nr01_action_templates')
-        .select('*')
-        .eq('category', category as any)
-        .eq('exposure_level', riskLevel as any);
-
-      if (actionTemplates && actionTemplates.length > 0) {
-        return actionTemplates.map(template => template.template_name);
+    // Identify high-scoring factors that contribute to risk
+    Object.entries(responses).forEach(([questionId, score]) => {
+      if (score >= 4) { // High risk response
+        factors.push(this.getFactorDescription(questionId, category));
       }
+    });
 
-      // Ações padrão por categoria e nível
-      const defaultActions = this.getDefaultActions(category, riskLevel);
-      return defaultActions;
-
-    } catch (error) {
-      console.error('Error generating recommended actions:', error);
-      return this.getDefaultActions(category, riskLevel);
-    }
+    return factors.filter(Boolean);
   }
 
-  // Ações padrão por categoria
-  private static getDefaultActions(category: string, riskLevel: string): string[] {
-    const actionMap: Record<string, Record<string, string[]>> = {
-      'organizacao_trabalho': {
-        'critico': [
-          'Redistribuir carga de trabalho imediatamente',
-          'Contratar pessoal adicional',
-          'Reavaliar processos críticos'
-        ],
-        'alto': [
-          'Revisar distribuição de tarefas',
-          'Implementar pausas obrigatórias',
-          'Treinar gestão de tempo'
-        ],
-        'medio': [
-          'Monitorar carga de trabalho',
-          'Capacitar em organização',
-          'Melhorar planejamento'
-        ],
-        'baixo': [
-          'Manter monitoramento preventivo'
-        ]
-      },
-      'condicoes_ambientais': {
-        'critico': [
-          'Intervenção imediata no ambiente',
-          'Avaliação ergonômica completa',
-          'Adequação de infraestrutura'
-        ],
-        'alto': [
-          'Melhorias no ambiente físico',
-          'Controle de ruído e iluminação',
-          'Equipamentos ergonômicos'
-        ],
-        'medio': [
-          'Monitorar condições ambientais',
-          'Ajustes pontuais no ambiente',
-          'Treinamento ergonômico'
-        ],
-        'baixo': [
-          'Manter padrões ambientais'
-        ]
-      }
-      // Adicionar outras categorias...
+  private getFactorDescription(questionId: string, category: string): string {
+    // Map question IDs to human-readable factor descriptions
+    const factorMappings: Record<string, string> = {
+      'q1': 'Sobrecarga de trabalho',
+      'q2': 'Ritmo de trabalho excessivo',
+      'q3': 'Pressão temporal constante',
+      'q6': 'Ambiente físico inadequado',
+      'q7': 'Ruído excessivo',
+      'q11': 'Conflitos interpessoais',
+      'q12': 'Falta de apoio social',
+      // ... more mappings
     };
 
-    return actionMap[category]?.[riskLevel] || ['Acompanhar evolução'];
+    return factorMappings[questionId] || '';
+  }
+
+  private async generateRecommendations(
+    category: string, 
+    exposureLevel: string, 
+    contributingFactors: string[]
+  ): Promise<string[]> {
+    const recommendations: string[] = [];
+
+    // Get template recommendations
+    const { data: templates } = await supabase
+      .from('nr01_action_templates')
+      .select('template_actions')
+      .eq('category', category)
+      .eq('exposure_level', exposureLevel)
+      .limit(1);
+
+    if (templates?.[0]?.template_actions) {
+      const actions = templates[0].template_actions as ActionItem[];
+      recommendations.push(...actions.map(action => action.title));
+    }
+
+    // Add factor-specific recommendations
+    contributingFactors.forEach(factor => {
+      const specificRec = this.getFactorSpecificRecommendation(factor);
+      if (specificRec) recommendations.push(specificRec);
+    });
+
+    return recommendations;
+  }
+
+  private getFactorSpecificRecommendation(factor: string): string {
+    const recommendations: Record<string, string> = {
+      'Sobrecarga de trabalho': 'Redistribuir tarefas e revisar capacidade da equipe',
+      'Ritmo de trabalho excessivo': 'Implementar pausas regulares e revisar metas',
+      'Ambiente físico inadequado': 'Melhorar condições ambientais de trabalho',
+      'Conflitos interpessoais': 'Implementar programa de mediação de conflitos'
+    };
+
+    return recommendations[factor] || '';
+  }
+
+  private calculateConfidence(responses: Record<string, number>, finalScore: number): number {
+    // Calculate confidence based on response consistency and completeness
+    const responseCount = Object.keys(responses).length;
+    const expectedResponses = 5; // Expected responses per category
+    
+    const completeness = Math.min(responseCount / expectedResponses, 1.0);
+    
+    // Calculate variance to assess consistency
+    const values = Object.values(responses);
+    const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+    const consistency = Math.max(0, 1 - (variance / 5)); // Normalize variance
+    
+    return (completeness * 0.6 + consistency * 0.4);
   }
 }
+
+export const advancedCalculationEngine = new AdvancedCalculationEngine();

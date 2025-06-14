@@ -1,19 +1,54 @@
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BackgroundProcessor } from "@/services/riskManagement/automation/backgroundProcessor";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { backgroundProcessor } from "@/services/riskManagement/automation/backgroundProcessor";
+import type { ProcessingStatus } from "@/services/riskManagement/automation/backgroundProcessor";
 
 export function useBackgroundProcessor() {
-  const queryClient = useQueryClient();
+  const [processingStatus, setProcessingStatus] = useState<ProcessingStatus | null>(null);
 
-  // Status do processamento
-  const { data: processingStatus, isLoading } = useQuery({
-    queryKey: ['backgroundProcessingStatus'],
-    queryFn: BackgroundProcessor.getProcessingStatus,
-    refetchInterval: 5000, // Atualizar a cada 5 segundos
+  // Get processing status
+  const { 
+    data: statusData, 
+    isLoading,
+    refetch: refetchStatus 
+  } = useQuery({
+    queryKey: ['processing-status'],
+    queryFn: () => backgroundProcessor.getProcessingStatus(),
+    refetchInterval: 5000, // Refresh every 5 seconds
   });
 
-  // Adicionar job à fila
+  useEffect(() => {
+    if (statusData) {
+      setProcessingStatus(statusData);
+    }
+  }, [statusData]);
+
+  // Start processing mutation
+  const startProcessing = useMutation({
+    mutationFn: () => backgroundProcessor.startProcessing(),
+    onSuccess: () => {
+      console.log('Background processing started');
+      refetchStatus();
+    },
+    onError: (error) => {
+      console.error('Failed to start processing:', error);
+    }
+  });
+
+  // Stop processing mutation
+  const stopProcessing = useMutation({
+    mutationFn: () => backgroundProcessor.stopProcessing(),
+    onSuccess: () => {
+      console.log('Background processing stopped');
+      refetchStatus();
+    },
+    onError: (error) => {
+      console.error('Failed to stop processing:', error);
+    }
+  });
+
+  // Queue job mutation
   const queueJob = useMutation({
     mutationFn: ({ 
       assessmentResponseId, 
@@ -23,45 +58,22 @@ export function useBackgroundProcessor() {
       assessmentResponseId: string; 
       companyId: string; 
       priority?: 'low' | 'medium' | 'high' | 'critical' 
-    }) => BackgroundProcessor.queueProcessingJob(assessmentResponseId, companyId, priority),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['backgroundProcessingStatus'] });
-      toast.success('Processamento adicionado à fila');
+    }) => backgroundProcessor.queueJob(assessmentResponseId, companyId, priority),
+    onSuccess: (jobId) => {
+      console.log('Job queued successfully:', jobId);
+      refetchStatus();
     },
-    onError: () => {
-      toast.error('Erro ao adicionar processamento à fila');
-    }
-  });
-
-  // Parar processamento
-  const stopProcessing = useMutation({
-    mutationFn: () => {
-      BackgroundProcessor.stopProcessing();
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['backgroundProcessingStatus'] });
-      toast.success('Processamento pausado');
-    }
-  });
-
-  // Reiniciar processamento
-  const startProcessing = useMutation({
-    mutationFn: () => {
-      BackgroundProcessor.startProcessingPublic();
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['backgroundProcessingStatus'] });
-      toast.success('Processamento reiniciado');
+    onError: (error) => {
+      console.error('Failed to queue job:', error);
     }
   });
 
   return {
     processingStatus,
     isLoading,
-    queueJob,
+    startProcessing,
     stopProcessing,
-    startProcessing
+    queueJob,
+    refetchStatus
   };
 }
