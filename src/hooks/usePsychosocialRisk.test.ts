@@ -3,6 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePsychosocialRisk } from './usePsychosocialRisk';
 import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
 
 // Mock Supabase
 jest.mock('@/integrations/supabase/client', () => ({
@@ -32,9 +33,8 @@ describe('usePsychosocialRisk', () => {
     jest.clearAllMocks();
   });
 
-  const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  const wrapper = ({ children }: { children: React.ReactNode }) => 
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
 
   it('should fetch psychosocial criteria successfully', async () => {
     const mockCriteria = [
