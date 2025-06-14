@@ -891,6 +891,47 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_mood_logs: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          log_date: string
+          mood_description: string
+          mood_emoji: string
+          mood_score: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          log_date?: string
+          mood_description: string
+          mood_emoji: string
+          mood_score: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          log_date?: string
+          mood_description?: string
+          mood_emoji?: string
+          mood_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_mood_logs_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           address: string | null
@@ -2546,6 +2587,16 @@ export type Database = {
         Args: { _user_id: string; _company_id: string }
         Returns: boolean
       }
+      authenticate_employee: {
+        Args: { p_cpf: string; p_password: string }
+        Returns: {
+          employee_id: string
+          employee_name: string
+          company_id: string
+          company_name: string
+          is_valid: boolean
+        }[]
+      }
       calculate_psychosocial_metrics: {
         Args: { p_company_id: string; p_calculation_date?: string }
         Returns: {
@@ -2667,6 +2718,26 @@ export type Database = {
       get_dashboard_analytics: {
         Args: { p_company_id: string; p_period_days?: number }
         Returns: Json
+      }
+      get_employee_mood_stats: {
+        Args: { p_employee_id: string; p_days?: number }
+        Returns: {
+          avg_mood: number
+          mood_trend: string
+          total_logs: number
+          mood_distribution: Json
+        }[]
+      }
+      get_employee_pending_assessments: {
+        Args: { p_employee_id: string }
+        Returns: {
+          assessment_id: string
+          template_title: string
+          template_description: string
+          scheduled_date: string
+          link_url: string
+          days_remaining: number
+        }[]
       }
       get_psychosocial_processing_stats: {
         Args: {

@@ -3,48 +3,52 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { AppRoutes } from "./components/routing/AppRoutes";
-import { useSystemInitialization } from "./hooks/useSystemInitialization";
-import { Suspense } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { RouteGuard } from "@/components/auth/RouteGuard";
+import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
+
+// Pages
+import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import EmployeePortal from "./pages/EmployeePortal"; // Nova página
+import { AuthRoutes } from "@/components/routing/AuthRoutes";
+import { MainRoutes } from "@/components/routing/MainRoutes";
 
 const queryClient = new QueryClient();
 
-function LoadingFallback() {
+function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-primary mb-2">PSI Safe</h1>
-        <p className="text-sm text-muted-foreground">Carregando aplicação...</p>
-      </div>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ErrorBoundary>
+            <AuthProvider>
+              <Routes>
+                {/* Rota pública para funcionários */}
+                <Route path="/funcionario" element={<EmployeePortal />} />
+                
+                {/* Rota inicial */}
+                <Route path="/" element={<Index />} />
+                
+                {/* Rotas de autenticação */}
+                <AuthRoutes />
+                
+                {/* Rotas protegidas */}
+                <Route path="/*" element={
+                  <RouteGuard>
+                    <MainRoutes />
+                  </RouteGuard>
+                } />
+              </Routes>
+            </AuthProvider>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
-
-function AppContent() {
-  // A inicialização acontece automaticamente quando o hook é chamado
-  useSystemInitialization();
-  
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <AppRoutes />
-    </Suspense>
-  );
-}
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;
