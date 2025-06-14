@@ -1,7 +1,8 @@
 
 import { Settings } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { SidebarMenuItem, SidebarMenuSubItemComponent } from "./SidebarMenuItem";
+import { SidebarMenuSubItemComponent } from "./SidebarMenuItem";
+import { CollapsibleMenuItem } from "./CollapsibleMenuItem";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
 import { settingsMenuItems } from "./settingsItems";
@@ -23,7 +24,7 @@ export function SettingsSubmenu() {
   const isSettingsActive = location.pathname.startsWith('/configuracoes');
 
   return (
-    <SidebarMenuItem
+    <CollapsibleMenuItem
       title="Configurações"
       icon={Settings}
       isActive={isSettingsActive}
@@ -37,6 +38,6 @@ export function SettingsSubmenu() {
           isActive={location.pathname === item.path}
         />
       ))}
-    </SidebarMenuItem>
+    </CollapsibleMenuItem>
   );
 }

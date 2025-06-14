@@ -8,4 +8,12 @@ export interface MenuItem {
   roles: string[];
   permission?: string;
   path?: string;
+  subItems?: SubMenuItem[];
+}
+
+export interface SubMenuItem {
+  title: string;
+  path: string;
+  roles?: string[];
+  permission?: string;
 }

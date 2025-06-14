@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import {
   Sidebar,
@@ -117,13 +116,10 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <MenuItem
-                    title={item.title}
-                    icon={item.icon}
-                    href={item.href}
-                  />
-                </SidebarMenuItem>
+                <MenuItem
+                  key={item.title}
+                  item={item}
+                />
               ))}
               
               <SidebarMenuItem>
