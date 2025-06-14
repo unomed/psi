@@ -11,10 +11,11 @@ export const useFetchUsers = () => {
       console.log("Iniciando busca de usuários...");
       
       try {
-        // First, get all profiles
+        // First, get all active profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('*');
+          .select('*')
+          .eq('is_active', true); // Filtrar apenas usuários ativos
 
         if (profilesError) {
           console.error("Erro ao buscar profiles:", profilesError);
@@ -23,11 +24,11 @@ export const useFetchUsers = () => {
         }
 
         if (!profiles || profiles.length === 0) {
-          console.log("Nenhum profile encontrado");
+          console.log("Nenhum profile ativo encontrado");
           return [];
         }
 
-        console.log("Profiles encontrados:", profiles.length);
+        console.log("Profiles ativos encontrados:", profiles.length);
 
         // Get user IDs for email lookup
         const userIds = profiles.map(profile => profile.id);

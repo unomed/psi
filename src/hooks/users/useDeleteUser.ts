@@ -8,16 +8,27 @@ export function useDeleteUser() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      console.log("Desativando usuário:", userId);
+      
+      // Usar soft delete - apenas desativar o usuário
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: false })
+        .eq('id', userId);
 
       if (error) {
-        toast.error('Erro ao excluir usuário');
+        console.error('Erro ao desativar usuário:', error);
+        toast.error('Erro ao desativar usuário');
         throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Usuário excluído com sucesso');
+      toast.success('Usuário desativado com sucesso');
+    },
+    onError: (error) => {
+      console.error('Erro na mutação de delete:', error);
+      toast.error('Erro ao desativar usuário');
     }
   });
 }

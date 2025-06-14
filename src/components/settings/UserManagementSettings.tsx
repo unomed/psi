@@ -23,20 +23,16 @@ export default function UserManagementSettings() {
     if (deletingUser) {
       try {
         await deleteUserMutation.mutateAsync(deletingUser.id);
-        toast.success("Usuário deletado com sucesso!");
+        toast.success("Usuário desativado com sucesso!");
         setDeletingUser(null);
       } catch (error) {
-        console.error("Erro ao deletar usuário:", error);
-        toast.error("Erro ao deletar usuário");
+        console.error("Erro ao desativar usuário:", error);
+        toast.error("Erro ao desativar usuário");
       }
     }
   };
 
   const columns: ColumnDef<User>[] = [
-    {
-      accessorKey: 'id',
-      header: 'ID',
-    },
     {
       accessorKey: 'email',
       header: 'Email',
@@ -48,13 +44,37 @@ export default function UserManagementSettings() {
     {
       accessorKey: 'role',
       header: 'Função',
+      cell: ({ row }) => {
+        const role = row.getValue('role') as string;
+        const roleLabels = {
+          'admin': 'Administrador',
+          'superadmin': 'Super Admin',
+          'evaluator': 'Avaliador',
+          'profissionais': 'Profissionais'
+        };
+        return roleLabels[role as keyof typeof roleLabels] || role;
+      },
+    },
+    {
+      accessorKey: 'is_active',
+      header: 'Status',
+      cell: ({ row }) => {
+        const isActive = row.getValue('is_active') as boolean;
+        return (
+          <span className={`px-2 py-1 rounded text-xs ${
+            isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {isActive ? 'Ativo' : 'Inativo'}
+          </span>
+        );
+      },
     },
     {
       id: 'actions',
       header: 'Ações',
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Button size="icon" onClick={() => {
+          <Button size="sm" variant="outline" onClick={() => {
             setEditingUser(row.original);
             setIsEditDialogOpen(true);
           }}>
@@ -64,7 +84,7 @@ export default function UserManagementSettings() {
             <AlertDialogTrigger asChild>
               <Button 
                 variant="destructive" 
-                size="icon"
+                size="sm"
                 onClick={() => setDeletingUser(row.original)}
               >
                 <Trash2 className="h-4 w-4" />
@@ -74,12 +94,12 @@ export default function UserManagementSettings() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta ação irá deletar o usuário permanentemente. Tem certeza que deseja continuar?
+                  Esta ação irá desativar o usuário. Tem certeza que deseja continuar?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteUser}>Deletar</AlertDialogAction>
+                <AlertDialogAction onClick={handleDeleteUser}>Desativar</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

@@ -1,15 +1,15 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
 import { useCompanies } from "@/hooks/useCompanies";
 
-interface UserFormData {
+type UserFormData = {
   email: string;
   full_name: string;
   role: "superadmin" | "admin" | "evaluator" | "profissionais";
   companyIds?: string[];
-}
+};
 
 interface CompanySectionProps {
   form: UseFormReturn<UserFormData>;
@@ -30,20 +30,30 @@ export function CompanySection({ form }: CompanySectionProps) {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Empresas</FormLabel>
-          <Select onValueChange={(value) => field.onChange([value])} defaultValue={field.value?.[0]}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma empresa" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {companies.map((company) => (
-                <SelectItem key={company.id} value={company.id}>
+          <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-3">
+            {companies.map((company) => (
+              <div key={company.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`company-${company.id}`}
+                  checked={field.value?.includes(company.id) || false}
+                  onCheckedChange={(checked) => {
+                    const currentValues = field.value || [];
+                    if (checked) {
+                      field.onChange([...currentValues, company.id]);
+                    } else {
+                      field.onChange(currentValues.filter(id => id !== company.id));
+                    }
+                  }}
+                />
+                <label
+                  htmlFor={`company-${company.id}`}
+                  className="text-sm cursor-pointer"
+                >
                   {company.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </label>
+              </div>
+            ))}
+          </div>
           <FormMessage />
         </FormItem>
       )}

@@ -4,12 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 
-interface UserFormData {
+type UserFormData = {
   email: string;
   full_name: string;
   role: "superadmin" | "admin" | "evaluator" | "profissionais";
   companyIds?: string[];
-}
+};
 
 interface BasicUserInfoProps {
   form: UseFormReturn<UserFormData>;

@@ -65,7 +65,8 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
       } else {
         await updateUserRoleMutation.mutateAsync({
           userId: user!.id,
-          role: data.role
+          role: data.role,
+          companyIds: data.companyIds,
         });
         toast.success("Usuário atualizado com sucesso!");
       }
