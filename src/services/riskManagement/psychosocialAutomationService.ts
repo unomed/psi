@@ -26,7 +26,16 @@ export class PsychosocialAutomationService {
 
       if (error) throw error;
 
-      return data as AutomationTriggerResult;
+      // Properly type the response with validation
+      if (data && typeof data === 'object' && 'success' in data && 'message' in data) {
+        return data as AutomationTriggerResult;
+      } else {
+        // Fallback if data structure is unexpected
+        return {
+          success: false,
+          message: 'Unexpected response format from database function'
+        };
+      }
     } catch (error) {
       console.error('Error triggering automatic processing:', error);
       throw error;

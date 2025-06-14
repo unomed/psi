@@ -1,9 +1,10 @@
+
 import { 
   Settings, 
   Users, 
   Mail, 
   Server, 
-  Template, 
+  FileText, 
   Bell, 
   Calendar,
   Shield,
@@ -50,7 +51,7 @@ export const settingsMenuItems = [
   {
     title: "Templates de Email",
     path: "/configuracoes/email-templates",
-    icon: Template,
+    icon: FileText,
     roles: ["admin", "superadmin"],
     permission: "view_settings"
   },
