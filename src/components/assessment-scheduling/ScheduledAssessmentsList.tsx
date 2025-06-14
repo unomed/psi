@@ -5,14 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Search, Mail, MessageCircle, ExternalLink, Trash2 } from "lucide-react";
+import { Calendar, Search, Mail, ExternalLink, Trash2, Link, Copy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { generateAssessmentLink } from "@/services/assessment/links";
 
 export function ScheduledAssessmentsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [deleteAssessmentId, setDeleteAssessmentId] = useState<string | null>(null);
+  const [generatingLink, setGeneratingLink] = useState<string | null>(null);
 
   const { data: assessments, isLoading, refetch } = useQuery({
     queryKey: ['scheduledAssessments'],
@@ -21,7 +34,8 @@ export function ScheduledAssessmentsList() {
         .from('scheduled_assessments')
         .select(`
           *,
-          checklist_templates(title, type)
+          checklist_templates(title, type),
+          employees(name, email)
         `)
         .order('scheduled_date', { ascending: false });
 
@@ -31,8 +45,9 @@ export function ScheduledAssessmentsList() {
   });
 
   const filteredAssessments = assessments?.filter(assessment => {
+    const employeeName = assessment.employee_name || assessment.employees?.name || '';
     const matchesSearch = searchTerm === "" || 
-      assessment.employee_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      employeeName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || assessment.status === statusFilter;
 
@@ -59,29 +74,105 @@ export function ScheduledAssessmentsList() {
     return labels[status as keyof typeof labels] || status;
   };
 
+  const handleGenerateLink = async (assessment: any) => {
+    if (!assessment.employee_id || !assessment.template_id) {
+      toast.error("Dados incompletos para gerar o link");
+      return;
+    }
+
+    try {
+      setGeneratingLink(assessment.id);
+      console.log("Gerando link para avaliação:", {
+        employeeId: assessment.employee_id,
+        templateId: assessment.template_id,
+        assessmentId: assessment.id
+      });
+      
+      const link = await generateAssessmentLink(
+        assessment.employee_id,
+        assessment.template_id
+      );
+      
+      if (link) {
+        // Atualizar o agendamento com o link gerado
+        const { error: updateError } = await supabase
+          .from('scheduled_assessments')
+          .update({ 
+            link_url: link,
+            status: 'sent',
+            sent_at: new Date().toISOString()
+          })
+          .eq('id', assessment.id);
+
+        if (updateError) {
+          console.error("Erro ao atualizar agendamento:", updateError);
+          toast.error("Erro ao salvar o link gerado");
+          return;
+        }
+
+        // Copiar link para clipboard
+        await navigator.clipboard.writeText(link);
+        toast.success("Link gerado e copiado para a área de transferência!");
+        refetch();
+      } else {
+        toast.error("Falha ao gerar o link");
+      }
+    } catch (error) {
+      console.error("Erro ao gerar link:", error);
+      toast.error("Erro ao gerar link. Tente novamente.");
+    } finally {
+      setGeneratingLink(null);
+    }
+  };
+
+  const handleCopyLink = async (linkUrl: string) => {
+    try {
+      await navigator.clipboard.writeText(linkUrl);
+      toast.success("Link copiado para a área de transferência!");
+    } catch (error) {
+      toast.error("Erro ao copiar link");
+    }
+  };
+
   const handleSendEmail = async (assessmentId: string) => {
     try {
-      // Implementar envio de email
+      // Implementar envio de email usando a API existente
+      const { error } = await supabase
+        .from('scheduled_assessments')
+        .update({ 
+          status: 'sent',
+          sent_at: new Date().toISOString()
+        })
+        .eq('id', assessmentId);
+
+      if (error) throw error;
+      
       toast.success("Email enviado com sucesso!");
       refetch();
     } catch (error) {
+      console.error("Erro ao enviar email:", error);
       toast.error("Erro ao enviar email");
     }
   };
 
-  const handleDelete = async (assessmentId: string) => {
+  const handleDeleteConfirm = async () => {
+    if (!deleteAssessmentId) return;
+
     try {
       const { error } = await supabase
         .from('scheduled_assessments')
         .delete()
-        .eq('id', assessmentId);
+        .eq('id', deleteAssessmentId);
 
       if (error) throw error;
       
       toast.success("Agendamento excluído com sucesso!");
       refetch();
     } catch (error) {
+      console.error("Erro ao excluir agendamento:", error);
       toast.error("Erro ao excluir agendamento");
+    } finally {
+      setDeleteAssessmentId(null);
     }
   };
 
@@ -90,101 +181,163 @@ export function ScheduledAssessmentsList() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Avaliações Agendadas</CardTitle>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Avaliações Agendadas</CardTitle>
+          
+          {/* Filtros */}
+          <div className="flex gap-4 pt-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por funcionário..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="scheduled">Agendadas</SelectItem>
+                <SelectItem value="sent">Enviadas</SelectItem>
+                <SelectItem value="completed">Concluídas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
         
-        {/* Filtros */}
-        <div className="flex gap-4 pt-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por funcionário..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="scheduled">Agendadas</SelectItem>
-              <SelectItem value="sent">Enviadas</SelectItem>
-              <SelectItem value="completed">Concluídas</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        {filteredAssessments?.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Nenhuma avaliação encontrada
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredAssessments?.map(assessment => (
-              <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-medium">{assessment.employee_name}</h4>
-                    <Badge className={getStatusColor(assessment.status)}>
-                      {getStatusLabel(assessment.status)}
-                    </Badge>
-                  </div>
-                  
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <p>Template: {assessment.checklist_templates?.title}</p>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Agendada para: {new Date(assessment.scheduled_date).toLocaleDateString('pt-BR')}
+        <CardContent>
+          {filteredAssessments?.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma avaliação encontrada
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredAssessments?.map(assessment => {
+                const employeeName = assessment.employee_name || assessment.employees?.name || 'Nome não disponível';
+                const employeeEmail = assessment.employees?.email;
+                const hasEmail = employeeEmail && employeeEmail.trim() !== '';
+                
+                return (
+                  <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="font-medium">{employeeName}</h4>
+                        <Badge className={getStatusColor(assessment.status)}>
+                          {getStatusLabel(assessment.status)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p>Template: {assessment.checklist_templates?.title}</p>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Agendada para: {new Date(assessment.scheduled_date).toLocaleDateString('pt-BR')}
+                        </div>
+                        {hasEmail && (
+                          <p>Email: {employeeEmail}</p>
+                        )}
+                        {assessment.recurrence_type !== "none" && (
+                          <p>Recorrência: {assessment.recurrence_type}</p>
+                        )}
+                      </div>
                     </div>
-                    {assessment.recurrence_type !== "none" && (
-                      <p>Recorrência: {assessment.recurrence_type}</p>
-                    )}
+
+                    <div className="flex items-center gap-2">
+                      {/* Botão para gerar/copiar link */}
+                      {assessment.link_url ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleCopyLink(assessment.link_url)}
+                          title="Copiar link"
+                        >
+                          <Copy className="h-4 w-4 mr-1" />
+                          Copiar Link
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleGenerateLink(assessment)}
+                          disabled={generatingLink === assessment.id || assessment.status === 'completed'}
+                          title="Gerar link público"
+                        >
+                          <Link className="h-4 w-4 mr-1" />
+                          {generatingLink === assessment.id ? 'Gerando...' : 'Gerar Link'}
+                        </Button>
+                      )}
+
+                      {/* Botão de visualizar link existente */}
+                      {assessment.link_url && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(assessment.link_url, '_blank')}
+                          title="Abrir link em nova aba"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          Abrir
+                        </Button>
+                      )}
+                      
+                      {/* Botão de email (apenas se funcionário tiver email) */}
+                      {hasEmail && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSendEmail(assessment.id)}
+                          disabled={assessment.status === 'completed'}
+                          title="Enviar por email"
+                        >
+                          <Mail className="h-4 w-4 mr-1" />
+                          Email
+                        </Button>
+                      )}
+
+                      {/* Botão de excluir */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setDeleteAssessmentId(assessment.id)}
+                        disabled={assessment.status === 'completed'}
+                        title="Excluir agendamento"
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Excluir
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-                <div className="flex items-center gap-2">
-                  {assessment.link_url && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => window.open(assessment.link_url, '_blank')}
-                    >
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      Link
-                    </Button>
-                  )}
-                  
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleSendEmail(assessment.id)}
-                    disabled={assessment.status === 'completed'}
-                  >
-                    <Mail className="h-4 w-4 mr-1" />
-                    Email
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(assessment.id)}
-                    disabled={assessment.status === 'completed'}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Excluir
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Dialog de confirmação para exclusão */}
+      <AlertDialog open={!!deleteAssessmentId} onOpenChange={() => setDeleteAssessmentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

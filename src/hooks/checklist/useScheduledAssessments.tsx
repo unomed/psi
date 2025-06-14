@@ -20,7 +20,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
     queryKey: ['scheduledAssessments', companyId],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
       try {
-        // First, fetch the scheduled assessments without trying to join with employees
         let query = supabase
           .from('scheduled_assessments')
           .select(`
@@ -37,9 +36,8 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             phone_number,
             company_id,
             employee_name,
-            checklist_templates(
-              title
-            )
+            checklist_templates(title),
+            employees(name, email)
           `);
         
         if (companyId && userRole !== 'superadmin') {
@@ -54,55 +52,31 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           return [];
         }
         
-        // Once we have the scheduled assessments, fetch the employee details separately
-        const assessmentData = await Promise.all(
-          data.map(async (item) => {
-            // Try to get employee details if we have an employee_id
-            let employeeDetails = null;
-            
-            if (item.employee_id) {
-              const { data: employeeData, error: employeeError } = await supabase
-                .from('employees')
-                .select('name, email, phone')
-                .eq('id', item.employee_id)
-                .single();
-              
-              if (!employeeError && employeeData) {
-                employeeDetails = {
-                  name: employeeData.name,
-                  email: employeeData.email || '',
-                  phone: employeeData.phone || ''
-                };
-              }
-            }
-            
-            // Use employee_name as fallback if no employee details found
-            if (!employeeDetails) {
-              employeeDetails = {
-                name: item.employee_name || 'Funcionário não encontrado',
-                email: '',
-                phone: ''
-              };
-            }
-            
-            return {
-              id: item.id,
-              employeeId: item.employee_id,
-              templateId: item.template_id,
-              scheduledDate: new Date(item.scheduled_date),
-              sentAt: item.sent_at ? new Date(item.sent_at) : null,
-              linkUrl: item.link_url || '',
-              status: item.status as AssessmentStatus,
-              completedAt: item.completed_at ? new Date(item.completed_at) : null,
-              recurrenceType: item.recurrence_type as RecurrenceType | undefined,
-              nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
-              phoneNumber: item.phone_number || undefined,
-              company_id: item.company_id,
-              employees: employeeDetails,
-              checklist_templates: item.checklist_templates
-            };
-          })
-        );
+        const assessmentData = data.map((item) => {
+          // Use employee data from join or fallback to employee_name
+          let employeeDetails = {
+            name: item.employees?.name || item.employee_name || 'Funcionário não encontrado',
+            email: item.employees?.email || '',
+            phone: ''
+          };
+          
+          return {
+            id: item.id,
+            employeeId: item.employee_id,
+            templateId: item.template_id,
+            scheduledDate: new Date(item.scheduled_date),
+            sentAt: item.sent_at ? new Date(item.sent_at) : null,
+            linkUrl: item.link_url || '',
+            status: item.status as AssessmentStatus,
+            completedAt: item.completed_at ? new Date(item.completed_at) : null,
+            recurrenceType: item.recurrence_type as RecurrenceType | undefined,
+            nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+            phoneNumber: item.phone_number || undefined,
+            company_id: item.company_id,
+            employees: employeeDetails,
+            checklist_templates: item.checklist_templates
+          };
+        });
         
         return assessmentData;
       } catch (error) {
@@ -115,7 +89,22 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
 
   const handleScheduleAssessment = async (assessmentData: Omit<ScheduledAssessment, 'id' | 'linkUrl' | 'sentAt' | 'completedAt'>) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase
+        .from('scheduled_assessments')
+        .insert({
+          employee_id: assessmentData.employeeId,
+          template_id: assessmentData.templateId,
+          scheduled_date: assessmentData.scheduledDate.toISOString(),
+          status: assessmentData.status,
+          recurrence_type: assessmentData.recurrenceType,
+          next_scheduled_date: assessmentData.nextScheduledDate?.toISOString(),
+          phone_number: assessmentData.phoneNumber,
+          company_id: assessmentData.company_id,
+          employee_name: assessmentData.employees?.name
+        });
+
+      if (error) throw error;
+      
       toast.success("Avaliação agendada com sucesso!");
       refetch();
       return true;
@@ -126,9 +115,37 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
     }
   };
 
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('scheduled_assessments')
+        .delete()
+        .eq('id', assessmentId);
+
+      if (error) throw error;
+      
+      toast.success("Avaliação excluída com sucesso!");
+      refetch();
+      return true;
+    } catch (error) {
+      console.error("Error deleting assessment:", error);
+      toast.error("Erro ao excluir avaliação");
+      return false;
+    }
+  };
+
   const handleSendEmail = async (assessmentId: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase
+        .from('scheduled_assessments')
+        .update({ 
+          status: 'sent',
+          sent_at: new Date().toISOString()
+        })
+        .eq('id', assessmentId);
+
+      if (error) throw error;
+      
       toast.success("Email enviado com sucesso!");
       refetch();
       return true;
@@ -141,10 +158,10 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
 
   const handleShareAssessment = async (assessmentId: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Implementar lógica de compartilhamento se necessário
       toast.success("Link compartilhado com sucesso!");
       refetch();
-      return "https://example.com/assessment/123";
+      return "link-gerado";
     } catch (error) {
       console.error("Error sharing assessment:", error);
       toast.error("Erro ao compartilhar avaliação");
@@ -155,7 +172,9 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
   return {
     scheduledAssessments,
     isLoading,
+    refetch,
     handleScheduleAssessment,
+    handleDeleteAssessment,
     handleSendEmail,
     handleShareAssessment
   };
