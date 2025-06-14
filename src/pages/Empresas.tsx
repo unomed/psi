@@ -114,13 +114,13 @@ export default function Empresas() {
       </div>
 
       <CompanySearch 
-        searchTerm={searchTerm} 
-        onSearchChange={handleSearchChange} 
+        value={searchTerm} 
+        onChange={handleSearchChange} 
       />
 
       {displayedCompanies.length === 0 ? (
         <EmptyCompanyState 
-          hasSearchTerm={!!searchTerm.trim()}
+          hasSearch={!!searchTerm.trim()}
           canCreate={canCreateCompany}
           onCreateNew={handleNewCompany}
         />
@@ -139,8 +139,8 @@ export default function Empresas() {
       )}
 
       <CompanyDialogs
-        isNewDialogOpen={isNewCompanyDialogOpen}
-        onNewDialogChange={setIsNewCompanyDialogOpen}
+        isCreateDialogOpen={isNewCompanyDialogOpen}
+        onCreateDialogChange={setIsNewCompanyDialogOpen}
         isEditDialogOpen={isEditDialogOpen}
         onEditDialogChange={setIsEditDialogOpen}
         isViewDialogOpen={isViewDialogOpen}

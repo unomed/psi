@@ -2,42 +2,49 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { SidebarMenuItem } from "./SidebarMenuItem";
-import { MenuItem } from "./types";
+import { LucideIcon } from "lucide-react";
 
 interface CollapsibleMenuItemProps {
-  item: MenuItem;
-  isOpen: boolean;
-  onToggle: () => void;
+  title: string;
+  icon: LucideIcon;
+  isActive?: boolean;
+  hasSubmenu?: boolean;
+  children?: React.ReactNode;
 }
 
-export function CollapsibleMenuItem({ item, isOpen, onToggle }: CollapsibleMenuItemProps) {
+export function CollapsibleMenuItem({ 
+  title, 
+  icon: Icon, 
+  isActive = false, 
+  hasSubmenu = false,
+  children 
+}: CollapsibleMenuItemProps) {
+  const [isOpen, setIsOpen] = React.useState(isActive);
+
   return (
-    <Collapsible open={isOpen} onOpenChange={onToggle}>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
         <div className="flex items-center justify-between w-full p-2 text-left hover:bg-gray-100 rounded-md cursor-pointer">
           <div className="flex items-center gap-3">
-            {item.icon && <item.icon className="h-4 w-4" />}
-            <span className="text-sm font-medium">{item.label}</span>
+            <Icon className="h-4 w-4" />
+            <span className="text-sm font-medium">{title}</span>
           </div>
-          <ChevronDown 
-            className={`h-4 w-4 transition-transform duration-200 ${
-              isOpen ? 'transform rotate-180' : ''
-            }`} 
-          />
+          {hasSubmenu && (
+            <ChevronDown 
+              className={`h-4 w-4 transition-transform duration-200 ${
+                isOpen ? 'transform rotate-180' : ''
+              }`} 
+            />
+          )}
         </div>
       </CollapsibleTrigger>
-      <CollapsibleContent className="ml-4 mt-1">
-        <div className="space-y-1">
-          {item.submenu?.map((subItem) => (
-            <SidebarMenuItem 
-              key={subItem.label} 
-              item={subItem} 
-              isSubItem={true}
-            />
-          ))}
-        </div>
-      </CollapsibleContent>
+      {hasSubmenu && (
+        <CollapsibleContent className="ml-4 mt-1">
+          <div className="space-y-1">
+            {children}
+          </div>
+        </CollapsibleContent>
+      )}
     </Collapsible>
   );
 }

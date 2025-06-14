@@ -6,9 +6,10 @@ import type { MenuItem } from './types';
 
 interface SidebarMenuItemProps {
   item: MenuItem;
+  isSubItem?: boolean;
 }
 
-export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
+export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProps) {
   const location = useLocation();
   const isActive = location.pathname === item.href;
 
@@ -22,7 +23,7 @@ export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
         <Link 
           to={item.href} 
           onClick={handleNavigation} 
-          className={`flex items-center gap-2 w-full ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
+          className={`flex items-center gap-2 w-full ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'} ${isSubItem ? 'ml-4' : ''}`}
         >
           {item.icon && <item.icon />}
           <span>{item.title}</span>
