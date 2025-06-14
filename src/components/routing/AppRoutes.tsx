@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { RouteGuard } from "@/components/auth/RouteGuard";
-import { SettingsRoutes } from "./SettingsRoutes";
+import { settingsRoutes } from "./SettingsRoutes";
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";
 import Funcionarios from "@/pages/Funcionarios";
@@ -153,7 +153,7 @@ export function AppRoutes() {
         element={
           <MainLayout>
             <Routes>
-              <SettingsRoutes />
+              {settingsRoutes}
             </Routes>
           </MainLayout>
         } 
