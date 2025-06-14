@@ -53,7 +53,7 @@ export function AppRoutes() {
         path="/funcionarios" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="employees">
+            <RouteGuard requireCompanyAccess="any">
               <Funcionarios />
             </RouteGuard>
           </MainLayout>
@@ -63,7 +63,7 @@ export function AppRoutes() {
         path="/setores" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="sectors">
+            <RouteGuard requireCompanyAccess="any">
               <Setores />
             </RouteGuard>
           </MainLayout>
@@ -73,7 +73,7 @@ export function AppRoutes() {
         path="/funcoes" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="roles">
+            <RouteGuard requireCompanyAccess="any">
               <Funcoes />
             </RouteGuard>
           </MainLayout>
@@ -93,7 +93,7 @@ export function AppRoutes() {
         path="/avaliacoes" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="assessments">
+            <RouteGuard requireCompanyAccess="any">
               <Avaliacoes />
             </RouteGuard>
           </MainLayout>
@@ -103,7 +103,7 @@ export function AppRoutes() {
         path="/agendamentos" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="scheduling">
+            <RouteGuard requireCompanyAccess="any">
               <AssessmentScheduling />
             </RouteGuard>
           </MainLayout>
@@ -113,7 +113,7 @@ export function AppRoutes() {
         path="/resultados" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="results">
+            <RouteGuard requireCompanyAccess="any">
               <AssessmentResults />
             </RouteGuard>
           </MainLayout>
@@ -123,7 +123,7 @@ export function AppRoutes() {
         path="/relatorios" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="results">
+            <RouteGuard requireCompanyAccess="any">
               <Relatorios />
             </RouteGuard>
           </MainLayout>
@@ -133,7 +133,7 @@ export function AppRoutes() {
         path="/plano-acao" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="action_plans">
+            <RouteGuard requireCompanyAccess="any">
               <PlanoAcao />
             </RouteGuard>
           </MainLayout>
@@ -143,7 +143,7 @@ export function AppRoutes() {
         path="/gestao-riscos" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="risk_management">
+            <RouteGuard requireCompanyAccess="any">
               <GestaoRiscos />
             </RouteGuard>
           </MainLayout>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +56,8 @@ export const useCompanySelection = <TFieldValues extends FieldValues = FieldValu
             const companyIds = data.map(item => item.company_id);
             console.log("[useCompanySelection] Empresas encontradas:", companyIds);
             setSelectedCompanies(companyIds);
-            form.setValue('companyIds' as any, companyIds);
+            // Use type assertion for form setValue
+            (form.setValue as any)('companyIds', companyIds);
           }
         } catch (error) {
           console.error('[useCompanySelection] Erro inesperado ao carregar empresas do usuário:', error);
@@ -69,17 +71,17 @@ export const useCompanySelection = <TFieldValues extends FieldValues = FieldValu
 
   // Watch role changes and auto-select all companies for superadmin
   useEffect(() => {
-    const role = form.watch('role' as any);
+    const role = (form.watch as any)('role');
     if (role === 'superadmin' && companies.length > 0) {
       console.log("[useCompanySelection] Usuário é superadmin, selecionando todas as empresas");
       const allCompanyIds = companies.map(c => c.id);
       setSelectedCompanies(allCompanyIds);
-      form.setValue('companyIds' as any, allCompanyIds);
+      (form.setValue as any)('companyIds', allCompanyIds);
     }
-  }, [form.watch('role' as any), companies, form]);
+  }, [(form.watch as any)('role'), companies, form]);
 
   const handleToggleCompany = (companyId: string) => {
-    const currentRole = form.getValues('role' as any);
+    const currentRole = (form.getValues as any)('role');
     
     // Se o papel for superadmin, não permitir desmarcar empresas
     if (currentRole === 'superadmin') {
@@ -99,7 +101,7 @@ export const useCompanySelection = <TFieldValues extends FieldValues = FieldValu
     
     console.log("[useCompanySelection] Empresas atualizadas:", updatedCompanies);
     setSelectedCompanies(updatedCompanies);
-    form.setValue('companyIds' as any, updatedCompanies);
+    (form.setValue as any)('companyIds', updatedCompanies);
   };
 
   const filteredCompanies = companies.filter((company) =>

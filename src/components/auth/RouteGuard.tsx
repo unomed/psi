@@ -39,12 +39,14 @@ export function RouteGuard({
 
   // Check authentication
   if (!user) {
+    console.log('[RouteGuard] Usuário não autenticado, redirecionando para login');
     toast.error('Você precisa estar logado para acessar esta página');
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
   // Special handling for dashboard - always allow if user is authenticated
   if (location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard')) {
+    console.log('[RouteGuard] Rota de dashboard, permitindo acesso');
     return (
       <RoleCheck allowedRoles={allowedRoles}>
         {children}
@@ -59,36 +61,39 @@ export function RouteGuard({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // For routes that require company association
-  const routesRequiringCompanyAccess = ['/empresas', '/funcionarios', '/setores', '/funcoes', '/avaliacoes', '/relatorios', '/gestao-riscos', '/plano-acao'];
-  const currentPath = location.pathname;
-  
-  // Check if user has access to route based on companies (except for superadmin who has access to all)
-  if (routesRequiringCompanyAccess.some(route => currentPath.startsWith(route)) && userRole !== 'superadmin') {
-    // Check if user has at least one associated company
-    if (!userCompanies || userCompanies.length === 0) {
-      console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada');
-      toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
-      return <Navigate to="/dashboard" replace />;
-    }
-  }
-  
-  // For company-related routes, filter access more rigorously
-  if (currentPath.startsWith('/empresas') && userRole !== 'superadmin') {
-    console.log('[RouteGuard] Verificando acesso específico para rota de empresas');
-    // If not superadmin and has no companies, redirect
-    if (!userCompanies || userCompanies.length === 0) {
-      console.error('[RouteGuard] Usuário não tem acesso a nenhuma empresa');
-      toast.error('Você não tem acesso a nenhuma empresa no sistema');
-      return <Navigate to="/dashboard" replace />;
+  // For routes that require company access
+  if (requireCompanyAccess) {
+    // Superadmin always has access
+    if (userRole === 'superadmin') {
+      console.log('[RouteGuard] Usuário é superadmin, concedendo acesso à rota com requireCompanyAccess');
+    } else {
+      // For other roles, check if they have at least one company
+      if (!userCompanies || userCompanies.length === 0) {
+        console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada');
+        toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
+        return <Navigate to="/dashboard" replace />;
+      }
+      
+      // Additional check using the useCompanyAccess hook
+      if (!hasAccess) {
+        console.error(`[RouteGuard] Acesso negado pela verificação de empresa`);
+        toast.error('Acesso negado: Você não tem acesso necessário para esta funcionalidade');
+        return <Navigate to="/dashboard" replace />;
+      }
     }
   }
 
-  // Check specific company access if necessary
-  if (requireCompanyAccess && !hasAccess) {
-    console.error(`[RouteGuard] Acesso à empresa negado: ${requireCompanyAccess} não está associada ao usuário`);
-    toast.error('Acesso negado: Você não tem acesso à empresa solicitada');
-    return <Navigate to="/dashboard" replace />;
+  // For company-related routes that don't have explicit requireCompanyAccess but need company access
+  const routesRequiringCompanyAccess = ['/empresas', '/funcionarios', '/setores', '/funcoes', '/avaliacoes', '/relatorios', '/gestao-riscos', '/plano-acao'];
+  const currentPath = location.pathname;
+  
+  if (routesRequiringCompanyAccess.some(route => currentPath.startsWith(route)) && !requireCompanyAccess && userRole !== 'superadmin') {
+    // Check if user has at least one associated company
+    if (!userCompanies || userCompanies.length === 0) {
+      console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada para rota que requer empresa');
+      toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   // Log final decision
