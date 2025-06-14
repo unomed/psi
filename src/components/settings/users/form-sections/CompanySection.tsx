@@ -3,13 +3,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
 import { useCompanies } from "@/hooks/useCompanies";
-
-type UserFormData = {
-  email: string;
-  full_name: string;
-  role: "superadmin" | "admin" | "evaluator" | "profissionais";
-  companyIds?: string[];
-};
+import { UserFormData } from "../types";
 
 interface CompanySectionProps {
   form: UseFormReturn<UserFormData>;

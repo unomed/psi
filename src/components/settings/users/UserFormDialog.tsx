@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { User } from "@/hooks/users/types";
 import { BasicUserInfo } from "./form-sections/BasicUserInfo";
 import { CompanySection } from "./form-sections/CompanySection";
+import { UserFormData } from "./types";
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -26,8 +27,6 @@ const userFormSchema = z.object({
   role: z.enum(["superadmin", "admin", "evaluator", "profissionais"]),
   companyIds: z.array(z.string()).optional(),
 });
-
-type UserFormData = z.infer<typeof userFormSchema>;
 
 interface UserFormDialogProps {
   isOpen: boolean;
