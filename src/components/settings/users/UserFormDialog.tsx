@@ -31,7 +31,7 @@ import { User } from "@/hooks/users/types";
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  role: z.enum(["superadmin", "admin", "evaluator"]),
+  role: z.enum(["superadmin", "admin", "evaluator", "profissionais"]),
   companyIds: z.array(z.string()).optional(),
 });
 
@@ -153,6 +153,7 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
                       <SelectItem value="evaluator">Avaliador</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                       <SelectItem value="superadmin">Super Administrador</SelectItem>
+                      <SelectItem value="profissionais">Profissionais</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

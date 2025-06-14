@@ -27,40 +27,72 @@ export interface RiskFactor {
 // since the risk_assessments table doesn't exist yet
 export async function getRiskAssessments(companyId?: string) {
   try {
+    // First get assessment responses
     let query = supabase
       .from('assessment_responses')
-      .select(`
-        *,
-        employees!assessment_responses_employee_id_fkey(
-          id, name, company_id, role_id, sector_id
-        )
-      `)
+      .select('*')
       .order('completed_at', { ascending: false });
 
-    if (companyId) {
-      query = query.eq('employees.company_id', companyId);
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      console.error("Error fetching risk assessments:", error);
+    const { data: responses, error: responsesError } = await query;
+    
+    if (responsesError) {
+      console.error("Error fetching assessment responses:", responsesError);
       return [];
     }
 
-    // Transform assessment responses into risk assessments format
-    return data?.map(response => ({
-      id: response.id,
-      company_id: response.employees?.company_id || '',
-      employee_id: response.employee_id || '',
-      assessment_date: new Date(response.completed_at),
-      risk_level: response.percentile >= 70 ? 'high' : response.percentile >= 30 ? 'medium' : 'low',
-      risk_factors: ['Avaliação Psicossocial'],
-      mitigation_actions: [],
-      status: 'completed',
-      created_at: new Date(response.completed_at),
-      updated_at: new Date(response.completed_at),
-      employee: response.employees
-    })) || [];
+    if (!responses || responses.length === 0) {
+      return [];
+    }
+
+    // Get employee IDs to fetch employee data separately
+    const employeeIds = responses.map(r => r.employee_id).filter(Boolean);
+    
+    if (employeeIds.length === 0) {
+      return [];
+    }
+
+    // Fetch employees separately
+    const { data: employees, error: employeesError } = await supabase
+      .from('employees')
+      .select('id, name, company_id')
+      .in('id', employeeIds);
+
+    if (employeesError) {
+      console.error("Error fetching employees:", employeesError);
+      return [];
+    }
+
+    // Create a map for quick employee lookup
+    const employeeMap = new Map(employees?.map(emp => [emp.id, emp]) || []);
+
+    // Filter by company if specified and transform the data
+    const transformedData = responses
+      .map(response => {
+        const employee = employeeMap.get(response.employee_id);
+        if (!employee) return null;
+        
+        // Filter by company if specified
+        if (companyId && employee.company_id !== companyId) {
+          return null;
+        }
+
+        return {
+          id: response.id,
+          company_id: employee.company_id || '',
+          employee_id: response.employee_id || '',
+          assessment_date: new Date(response.completed_at),
+          risk_level: response.percentile >= 70 ? 'high' : response.percentile >= 30 ? 'medium' : 'low',
+          risk_factors: ['Avaliação Psicossocial'],
+          mitigation_actions: [],
+          status: 'completed',
+          created_at: new Date(response.completed_at),
+          updated_at: new Date(response.completed_at),
+          employee: employee
+        };
+      })
+      .filter(Boolean); // Remove null entries
+
+    return transformedData;
   } catch (error) {
     console.error("Error fetching risk assessments:", error);
     return [];
