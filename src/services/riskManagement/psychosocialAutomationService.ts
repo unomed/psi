@@ -9,6 +9,13 @@ export { AutomationNotificationsService } from "./automation/notificationsServic
 export { AutomationStatisticsService } from "./automation/statisticsService";
 export { AutomationProcessingService } from "./automation/processingService";
 
+// Import services for use in the main class
+import { AutomationConfigService } from "./automation/configService";
+import { AutomationLogsService } from "./automation/logsService";
+import { AutomationNotificationsService } from "./automation/notificationsService";
+import { AutomationStatisticsService } from "./automation/statisticsService";
+import { AutomationProcessingService } from "./automation/processingService";
+
 // Main service class that combines all functionality
 export class PsychosocialAutomationService {
   // Processar avaliação automaticamente
