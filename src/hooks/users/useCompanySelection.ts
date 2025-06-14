@@ -1,10 +1,12 @@
-
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { UseFormReturn, FieldValues } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>) => {
+export const useCompanySelection = <TFieldValues extends FieldValues = FieldValues>(
+  user: any, 
+  form: UseFormReturn<TFieldValues>
+) => {
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +55,7 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
             const companyIds = data.map(item => item.company_id);
             console.log("[useCompanySelection] Empresas encontradas:", companyIds);
             setSelectedCompanies(companyIds);
-            form.setValue('companyIds', companyIds);
+            form.setValue('companyIds' as any, companyIds);
           }
         } catch (error) {
           console.error('[useCompanySelection] Erro inesperado ao carregar empresas do usuário:', error);
@@ -67,17 +69,17 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
 
   // Watch role changes and auto-select all companies for superadmin
   useEffect(() => {
-    const role = form.watch('role');
+    const role = form.watch('role' as any);
     if (role === 'superadmin' && companies.length > 0) {
       console.log("[useCompanySelection] Usuário é superadmin, selecionando todas as empresas");
       const allCompanyIds = companies.map(c => c.id);
       setSelectedCompanies(allCompanyIds);
-      form.setValue('companyIds', allCompanyIds);
+      form.setValue('companyIds' as any, allCompanyIds);
     }
-  }, [form.watch('role'), companies, form]);
+  }, [form.watch('role' as any), companies, form]);
 
   const handleToggleCompany = (companyId: string) => {
-    const currentRole = form.getValues('role');
+    const currentRole = form.getValues('role' as any);
     
     // Se o papel for superadmin, não permitir desmarcar empresas
     if (currentRole === 'superadmin') {
@@ -97,7 +99,7 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
     
     console.log("[useCompanySelection] Empresas atualizadas:", updatedCompanies);
     setSelectedCompanies(updatedCompanies);
-    form.setValue('companyIds', updatedCompanies);
+    form.setValue('companyIds' as any, updatedCompanies);
   };
 
   const filteredCompanies = companies.filter((company) =>
