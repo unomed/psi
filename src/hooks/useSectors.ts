@@ -1,9 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function useSectors() {
+  const queryClient = useQueryClient();
+
   const { data: sectors, isLoading } = useQuery({
     queryKey: ['sectors'],
     queryFn: async () => {
@@ -32,5 +34,86 @@ export function useSectors() {
     }
   });
 
-  return { sectors: sectors || [], isLoading };
+  const createSector = useMutation({
+    mutationFn: async (sectorData: any) => {
+      const { data, error } = await supabase
+        .from('sectors')
+        .insert({
+          name: sectorData.name,
+          description: sectorData.description,
+          company_id: sectorData.companyId,
+          location: sectorData.location,
+          responsible_name: sectorData.responsibleName,
+          risk_level: sectorData.riskLevel
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error('Erro ao criar setor');
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sectors'] });
+      toast.success('Setor criado com sucesso');
+    },
+  });
+
+  const updateSector = useMutation({
+    mutationFn: async (sectorData: any) => {
+      const { data, error } = await supabase
+        .from('sectors')
+        .update({
+          name: sectorData.name,
+          description: sectorData.description,
+          company_id: sectorData.companyId,
+          location: sectorData.location,
+          responsible_name: sectorData.responsibleName,
+          risk_level: sectorData.riskLevel
+        })
+        .eq('id', sectorData.id)
+        .select()
+        .single();
+
+      if (error) {
+        toast.error('Erro ao atualizar setor');
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sectors'] });
+      toast.success('Setor atualizado com sucesso');
+    },
+  });
+
+  const deleteSector = useMutation({
+    mutationFn: async (sectorId: string) => {
+      const { error } = await supabase
+        .from('sectors')
+        .delete()
+        .eq('id', sectorId);
+
+      if (error) {
+        toast.error('Erro ao excluir setor');
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sectors'] });
+      toast.success('Setor excluído com sucesso');
+    },
+  });
+
+  return { 
+    sectors: sectors || [], 
+    isLoading,
+    createSector,
+    updateSector,
+    deleteSector
+  };
 }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ export default function Setores() {
     contactName: company.contactName || "",
     contactEmail: company.contactEmail || "",
     contactPhone: company.contactPhone || "",
-    notes: company.notes || ""
+    notes: ""
   }));
   
   // Filter sectors based on selected company

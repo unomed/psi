@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RoleForm } from "@/components/roles/RoleForm";
@@ -55,7 +54,7 @@ export default function Funcoes() {
     contactName: company.contactName || "",
     contactEmail: company.contactEmail || "",
     contactPhone: company.contactPhone || "",
-    notes: company.notes || ""
+    notes: ""
   }));
 
   const filteredRoles = roles?.filter(role => 
