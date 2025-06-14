@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface DashboardMetric {
   id: string;
@@ -45,6 +46,34 @@ export interface SectorBenchmark {
   data_source: string;
 }
 
+// Helper function to safely convert Json to Record<string, any>
+function safeJsonToRecord(json: Json): Record<string, any> {
+  if (typeof json === 'object' && json !== null && !Array.isArray(json)) {
+    return json as Record<string, any>;
+  }
+  return {};
+}
+
+// Helper function to safely convert Json to DashboardAnalytics
+function safeToDashboardAnalytics(data: Json): DashboardAnalytics {
+  if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+    const obj = data as Record<string, any>;
+    return {
+      risk_trend: Array.isArray(obj.risk_trend) ? obj.risk_trend : [],
+      sector_breakdown: Array.isArray(obj.sector_breakdown) ? obj.sector_breakdown : [],
+      action_effectiveness: Array.isArray(obj.action_effectiveness) ? obj.action_effectiveness : [],
+      generated_at: typeof obj.generated_at === 'string' ? obj.generated_at : new Date().toISOString()
+    };
+  }
+  
+  return {
+    risk_trend: [],
+    sector_breakdown: [],
+    action_effectiveness: [],
+    generated_at: new Date().toISOString()
+  };
+}
+
 export class DashboardAnalyticsService {
   
   static async getCompanyMetrics(companyId: string, calculationDate?: string): Promise<DashboardMetric[]> {
@@ -80,7 +109,7 @@ export class DashboardAnalyticsService {
 
       if (error) throw error;
 
-      return data || {
+      return data ? safeToDashboardAnalytics(data) : {
         risk_trend: [],
         sector_breakdown: [],
         action_effectiveness: [],
@@ -152,7 +181,15 @@ export class DashboardAnalyticsService {
 
       if (error) throw error;
 
-      return data || [];
+      // Convert database records to our interface format
+      return (data || []).map(item => ({
+        id: item.id,
+        metric_name: item.metric_name,
+        metric_value: item.metric_value,
+        metric_unit: item.metric_unit || 'count',
+        calculation_date: item.calculation_date,
+        metadata: safeJsonToRecord(item.metadata)
+      }));
     } catch (error) {
       console.error('Error getting historical metrics:', error);
       throw error;
