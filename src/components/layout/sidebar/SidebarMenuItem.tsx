@@ -18,8 +18,12 @@ export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
 
   return (
     <BaseSidebarMenuItem>
-      <SidebarMenuButton isActive={isActive}>
-        <Link to={item.path || item.href} onClick={handleNavigation} className="flex items-center gap-2 w-full">
+      <SidebarMenuButton>
+        <Link 
+          to={item.path || item.href} 
+          onClick={handleNavigation} 
+          className={`flex items-center gap-2 w-full ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
+        >
           {item.icon && <item.icon />}
           <span>{item.title}</span>
         </Link>
