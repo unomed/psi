@@ -1,61 +1,17 @@
 
-import { Route, Navigate } from "react-router-dom";
-import { RouteGuard } from "@/components/auth/RouteGuard";
-import AssessmentCriteriaPage from "@/pages/configuracoes/AssessmentCriteriaPage";
-import EmailServerPage from "@/pages/configuracoes/EmailServerPage";
-import EmailTemplatesPage from "@/pages/configuracoes/EmailTemplatesPage";
-import EmailPage from "@/pages/configuracoes/EmailPage";
+import { Routes, Route } from "react-router-dom";
 import NotificationsPage from "@/pages/configuracoes/NotificationsPage";
-import PeriodicityPage from "@/pages/configuracoes/PeriodicityPage";
-import UserManagementPage from "@/pages/configuracoes/UserManagementPage";
-import PermissionsPage from "@/pages/configuracoes/PermissionsPage";
+import EmailPage from "@/pages/configuracoes/EmailPage";
 import AutomacaoPsicossocialPage from "@/pages/configuracoes/AutomacaoPsicossocialPage";
+import NR01Page from "@/pages/relatorios/NR01Page";
 
-export const settingsRoutes = [
-  <Route key="criterios" path="criterios" element={
-    <RouteGuard requirePermission="view_settings">
-      <AssessmentCriteriaPage />
-    </RouteGuard>
-  } />,
-  <Route key="email" path="email" element={
-    <RouteGuard requirePermission="view_settings">
-      <EmailPage />
-    </RouteGuard>
-  } />,
-  <Route key="email-server" path="email-server" element={
-    <RouteGuard requirePermission="view_settings">
-      <EmailServerPage />
-    </RouteGuard>
-  } />,
-  <Route key="email-templates" path="email-templates" element={
-    <RouteGuard requirePermission="view_settings">
-      <EmailTemplatesPage />
-    </RouteGuard>
-  } />,
-  <Route key="notificacoes" path="notificacoes" element={
-    <RouteGuard requirePermission="view_settings">
-      <NotificationsPage />
-    </RouteGuard>
-  } />,
-  <Route key="periodicidade" path="periodicidade" element={
-    <RouteGuard requirePermission="view_settings">
-      <PeriodicityPage />
-    </RouteGuard>
-  } />,
-  <Route key="permissoes" path="permissoes" element={
-    <RouteGuard requirePermission="edit_settings">
-      <PermissionsPage />
-    </RouteGuard>
-  } />,
-  <Route key="usuarios" path="usuarios" element={
-    <RouteGuard requirePermission="view_settings">
-      <UserManagementPage />
-    </RouteGuard>
-  } />,
-  <Route key="automacao-psicossocial" path="automacao-psicossocial" element={
-    <RouteGuard requirePermission="view_settings">
-      <AutomacaoPsicossocialPage />
-    </RouteGuard>
-  } />,
-  <Route key="redirect" path="" element={<Navigate to="criterios" replace />} />
-];
+export function SettingsRoutes() {
+  return (
+    <Routes>
+      <Route path="notificacoes" element={<NotificationsPage />} />
+      <Route path="email" element={<EmailPage />} />
+      <Route path="automacao-psicossocial" element={<AutomacaoPsicossocialPage />} />
+      <Route path="relatorios-nr01" element={<NR01Page />} />
+    </Routes>
+  );
+}

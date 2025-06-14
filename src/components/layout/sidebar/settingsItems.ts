@@ -1,79 +1,36 @@
 
-import { 
-  Settings, 
-  Users, 
-  Mail, 
-  Server, 
-  FileText, 
-  Bell, 
-  Calendar,
-  Shield,
-  CheckSquare,
-  Bot
-} from "lucide-react";
+import { Settings, Bell, Mail, Zap, FileText, Shield, Users, Lock } from "lucide-react";
+import type { MenuItem } from "./types";
 
-export const settingsMenuItems = [
+export const settingsItems: MenuItem[] = [
   {
-    title: "Critérios de Avaliação",
-    path: "/configuracoes/criterios",
-    icon: CheckSquare,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  },
-  {
-    title: "Usuários",
-    path: "/configuracoes/usuarios", 
-    icon: Users,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  },
-  {
-    title: "Permissões",
-    path: "/configuracoes/permissoes",
-    icon: Shield,
-    roles: ["superadmin"],
-    permission: "edit_settings"
+    title: "Notificações",
+    url: "/configuracoes/notificacoes",
+    icon: Bell,
   },
   {
     title: "Email",
-    path: "/configuracoes/email",
+    url: "/configuracoes/email", 
     icon: Mail,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  },
-  {
-    title: "Servidor de Email",
-    path: "/configuracoes/email-server",
-    icon: Server,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  },
-  {
-    title: "Templates de Email",
-    path: "/configuracoes/email-templates",
-    icon: FileText,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  },
-  {
-    title: "Notificações",
-    path: "/configuracoes/notificacoes",
-    icon: Bell,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  },
-  {
-    title: "Periodicidade",
-    path: "/configuracoes/periodicidade",
-    icon: Calendar,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
   },
   {
     title: "Automação Psicossocial",
-    path: "/configuracoes/automacao-psicossocial",
-    icon: Bot,
-    roles: ["admin", "superadmin"],
-    permission: "view_settings"
-  }
+    url: "/configuracoes/automacao-psicossocial",
+    icon: Zap,
+  },
+  {
+    title: "Relatórios NR-01",
+    url: "/configuracoes/relatorios-nr01",
+    icon: Shield,
+  },
+  {
+    title: "Usuários",
+    url: "/configuracoes/usuarios",
+    icon: Users,
+  },
+  {
+    title: "Permissões",
+    url: "/configuracoes/permissoes", 
+    icon: Lock,
+  },
 ];
