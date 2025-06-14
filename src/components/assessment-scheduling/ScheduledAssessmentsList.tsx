@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Search, Mail, ExternalLink, Trash2, Link, Copy } from "lucide-react";
+import { Calendar, Search, Mail, ExternalLink, Trash2, Link, Copy, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,13 +19,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { generateAssessmentLink } from "@/services/assessment/links";
+import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment/links";
+import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
 
 export function ScheduledAssessmentsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteAssessmentId, setDeleteAssessmentId] = useState<string | null>(null);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
   const { data: assessments, isLoading, refetch } = useQuery({
     queryKey: ['scheduledAssessments'],
@@ -135,22 +137,17 @@ export function ScheduledAssessmentsList() {
 
   const handleSendEmail = async (assessmentId: string) => {
     try {
-      // Implementar envio de email usando a API existente
-      const { error } = await supabase
-        .from('scheduled_assessments')
-        .update({ 
-          status: 'sent',
-          sent_at: new Date().toISOString()
-        })
-        .eq('id', assessmentId);
-
-      if (error) throw error;
+      setSendingEmail(assessmentId);
+      console.log("Enviando email para avaliação:", assessmentId);
       
-      toast.success("Email enviado com sucesso!");
+      await sendAssessmentEmail(assessmentId);
       refetch();
+      
     } catch (error) {
       console.error("Erro ao enviar email:", error);
-      toast.error("Erro ao enviar email");
+      toast.error("Erro ao enviar email. Verifique as configurações de email.");
+    } finally {
+      setSendingEmail(null);
     }
   };
 
@@ -175,6 +172,14 @@ export function ScheduledAssessmentsList() {
     }
   };
 
+  const handleSetupEmailTemplates = async () => {
+    try {
+      await createDefaultEmailTemplates();
+    } catch (error) {
+      console.error("Erro ao configurar templates:", error);
+    }
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Carregando agendamentos...</div>;
   }
@@ -183,7 +188,18 @@ export function ScheduledAssessmentsList() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Avaliações Agendadas</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Avaliações Agendadas</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSetupEmailTemplates}
+              title="Configurar templates de email padrão"
+            >
+              <Settings className="h-4 w-4 mr-1" />
+              Configurar Templates
+            </Button>
+          </div>
           
           {/* Filtros */}
           <div className="flex gap-4 pt-4">
@@ -243,6 +259,18 @@ export function ScheduledAssessmentsList() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {/* Botão para enviar email */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSendEmail(assessment.id)}
+                        disabled={sendingEmail === assessment.id || assessment.status === 'completed'}
+                        title="Enviar email com link de avaliação"
+                      >
+                        <Mail className="h-4 w-4 mr-1" />
+                        {sendingEmail === assessment.id ? 'Enviando...' : 'Enviar Email'}
+                      </Button>
+
                       {/* Botão para gerar/copiar link */}
                       {assessment.link_url ? (
                         <Button

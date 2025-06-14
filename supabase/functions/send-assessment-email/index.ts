@@ -4,6 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.22.0";
 import { corsHeaders, handleCorsPreFlight } from "./corsUtils.ts";
 import { emailTemplates } from "./emailTemplates.ts";
 import { applyTemplateVariables, fetchEmailTemplate, prepareVariables } from "./emailUtils.ts";
+import { sendEmailViaSMTP, type SMTPConfig, type EmailContent } from "./smtpService.ts";
 import { EmailRequest } from "./types.ts";
 
 serve(async (req) => {
@@ -19,6 +20,7 @@ serve(async (req) => {
     
     // Get request body
     const requestData: EmailRequest = await req.json();
+    console.log('Request data:', { ...requestData, employeeEmail: requestData.employeeEmail });
     
     // Get email server settings
     const { data: serverSettings, error: settingsError } = await supabase
@@ -27,18 +29,53 @@ serve(async (req) => {
       .maybeSingle();
 
     if (settingsError || !serverSettings) {
-      throw new Error('Email server settings not configured');
+      console.error('Email server settings error:', settingsError);
+      throw new Error('Configurações do servidor de email não encontradas. Configure primeiro em Configurações > Email.');
     }
+    
+    console.log('Server settings loaded:', {
+      server: serverSettings.smtp_server,
+      port: serverSettings.smtp_port,
+      senderEmail: serverSettings.sender_email
+    });
     
     // Map template names
     const templateName = requestData.templateName || "Convite";
     
-    // Try to get the email template
-    const emailTemplate = await fetchEmailTemplate(supabase, requestData.templateId!, templateName) 
-      || emailTemplates[templateName as keyof typeof emailTemplates];
+    // Try to get the email template from database
+    let emailTemplate = null;
+    if (requestData.templateId) {
+      const { data: dbTemplate, error: templateError } = await supabase
+        .from('email_templates')
+        .select('subject, body')
+        .eq('id', requestData.templateId)
+        .single();
+        
+      if (!templateError && dbTemplate) {
+        emailTemplate = dbTemplate;
+      }
+    }
+    
+    // If no template found by ID, try by name
+    if (!emailTemplate) {
+      const { data: dbTemplate, error: templateError } = await supabase
+        .from('email_templates')
+        .select('subject, body')
+        .eq('name', templateName)
+        .single();
+        
+      if (!templateError && dbTemplate) {
+        emailTemplate = dbTemplate;
+      }
+    }
+    
+    // Fallback to default templates
+    if (!emailTemplate) {
+      emailTemplate = emailTemplates[templateName as keyof typeof emailTemplates];
+    }
 
     if (!emailTemplate && !requestData.customSubject) {
-      throw new Error('Email template not found and no custom subject provided');
+      throw new Error(`Template de email "${templateName}" não encontrado e nenhum assunto personalizado fornecido`);
     }
     
     // Use provided custom subject/body or the template
@@ -50,32 +87,45 @@ serve(async (req) => {
     const emailSubject = applyTemplateVariables(subject, variables);
     const emailBody = applyTemplateVariables(body, variables);
     
-    // Configure email settings
-    const emailConfig = {
-      host: serverSettings.smtp_server,
+    console.log('Email content prepared:', {
+      subject: emailSubject,
+      bodyPreview: emailBody.substring(0, 100) + '...',
+      variables
+    });
+    
+    // Configure SMTP settings
+    const smtpConfig: SMTPConfig = {
+      server: serverSettings.smtp_server,
       port: serverSettings.smtp_port,
       username: serverSettings.username,
       password: serverSettings.password,
-      from: `${serverSettings.sender_name} <${serverSettings.sender_email}>`,
-      to: requestData.employeeEmail,
-      subject: emailSubject,
-      body: emailBody
+      senderEmail: serverSettings.sender_email,
+      senderName: serverSettings.sender_name,
+      useTLS: serverSettings.use_ssl ?? true
     };
     
-    console.log('Sending email with config:', {
-      ...emailConfig,
-      password: '***' // Hide password in logs
-    });
+    // Prepare email content
+    const emailContent: EmailContent = {
+      to: requestData.employeeEmail,
+      subject: emailSubject,
+      html: emailBody.replace(/\n/g, '<br>'),
+      text: emailBody
+    };
     
-    // In a real app, send email here via SMTP using the emailConfig
-    // For now, we'll just log the attempt
-    console.log(`Sending assessment email to ${requestData.employeeName} (${requestData.employeeEmail})`);
-    console.log(`Subject: ${emailSubject}`);
-    console.log(`Body: ${emailBody}`);
+    console.log('Sending email via SMTP...');
     
-    // Update the assessment status
+    // Send email via SMTP
+    const emailSent = await sendEmailViaSMTP(smtpConfig, emailContent);
+    
+    if (!emailSent) {
+      throw new Error('Falha ao enviar email via SMTP');
+    }
+    
+    console.log('Email sent successfully');
+    
+    // Update the assessment status in scheduled_assessments (not assessment_schedules)
     const { error: updateError } = await supabase
-      .from('assessment_schedules')
+      .from('scheduled_assessments')
       .update({ 
         sent_at: new Date().toISOString(),
         link_url: requestData.linkUrl,
@@ -84,7 +134,8 @@ serve(async (req) => {
       .eq('id', requestData.assessmentId);
     
     if (updateError) {
-      throw new Error(`Error updating assessment status: ${updateError.message}`);
+      console.error('Error updating assessment status:', updateError);
+      // Não falhar a requisição por causa disso, apenas logar
     }
     
     // Record the email in assessment_emails table
@@ -101,19 +152,26 @@ serve(async (req) => {
 
     if (emailLogError) {
       console.error('Error logging email:', emailLogError);
+      // Não falhar a requisição por causa disso, apenas logar
     }
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Email sent to ${requestData.employeeEmail}`
+        message: `Email enviado com sucesso para ${requestData.employeeEmail}`,
+        emailSent: true
       }),
       { headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
+    
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in send-assessment-email:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        emailSent: false
+      }),
       { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }

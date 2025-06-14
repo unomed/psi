@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
 
 export async function generateAssessmentLink(
   employeeId: string,
@@ -188,10 +188,13 @@ export async function deleteAssessment(assessmentId: string): Promise<void> {
   }
 }
 
-// New function to send assessment email
+// Updated sendAssessmentEmail function
 export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
   try {
     console.log("Sending email for assessment:", assessmentId);
+    
+    // Garantir que templates padrão existam
+    await createDefaultEmailTemplates();
     
     // Get the assessment details
     const { data: assessment, error: fetchError } = await supabase
@@ -216,31 +219,53 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
       throw new Error("Avaliação não encontrada");
     }
     
-    if (!assessment.link_url) {
-      throw new Error("Link de avaliação não gerado");
-    }
-    
-    // Update the status
-    const { error: updateError } = await supabase
-      .from('scheduled_assessments')
-      .update({ 
-        status: 'sent',
-        sent_at: new Date().toISOString()
-      })
-      .eq('id', assessmentId);
+    // Get employee email
+    const { data: employee, error: employeeError } = await supabase
+      .from('employees')
+      .select('email, name')
+      .eq('id', assessment.employee_id)
+      .single();
       
-    if (updateError) {
-      console.error("Error updating assessment status:", updateError);
-      throw updateError;
+    if (employeeError || !employee?.email) {
+      throw new Error("Email do funcionário não encontrado");
     }
     
-    // In a real implementation, you would send the email here
-    // This could involve calling an edge function or third-party service
+    // Generate link if not exists
+    let linkUrl = assessment.link_url;
+    if (!linkUrl) {
+      linkUrl = await generateAssessmentLink(assessment.employee_id, assessment.template_id);
+      if (!linkUrl) {
+        throw new Error("Falha ao gerar link de avaliação");
+      }
+    }
+    
+    // Call the edge function to send email
+    const { data, error } = await supabase.functions.invoke('send-assessment-email', {
+      body: {
+        employeeId: assessment.employee_id,
+        employeeName: assessment.employee_name || employee.name,
+        employeeEmail: employee.email,
+        assessmentId: assessmentId,
+        templateId: assessment.template_id,
+        templateName: "Convite",
+        linkUrl: linkUrl
+      }
+    });
+
+    if (error) {
+      console.error("Error calling send-assessment-email function:", error);
+      throw new Error(`Erro ao enviar email: ${error.message}`);
+    }
+
+    if (!data?.success) {
+      throw new Error(data?.error || "Falha ao enviar email");
+    }
     
     console.log("Assessment email sent successfully");
     toast.success("Email enviado com sucesso!");
+    
   } catch (error) {
-    console.error("Error sending assessment email:", error);
+    console.error("Error in sendAssessmentEmail:", error);
     toast.error("Erro ao enviar email de avaliação");
     throw error;
   }
