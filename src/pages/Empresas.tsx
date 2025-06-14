@@ -1,182 +1,152 @@
 
-import { useState, useEffect } from "react";
-import { PlusCircle } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import { columns } from "@/components/companies/columns";
-import type { CompanyData } from "@/components/companies/CompanyCard";
+import { Plus } from "lucide-react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { CompanySearch } from "@/components/companies/CompanySearch";
-import { EmptyCompanyState } from "@/components/companies/EmptyCompanyState";
+import { CompanyCard } from "@/components/companies/CompanyCard";
 import { CompanyDialogs } from "@/components/companies/CompanyDialogs";
+import { EmptyCompanyState } from "@/components/companies/EmptyCompanyState";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
-import { toast } from "sonner";
+import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 
 export default function Empresas() {
-  const [search, setSearch] = useState("");
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { companies, isLoading, error } = useCompanies();
+  const { userRole } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isNewCompanyDialogOpen, setIsNewCompanyDialogOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
-  const [displayedCompanies, setDisplayedCompanies] = useState<CompanyData[]>([]);
-  
-  const { companies, isLoading, createCompany, updateCompany, deleteCompany } = useCompanies();
-  const { userRole, userCompanies } = useAuth();
-  const { filterResourcesByCompany } = useCompanyAccessCheck();
 
-  // Filtra empresas com base no acesso do usuário
-  useEffect(() => {
-    if (!companies) return;
-    
-    // Se não for superadmin, aplicar filtro rigoroso
-    if (userRole !== 'superadmin') {
-      const userCompanyIds = userCompanies.map(company => company.companyId);
-      console.log('[Empresas] IDs de empresas do usuário:', userCompanyIds);
-      
-      const filtered = companies.filter(company => 
-        userCompanyIds.includes(company.id)
-      );
-      
-      console.log('[Empresas] Empresas filtradas por acesso:', filtered.length, 'de', companies.length);
-      setDisplayedCompanies(filtered);
-    } else {
-      // Superadmin vê tudo
-      setDisplayedCompanies(companies);
-    }
-  }, [companies, userRole, userCompanies]);
+  const { filteredCompanies } = useCompanyFilter(companies || []);
 
-  // Verifica acesso antes de criar/editar/excluir
-  const verifyAccessToCompany = (companyId: string): boolean => {
-    if (userRole === 'superadmin') return true;
+  // Memoize the displayed companies to prevent unnecessary recalculations
+  const displayedCompanies = useMemo(() => {
+    if (!filteredCompanies) return [];
     
-    const hasAccess = userCompanies.some(company => company.companyId === companyId);
-    if (!hasAccess) {
-      toast.error('Você não tem acesso a esta empresa');
-      return false;
+    if (!searchTerm.trim()) {
+      return filteredCompanies;
     }
     
-    return true;
-  };
+    const lowercaseSearch = searchTerm.toLowerCase();
+    return filteredCompanies.filter(company =>
+      company.name?.toLowerCase().includes(lowercaseSearch) ||
+      company.cnpj?.toLowerCase().includes(lowercaseSearch) ||
+      company.email?.toLowerCase().includes(lowercaseSearch)
+    );
+  }, [filteredCompanies, searchTerm]);
 
-  const handleCreate = async (data: Omit<CompanyData, "id">) => {
-    try {
-      await createCompany.mutateAsync(data);
-      setIsCreateDialogOpen(false);
-    } catch (error) {
-      console.error("Error creating company:", error);
-    }
-  };
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
 
-  const handleEdit = async (data: Omit<CompanyData, "id">) => {
-    if (!selectedCompany) return;
-    
-    // Verificar acesso
-    if (!verifyAccessToCompany(selectedCompany.id)) return;
-    
-    try {
-      await updateCompany.mutateAsync({ ...data, id: selectedCompany.id });
-      setIsEditDialogOpen(false);
-      setSelectedCompany(null);
-    } catch (error) {
-      console.error("Error updating company:", error);
-    }
-  };
+  const handleEditCompany = useCallback((company) => {
+    setSelectedCompany(company);
+    setIsEditDialogOpen(true);
+  }, []);
 
-  const handleDelete = async () => {
-    if (!selectedCompany) return;
-    
-    // Verificar acesso
-    if (!verifyAccessToCompany(selectedCompany.id)) return;
-    
-    try {
-      await deleteCompany.mutateAsync(selectedCompany.id);
-      setIsDeleteDialogOpen(false);
-      setSelectedCompany(null);
-    } catch (error) {
-      console.error("Error deleting company:", error);
-    }
-  };
-
-  const handleView = (company: CompanyData) => {
-    // Verificar acesso
-    if (!verifyAccessToCompany(company.id)) return;
-    
+  const handleViewCompany = useCallback((company) => {
     setSelectedCompany(company);
     setIsViewDialogOpen(true);
-  };
+  }, []);
 
-  // Aplicar filtro de busca
-  const filteredCompanies = displayedCompanies.filter(company => 
-    company.name.toLowerCase().includes(search.toLowerCase()) ||
-    company.cnpj.toLowerCase().includes(search.toLowerCase()) ||
-    company.city?.toLowerCase().includes(search.toLowerCase()) ||
-    company.state?.toLowerCase().includes(search.toLowerCase()) ||
-    (company.industry && company.industry.toLowerCase().includes(search.toLowerCase()))
-  );
+  const handleNewCompany = useCallback(() => {
+    setIsNewCompanyDialogOpen(true);
+  }, []);
+
+  const canCreateCompany = userRole === 'superadmin';
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-tight">Empresas</h1>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-tight">Empresas</h1>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center text-red-500">
+              Erro ao carregar empresas: {error.message}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Empresas</h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie as empresas e suas filiais, incluindo informações do PGR.
-          </p>
-        </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nova Empresa
-        </Button>
+        <h1 className="text-3xl font-bold tracking-tight">Empresas</h1>
+        {canCreateCompany && (
+          <Button onClick={handleNewCompany}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Empresa
+          </Button>
+        )}
       </div>
-      
-      <CompanySearch
-        search={search}
-        onSearchChange={setSearch}
+
+      <CompanySearch 
+        searchTerm={searchTerm} 
+        onSearchChange={handleSearchChange} 
       />
-      
-      {filteredCompanies.length === 0 ? (
-        <EmptyCompanyState
-          hasSearch={search.length > 0}
-          onCreateClick={() => setIsCreateDialogOpen(true)}
+
+      {displayedCompanies.length === 0 ? (
+        <EmptyCompanyState 
+          hasSearchTerm={!!searchTerm.trim()}
+          canCreate={canCreateCompany}
+          onCreateNew={handleNewCompany}
         />
       ) : (
-        <DataTable 
-          columns={columns} 
-          data={filteredCompanies}
-          isLoading={isLoading}
-          meta={{
-            onEdit: (company: CompanyData) => {
-              if (verifyAccessToCompany(company.id)) {
-                setSelectedCompany(company);
-                setIsEditDialogOpen(true);
-              }
-            },
-            onDelete: (company: CompanyData) => {
-              if (verifyAccessToCompany(company.id)) {
-                setSelectedCompany(company);
-                setIsDeleteDialogOpen(true);
-              }
-            },
-            onView: handleView,
-          }}
-        />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {displayedCompanies.map((company) => (
+            <CompanyCard
+              key={company.id}
+              company={company}
+              onEdit={handleEditCompany}
+              onView={handleViewCompany}
+              canEdit={canCreateCompany}
+            />
+          ))}
+        </div>
       )}
 
       <CompanyDialogs
-        isCreateDialogOpen={isCreateDialogOpen}
-        setIsCreateDialogOpen={setIsCreateDialogOpen}
+        isNewDialogOpen={isNewCompanyDialogOpen}
+        onNewDialogChange={setIsNewCompanyDialogOpen}
         isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
-        isDeleteDialogOpen={isDeleteDialogOpen}
-        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        onEditDialogChange={setIsEditDialogOpen}
         isViewDialogOpen={isViewDialogOpen}
-        setIsViewDialogOpen={setIsViewDialogOpen}
+        onViewDialogChange={setIsViewDialogOpen}
         selectedCompany={selectedCompany}
-        handleCreate={handleCreate}
-        handleEdit={handleEdit}
-        handleDelete={handleDelete}
+        onCompanySelect={setSelectedCompany}
       />
     </div>
   );
