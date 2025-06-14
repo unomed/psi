@@ -84,6 +84,57 @@ export function formatDateTimeBR(date: Date | string): string {
 }
 
 /**
+ * Formata uma data para exibição (alias para formatDateBR)
+ */
+export function formatDateForDisplay(date: Date | string): string {
+  return formatDateBR(date);
+}
+
+/**
+ * Analisa uma string de data no formato DD/MM/YYYY
+ */
+export function parseDateString(dateString: string): Date | null {
+  if (!dateString || typeof dateString !== 'string') {
+    return null;
+  }
+
+  // Remove espaços e verifica formato básico
+  const cleanString = dateString.trim();
+  
+  // Verifica se está no formato DD/MM/YYYY
+  const dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+  const match = cleanString.match(dateRegex);
+  
+  if (!match) {
+    return null;
+  }
+
+  const [, day, month, year] = match;
+  
+  // Converte para números
+  const dayNum = parseInt(day, 10);
+  const monthNum = parseInt(month, 10);
+  const yearNum = parseInt(year, 10);
+  
+  // Validações básicas
+  if (dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12 || yearNum < 1900 || yearNum > 2100) {
+    return null;
+  }
+  
+  // Cria a data (mês é 0-indexed em JavaScript)
+  const date = new Date(yearNum, monthNum - 1, dayNum);
+  
+  // Verifica se a data é válida (JavaScript ajusta datas inválidas)
+  if (date.getFullYear() !== yearNum || 
+      date.getMonth() !== monthNum - 1 || 
+      date.getDate() !== dayNum) {
+    return null;
+  }
+  
+  return date;
+}
+
+/**
  * Calcula a diferença em dias entre duas datas
  */
 export function daysDifference(date1: Date | string, date2: Date | string): number {

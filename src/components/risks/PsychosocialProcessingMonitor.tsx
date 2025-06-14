@@ -33,7 +33,7 @@ export function PsychosocialProcessingMonitor({ companyId }: PsychosocialProcess
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoadingSkeleton variant="card" lines={6} />
+          <LoadingSkeleton lines={6} />
         </CardContent>
       </Card>
     );

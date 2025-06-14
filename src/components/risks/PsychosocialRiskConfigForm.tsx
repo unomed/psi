@@ -79,7 +79,7 @@ export function PsychosocialRiskConfigForm({ companyId }: PsychosocialRiskConfig
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoadingSkeleton variant="card" lines={6} />
+          <LoadingSkeleton lines={6} />
         </CardContent>
       </Card>
     );
