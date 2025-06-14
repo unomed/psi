@@ -1,9 +1,8 @@
+
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
-  Outlet
+  Navigate
 } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { RouteGuard } from "@/components/auth/RouteGuard";
@@ -27,100 +26,127 @@ export function AppRoutes() {
       {/* Public Assessment Route - outside of authenticated routes */}
       <Route path="/assessment/:token" element={<PublicAssessment />} />
       
-      {/* Main authenticated routes */}
-      <Route element={<MainLayout><Outlet /></MainLayout>}>
-        <Route 
-          path="/dashboard" 
-          element={
+      {/* Main authenticated routes with MainLayout */}
+      <Route 
+        path="/dashboard" 
+        element={
+          <MainLayout>
             <RouteGuard>
               <Dashboard />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/empresas" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/empresas" 
+        element={
+          <MainLayout>
             <RouteGuard allowedRoles={["superadmin"]}>
               <Empresas />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/funcionarios" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/funcionarios" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="employees">
               <Funcionarios />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/setores" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/setores" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="sectors">
               <Setores />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/funcoes" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/funcoes" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="roles">
               <Funcoes />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/templates" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/templates" 
+        element={
+          <MainLayout>
             <RouteGuard>
               <Checklists />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/avaliacoes" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/avaliacoes" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="assessments">
               <Avaliacoes />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/agendamentos" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/agendamentos" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="scheduling">
               <AssessmentScheduling />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/resultados" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/resultados" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="results">
               <AssessmentResults />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/relatorios" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/relatorios" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="results">
               <Relatorios />
             </RouteGuard>
-          } 
-        />
-        <Route 
-          path="/plano-acao" 
-          element={
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/plano-acao" 
+        element={
+          <MainLayout>
             <RouteGuard requireCompanyAccess="action_plans">
               <PlanoAcao />
             </RouteGuard>
-          } 
-        />
-        <Route path="/configuracoes/*" element={<SettingsRoutes />} />
-      </Route>
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/configuracoes/*" 
+        element={
+          <MainLayout>
+            <SettingsRoutes />
+          </MainLayout>
+        } 
+      />
       
-      {/* Fallback route */}
+      {/* Fallback routes */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
