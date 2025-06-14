@@ -105,7 +105,7 @@ serve(async (req) => {
 
     console.log('Step 4: Sending email via Resend...');
     const emailResult = await resend.emails.send({
-      from: 'Sistema de Avaliações <noreply@yourdomain.com>',
+      from: 'Sistema de Avaliações <noreply@avaliacao.unomed.med.br>',
       to: [requestData.employeeEmail],
       subject: emailSubject,
       html: emailBody,
