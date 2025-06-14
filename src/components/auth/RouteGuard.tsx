@@ -26,13 +26,21 @@ export function RouteGuard({
   const { hasAccess, checkingAccess } = useCompanyAccess(requireCompanyAccess);
   const location = useLocation();
   
-  // Proteção contra loop infinito
+  // Proteção contra loop infinito - contador global de redirects
   const redirectAttempts = useRef(0);
   const lastRedirectTime = useRef(0);
-  const maxRedirectAttempts = 3;
-  const redirectCooldown = 2000; // 2 segundos
+  const maxRedirectAttempts = 2; // Reduzido para evitar loops
+  const redirectCooldown = 1000; // 1 segundo
 
-  // Verificar se já passou tempo suficiente desde o último redirecionamento
+  // Reset contador após período de cooldown
+  useEffect(() => {
+    const now = Date.now();
+    if (now - lastRedirectTime.current > redirectCooldown * 2) {
+      redirectAttempts.current = 0;
+    }
+  }, [location.pathname]);
+
+  // Verificar se pode fazer redirect sem criar loop
   const canRedirect = () => {
     const now = Date.now();
     const timeSinceLastRedirect = now - lastRedirectTime.current;
@@ -41,7 +49,7 @@ export function RouteGuard({
       redirectAttempts.current = 0;
     }
     
-    return redirectAttempts.current < maxRedirectAttempts && timeSinceLastRedirect > 500;
+    return redirectAttempts.current < maxRedirectAttempts;
   };
 
   // Função para executar redirecionamento seguro
@@ -52,25 +60,24 @@ export function RouteGuard({
       lastRedirectTime.current = Date.now();
       return true;
     }
-    console.warn(`[RouteGuard] Redirecionamento bloqueado para evitar loop - Tentativas: ${redirectAttempts.current}`);
+    console.warn(`[RouteGuard] Loop de redirecionamento detectado - bloqueando redirect para ${path}`);
     return false;
   };
 
-  // Debug logs - mais controlados
-  useEffect(() => {
-    console.log('[RouteGuard] Estado atual:', {
-      rota: location.pathname,
-      user: !!user,
-      userRole,
-      loading,
-      loadingPermission,
-      checkingAccess,
-      redirectAttempts: redirectAttempts.current
-    });
-  }, [location.pathname, user, userRole, loading, loadingPermission, checkingAccess]);
+  // Debug logs mais controlados
+  console.log('[RouteGuard] Estado:', {
+    rota: location.pathname,
+    hasUser: !!user,
+    userRole,
+    loading,
+    loadingPermission,
+    checkingAccess,
+    redirectAttempts: redirectAttempts.current
+  });
 
-  // Mostrar loading enquanto verifica permissões e acesso
-  if (loading || loadingPermission || checkingAccess) {
+  // Se estiver carregando, mostrar loading
+  const isLoading = loading || loadingPermission || checkingAccess;
+  if (isLoading) {
     console.log('[RouteGuard] Aguardando carregamento...');
     return <LoadingSpinner />;
   }
@@ -79,13 +86,26 @@ export function RouteGuard({
   if (!user) {
     console.log('[RouteGuard] Usuário não autenticado');
     
+    // Evitar redirect se já estamos numa rota de auth
+    if (location.pathname.startsWith('/auth')) {
+      console.log('[RouteGuard] Já na rota de auth, permitindo acesso');
+      return <>{children}</>;
+    }
+    
     if (safeRedirect('/auth/login', 'Usuário não autenticado')) {
-      toast.error('Você precisa estar logado para acessar esta página');
       return <Navigate to="/auth/login" state={{ from: location }} replace />;
     }
     
-    // Se não pode redirecionar (para evitar loop), mostrar loading
+    // Se não pode redirecionar, mostrar loading para evitar erro
     return <LoadingSpinner />;
+  }
+
+  // Se usuário autenticado está tentando acessar rota de auth, redirecionar para dashboard
+  if (user && location.pathname.startsWith('/auth')) {
+    console.log('[RouteGuard] Usuário autenticado tentando acessar auth, redirecionando para dashboard');
+    if (safeRedirect('/dashboard', 'Usuário já autenticado')) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   // Tratamento especial para dashboard - sempre permitir se autenticado

@@ -7,6 +7,8 @@ import {
 import MainLayout from "@/components/layout/MainLayout";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { settingsRoutes } from "./SettingsRoutes";
+
+// Import pages
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";
 import Funcionarios from "@/pages/Funcionarios";
@@ -22,11 +24,20 @@ import PlanoAcao from "@/pages/PlanoAcao";
 import GestaoRiscos from "@/pages/GestaoRiscos";
 import Faturamento from "@/pages/Faturamento";
 
+// Import auth pages
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+
 export function AppRoutes() {
   return (
     <Routes>
       {/* Public Assessment Route - outside of authenticated routes */}
       <Route path="/assessment/:token" element={<PublicAssessment />} />
+      
+      {/* Authentication Routes */}
+      <Route path="/auth/login" element={<Login />} />
+      <Route path="/auth/register" element={<Register />} />
+      <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
       
       {/* Main authenticated routes with MainLayout */}
       <Route 
@@ -170,9 +181,9 @@ export function AppRoutes() {
         } 
       />
       
-      {/* Fallback routes */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Root route - redirect based on authentication */}
+      <Route path="/" element={<Navigate to="/auth/login" replace />} />
+      <Route path="*" element={<Navigate to="/auth/login" replace />} />
     </Routes>
   );
 }

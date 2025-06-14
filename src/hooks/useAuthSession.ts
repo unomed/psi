@@ -12,6 +12,7 @@ export function useAuthSession() {
   // Proteção contra múltiplas inicializações
   const initialized = useRef(false);
   const subscriptionRef = useRef<any>(null);
+  const initialCheckDone = useRef(false);
 
   useEffect(() => {
     // Evitar múltiplas inicializações
@@ -24,56 +25,11 @@ export function useAuthSession() {
     
     console.log("[useAuthSession] Inicializando hook de autenticação");
 
-    // Configurar listener de mudanças de estado de auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log("[useAuthSession] Mudança de estado de auth:", event, !!currentSession);
-        
-        if (!mounted) return;
-        
-        try {
-          // Validar sessão antes de usar
-          if (currentSession && currentSession.expires_at) {
-            const now = Math.floor(Date.now() / 1000);
-            if (currentSession.expires_at < now) {
-              console.log("[useAuthSession] Sessão expirada, limpando");
-              currentSession = null;
-            }
-          }
-          
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          
-          // Mostrar toasts apenas para eventos específicos e quando montado
-          if (mounted && !loading) {
-            if (event === 'SIGNED_IN' && currentSession) {
-              toast({
-                title: "Login realizado com sucesso",
-                description: "Bem-vindo de volta!"
-              });
-            } else if (event === 'SIGNED_OUT') {
-              toast({
-                title: "Logout realizado com sucesso", 
-                description: "Até breve!"
-              });
-            }
-          }
-        } catch (error) {
-          console.error("[useAuthSession] Erro ao processar mudança de estado:", error);
-          setSession(null);
-          setUser(null);
-        } finally {
-          if (mounted) {
-            setLoading(false);
-          }
-        }
-      }
-    );
-
-    subscriptionRef.current = subscription;
-
-    // Verificar sessão existente
+    // Primeiro verificar sessão existente
     const checkInitialSession = async () => {
+      if (initialCheckDone.current) return;
+      initialCheckDone.current = true;
+      
       try {
         console.log("[useAuthSession] Verificando sessão inicial");
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
@@ -110,24 +66,74 @@ export function useAuthSession() {
         console.log("[useAuthSession] Sessão inicial:", !!validSession);
         setSession(validSession);
         setUser(validSession?.user ?? null);
+        setLoading(false);
       } catch (error) {
         console.error("[useAuthSession] Erro ao verificar sessão inicial:", error);
         setSession(null);
         setUser(null);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
-    checkInitialSession();
+    // Configurar listener de mudanças de estado de auth APÓS verificação inicial
+    const setupAuthListener = () => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, currentSession) => {
+          console.log("[useAuthSession] Mudança de estado de auth:", event, !!currentSession);
+          
+          if (!mounted) return;
+          
+          try {
+            // Validar sessão antes de usar
+            if (currentSession && currentSession.expires_at) {
+              const now = Math.floor(Date.now() / 1000);
+              if (currentSession.expires_at < now) {
+                console.log("[useAuthSession] Sessão expirada, limpando");
+                currentSession = null;
+              }
+            }
+            
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            
+            // Mostrar toasts apenas para eventos específicos e quando não está no loading inicial
+            if (mounted && !loading) {
+              if (event === 'SIGNED_IN' && currentSession) {
+                toast({
+                  title: "Login realizado com sucesso",
+                  description: "Bem-vindo de volta!"
+                });
+              } else if (event === 'SIGNED_OUT') {
+                toast({
+                  title: "Logout realizado com sucesso", 
+                  description: "Até breve!"
+                });
+              }
+            }
+          } catch (error) {
+            console.error("[useAuthSession] Erro ao processar mudança de estado:", error);
+            setSession(null);
+            setUser(null);
+          }
+        }
+      );
+
+      subscriptionRef.current = subscription;
+    };
+
+    // Executar verificação inicial primeiro, depois configurar listener
+    checkInitialSession().then(() => {
+      if (mounted) {
+        setupAuthListener();
+      }
+    });
 
     // Cleanup
     return () => {
       console.log("[useAuthSession] Limpando hook de autenticação");
       mounted = false;
       initialized.current = false;
+      initialCheckDone.current = false;
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;
