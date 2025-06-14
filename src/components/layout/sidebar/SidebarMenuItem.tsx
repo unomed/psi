@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SidebarMenuButton, SidebarMenuItem as BaseSidebarMenuItem } from '@/components/ui/sidebar';
-import { ChevronRight } from 'lucide-react';
 import type { MenuItem } from './types';
 
 interface SidebarMenuItemProps {
@@ -20,8 +18,8 @@ export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
 
   return (
     <BaseSidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive}>
-        <Link to={item.path || item.href} onClick={handleNavigation}>
+      <SidebarMenuButton isActive={isActive}>
+        <Link to={item.path || item.href} onClick={handleNavigation} className="flex items-center gap-2 w-full">
           {item.icon && <item.icon />}
           <span>{item.title}</span>
         </Link>
