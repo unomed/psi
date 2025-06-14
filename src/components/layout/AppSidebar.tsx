@@ -32,7 +32,13 @@ export function AppSidebar() {
     );
   }
 
+  // Filter menu items based on role and permissions
   const filteredMenuItems = menuItems.filter(item => {
+    // Always allow dashboard access for authenticated users
+    if (item.permission === 'view_dashboard') {
+      return true;
+    }
+
     // Check if user role exists and item has roles array
     if (!userRole || !item.roles || !Array.isArray(item.roles)) {
       return false;
@@ -41,12 +47,17 @@ export function AppSidebar() {
     // Check if user role is included in item roles
     const hasRole = item.roles.includes(userRole);
     
+    // If no role match, deny access
+    if (!hasRole) {
+      return false;
+    }
+    
     // Check permission if item has a permission property
     const hasPermissionCheck = item.permission ? hasPermission(item.permission) : true;
     
     console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
     
-    return hasRole && hasPermissionCheck;
+    return hasPermissionCheck;
   });
 
   console.log(`Filtered menu items for role ${userRole}:`, filteredMenuItems.map(item => item.title));

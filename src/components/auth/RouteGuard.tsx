@@ -43,7 +43,16 @@ export function RouteGuard({
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // Check permission based on permission settings
+  // Special handling for dashboard - always allow if user is authenticated
+  if (location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard')) {
+    return (
+      <RoleCheck allowedRoles={allowedRoles}>
+        {children}
+      </RoleCheck>
+    );
+  }
+
+  // Check permission based on permission settings (only if not dashboard)
   if (requirePermission && !hasPermission(requirePermission)) {
     console.error(`[RouteGuard] Permissão negada: ${requirePermission} não está habilitada para o perfil ${userRole}`);
     toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
@@ -57,7 +66,7 @@ export function RouteGuard({
   // Check if user has access to route based on companies (except for superadmin who has access to all)
   if (routesRequiringCompanyAccess.some(route => currentPath.startsWith(route)) && userRole !== 'superadmin') {
     // Check if user has at least one associated company
-    if (userCompanies.length === 0) {
+    if (!userCompanies || userCompanies.length === 0) {
       console.error('[RouteGuard] Acesso negado: Usuário não tem nenhuma empresa associada');
       toast.error('Acesso negado: Você não tem acesso a nenhuma empresa no sistema');
       return <Navigate to="/dashboard" replace />;
@@ -68,7 +77,7 @@ export function RouteGuard({
   if (currentPath.startsWith('/empresas') && userRole !== 'superadmin') {
     console.log('[RouteGuard] Verificando acesso específico para rota de empresas');
     // If not superadmin and has no companies, redirect
-    if (userCompanies.length === 0) {
+    if (!userCompanies || userCompanies.length === 0) {
       console.error('[RouteGuard] Usuário não tem acesso a nenhuma empresa');
       toast.error('Você não tem acesso a nenhuma empresa no sistema');
       return <Navigate to="/dashboard" replace />;

@@ -14,7 +14,7 @@ interface SettingsSubmenuProps {
 
 export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   const location = useLocation();
-  const { hasPermission } = useCheckPermission();
+  const { hasPermission, loadingPermission } = useCheckPermission();
   const isSettingsRoute = location.pathname.startsWith('/configuracoes');
   const [isOpen, setIsOpen] = useState(isSettingsRoute);
   
@@ -24,13 +24,29 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
     }
   }, [isSettingsRoute, isOpen]);
   
+  // Don't show anything while loading permissions
+  if (loadingPermission) {
+    return null;
+  }
+  
   const filteredSettingsItems = settingsMenuItems.filter(item => {
-    const hasRole = userRole && item.roles.includes(userRole);
+    // Check if user role exists and item has roles array
+    if (!userRole || !item.roles || !Array.isArray(item.roles)) {
+      return false;
+    }
+    
+    const hasRole = item.roles.includes(userRole);
+    
+    // If no role match, deny access
+    if (!hasRole) {
+      return false;
+    }
+    
     const hasPermissionCheck = hasPermission(item.permission);
     
     console.log(`Settings item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
     
-    return hasRole && hasPermissionCheck;
+    return hasPermissionCheck;
   });
 
   if (filteredSettingsItems.length === 0) return null;
