@@ -2431,6 +2431,14 @@ export type Database = {
         Args: { item_id: string; item_data: Json }
         Returns: string
       }
+      user_has_action_plan_item_access: {
+        Args: { item_id: string; user_id?: string }
+        Returns: boolean
+      }
+      user_has_assessment_access: {
+        Args: { assessment_id: string; user_id?: string }
+        Returns: boolean
+      }
       user_has_company_access: {
         Args: { company_id: string; user_id?: string }
         Returns: boolean
