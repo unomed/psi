@@ -12,7 +12,7 @@ import { ChecklistTemplate } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface TemplateSelectorProps {
-  selectedEmployee: string | null;
+  selectedEmployee: string | null; // Keep selectedEmployee to enable/disable
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
   onTemplateSelect: (templateId: string) => void;
@@ -24,13 +24,13 @@ export function TemplateSelector({
   isTemplatesLoading,
   onTemplateSelect,
 }: TemplateSelectorProps) {
-  // Filter templates to ensure valid data
-  const validTemplates = templates.filter(template => 
+  const validTemplates = (templates || []).filter(template => 
     template && 
-    template.id && 
-    template.id.toString().trim() !== "" &&
+    template.id !== null &&
+    template.id !== undefined &&
+    String(template.id).trim() !== "" &&
     template.title && 
-    template.title.trim() !== ""
+    String(template.title).trim() !== ""
   );
 
   if (isTemplatesLoading) {
@@ -47,7 +47,7 @@ export function TemplateSelector({
       <Label htmlFor="template">Modelo de Avaliação</Label>
       <Select
         onValueChange={onTemplateSelect}
-        disabled={!selectedEmployee}
+        disabled={!selectedEmployee || validTemplates.length === 0} // Also disable if no valid templates
       >
         <SelectTrigger id="template">
           <SelectValue placeholder="Selecione um modelo de avaliação" />
@@ -55,7 +55,7 @@ export function TemplateSelector({
         <SelectContent>
           {validTemplates.length > 0 ? (
             validTemplates.map((template) => (
-              <SelectItem key={template.id} value={String(template.id)}>
+              <SelectItem key={String(template.id)} value={String(template.id)}>
                 {template.title}
               </SelectItem>
             ))

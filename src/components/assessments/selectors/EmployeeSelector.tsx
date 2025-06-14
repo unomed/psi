@@ -24,17 +24,18 @@ export function EmployeeSelector({
 }: EmployeeSelectorProps) {
   const { employees, isLoading } = useEmployees();
 
-  // Filter employees by role and ensure valid data
-  const filteredEmployees = selectedRole
-    ? employees.filter(emp => 
-        emp && 
-        emp.role_id === selectedRole &&
-        emp.id && 
-        emp.id.toString().trim() !== "" &&
-        emp.name && 
-        emp.name.trim() !== ""
-      )
+  const baseFilteredEmployees = selectedRole
+    ? (employees || []).filter(emp => emp.role_id === selectedRole)
     : [];
+
+  const validEmployees = baseFilteredEmployees.filter(emp => 
+    emp && 
+    emp.id !== null &&
+    emp.id !== undefined &&
+    String(emp.id).trim() !== "" &&
+    emp.name && 
+    String(emp.name).trim() !== ""
+  );
 
   if (isLoading) {
     return (
@@ -57,9 +58,9 @@ export function EmployeeSelector({
           <SelectValue placeholder="Selecione um funcionário" />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees.length > 0 ? (
-            filteredEmployees.map((employee) => (
-              <SelectItem key={employee.id} value={String(employee.id)}>
+          {validEmployees.length > 0 ? (
+            validEmployees.map((employee) => (
+              <SelectItem key={String(employee.id)} value={String(employee.id)}>
                 {employee.name}
               </SelectItem>
             ))

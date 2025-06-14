@@ -20,8 +20,17 @@ export function RoleCompanySelect({
   onCompanyChange,
   onSectorChange 
 }: RoleCompanySelectProps) {
+  
+  const validCompanies = (companies || []).filter(company =>
+    company && company.id && String(company.id).trim() !== "" && company.name && String(company.name).trim() !== ""
+  );
+
+  const validSectors = (sectors || []).filter(sector =>
+    sector && sector.id && String(sector.id).trim() !== "" && sector.name && String(sector.name).trim() !== ""
+  );
+  
   const filteredSectors = selectedCompany 
-    ? sectors.filter(sector => sector.companyId === selectedCompany)
+    ? validSectors.filter(sector => sector.companyId === selectedCompany)
     : [];
 
   return (
@@ -36,18 +45,11 @@ export function RoleCompanySelect({
               <SelectValue placeholder="Selecione uma empresa" />
             </SelectTrigger>
             <SelectContent>
-              {companies.map((company) => {
-                const companyId = company.id || `company-fallback-${Date.now()}-${Math.random()}`;
-                if (!companyId || companyId.trim() === '') {
-                  console.error('Empty company ID detected in RoleCompanySelect:', company);
-                  return null;
-                }
-                return (
-                  <SelectItem key={companyId} value={companyId}>
-                    {company.name || 'Empresa sem nome'}
+              {validCompanies.map((company) => (
+                  <SelectItem key={String(company.id)} value={String(company.id)}>
+                    {company.name}
                   </SelectItem>
-                );
-              }).filter(Boolean)}
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -62,18 +64,11 @@ export function RoleCompanySelect({
                 <SelectValue placeholder="Selecione um setor" />
               </SelectTrigger>
               <SelectContent>
-                {filteredSectors.map((sector) => {
-                  const sectorId = sector.id || `sector-fallback-${Date.now()}-${Math.random()}`;
-                  if (!sectorId || sectorId.trim() === '') {
-                    console.error('Empty sector ID detected in RoleCompanySelect:', sector);
-                    return null;
-                  }
-                  return (
-                    <SelectItem key={sectorId} value={sectorId}>
-                      {sector.name || 'Setor sem nome'}
+                {filteredSectors.map((sector) => (
+                    <SelectItem key={String(sector.id)} value={String(sector.id)}>
+                      {sector.name}
                     </SelectItem>
-                  );
-                }).filter(Boolean)}
+                ))}
               </SelectContent>
             </Select>
           </div>

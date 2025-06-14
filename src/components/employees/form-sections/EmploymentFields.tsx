@@ -28,39 +28,33 @@ export function EmploymentFields({
   const { roles } = useRoles();
   const { filterResourcesByCompany } = useCompanyAccessCheck();
   
-  // Convert companies to the format expected by filterResourcesByCompany
   const formattedCompanies = companies.map(company => ({
     company_id: company.id,
     ...company
   }));
   
-  // Filter companies based on user access
   const accessibleCompanyRecords = filterResourcesByCompany(formattedCompanies);
   
-  // Convert back to the format expected by the UI and ensure valid data
   const accessibleCompanies = accessibleCompanyRecords
     .map(company => ({
       id: company.company_id || "",
       name: company.name || "",
     }))
-    .filter(company => company.id && company.id.trim() !== "" && company.name && company.name.trim() !== "");
+    .filter(company => company && company.id && String(company.id).trim() !== "" && company.name && String(company.name).trim() !== "");
 
-  // Make sure we use empty arrays when data is undefined and filter valid items
   const companyItems = accessibleCompanies || [];
   const sectorItems = (sectors || [])
-    .filter(s => (!selectedCompany || s.companyId === selectedCompany) && s.id && s.id.trim() !== "" && s.name && s.name.trim() !== "");
+    .filter(s => s && s.id && String(s.id).trim() !== "" && s.name && String(s.name).trim() !== "" && (!selectedCompany || s.companyId === selectedCompany));
   const roleItems = (roles || [])
-    .filter(r => (!selectedCompany || r.companyId === selectedCompany) && r.id && r.id.trim() !== "" && r.name && r.name.trim() !== "");
+    .filter(r => r && r.id && String(r.id).trim() !== "" && r.name && String(r.name).trim() !== "" && (!selectedCompany || r.companyId === selectedCompany));
 
-  // Status options with validation
   const statusOptions = [
     { value: "active", label: "Ativo" },
     { value: "inactive", label: "Inativo" },
     { value: "vacation", label: "Férias" },
     { value: "medical_leave", label: "Licença Médica" }
-  ].filter(option => option.value && option.value.trim() !== "");
+  ].filter(option => option && option.value && String(option.value).trim() !== "");
   
-  // Set company_id when form loads if it's not set
   useEffect(() => {
     if (selectedCompany && !form.getValues("company_id")) {
       form.setValue("company_id", selectedCompany);
@@ -84,8 +78,6 @@ export function EmploymentFields({
                   if (value !== "no-company-selected") {
                     field.onChange(value);
                     onCompanyChange(value);
-                    
-                    // Clear sector and role when company changes
                     form.setValue("sector_id", "");
                     form.setValue("role_id", "");
                   }
@@ -96,10 +88,8 @@ export function EmploymentFields({
                 </SelectTrigger>
                 <SelectContent>
                   {companyItems.length > 0 ? (
-                    companyItems
-                      .filter(company => company.id && company.id.trim() !== "")
-                      .map((company) => (
-                        <SelectItem key={company.id} value={String(company.id)}>
+                    companyItems.map((company) => (
+                        <SelectItem key={String(company.id)} value={String(company.id)}>
                           {company.name}
                         </SelectItem>
                       ))
@@ -115,7 +105,6 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
-      {/* Sector Select */}
       <FormField
         control={form.control}
         name="sector_id"
@@ -139,10 +128,8 @@ export function EmploymentFields({
                 </SelectTrigger>
                 <SelectContent>
                   {sectorItems.length > 0 ? (
-                    sectorItems
-                      .filter(sector => sector.id && sector.id.trim() !== "")
-                      .map((sector) => (
-                        <SelectItem key={sector.id} value={String(sector.id)}>
+                    sectorItems.map((sector) => (
+                        <SelectItem key={String(sector.id)} value={String(sector.id)}>
                           {sector.name}
                         </SelectItem>
                       ))
@@ -158,7 +145,6 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
-      {/* Role Select */}
       <FormField
         control={form.control}
         name="role_id"
@@ -180,10 +166,8 @@ export function EmploymentFields({
                 </SelectTrigger>
                 <SelectContent>
                   {roleItems.length > 0 ? (
-                    roleItems
-                      .filter(role => role.id && role.id.trim() !== "")
-                      .map((role) => (
-                        <SelectItem key={role.id} value={String(role.id)}>
+                    roleItems.map((role) => (
+                        <SelectItem key={String(role.id)} value={String(role.id)}>
                           {role.name}
                         </SelectItem>
                       ))
@@ -199,7 +183,6 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
-      {/* statusOptions */}
       <FormField
         control={form.control}
         name="status"
@@ -215,9 +198,7 @@ export function EmploymentFields({
                   <SelectValue placeholder="Selecione um status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions
-                    .filter(option => option.value && option.value.trim() !== "")
-                    .map((option) => (
+                  {statusOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

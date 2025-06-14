@@ -10,13 +10,13 @@ interface SectorCompanySelectProps {
 }
 
 export function SectorCompanySelect({ companies, selectedCompany, onCompanyChange }: SectorCompanySelectProps) {
-  // Filter companies to ensure valid data
-  const validCompanies = companies.filter(company => 
+  const validCompanies = (companies || []).filter(company => 
     company && 
-    company.id && 
-    company.id.toString().trim() !== "" &&
+    company.id !== null &&
+    company.id !== undefined &&
+    String(company.id).trim() !== "" &&
     company.name && 
-    company.name.trim() !== ""
+    String(company.name).trim() !== ""
   );
 
   return (
@@ -29,7 +29,7 @@ export function SectorCompanySelect({ companies, selectedCompany, onCompanyChang
           <SelectContent>
             {validCompanies.length > 0 ? (
               validCompanies.map((company) => (
-                <SelectItem key={company.id} value={String(company.id)}>
+                <SelectItem key={String(company.id)} value={String(company.id)}>
                   {company.name}
                 </SelectItem>
               ))

@@ -21,24 +21,22 @@ export function CompanySelector({
   selectedCompany,
   onCompanyChange,
 }: CompanySelectorProps) {
-  const { userRole, userCompanies } = useAuth();
+  const { userRole, userCompanies: authUserCompanies } = useAuth(); // Renamed to avoid conflict
   const { companies: allCompanies, isLoading } = useCompanies();
 
-  // Se o usuário for superadmin, mostrar todas as empresas
-  // Caso contrário, mostrar apenas as empresas associadas ao usuário
-  const availableCompanies = userRole === 'superadmin' 
+  const companiesForUser = userRole === 'superadmin' 
     ? allCompanies 
     : allCompanies.filter(company => 
-        userCompanies.some(userCompany => userCompany.companyId === company.id)
+        authUserCompanies.some(userCompany => userCompany.companyId === company.id)
       );
 
-  // Filtrar empresas com dados válidos
-  const validCompanies = availableCompanies.filter(company => 
+  const validCompanies = (companiesForUser || []).filter(company => 
     company && 
-    company.id && 
-    company.id.toString().trim() !== "" &&
+    company.id !== null &&
+    company.id !== undefined &&
+    String(company.id).trim() !== "" &&
     company.name && 
-    company.name.trim() !== ""
+    String(company.name).trim() !== ""
   );
   
   if (isLoading) {
@@ -63,7 +61,7 @@ export function CompanySelector({
         <SelectContent>
           {validCompanies.length > 0 ? (
             validCompanies.map((company) => (
-              <SelectItem key={company.id} value={String(company.id)}>
+              <SelectItem key={String(company.id)} value={String(company.id)}>
                 {company.name}
               </SelectItem>
             ))

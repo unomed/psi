@@ -24,17 +24,19 @@ export function SectorSelector({
 }: SectorSelectorProps) {
   const { sectors, isLoading } = useSectors();
   
-  // Filter sectors by company and ensure valid data
-  const filteredSectors = selectedCompany
-    ? sectors.filter(sector => 
-        sector && 
-        sector.companyId === selectedCompany &&
-        sector.id && 
-        sector.id.toString().trim() !== "" &&
-        sector.name && 
-        sector.name.trim() !== ""
-      )
-    : [];
+  const baseFilteredSectors = selectedCompany
+    ? (sectors || []).filter(sector => sector.companyId === selectedCompany)
+    : []; // If no company, no sectors to show from this specific filter logic, or show all if desired.
+           // For now, only company-specific.
+
+  const validSectors = baseFilteredSectors.filter(sector => 
+    sector && 
+    sector.id !== null &&
+    sector.id !== undefined &&
+    String(sector.id).trim() !== "" &&
+    sector.name && 
+    String(sector.name).trim() !== ""
+  );
 
   if (isLoading) {
     return (
@@ -57,9 +59,9 @@ export function SectorSelector({
           <SelectValue placeholder="Selecione um setor" />
         </SelectTrigger>
         <SelectContent>
-          {filteredSectors.length > 0 ? (
-            filteredSectors.map((sector) => (
-              <SelectItem key={sector.id} value={String(sector.id)}>
+          {validSectors.length > 0 ? (
+            validSectors.map((sector) => (
+              <SelectItem key={String(sector.id)} value={String(sector.id)}>
                 {sector.name}
               </SelectItem>
             ))

@@ -21,7 +21,18 @@ export function CompanySelector() {
     return null;
   }
 
-  // Show selector for superadmin with multiple companies or regular users with multiple companies
+  // Filter companies rigorously
+  const validCompanies = availableCompanies.filter(company => 
+    company && 
+    company.companyId !== null && 
+    company.companyId !== undefined && 
+    String(company.companyId).trim() !== "" &&
+    company.companyName && // Ensure name also exists, though not for value
+    String(company.companyName).trim() !== ""
+  );
+
+  console.log("[CompanySelector] Rendering. SelectedID:", selectedCompanyId, "Filtered companies:", validCompanies);
+
   return (
     <div className="flex items-center gap-2 mb-4">
       <Building2 className="h-4 w-4" />
@@ -33,18 +44,15 @@ export function CompanySelector() {
           {canAccessAllCompanies() && (
             <SelectItem value="all-companies">Todas as empresas</SelectItem>
           )}
-          {availableCompanies.map((company) => {
-            const companyId = company.companyId || `company-fallback-${Date.now()}`;
-            if (!companyId || companyId.trim() === '') {
-              console.error('Empty company ID detected in CompanySelector:', company);
-              return null;
-            }
+          {validCompanies.map((company) => {
+            // Log each company's details before creating SelectItem
+            console.log("[CompanySelector] Mapping company:", company, "Value to be used:", String(company.companyId));
             return (
-              <SelectItem key={companyId} value={companyId}>
-                {company.companyName || 'Empresa sem nome'}
+              <SelectItem key={String(company.companyId)} value={String(company.companyId)}>
+                {company.companyName}
               </SelectItem>
             );
-          }).filter(Boolean)}
+          })}
         </SelectContent>
       </Select>
     </div>

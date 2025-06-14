@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -30,7 +29,7 @@ const RISK_LEVELS = [
   { value: "low", label: "Baixo" },
   { value: "medium", label: "Médio" },
   { value: "high", label: "Alto" }
-];
+].filter(level => level.value && String(level.value).trim() !== ""); // Ensure RISK_LEVELS are valid
 
 export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
   const [skills, setSkills] = React.useState<string[]>(defaultValues?.requiredSkills || []);
@@ -75,12 +74,16 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
     form.trigger("requiredSkills");
   };
 
+  const validSectors = (sectors || []).filter(sector => 
+    sector && sector.id && String(sector.id).trim() !== "" && sector.name && String(sector.name).trim() !== ""
+  );
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmitForm)} className="space-y-4">
         <BasicInfoFields form={form} />
         
-        {sectors.length > 0 && (
+        {validSectors.length > 0 && (
           <FormField
             control={form.control}
             name="sectorId"
@@ -96,18 +99,11 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
                       <SelectValue placeholder="Selecione um setor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sectors.map((sector) => {
-                        const sectorId = sector.id || `sector-fallback-${Date.now()}-${Math.random()}`;
-                        if (!sectorId || sectorId.trim() === '') {
-                          console.error('Empty sector ID detected in RoleForm:', sector);
-                          return null;
-                        }
-                        return (
-                          <SelectItem key={sectorId} value={sectorId}>
-                            {sector.name || 'Setor sem nome'}
+                      {validSectors.map((sector) => (
+                          <SelectItem key={String(sector.id)} value={String(sector.id)}>
+                            {sector.name}
                           </SelectItem>
-                        );
-                      }).filter(Boolean)}
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormControl>

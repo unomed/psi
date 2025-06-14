@@ -24,17 +24,18 @@ export function RoleSelector({
 }: RoleSelectorProps) {
   const { roles, isLoading } = useRoles();
 
-  // Filter roles by sector and ensure valid data
-  const filteredRoles = selectedSector
-    ? roles.filter(role => 
-        role && 
-        role.sectorId === selectedSector &&
-        role.id && 
-        role.id.toString().trim() !== "" &&
-        role.name && 
-        role.name.trim() !== ""
-      )
+  const baseFilteredRoles = selectedSector
+    ? (roles || []).filter(role => role.sectorId === selectedSector)
     : [];
+
+  const validRoles = baseFilteredRoles.filter(role => 
+    role && 
+    role.id !== null &&
+    role.id !== undefined &&
+    String(role.id).trim() !== "" &&
+    role.name && 
+    String(role.name).trim() !== ""
+  );
 
   if (isLoading) {
     return (
@@ -57,9 +58,9 @@ export function RoleSelector({
           <SelectValue placeholder="Selecione uma função" />
         </SelectTrigger>
         <SelectContent>
-          {filteredRoles.length > 0 ? (
-            filteredRoles.map((role) => (
-              <SelectItem key={role.id} value={String(role.id)}>
+          {validRoles.length > 0 ? (
+            validRoles.map((role) => (
+              <SelectItem key={String(role.id)} value={String(role.id)}>
                 {role.name}
               </SelectItem>
             ))
