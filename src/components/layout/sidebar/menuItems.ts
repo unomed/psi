@@ -9,6 +9,7 @@ import {
   ClipboardList, 
   Calendar,
   BarChart3,
+  ListChecks,
   Settings 
 } from "lucide-react";
 
@@ -71,6 +72,18 @@ export const menuItems: MenuItem[] = [
     label: "Resultados",
     icon: BarChart3,
     href: "/resultados",
+    requireCompanyAccess: true,
+  },
+  {
+    label: "Relatórios",
+    icon: FileText,
+    href: "/relatorios",
+    requireCompanyAccess: true,
+  },
+  {
+    label: "Plano de Ação",
+    icon: ListChecks,
+    href: "/plano-acao",
     requireCompanyAccess: true,
   },
 ];

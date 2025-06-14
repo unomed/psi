@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { SettingsRoutes } from "./SettingsRoutes";
@@ -10,10 +9,10 @@ import Funcoes from "@/pages/Funcoes";
 import Checklists from "@/pages/Checklists";
 import Avaliacoes from "@/pages/Avaliacoes";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
-
-// Add the new import
 import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
+import Relatorios from "@/pages/Relatorios";
+import PlanoAcao from "@/pages/PlanoAcao";
 
 export function MainRoutes() {
   return (
@@ -87,6 +86,22 @@ export function MainRoutes() {
         element={
           <RouteGuard requireCompanyAccess="results">
             <AssessmentResults />
+          </RouteGuard>
+        } 
+      />
+      <Route 
+        path="/relatorios" 
+        element={
+          <RouteGuard requireCompanyAccess="results">
+            <Relatorios />
+          </RouteGuard>
+        } 
+      />
+      <Route 
+        path="/plano-acao" 
+        element={
+          <RouteGuard requireCompanyAccess="action_plans">
+            <PlanoAcao />
           </RouteGuard>
         } 
       />

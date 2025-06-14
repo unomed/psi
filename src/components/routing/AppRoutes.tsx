@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -19,6 +18,8 @@ import Avaliacoes from "@/pages/Avaliacoes";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
 import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
+import Relatorios from "@/pages/Relatorios";
+import PlanoAcao from "@/pages/PlanoAcao";
 
 export function AppRoutes() {
   return (
@@ -97,6 +98,22 @@ export function AppRoutes() {
           element={
             <RouteGuard requireCompanyAccess="results">
               <AssessmentResults />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/relatorios" 
+          element={
+            <RouteGuard requireCompanyAccess="results">
+              <Relatorios />
+            </RouteGuard>
+          } 
+        />
+        <Route 
+          path="/plano-acao" 
+          element={
+            <RouteGuard requireCompanyAccess="action_plans">
+              <PlanoAcao />
             </RouteGuard>
           } 
         />
