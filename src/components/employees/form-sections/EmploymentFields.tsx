@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,8 +30,8 @@ export function EmploymentFields({
   onSectorChange 
 }: EmploymentFieldsProps) {
   const { companies } = useCompanies();
-  const { sectors_ } = useSectors(); // Renamed to avoid conflict with local 'sectors' var if any
-  const { roles_ } = useRoles(); // Renamed
+  const { sectors } = useSectors(); // Use 'sectors' not 'sectors_'
+  const { roles } = useRoles(); // Use 'roles' not 'roles_'
   const { filterResourcesByCompany } = useCompanyAccessCheck();
   
   const formattedCompanies = (companies || []).map(company => ({ // Ensure companies is an array
@@ -47,11 +48,11 @@ export function EmploymentFields({
     }))
     .filter(company => company.id && String(company.id).trim() !== ""); // Strict filter
 
-  const sectorItems: EmploymentItem[] = (sectors_ || []) // Use renamed hook data
+  const sectorItems: EmploymentItem[] = (sectors || []) // Use sectors instead of sectors_
     .filter(s => s && s.id && String(s.id).trim() !== "" && s.name && String(s.name).trim() !== "" && (!selectedCompany || s.companyId === selectedCompany))
     .map(s => ({ id: s.id, name: s.name })); // Ensure correct mapping
 
-  const roleItems: EmploymentItem[] = (roles_ || []) // Use renamed hook data
+  const roleItems: EmploymentItem[] = (roles || []) // Use roles instead of roles_
     .filter(r => r && r.id && String(r.id).trim() !== "" && r.name && String(r.name).trim() !== "" && (!selectedCompany || r.companyId === selectedCompany) && (!selectedSector || r.sectorId === selectedSector)) // Also filter by sector if selected
     .map(r => ({ id: r.id, name: r.name })); // Ensure correct mapping
 
