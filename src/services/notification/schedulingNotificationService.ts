@@ -1,16 +1,14 @@
 
 import { sendAssessmentEmail } from "./emailNotificationService";
-import { sendWhatsAppNotification } from "./whatsappNotificationService";
 
 interface NotificationData {
-  type: 'email' | 'whatsapp';
+  type: 'email';
   employeeName: string;
   templateName: string;
   scheduledDate: Date;
   linkUrl: string;
   assessmentId: string;
   employeeEmail?: string;
-  phoneNumber?: string;
 }
 
 export async function sendSchedulingNotification(data: NotificationData) {
@@ -22,16 +20,6 @@ export async function sendSchedulingNotification(data: NotificationData) {
         employeeEmail: data.employeeEmail,
         assessmentId: data.assessmentId,
         templateName: data.templateName,
-        linkUrl: data.linkUrl
-      });
-    }
-
-    if (data.type === 'whatsapp' && data.phoneNumber) {
-      await sendWhatsAppNotification({
-        phoneNumber: data.phoneNumber,
-        employeeName: data.employeeName,
-        templateName: data.templateName,
-        scheduledDate: data.scheduledDate,
         linkUrl: data.linkUrl
       });
     }

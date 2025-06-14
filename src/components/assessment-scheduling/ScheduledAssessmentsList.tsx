@@ -34,8 +34,7 @@ export function ScheduledAssessmentsList() {
         .from('scheduled_assessments')
         .select(`
           *,
-          checklist_templates(title, type),
-          employees(name, email)
+          checklist_templates(title, type)
         `)
         .order('scheduled_date', { ascending: false });
 
@@ -45,7 +44,7 @@ export function ScheduledAssessmentsList() {
   });
 
   const filteredAssessments = assessments?.filter(assessment => {
-    const employeeName = assessment.employee_name || assessment.employees?.name || '';
+    const employeeName = assessment.employee_name || '';
     const matchesSearch = searchTerm === "" || 
       employeeName.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -219,9 +218,7 @@ export function ScheduledAssessmentsList() {
           ) : (
             <div className="space-y-4">
               {filteredAssessments?.map(assessment => {
-                const employeeName = assessment.employee_name || assessment.employees?.name || 'Nome não disponível';
-                const employeeEmail = assessment.employees?.email;
-                const hasEmail = employeeEmail && employeeEmail.trim() !== '';
+                const employeeName = assessment.employee_name || 'Nome não disponível';
                 
                 return (
                   <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -239,9 +236,6 @@ export function ScheduledAssessmentsList() {
                           <Calendar className="h-3 w-3" />
                           Agendada para: {new Date(assessment.scheduled_date).toLocaleDateString('pt-BR')}
                         </div>
-                        {hasEmail && (
-                          <p>Email: {employeeEmail}</p>
-                        )}
                         {assessment.recurrence_type !== "none" && (
                           <p>Recorrência: {assessment.recurrence_type}</p>
                         )}
@@ -283,20 +277,6 @@ export function ScheduledAssessmentsList() {
                         >
                           <ExternalLink className="h-4 w-4 mr-1" />
                           Abrir
-                        </Button>
-                      )}
-                      
-                      {/* Botão de email (apenas se funcionário tiver email) */}
-                      {hasEmail && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleSendEmail(assessment.id)}
-                          disabled={assessment.status === 'completed'}
-                          title="Enviar por email"
-                        >
-                          <Mail className="h-4 w-4 mr-1" />
-                          Email
                         </Button>
                       )}
 

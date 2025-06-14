@@ -36,8 +36,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             phone_number,
             company_id,
             employee_name,
-            checklist_templates(title),
-            employees(name, email)
+            checklist_templates(title)
           `);
         
         if (companyId && userRole !== 'superadmin') {
@@ -53,10 +52,10 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
         }
         
         const assessmentData = data.map((item) => {
-          // Use employee data from join or fallback to employee_name
+          // Get employee data separately if needed
           let employeeDetails = {
-            name: item.employees?.name || item.employee_name || 'Funcionário não encontrado',
-            email: item.employees?.email || '',
+            name: item.employee_name || 'Funcionário não encontrado',
+            email: '',
             phone: ''
           };
           
