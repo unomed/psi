@@ -37,7 +37,7 @@ export function RoleCompanySelect({
             </SelectTrigger>
             <SelectContent>
               {companies.map((company) => (
-                <SelectItem key={company.id} value={company.id}>
+                <SelectItem key={company.id} value={company.id || `company-${Math.random()}`}>
                   {company.name}
                 </SelectItem>
               ))}
@@ -56,7 +56,7 @@ export function RoleCompanySelect({
               </SelectTrigger>
               <SelectContent>
                 {filteredSectors.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id}>
+                  <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
                     {sector.name}
                   </SelectItem>
                 ))}

@@ -69,7 +69,7 @@ export function SchedulingDetailsStep({ details, onDetailsChange }: SchedulingDe
             <div className="space-y-2">
               <Label htmlFor="recurrence">Recorrência</Label>
               <Select 
-                value={details.recurrenceType} 
+                value={details.recurrenceType || undefined} 
                 onValueChange={(value: RecurrenceType) => updateDetails('recurrenceType', value)}
               >
                 <SelectTrigger>

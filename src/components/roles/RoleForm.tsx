@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -90,7 +91,7 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
                     </SelectTrigger>
                     <SelectContent>
                       {sectors.map((sector) => (
-                        <SelectItem key={sector.id} value={sector.id}>
+                        <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
                           {sector.name}
                         </SelectItem>
                       ))}
