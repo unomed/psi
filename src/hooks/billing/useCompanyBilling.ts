@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CompanyBilling, BillingPlan, BulkDiscount } from "@/types/billing";
@@ -36,7 +35,7 @@ export function useCompanyBilling(companyId?: string) {
           ...data.billing_plans,
           type: data.billing_plans.type as BillingPlan['type'],
           bulk_discounts: Array.isArray(data.billing_plans.bulk_discounts) 
-            ? data.billing_plans.bulk_discounts as BulkDiscount[]
+            ? (data.billing_plans.bulk_discounts as unknown) as BulkDiscount[]
             : []
         } : undefined
       };
@@ -62,7 +61,7 @@ export function useCompanyBilling(companyId?: string) {
       return (data || []).map(plan => ({
         ...plan,
         type: plan.type as BillingPlan['type'],
-        bulk_discounts: Array.isArray(plan.bulk_discounts) ? plan.bulk_discounts as BulkDiscount[] : []
+        bulk_discounts: Array.isArray(plan.bulk_discounts) ? (plan.bulk_discounts as unknown) as BulkDiscount[] : []
       }));
     }
   });
