@@ -57,14 +57,14 @@ export function useAssessmentScheduling() {
           throw new Error("Falha ao gerar link de avaliação");
         }
 
-        // Create the scheduled assessment record
+        // Create the scheduled assessment record with correct status
         const { data: scheduledAssessment, error: scheduleError } = await supabase
           .from('scheduled_assessments')
           .insert({
             employee_id: assessmentData.employeeId,
             template_id: assessmentData.templateId,
             scheduled_date: assessmentData.scheduledDate.toISOString(),
-            status: 'pending',
+            status: 'scheduled', // Changed from 'pending' to 'scheduled'
             recurrence_type: assessmentData.recurrenceType,
             phone_number: assessmentData.phoneNumber,
             company_id: assessmentData.companyId,

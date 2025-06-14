@@ -1,98 +1,90 @@
 
 import { 
-  LayoutDashboard, 
-  Building2, 
+  Building, 
   Users, 
-  MapPin, 
   Briefcase, 
+  MapPin, 
+  CheckSquare, 
+  BarChart3, 
   FileText, 
-  ClipboardList, 
+  ClipboardList,
+  UserCheck,
   Calendar,
-  BarChart3,
-  ListChecks,
-  Settings 
+  DollarSign
 } from "lucide-react";
-
-export interface MenuItem {
-  label: string;
-  icon: any;
-  href: string;
-  requiredRole?: string;
-  requireCompanyAccess?: boolean;
-}
+import type { MenuItem } from "./types";
 
 export const menuItems: MenuItem[] = [
   {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/dashboard",
+    title: "Dashboard",
+    icon: BarChart3,
+    href: "/",
+    roles: ["superadmin", "admin", "manager", "user"]
   },
   {
-    label: "Empresas",
-    icon: Building2,
+    title: "Empresas",
+    icon: Building,
     href: "/empresas",
-    requiredRole: "superadmin",
+    roles: ["superadmin", "admin"]
   },
   {
-    label: "Funcionários",
+    title: "Funcionários", 
     icon: Users,
     href: "/funcionarios",
-    requireCompanyAccess: true,
+    roles: ["superadmin", "admin", "manager"]
   },
   {
-    label: "Setores",
+    title: "Setores",
     icon: MapPin,
     href: "/setores",
-    requireCompanyAccess: true,
+    roles: ["superadmin", "admin", "manager"]
   },
   {
-    label: "Funções",
+    title: "Funções",
     icon: Briefcase,
     href: "/funcoes",
-    requireCompanyAccess: true,
+    roles: ["superadmin", "admin", "manager"]
   },
   {
-    label: "Templates",
-    icon: FileText,
-    href: "/templates",
+    title: "Checklists",
+    icon: CheckSquare,
+    href: "/checklists",
+    roles: ["superadmin", "admin", "manager", "user"]
   },
   {
-    label: "Avaliações",
-    icon: ClipboardList,
+    title: "Avaliações",
+    icon: UserCheck,
     href: "/avaliacoes",
-    requireCompanyAccess: true,
+    roles: ["superadmin", "admin", "manager", "user"]
   },
   {
-    label: "Agendamentos",
+    title: "Agendamento",
     icon: Calendar,
-    href: "/agendamentos",
-    requireCompanyAccess: true,
+    href: "/agendamento-avaliacoes", 
+    roles: ["superadmin", "admin", "manager"]
   },
   {
-    label: "Resultados",
-    icon: BarChart3,
-    href: "/resultados",
-    requireCompanyAccess: true,
+    title: "Faturamento",
+    icon: DollarSign,
+    href: "/faturamento",
+    roles: ["superadmin"]
   },
   {
-    label: "Relatórios",
+    title: "Gestão de Riscos",
     icon: FileText,
-    href: "/relatorios",
-    requireCompanyAccess: true,
+    href: "/gestao-riscos",
+    roles: ["superadmin", "admin", "manager"]
   },
   {
-    label: "Plano de Ação",
-    icon: ListChecks,
+    title: "Plano de Ação",
+    icon: ClipboardList,
     href: "/plano-acao",
-    requireCompanyAccess: true,
+    roles: ["superadmin", "admin", "manager"]
   },
+  {
+    title: "Relatórios",
+    icon: BarChart3,
+    href: "/relatorios",
+    roles: ["superadmin", "admin", "manager"]
+  }
 ];
-
-// Export as mainMenuItems for compatibility
-export const mainMenuItems = menuItems.map(item => ({
-  title: item.label,
-  icon: item.icon,
-  path: item.href,
-  roles: item.requiredRole ? [item.requiredRole] : ['admin', 'user', 'superadmin'],
-  permission: 'view_dashboard'
-}));
