@@ -52,12 +52,17 @@ export function SectorSelector({
         <SelectContent>
           {filteredSectors.map((sector) => {
             const sectorId = sector.id || `sector-${sector.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            // Add validation to ensure we never pass empty strings
+            if (!sectorId || sectorId.trim() === '') {
+              console.error('Empty sector ID detected:', sector);
+              return null;
+            }
             return (
               <SelectItem key={sectorId} value={sectorId}>
-                {sector.name}
+                {sector.name || 'Setor sem nome'}
               </SelectItem>
             );
-          })}
+          }).filter(Boolean)}
         </SelectContent>
       </Select>
     </div>

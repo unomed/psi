@@ -52,12 +52,17 @@ export function EmployeeSelector({
         <SelectContent>
           {filteredEmployees.map((employee) => {
             const employeeId = employee.id || `employee-${employee.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            // Add validation to ensure we never pass empty strings
+            if (!employeeId || employeeId.trim() === '') {
+              console.error('Empty employee ID detected:', employee);
+              return null;
+            }
             return (
               <SelectItem key={employeeId} value={employeeId}>
-                {employee.name}
+                {employee.name || 'Funcionário sem nome'}
               </SelectItem>
             );
-          })}
+          }).filter(Boolean)}
         </SelectContent>
       </Select>
     </div>

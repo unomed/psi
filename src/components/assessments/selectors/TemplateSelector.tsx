@@ -47,14 +47,19 @@ export function TemplateSelector({
           {templates.length > 0 ? (
             templates.map((template) => {
               const templateId = template.id || `template-${template.title?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+              // Add validation to ensure we never pass empty strings
+              if (!templateId || templateId.trim() === '') {
+                console.error('Empty template ID detected:', template);
+                return null;
+              }
               return (
                 <SelectItem key={templateId} value={templateId}>
-                  {template.title}
+                  {template.title || 'Modelo sem título'}
                 </SelectItem>
               );
-            })
+            }).filter(Boolean)
           ) : (
-            <SelectItem value="no-templates-available" disabled>
+            <SelectItem value="no-templates-placeholder" disabled>
               Nenhum modelo encontrado
             </SelectItem>
           )}

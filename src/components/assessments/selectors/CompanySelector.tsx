@@ -54,12 +54,17 @@ export function CompanySelector({
         <SelectContent>
           {availableCompanies.map((company) => {
             const companyId = company.id || `company-${company.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            // Add validation to ensure we never pass empty strings
+            if (!companyId || companyId.trim() === '') {
+              console.error('Empty company ID detected:', company);
+              return null;
+            }
             return (
               <SelectItem key={companyId} value={companyId}>
-                {company.name}
+                {company.name || 'Empresa sem nome'}
               </SelectItem>
             );
-          })}
+          }).filter(Boolean)}
         </SelectContent>
       </Select>
     </div>

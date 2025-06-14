@@ -52,12 +52,17 @@ export function RoleSelector({
         <SelectContent>
           {filteredRoles.map((role) => {
             const roleId = role.id || `role-${role.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+            // Add validation to ensure we never pass empty strings
+            if (!roleId || roleId.trim() === '') {
+              console.error('Empty role ID detected:', role);
+              return null;
+            }
             return (
               <SelectItem key={roleId} value={roleId}>
-                {role.name}
+                {role.name || 'Função sem nome'}
               </SelectItem>
             );
-          })}
+          }).filter(Boolean)}
         </SelectContent>
       </Select>
     </div>
