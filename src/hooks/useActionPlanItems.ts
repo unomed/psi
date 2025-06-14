@@ -29,7 +29,24 @@ export function useActionPlanItems(actionPlanId?: string) {
   const createItem = useMutation({
     mutationFn: async (itemData: Partial<ActionPlanItem>) => {
       const { data, error } = await supabase
-        .rpc('create_action_plan_item', { item_data: itemData });
+        .from('action_plan_items')
+        .insert({
+          action_plan_id: itemData.action_plan_id,
+          title: itemData.title,
+          description: itemData.description,
+          status: itemData.status || 'pending',
+          priority: itemData.priority || 'medium',
+          responsible_name: itemData.responsible_name,
+          responsible_email: itemData.responsible_email,
+          sector_id: itemData.sector_id,
+          estimated_hours: itemData.estimated_hours,
+          start_date: itemData.start_date,
+          due_date: itemData.due_date,
+          notes: itemData.notes,
+          created_by: itemData.created_by
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error creating action plan item:', error);
@@ -49,7 +66,26 @@ export function useActionPlanItems(actionPlanId?: string) {
   const updateItem = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ActionPlanItem> & { id: string }) => {
       const { data, error } = await supabase
-        .rpc('update_action_plan_item', { item_id: id, item_data: updates });
+        .from('action_plan_items')
+        .update({
+          title: updates.title,
+          description: updates.description,
+          status: updates.status,
+          priority: updates.priority,
+          responsible_name: updates.responsible_name,
+          responsible_email: updates.responsible_email,
+          sector_id: updates.sector_id,
+          estimated_hours: updates.estimated_hours,
+          actual_hours: updates.actual_hours,
+          start_date: updates.start_date,
+          due_date: updates.due_date,
+          completion_date: updates.completion_date,
+          progress_percentage: updates.progress_percentage,
+          notes: updates.notes
+        })
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error updating action plan item:', error);
@@ -69,7 +105,9 @@ export function useActionPlanItems(actionPlanId?: string) {
   const deleteItem = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .rpc('delete_action_plan_item', { item_id: id });
+        .from('action_plan_items')
+        .delete()
+        .eq('id', id);
 
       if (error) {
         console.error('Error deleting action plan item:', error);

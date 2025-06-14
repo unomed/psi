@@ -1,106 +1,60 @@
 
-import { useLocation, useNavigate } from "react-router-dom";
-import { LucideIcon } from "lucide-react";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import {
-  SidebarMenuButton,
-  SidebarMenuItem as SidebarMenuItemBase,
-} from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { SidebarMenuButton, SidebarMenuItem as BaseSidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '@/components/ui/sidebar';
+import { ChevronRight } from 'lucide-react';
+import type { MenuItem } from './types';
 
 interface SidebarMenuItemProps {
-  title: string;
-  icon: LucideIcon;
-  href?: string;
-  isActive?: boolean;
-  children?: React.ReactNode;
-  hasSubmenu?: boolean;
+  item: MenuItem;
 }
 
-export function SidebarMenuItem({ 
-  title, 
-  icon: Icon, 
-  href, 
-  isActive = false, 
-  children, 
-  hasSubmenu = false 
-}: SidebarMenuItemProps) {
-  const navigate = useNavigate();
+export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
+  const isActive = location.pathname === item.path;
 
-  const handleClick = () => {
-    if (href && !hasSubmenu) {
-      console.log(`[SidebarMenuItem] Navegando para: ${href}`);
-      navigate(href);
-    } else if (hasSubmenu) {
-      setIsOpen(!isOpen);
-    }
+  const handleNavigation = () => {
+    console.log(`[SidebarMenuItem] Navegando para: ${item.path}`);
   };
 
-  const isCurrentPath = location.pathname === href || isActive;
-
-  if (hasSubmenu) {
+  if (item.subItems && item.subItems.length > 0) {
     return (
-      <Collapsible
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      >
-        <SidebarMenuItemBase>
+      <Collapsible asChild defaultOpen={item.subItems.some(subItem => location.pathname === subItem.path)}>
+        <BaseSidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton onClick={handleClick}>
-              <Icon className="mr-2 h-4 w-4" />
-              <span>{title}</span>
-              <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
+            <SidebarMenuButton tooltip={item.title}>
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
+              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="ml-4 mt-2 space-y-1">
-              {children}
-            </div>
+            <SidebarMenuSub>
+              {item.subItems.map((subItem) => (
+                <SidebarMenuSubItem key={subItem.path}>
+                  <SidebarMenuSubButton asChild isActive={location.pathname === subItem.path}>
+                    <Link to={subItem.path} onClick={handleNavigation}>
+                      <span>{subItem.title}</span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              ))}
+            </SidebarMenuSub>
           </CollapsibleContent>
-        </SidebarMenuItemBase>
+        </BaseSidebarMenuItem>
       </Collapsible>
     );
   }
 
   return (
-    <SidebarMenuItemBase>
-      <SidebarMenuButton onClick={handleClick}>
-        <Icon className="mr-2 h-4 w-4" />
-        <span>{title}</span>
+    <BaseSidebarMenuItem>
+      <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+        <Link to={item.path} onClick={handleNavigation}>
+          {item.icon && <item.icon />}
+          <span>{item.title}</span>
+        </Link>
       </SidebarMenuButton>
-    </SidebarMenuItemBase>
-  );
-}
-
-export function SidebarMenuSubItemComponent({ 
-  title, 
-  href, 
-  isActive = false 
-}: { 
-  title: string; 
-  href: string; 
-  isActive?: boolean; 
-}) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleClick = () => {
-    console.log(`[SettingsSubmenu] Navegando para: ${href}`);
-    navigate(href);
-  };
-
-  const isCurrentPath = location.pathname === href || isActive;
-
-  return (
-    <div className={`px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-accent ${isCurrentPath ? 'bg-accent' : ''}`} onClick={handleClick}>
-      <span>{title}</span>
-    </div>
+    </BaseSidebarMenuItem>
   );
 }

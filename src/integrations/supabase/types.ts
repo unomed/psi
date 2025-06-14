@@ -95,7 +95,6 @@ export type Database = {
           completion_date: string | null
           created_at: string
           created_by: string | null
-          department: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -103,6 +102,7 @@ export type Database = {
           progress_percentage: number
           responsible_user_id: string | null
           risk_level: string | null
+          sector_id: string | null
           start_date: string | null
           status: string
           title: string
@@ -116,7 +116,6 @@ export type Database = {
           completion_date?: string | null
           created_at?: string
           created_by?: string | null
-          department?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -124,6 +123,7 @@ export type Database = {
           progress_percentage?: number
           responsible_user_id?: string | null
           risk_level?: string | null
+          sector_id?: string | null
           start_date?: string | null
           status?: string
           title: string
@@ -137,7 +137,6 @@ export type Database = {
           completion_date?: string | null
           created_at?: string
           created_by?: string | null
-          department?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -145,6 +144,7 @@ export type Database = {
           progress_percentage?: number
           responsible_user_id?: string | null
           risk_level?: string | null
+          sector_id?: string | null
           start_date?: string | null
           status?: string
           title?: string
@@ -163,6 +163,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plans_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
             referencedColumns: ["id"]
           },
         ]

@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -165,6 +166,12 @@ export function ActionPlansList() {
             <DialogTitle>
               {selectedPlan ? 'Editar Plano de Ação' : 'Novo Plano de Ação'}
             </DialogTitle>
+            <DialogDescription>
+              {selectedPlan 
+                ? 'Edite as informações do plano de ação.' 
+                : 'Crie um novo plano de ação preenchendo as informações abaixo.'
+              }
+            </DialogDescription>
           </DialogHeader>
           <ActionPlanForm
             plan={selectedPlan || undefined}

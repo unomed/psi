@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ export function useActionPlans() {
   const { data: actionPlans, isLoading } = useQuery({
     queryKey: ['actionPlans'],
     queryFn: async () => {
-      // Fazer a query usando a função SQL personalizada que já criamos
+      console.log('Fetching action plans...');
       const { data, error } = await supabase.rpc('get_action_plans');
       
       if (error) {
@@ -65,6 +66,7 @@ export function useActionPlans() {
         throw error;
       }
       
+      console.log('Action plans fetched successfully:', data?.length || 0);
       return (data || []) as ActionPlan[];
     }
   });
