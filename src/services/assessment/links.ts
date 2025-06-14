@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
@@ -9,7 +10,51 @@ export async function generateAssessmentLink(
   try {
     console.log("Starting link generation for:", { employeeId, templateId });
     
-    // Check if there's already an active link for this employee and template
+    // Primeiro, limpar links duplicados mantendo apenas o mais recente não usado
+    const { data: allLinks, error: getAllError } = await supabase
+      .from('assessment_links')
+      .select('id, created_at, used_at, expires_at')
+      .eq('employee_id', employeeId)
+      .eq('template_id', templateId)
+      .order('created_at', { ascending: false });
+
+    if (getAllError) {
+      console.error("Error getting all links:", getAllError);
+    } else if (allLinks && allLinks.length > 1) {
+      console.log(`Found ${allLinks.length} links, cleaning duplicates`);
+      
+      // Manter apenas o primeiro (mais recente) link válido
+      const validLinks = allLinks.filter(link => 
+        !link.used_at && 
+        link.expires_at && 
+        new Date(link.expires_at) > new Date()
+      );
+      
+      let linksToKeep: string[] = [];
+      if (validLinks.length > 0) {
+        linksToKeep = [validLinks[0].id];
+      }
+      
+      // Deletar todos os outros
+      const linksToDelete = allLinks
+        .filter(link => !linksToKeep.includes(link.id))
+        .map(link => link.id);
+      
+      if (linksToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('assessment_links')
+          .delete()
+          .in('id', linksToDelete);
+        
+        if (deleteError) {
+          console.error("Error deleting duplicate links:", deleteError);
+        } else {
+          console.log(`Deleted ${linksToDelete.length} duplicate/expired links`);
+        }
+      }
+    }
+
+    // Agora verificar se existe um link válido (usando maybeSingle para evitar erro)
     const { data: existingLink, error: fetchError } = await supabase
       .from('assessment_links')
       .select()
@@ -17,6 +62,8 @@ export async function generateAssessmentLink(
       .eq('template_id', templateId)
       .is('used_at', null)
       .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (fetchError) {

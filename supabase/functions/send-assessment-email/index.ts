@@ -42,27 +42,30 @@ serve(async (req) => {
     // Map template names
     const templateName = requestData.templateName || "Convite";
     
-    // Try to get the email template from database
+    // Try to get the email template from database (using maybeSingle to avoid errors)
     let emailTemplate = null;
     if (requestData.templateId) {
       const { data: dbTemplate, error: templateError } = await supabase
         .from('email_templates')
         .select('subject, body')
         .eq('id', requestData.templateId)
-        .single();
+        .limit(1)
+        .maybeSingle();
         
       if (!templateError && dbTemplate) {
         emailTemplate = dbTemplate;
       }
     }
     
-    // If no template found by ID, try by name
+    // If no template found by ID, try by name (using limit and order to get most recent)
     if (!emailTemplate) {
       const { data: dbTemplate, error: templateError } = await supabase
         .from('email_templates')
         .select('subject, body')
         .eq('name', templateName)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
         
       if (!templateError && dbTemplate) {
         emailTemplate = dbTemplate;

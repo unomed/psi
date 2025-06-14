@@ -77,7 +77,34 @@ export async function createDefaultEmailTemplates() {
     console.log("Criando templates padrão de email...");
 
     for (const template of defaultTemplates) {
-      // Verificar se o template já existe
+      // Primeiro, limpar templates duplicados mantendo apenas o mais recente
+      const { data: allTemplates, error: getAllError } = await supabase
+        .from('email_templates')
+        .select('id, created_at')
+        .eq('name', template.name)
+        .order('created_at', { ascending: false });
+
+      if (getAllError) {
+        console.error(`Erro ao buscar templates ${template.name}:`, getAllError);
+        continue;
+      }
+
+      // Se há múltiplos templates, deletar os antigos
+      if (allTemplates && allTemplates.length > 1) {
+        console.log(`Removendo ${allTemplates.length - 1} templates duplicados para ${template.name}`);
+        const templateIdsToDelete = allTemplates.slice(1).map(t => t.id);
+        
+        const { error: deleteError } = await supabase
+          .from('email_templates')
+          .delete()
+          .in('id', templateIdsToDelete);
+
+        if (deleteError) {
+          console.error(`Erro ao deletar templates duplicados ${template.name}:`, deleteError);
+        }
+      }
+
+      // Verificar se ainda existe pelo menos um template (usando maybeSingle para evitar erro)
       const { data: existing, error: checkError } = await supabase
         .from('email_templates')
         .select('id')
