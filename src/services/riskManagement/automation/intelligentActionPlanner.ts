@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ActionTemplate {
@@ -46,7 +45,14 @@ export class IntelligentActionPlanner {
       .order('is_mandatory', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Convert database rows to ActionTemplate interface
+    return (data || []).map(template => ({
+      ...template,
+      template_actions: Array.isArray(template.template_actions) 
+        ? template.template_actions as ActionItem[]
+        : []
+    }));
   }
 
   async generateActionPlan(

@@ -1,5 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { ActionItem } from "./intelligentActionPlanner";
 
 export interface RiskCalculationInput {
   assessmentResponseId: string;
@@ -259,7 +259,9 @@ export class AdvancedCalculationEngine {
       .limit(1);
 
     if (templates?.[0]?.template_actions) {
-      const actions = templates[0].template_actions as ActionItem[];
+      const actions = Array.isArray(templates[0].template_actions) 
+        ? templates[0].template_actions as ActionItem[]
+        : [];
       recommendations.push(...actions.map(action => action.title));
     }
 

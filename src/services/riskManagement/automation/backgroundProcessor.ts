@@ -87,8 +87,7 @@ export class BackgroundProcessor {
         status: 'pending',
         priority,
         retry_count: 0,
-        max_retries: 3,
-        metadata: {}
+        max_retries: 3
       })
       .select()
       .single();
@@ -118,7 +117,12 @@ export class BackgroundProcessor {
       if (!pendingJobs?.length) return;
 
       for (const job of pendingJobs) {
-        await this.processJob(job);
+        // Convert database row to ProcessingJob interface
+        const processingJob: ProcessingJob = {
+          ...job,
+          metadata: {} // Default empty metadata
+        };
+        await this.processJob(processingJob);
       }
     } catch (error) {
       console.error('Error processing queue:', error);
@@ -150,8 +154,7 @@ export class BackgroundProcessor {
         .from('psychosocial_processing_jobs')
         .update({
           status: 'completed',
-          completed_at: new Date().toISOString(),
-          metadata: { result: data }
+          completed_at: new Date().toISOString()
         })
         .eq('id', job.id);
 
