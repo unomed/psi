@@ -1,7 +1,7 @@
 
 import { Settings } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { settingsMenuItems } from "./settingsItems";
 import { SidebarMenuItem as MenuItem } from "./SidebarMenuItem";
@@ -52,7 +52,7 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   if (filteredSettingsItems.length === 0) return null;
 
   return (
-    <SidebarMenuItem>
+    <div className="space-y-1">
       <SidebarMenuButton
         className={cn(
           "flex items-center w-full",
@@ -76,6 +76,6 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
           ))}
         </div>
       )}
-    </SidebarMenuItem>
+    </div>
   );
 }

@@ -6,11 +6,12 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenu,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
-import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
+import { SidebarMenuItem as MenuItem } from "./sidebar/SidebarMenuItem";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
 
@@ -72,15 +73,18 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredMenuItems.map((item) => (
-                <SidebarMenuItem
-                  key={item.title}
-                  title={item.title}
-                  icon={item.icon}
-                  path={item.href || item.path}
-                />
+                <SidebarMenuItem key={item.title}>
+                  <MenuItem
+                    title={item.title}
+                    icon={item.icon}
+                    path={item.href || item.path}
+                  />
+                </SidebarMenuItem>
               ))}
               
-              <SettingsSubmenu userRole={userRole} />
+              <SidebarMenuItem>
+                <SettingsSubmenu userRole={userRole} />
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

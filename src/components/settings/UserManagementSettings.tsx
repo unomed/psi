@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { useUsers } from "@/hooks/users/useUsers";
+import { useFetchUsers } from "@/hooks/users/useFetchUsers";
 import { UserFormDialog } from "./users/UserFormDialog";
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction, AlertDialogFooter } from "@/components/ui/alert-dialog";
 import { useDeleteUser } from "@/hooks/users/useDeleteUser";
@@ -16,7 +16,7 @@ export default function UserManagementSettings() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
-  const { users, isLoading } = useUsers();
+  const { data: users, isLoading, error } = useFetchUsers();
   const deleteUserMutation = useDeleteUser();
 
   const handleDeleteUser = async () => {
@@ -87,6 +87,24 @@ export default function UserManagementSettings() {
       ),
     },
   ];
+
+  if (error) {
+    console.error("Erro ao carregar usuários:", error);
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold">Gerenciar Usuários</h2>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Criar Usuário
+          </Button>
+        </div>
+        <div className="text-center text-red-500 p-4">
+          Erro ao carregar usuários. Tente recarregar a página.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
