@@ -24,9 +24,16 @@ export function SectorSelector({
 }: SectorSelectorProps) {
   const { sectors, isLoading } = useSectors();
   
-  // Filter sectors by company
+  // Filter sectors by company and ensure valid data
   const filteredSectors = selectedCompany
-    ? sectors.filter(sector => sector.companyId === selectedCompany)
+    ? sectors.filter(sector => 
+        sector && 
+        sector.companyId === selectedCompany &&
+        sector.id && 
+        sector.id.toString().trim() !== "" &&
+        sector.name && 
+        sector.name.trim() !== ""
+      )
     : [];
 
   if (isLoading) {
@@ -42,7 +49,7 @@ export function SectorSelector({
     <div className="space-y-2">
       <Label htmlFor="sector">Setor</Label>
       <Select
-        value={selectedSector || undefined}
+        value={selectedSector || "no-sector-selected"}
         onValueChange={onSectorChange}
         disabled={!selectedCompany}
       >
@@ -50,19 +57,17 @@ export function SectorSelector({
           <SelectValue placeholder="Selecione um setor" />
         </SelectTrigger>
         <SelectContent>
-          {filteredSectors.map((sector) => {
-            const sectorId = sector.id || `sector-${sector.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-            // Add validation to ensure we never pass empty strings
-            if (!sectorId || sectorId.trim() === '') {
-              console.error('Empty sector ID detected:', sector);
-              return null;
-            }
-            return (
-              <SelectItem key={sectorId} value={sectorId}>
-                {sector.name || 'Setor sem nome'}
+          {filteredSectors.length > 0 ? (
+            filteredSectors.map((sector) => (
+              <SelectItem key={sector.id} value={String(sector.id)}>
+                {sector.name}
               </SelectItem>
-            );
-          }).filter(Boolean)}
+            ))
+          ) : (
+            <SelectItem value="no-sectors-available" disabled>
+              {selectedCompany ? "Nenhum setor encontrado" : "Selecione uma empresa primeiro"}
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
     </div>

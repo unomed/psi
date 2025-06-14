@@ -31,6 +31,15 @@ export function CompanySelector({
     : allCompanies.filter(company => 
         userCompanies.some(userCompany => userCompany.companyId === company.id)
       );
+
+  // Filtrar empresas com dados válidos
+  const validCompanies = availableCompanies.filter(company => 
+    company && 
+    company.id && 
+    company.id.toString().trim() !== "" &&
+    company.name && 
+    company.name.trim() !== ""
+  );
   
   if (isLoading) {
     return (
@@ -45,26 +54,24 @@ export function CompanySelector({
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>
       <Select
-        value={selectedCompany || undefined}
+        value={selectedCompany || "no-company-selected"}
         onValueChange={onCompanyChange}
       >
         <SelectTrigger id="company">
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
-          {availableCompanies.map((company) => {
-            const companyId = company.id || `company-${company.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-            // Add validation to ensure we never pass empty strings
-            if (!companyId || companyId.trim() === '') {
-              console.error('Empty company ID detected:', company);
-              return null;
-            }
-            return (
-              <SelectItem key={companyId} value={companyId}>
-                {company.name || 'Empresa sem nome'}
+          {validCompanies.length > 0 ? (
+            validCompanies.map((company) => (
+              <SelectItem key={company.id} value={String(company.id)}>
+                {company.name}
               </SelectItem>
-            );
-          }).filter(Boolean)}
+            ))
+          ) : (
+            <SelectItem value="no-companies-available" disabled>
+              Nenhuma empresa disponível
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
     </div>

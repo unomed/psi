@@ -24,9 +24,16 @@ export function EmployeeSelector({
 }: EmployeeSelectorProps) {
   const { employees, isLoading } = useEmployees();
 
-  // Filter employees by role
+  // Filter employees by role and ensure valid data
   const filteredEmployees = selectedRole
-    ? employees.filter(emp => emp.role_id === selectedRole)
+    ? employees.filter(emp => 
+        emp && 
+        emp.role_id === selectedRole &&
+        emp.id && 
+        emp.id.toString().trim() !== "" &&
+        emp.name && 
+        emp.name.trim() !== ""
+      )
     : [];
 
   if (isLoading) {
@@ -42,7 +49,7 @@ export function EmployeeSelector({
     <div className="space-y-2">
       <Label htmlFor="employee">Funcionário</Label>
       <Select
-        value={selectedEmployee || undefined}
+        value={selectedEmployee || "no-employee-selected"}
         onValueChange={onEmployeeChange}
         disabled={!selectedRole}
       >
@@ -50,19 +57,17 @@ export function EmployeeSelector({
           <SelectValue placeholder="Selecione um funcionário" />
         </SelectTrigger>
         <SelectContent>
-          {filteredEmployees.map((employee) => {
-            const employeeId = employee.id || `employee-${employee.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-            // Add validation to ensure we never pass empty strings
-            if (!employeeId || employeeId.trim() === '') {
-              console.error('Empty employee ID detected:', employee);
-              return null;
-            }
-            return (
-              <SelectItem key={employeeId} value={employeeId}>
-                {employee.name || 'Funcionário sem nome'}
+          {filteredEmployees.length > 0 ? (
+            filteredEmployees.map((employee) => (
+              <SelectItem key={employee.id} value={String(employee.id)}>
+                {employee.name}
               </SelectItem>
-            );
-          }).filter(Boolean)}
+            ))
+          ) : (
+            <SelectItem value="no-employees-available" disabled>
+              {selectedRole ? "Nenhum funcionário encontrado" : "Selecione uma função primeiro"}
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
     </div>

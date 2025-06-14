@@ -24,7 +24,16 @@ export function CompanySelection({
   searchQuery,
   onSearchChange,
 }: CompanySelectionProps) {
-  const filteredCompanies = companies.filter((company) =>
+  // Filter companies to ensure valid data
+  const validCompanies = companies.filter(company => 
+    company && 
+    company.id && 
+    company.id.toString().trim() !== "" &&
+    company.name && 
+    company.name.trim() !== ""
+  );
+
+  const filteredCompanies = validCompanies.filter((company) =>
     company.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

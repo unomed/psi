@@ -24,6 +24,15 @@ export function TemplateSelector({
   isTemplatesLoading,
   onTemplateSelect,
 }: TemplateSelectorProps) {
+  // Filter templates to ensure valid data
+  const validTemplates = templates.filter(template => 
+    template && 
+    template.id && 
+    template.id.toString().trim() !== "" &&
+    template.title && 
+    template.title.trim() !== ""
+  );
+
   if (isTemplatesLoading) {
     return (
       <div className="space-y-2">
@@ -44,22 +53,14 @@ export function TemplateSelector({
           <SelectValue placeholder="Selecione um modelo de avaliação" />
         </SelectTrigger>
         <SelectContent>
-          {templates.length > 0 ? (
-            templates.map((template) => {
-              const templateId = template.id || `template-${template.title?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-              // Add validation to ensure we never pass empty strings
-              if (!templateId || templateId.trim() === '') {
-                console.error('Empty template ID detected:', template);
-                return null;
-              }
-              return (
-                <SelectItem key={templateId} value={templateId}>
-                  {template.title || 'Modelo sem título'}
-                </SelectItem>
-              );
-            }).filter(Boolean)
+          {validTemplates.length > 0 ? (
+            validTemplates.map((template) => (
+              <SelectItem key={template.id} value={String(template.id)}>
+                {template.title}
+              </SelectItem>
+            ))
           ) : (
-            <SelectItem value="no-templates-placeholder" disabled>
+            <SelectItem value="no-templates-available" disabled>
               Nenhum modelo encontrado
             </SelectItem>
           )}

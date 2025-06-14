@@ -10,19 +10,34 @@ interface SectorCompanySelectProps {
 }
 
 export function SectorCompanySelect({ companies, selectedCompany, onCompanyChange }: SectorCompanySelectProps) {
+  // Filter companies to ensure valid data
+  const validCompanies = companies.filter(company => 
+    company && 
+    company.id && 
+    company.id.toString().trim() !== "" &&
+    company.name && 
+    company.name.trim() !== ""
+  );
+
   return (
     <div className="flex items-center space-x-4 mb-6">
       <div className="w-72">
-        <Select onValueChange={onCompanyChange} value={selectedCompany || undefined}>
+        <Select onValueChange={onCompanyChange} value={selectedCompany || "no-company-selected"}>
           <SelectTrigger>
             <SelectValue placeholder="Selecione uma empresa" />
           </SelectTrigger>
           <SelectContent>
-            {companies.map((company) => (
-              <SelectItem key={company.id} value={company.id}>
-                {company.name}
+            {validCompanies.length > 0 ? (
+              validCompanies.map((company) => (
+                <SelectItem key={company.id} value={String(company.id)}>
+                  {company.name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="no-companies-available" disabled>
+                Nenhuma empresa disponível
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </div>

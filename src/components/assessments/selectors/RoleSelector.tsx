@@ -24,9 +24,16 @@ export function RoleSelector({
 }: RoleSelectorProps) {
   const { roles, isLoading } = useRoles();
 
-  // Filter roles by sector
+  // Filter roles by sector and ensure valid data
   const filteredRoles = selectedSector
-    ? roles.filter(role => role.sectorId === selectedSector)
+    ? roles.filter(role => 
+        role && 
+        role.sectorId === selectedSector &&
+        role.id && 
+        role.id.toString().trim() !== "" &&
+        role.name && 
+        role.name.trim() !== ""
+      )
     : [];
 
   if (isLoading) {
@@ -42,7 +49,7 @@ export function RoleSelector({
     <div className="space-y-2">
       <Label htmlFor="role">Função</Label>
       <Select
-        value={selectedRole || undefined}
+        value={selectedRole || "no-role-selected"}
         onValueChange={onRoleChange}
         disabled={!selectedSector}
       >
@@ -50,19 +57,17 @@ export function RoleSelector({
           <SelectValue placeholder="Selecione uma função" />
         </SelectTrigger>
         <SelectContent>
-          {filteredRoles.map((role) => {
-            const roleId = role.id || `role-${role.name?.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-            // Add validation to ensure we never pass empty strings
-            if (!roleId || roleId.trim() === '') {
-              console.error('Empty role ID detected:', role);
-              return null;
-            }
-            return (
-              <SelectItem key={roleId} value={roleId}>
-                {role.name || 'Função sem nome'}
+          {filteredRoles.length > 0 ? (
+            filteredRoles.map((role) => (
+              <SelectItem key={role.id} value={String(role.id)}>
+                {role.name}
               </SelectItem>
-            );
-          }).filter(Boolean)}
+            ))
+          ) : (
+            <SelectItem value="no-roles-available" disabled>
+              {selectedSector ? "Nenhuma função encontrada" : "Selecione um setor primeiro"}
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
     </div>

@@ -12,6 +12,17 @@ export function DashboardCompanySelector({
 }: DashboardCompanySelectorProps) {
   if (!userCompanies || userCompanies.length <= 1) return null;
   
+  // Filter companies to ensure valid data
+  const validCompanies = userCompanies.filter(company => 
+    company && 
+    company.companyId && 
+    company.companyId.toString().trim() !== "" &&
+    company.companyName && 
+    company.companyName.trim() !== ""
+  );
+
+  if (validCompanies.length <= 1) return null;
+  
   return (
     <div className="mb-6">
       <label className="block text-sm font-medium mb-2">Selecionar empresa:</label>
@@ -20,7 +31,7 @@ export function DashboardCompanySelector({
         value={selectedCompany || ""}
         onChange={(e) => onCompanyChange(e.target.value)}
       >
-        {userCompanies.map((company) => (
+        {validCompanies.map((company) => (
           <option key={company.companyId} value={company.companyId}>
             {company.companyName}
           </option>
