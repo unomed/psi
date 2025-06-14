@@ -34,7 +34,7 @@ export function ReportFilters({
 }: ReportFiltersProps) {
   // Mock data - em uma aplicação real, isso viria de uma API
   const sectors = [
-    { id: 'all', name: 'Todos os Setores' },
+    { id: 'all-sectors', name: 'Todos os Setores' },
     { id: 'production', name: 'Produção' },
     { id: 'admin', name: 'Administrativo' },
     { id: 'it', name: 'TI' },
@@ -43,7 +43,7 @@ export function ReportFilters({
   ];
   
   const roles = [
-    { id: 'all', name: 'Todas as Funções' },
+    { id: 'all-roles', name: 'Todas as Funções' },
     { id: 'manager', name: 'Gerente' },
     { id: 'analyst', name: 'Analista' },
     { id: 'operator', name: 'Operador' },
@@ -60,18 +60,25 @@ export function ReportFilters({
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
               <Select 
-                value={selectedCompany || ""} 
+                value={selectedCompany || "default-company"} 
                 onValueChange={onCompanyChange}
               >
                 <SelectTrigger id="company">
                   <SelectValue placeholder="Selecione uma empresa" />
                 </SelectTrigger>
                 <SelectContent>
-                  {userCompanies.map(company => (
-                    <SelectItem key={company.companyId} value={company.companyId}>
-                      {company.companyName}
-                    </SelectItem>
-                  ))}
+                  {userCompanies.map(company => {
+                    const companyId = company.companyId || `company-fallback-${Date.now()}`;
+                    if (!companyId || companyId.trim() === '') {
+                      console.error('Empty company ID detected in ReportFilters:', company);
+                      return null;
+                    }
+                    return (
+                      <SelectItem key={companyId} value={companyId}>
+                        {company.companyName || 'Empresa sem nome'}
+                      </SelectItem>
+                    );
+                  }).filter(Boolean)}
                 </SelectContent>
               </Select>
             </div>
@@ -87,32 +94,44 @@ export function ReportFilters({
           
           <div className="space-y-2">
             <Label htmlFor="sector">Setor</Label>
-            <Select value={selectedSector} onValueChange={setSelectedSector}>
+            <Select value={selectedSector || "all-sectors"} onValueChange={setSelectedSector}>
               <SelectTrigger id="sector">
                 <SelectValue placeholder="Todos os Setores" />
               </SelectTrigger>
               <SelectContent>
-                {sectors.map(sector => (
-                  <SelectItem key={sector.id} value={sector.id}>
-                    {sector.name}
-                  </SelectItem>
-                ))}
+                {sectors.map(sector => {
+                  if (!sector.id || sector.id.trim() === '') {
+                    console.error('Empty sector ID detected in ReportFilters:', sector);
+                    return null;
+                  }
+                  return (
+                    <SelectItem key={sector.id} value={sector.id}>
+                      {sector.name || 'Setor sem nome'}
+                    </SelectItem>
+                  );
+                }).filter(Boolean)}
               </SelectContent>
             </Select>
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="role">Função</Label>
-            <Select value={selectedRole} onValueChange={setSelectedRole}>
+            <Select value={selectedRole || "all-roles"} onValueChange={setSelectedRole}>
               <SelectTrigger id="role">
                 <SelectValue placeholder="Todas as Funções" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map(role => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
-                  </SelectItem>
-                ))}
+                {roles.map(role => {
+                  if (!role.id || role.id.trim() === '') {
+                    console.error('Empty role ID detected in ReportFilters:', role);
+                    return null;
+                  }
+                  return (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name || 'Função sem nome'}
+                    </SelectItem>
+                  );
+                }).filter(Boolean)}
               </SelectContent>
             </Select>
           </div>
