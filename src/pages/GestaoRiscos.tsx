@@ -2,11 +2,12 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users, Bot } from "lucide-react";
 import RiskAnalysisFormIntegrated from "@/components/risks/RiskAnalysisFormIntegrated";
 import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
+import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function GestaoRiscos() {
@@ -25,10 +26,14 @@ export default function GestaoRiscos() {
       </div>
 
       <Tabs defaultValue="psychosocial" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="psychosocial" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             Riscos Psicossociais
+          </TabsTrigger>
+          <TabsTrigger value="automation" className="flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            Automação
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -63,6 +68,25 @@ export default function GestaoRiscos() {
               <PsychosocialRiskAnalysis companyId={companyId} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="automation">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
+                  Processamento Automático
+                </CardTitle>
+                <CardDescription>
+                  Monitor e controle do processamento automático das avaliações psicossociais
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PsychosocialProcessingMonitor companyId={companyId} />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="analysis">

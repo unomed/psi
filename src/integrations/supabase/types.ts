@@ -1228,6 +1228,48 @@ export type Database = {
         }
         Relationships: []
       }
+      psychosocial_automation_config: {
+        Row: {
+          auto_generate_action_plans: boolean
+          auto_process_enabled: boolean
+          company_id: string
+          created_at: string
+          critical_risk_escalation: boolean | null
+          high_risk_immediate_notification: boolean | null
+          id: string
+          notification_enabled: boolean
+          notification_recipients: Json | null
+          processing_delay_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          auto_generate_action_plans?: boolean
+          auto_process_enabled?: boolean
+          company_id: string
+          created_at?: string
+          critical_risk_escalation?: boolean | null
+          high_risk_immediate_notification?: boolean | null
+          id?: string
+          notification_enabled?: boolean
+          notification_recipients?: Json | null
+          processing_delay_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          auto_generate_action_plans?: boolean
+          auto_process_enabled?: boolean
+          company_id?: string
+          created_at?: string
+          critical_risk_escalation?: boolean | null
+          high_risk_immediate_notification?: boolean | null
+          id?: string
+          notification_enabled?: boolean
+          notification_recipients?: Json | null
+          processing_delay_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       psychosocial_criteria: {
         Row: {
           category: Database["public"]["Enums"]["psychosocial_risk_category"]
@@ -1283,6 +1325,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      psychosocial_notifications: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          notification_type: string
+          priority: string
+          recipients: Json
+          risk_analysis_id: string | null
+          sent_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          notification_type: string
+          priority?: string
+          recipients?: Json
+          risk_analysis_id?: string | null
+          sent_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          priority?: string
+          recipients?: Json
+          risk_analysis_id?: string | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      psychosocial_processing_logs: {
+        Row: {
+          assessment_response_id: string
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          details: Json | null
+          error_message: string | null
+          id: string
+          processing_stage: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          assessment_response_id: string
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          processing_stage: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          assessment_response_id?: string
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          details?: Json | null
+          error_message?: string | null
+          id?: string
+          processing_stage?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
       }
       psychosocial_risk_analysis: {
         Row: {
@@ -2082,6 +2208,23 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_psychosocial_processing_stats: {
+        Args: {
+          p_company_id: string
+          p_start_date?: string
+          p_end_date?: string
+        }
+        Returns: {
+          total_processed: number
+          successful_processed: number
+          failed_processed: number
+          avg_processing_time_seconds: number
+          high_risk_found: number
+          critical_risk_found: number
+          action_plans_generated: number
+          notifications_sent: number
+        }[]
+      }
       get_risk_assessments_by_company: {
         Args: { p_company_id?: string }
         Returns: {
@@ -2125,6 +2268,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      process_psychosocial_assessment_auto: {
+        Args: { p_assessment_response_id: string }
+        Returns: Json
       }
       update_action_plan: {
         Args: { plan_id: string; plan_data: Json }

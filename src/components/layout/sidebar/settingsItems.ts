@@ -1,54 +1,78 @@
-
-import { Users, Settings as SettingsIcon, Key, Mail } from "lucide-react";
+import { 
+  Settings, 
+  Users, 
+  Mail, 
+  Server, 
+  Template, 
+  Bell, 
+  Calendar,
+  Shield,
+  CheckSquare,
+  Bot
+} from "lucide-react";
 
 export const settingsMenuItems = [
   {
-    title: "Perfil de Usuários",
+    title: "Critérios de Avaliação",
+    path: "/configuracoes/criterios",
+    icon: CheckSquare,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
+  },
+  {
+    title: "Usuários",
+    path: "/configuracoes/usuarios", 
     icon: Users,
-    path: "/configuracoes/usuarios",
-    roles: ["superadmin"],
-    permission: "edit_settings"
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
   },
   {
     title: "Permissões",
-    icon: Key,
     path: "/configuracoes/permissoes",
+    icon: Shield,
     roles: ["superadmin"],
     permission: "edit_settings"
   },
   {
-    title: "Configurações de Email",
+    title: "Email",
+    path: "/configuracoes/email",
     icon: Mail,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
+  },
+  {
+    title: "Servidor de Email",
     path: "/configuracoes/email-server",
-    roles: ["superadmin"],
-    permission: "edit_settings"
+    icon: Server,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
   },
   {
     title: "Templates de Email",
-    icon: Mail,
     path: "/configuracoes/email-templates",
-    roles: ["superadmin"],
-    permission: "edit_settings"
-  },
-  {
-    title: "Critérios de Avaliação",
-    icon: SettingsIcon,
-    path: "/configuracoes/criterios",
-    roles: ["superadmin"],
-    permission: "edit_settings"
-  },
-  {
-    title: "Periodicidade",
-    icon: SettingsIcon,
-    path: "/configuracoes/periodicidade",
-    roles: ["superadmin"],
-    permission: "edit_settings"
+    icon: Template,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
   },
   {
     title: "Notificações",
-    icon: SettingsIcon,
     path: "/configuracoes/notificacoes",
-    roles: ["superadmin"],
-    permission: "edit_settings"
+    icon: Bell,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
+  },
+  {
+    title: "Periodicidade",
+    path: "/configuracoes/periodicidade",
+    icon: Calendar,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
+  },
+  {
+    title: "Automação Psicossocial",
+    path: "/configuracoes/automacao-psicossocial",
+    icon: Bot,
+    roles: ["admin", "superadmin"],
+    permission: "view_settings"
   }
 ];

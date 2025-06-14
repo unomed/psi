@@ -9,6 +9,7 @@ import NotificationsPage from "@/pages/configuracoes/NotificationsPage";
 import PeriodicityPage from "@/pages/configuracoes/PeriodicityPage";
 import UserManagementPage from "@/pages/configuracoes/UserManagementPage";
 import PermissionsPage from "@/pages/configuracoes/PermissionsPage";
+import AutomacaoPsicossocialPage from "@/pages/configuracoes/AutomacaoPsicossocialPage";
 
 export const settingsRoutes = [
   <Route key="criterios" path="criterios" element={
@@ -49,6 +50,11 @@ export const settingsRoutes = [
   <Route key="usuarios" path="usuarios" element={
     <RouteGuard requirePermission="view_settings">
       <UserManagementPage />
+    </RouteGuard>
+  } />,
+  <Route key="automacao-psicossocial" path="automacao-psicossocial" element={
+    <RouteGuard requirePermission="view_settings">
+      <AutomacaoPsicossocialPage />
     </RouteGuard>
   } />,
   <Route key="redirect" path="" element={<Navigate to="criterios" replace />} />
