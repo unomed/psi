@@ -26,7 +26,11 @@ export function useInvoices(companyId?: string) {
         throw error;
       }
 
-      return data || [];
+      // Type cast the data to match our TypeScript interface
+      return (data || []).map(invoice => ({
+        ...invoice,
+        status: invoice.status as Invoice['status']
+      }));
     }
   });
 

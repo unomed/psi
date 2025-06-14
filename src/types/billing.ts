@@ -3,6 +3,8 @@ export type PlanType = "pay_per_assessment" | "credits" | "hybrid" | "volume";
 export type BillingStatus = "pending" | "charged" | "credited" | "failed";
 export type InvoiceStatus = "pending" | "sent" | "paid" | "overdue" | "cancelled";
 export type PaymentStatus = "pending" | "processing" | "completed" | "failed" | "cancelled";
+export type SubscriptionStatus = "active" | "suspended" | "cancelled" | "trial";
+export type BillingCycle = "monthly" | "quarterly" | "annual";
 
 export interface BillingPlan {
   id: string;
@@ -98,4 +100,37 @@ export interface CreditPurchase {
   status: PaymentStatus;
   created_at: string;
   updated_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  company_id: string;
+  plan_id: string;
+  billing_cycle: BillingCycle;
+  status: SubscriptionStatus;
+  start_date: string;
+  end_date: string | null;
+  next_billing_date: string;
+  trial_end_date: string | null;
+  monthly_amount: number;
+  created_at: string;
+  updated_at: string;
+  billing_plans?: {
+    id: string;
+    name: string;
+    type: string;
+    price_per_company: number;
+    price_per_employee: number;
+    max_companies: number;
+    max_employees: number;
+    features: string[];
+    description: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+  };
+  companies?: {
+    name: string;
+    cnpj: string;
+  };
 }

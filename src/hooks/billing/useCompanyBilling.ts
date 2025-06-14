@@ -27,7 +27,19 @@ export function useCompanyBilling(companyId?: string) {
         throw error;
       }
 
-      return data;
+      if (!data) return null;
+
+      // Type cast the data to match our TypeScript interface
+      return {
+        ...data,
+        billing_plans: data.billing_plans ? {
+          ...data.billing_plans,
+          type: data.billing_plans.type as BillingPlan['type'],
+          bulk_discounts: Array.isArray(data.billing_plans.bulk_discounts) 
+            ? data.billing_plans.bulk_discounts 
+            : []
+        } : undefined
+      };
     },
     enabled: !!companyId
   });
@@ -46,7 +58,12 @@ export function useCompanyBilling(companyId?: string) {
         throw error;
       }
 
-      return data || [];
+      // Type cast the data to match our TypeScript interface
+      return (data || []).map(plan => ({
+        ...plan,
+        type: plan.type as BillingPlan['type'],
+        bulk_discounts: Array.isArray(plan.bulk_discounts) ? plan.bulk_discounts : []
+      }));
     }
   });
 

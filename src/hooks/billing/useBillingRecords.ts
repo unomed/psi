@@ -20,7 +20,11 @@ export function useBillingRecords(companyId?: string) {
         throw error;
       }
 
-      return data || [];
+      // Type cast the data to match our TypeScript interface
+      return (data || []).map(record => ({
+        ...record,
+        billing_status: record.billing_status as AssessmentBillingRecord['billing_status']
+      }));
     },
     enabled: !!companyId
   });
