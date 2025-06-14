@@ -6,7 +6,6 @@ import Funcionarios from "@/pages/Funcionarios";
 import Setores from "@/pages/Setores";
 import Funcoes from "@/pages/Funcoes";
 import Checklists from "@/pages/Checklists";
-import Avaliacoes from "@/pages/Avaliacoes";
 import AssessmentPage from "@/pages/AssessmentPage";
 import AssessmentResults from "@/pages/AssessmentResults";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
@@ -26,7 +25,6 @@ export function MainRoutes() {
       <Route path="/setores" element={<Setores />} />
       <Route path="/funcoes" element={<Funcoes />} />
       <Route path="/checklists" element={<Checklists />} />
-      <Route path="/avaliacoes" element={<Avaliacoes />} />
       <Route path="/assessment/:templateId/:employeeId" element={<AssessmentPage />} />
       <Route path="/assessment-results" element={<AssessmentResults />} />
       <Route path="/agendamento-avaliacoes" element={<AssessmentScheduling />} />
