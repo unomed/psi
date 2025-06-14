@@ -87,14 +87,17 @@ export async function createRiskFromAssessmentResponse(
 
     if (responseError) throw responseError;
 
+    // Corrigir: response.employee é um objeto, não array
+    const employee = response.employee as any;
+
     // Criar avaliação de risco
     const { data: riskAssessment, error: riskError } = await supabase
       .from('risk_assessments')
       .insert({
         company_id: companyId,
         employee_id: response.employee_id,
-        sector_id: response.employee?.sector_id,
-        role_id: response.employee?.role_id,
+        sector_id: employee?.sector_id,
+        role_id: employee?.role_id,
         assessment_response_id: assessmentResponseId,
         severity_index: severityIndex,
         probability_index: probabilityIndex,
@@ -143,7 +146,7 @@ export async function generateActionPlanForHighRisk(riskAssessmentId: string) {
       .from('action_plans')
       .insert({
         company_id: risk.company_id,
-        title: `Plano de Mitigação - ${risk.employee?.name}`,
+        title: `Plano de Mitigação - ${(risk.employee as any)?.name}`,
         description: `Plano para mitigar risco ${risk.risk_level} identificado na avaliação psicossocial`,
         status: 'draft',
         priority: risk.risk_level.toLowerCase() === 'altíssimo' ? 'critical' : 'high',
@@ -166,29 +169,64 @@ export async function generateActionPlanForHighRisk(riskAssessmentId: string) {
 // Conectar dados de empresa, setor e função para análise de riscos
 export async function getRisksByDimension(companyId: string, dimension: 'sector' | 'role') {
   try {
-    let query = `
-      SELECT 
-        ${dimension}_id,
-        ${dimension === 'sector' ? 'sector_name' : 'role_name'} as name,
-        COUNT(*) as total_assessments,
-        COUNT(CASE WHEN risk_level IN ('alto', 'altíssimo') THEN 1 END) as high_risk_count,
-        AVG(risk_value) as avg_risk_value
-      FROM risk_assessments ra
-      LEFT JOIN sectors s ON ra.sector_id = s.id
-      LEFT JOIN roles r ON ra.role_id = r.id
-      WHERE ra.company_id = $1 AND ${dimension}_id IS NOT NULL
-      GROUP BY ${dimension}_id, ${dimension === 'sector' ? 'sector_name' : 'role_name'}
-      ORDER BY high_risk_count DESC, avg_risk_value DESC
-    `;
+    // Usar query direta ao invés de RPC execute_sql
+    let query = supabase
+      .from('risk_assessments')
+      .select(`
+        *,
+        sectors(id, name),
+        roles(id, name)
+      `)
+      .eq('company_id', companyId);
 
-    const { data, error } = await supabase.rpc('execute_sql', {
-      query: query,
-      params: [companyId]
-    });
+    if (dimension === 'sector') {
+      query = query.not('sector_id', 'is', null);
+    } else {
+      query = query.not('role_id', 'is', null);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
-    return data || [];
+    // Processar dados agrupados por dimensão
+    const grouped = data?.reduce((acc: any, item: any) => {
+      const key = dimension === 'sector' 
+        ? item.sector_id 
+        : item.role_id;
+      
+      const name = dimension === 'sector'
+        ? item.sectors?.name
+        : item.roles?.name;
+
+      if (!key || !name) return acc;
+
+      if (!acc[key]) {
+        acc[key] = {
+          id: key,
+          name: name,
+          total_assessments: 0,
+          high_risk_count: 0,
+          risk_values: []
+        };
+      }
+
+      acc[key].total_assessments++;
+      acc[key].risk_values.push(item.risk_value);
+      
+      if (['alto', 'altíssimo'].includes(item.risk_level.toLowerCase())) {
+        acc[key].high_risk_count++;
+      }
+
+      return acc;
+    }, {}) || {};
+
+    // Converter para array e calcular médias
+    return Object.values(grouped).map((item: any) => ({
+      ...item,
+      avg_risk_value: item.risk_values.reduce((sum: number, val: number) => sum + val, 0) / item.risk_values.length
+    })).sort((a: any, b: any) => b.high_risk_count - a.high_risk_count || b.avg_risk_value - a.avg_risk_value);
+
   } catch (error) {
     console.error(`Error fetching risks by ${dimension}:`, error);
     return [];
