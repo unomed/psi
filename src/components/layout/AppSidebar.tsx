@@ -17,8 +17,31 @@ import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
 
 export function AppSidebar() {
-  const { userRole } = useAuth();
-  const { hasPermission, loadingPermission } = useCheckPermission();
+  // Adicionar proteção para garantir que o AuthContext está disponível
+  let userRole: string | null = null;
+  let hasPermission: (permission: string) => boolean = () => false;
+  let loadingPermission = true;
+
+  try {
+    const authContext = useAuth();
+    userRole = authContext.userRole;
+    const permissionContext = useCheckPermission();
+    hasPermission = permissionContext.hasPermission;
+    loadingPermission = permissionContext.loadingPermission;
+  } catch (error) {
+    console.warn("[AppSidebar] AuthContext não disponível:", error);
+    // Retornar sidebar básico sem funcionalidades de auth
+    return (
+      <Sidebar className="border-r">
+        <SidebarHeader />
+        <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
+          <SidebarGroup className="flex-1">
+            <SidebarGroupLabel>Carregando...</SidebarGroupLabel>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
   // Memoize filtered menu items to prevent unnecessary recalculations
   const filteredMenuItems = useMemo(() => {
