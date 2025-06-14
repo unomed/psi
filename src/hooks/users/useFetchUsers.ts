@@ -11,10 +11,10 @@ export const useFetchUsers = () => {
       console.log("Iniciando busca de usuários...");
       
       try {
-        // Get profiles and user roles
+        // First, get all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('*, user_roles(role)');
+          .select('*');
 
         if (profilesError) {
           console.error("Erro ao buscar profiles:", profilesError);
@@ -22,16 +22,17 @@ export const useFetchUsers = () => {
           throw profilesError;
         }
 
-        console.log("Profiles encontrados:", profiles?.length || 0);
-
-        // Use our secure function to get emails
-        const userIds = profiles?.map(profile => profile.id) || [];
-        
-        if (userIds.length === 0) {
-          console.log("Nenhum usuário encontrado");
+        if (!profiles || profiles.length === 0) {
+          console.log("Nenhum profile encontrado");
           return [];
         }
 
+        console.log("Profiles encontrados:", profiles.length);
+
+        // Get user IDs for email lookup
+        const userIds = profiles.map(profile => profile.id);
+
+        // Get user emails using the secure function
         const { data: emailData, error: emailError } = await supabase
           .rpc('get_user_emails', { user_ids: userIds });
 
@@ -43,16 +44,30 @@ export const useFetchUsers = () => {
 
         console.log("Emails encontrados:", emailData?.length || 0);
 
-        // Map the data together
+        // Get user roles separately
+        const { data: userRoles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', userIds);
+
+        if (rolesError) {
+          console.error("Erro ao buscar roles:", rolesError);
+          toast.error("Erro ao carregar perfis dos usuários");
+          throw rolesError;
+        }
+
+        console.log("Roles encontrados:", userRoles?.length || 0);
+
+        // Combine the data
         const users = profiles.map(profile => {
           const emailInfo = emailData?.find(e => e.id === profile.id);
+          const roleInfo = userRoles?.find(r => r.user_id === profile.id);
+          
           return {
             id: profile.id,
             full_name: profile.full_name || '',
             email: emailInfo?.email || '',
-            role: Array.isArray(profile.user_roles) && profile.user_roles.length > 0 
-              ? profile.user_roles[0].role 
-              : 'evaluator',
+            role: roleInfo?.role || 'evaluator',
             is_active: profile.is_active,
             companies: [] // This will be populated separately if needed
           } as User;

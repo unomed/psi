@@ -1,6 +1,6 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PermissionItem {
@@ -57,23 +57,26 @@ export function useCheckPermission() {
     fetchPermissions();
   }, [userRole]);
 
-  const hasPermission = (permissionKey: string): boolean => {
-    // If superadmin, always grant access
-    if (userRole === 'superadmin') return true;
-    
-    // If permissions are still loading, deny access
-    if (loadingPermission) return false;
-    
-    console.log(`Checking permission ${permissionKey} for role ${userRole}:`, 
-      permissions ? permissions[permissionKey] : "no permissions data");
-    
-    // Check if key directly exists in permissions object
-    if (permissions && permissions[permissionKey] === true) {
-      return true;
-    }
-    
-    return false;
-  };
+  // Memoize the hasPermission function to prevent unnecessary re-renders
+  const hasPermission = useMemo(() => {
+    return (permissionKey: string): boolean => {
+      // If superadmin, always grant access
+      if (userRole === 'superadmin') return true;
+      
+      // If permissions are still loading, deny access
+      if (loadingPermission) return false;
+      
+      console.log(`Checking permission ${permissionKey} for role ${userRole}:`, 
+        permissions ? permissions[permissionKey] : "no permissions data");
+      
+      // Check if key directly exists in permissions object
+      if (permissions && permissions[permissionKey] === true) {
+        return true;
+      }
+      
+      return false;
+    };
+  }, [userRole, loadingPermission, permissions]);
 
   return {
     hasPermission,

@@ -14,10 +14,43 @@ import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem as MenuItem } from "./sidebar/SidebarMenuItem";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
+import { useMemo } from "react";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
   const { hasPermission, loadingPermission } = useCheckPermission();
+
+  // Memoize filtered menu items to prevent unnecessary recalculations
+  const filteredMenuItems = useMemo(() => {
+    if (loadingPermission || !userRole) return [];
+
+    return menuItems.filter(item => {
+      // Always allow dashboard access for authenticated users
+      if (item.permission === 'view_dashboard') {
+        return true;
+      }
+
+      // Check if user role exists and item has roles array
+      if (!item.roles || !Array.isArray(item.roles)) {
+        return false;
+      }
+      
+      // Check if user role is included in item roles
+      const hasRole = item.roles.includes(userRole);
+      
+      // If no role match, deny access
+      if (!hasRole) {
+        return false;
+      }
+      
+      // Check permission if item has a permission property
+      const hasPermissionCheck = item.permission ? hasPermission(item.permission) : true;
+      
+      console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
+      
+      return hasPermissionCheck;
+    });
+  }, [userRole, hasPermission, loadingPermission]);
 
   // Show loading state while permissions are being fetched
   if (loadingPermission) {
@@ -32,34 +65,6 @@ export function AppSidebar() {
       </Sidebar>
     );
   }
-
-  // Filter menu items based on role and permissions
-  const filteredMenuItems = menuItems.filter(item => {
-    // Always allow dashboard access for authenticated users
-    if (item.permission === 'view_dashboard') {
-      return true;
-    }
-
-    // Check if user role exists and item has roles array
-    if (!userRole || !item.roles || !Array.isArray(item.roles)) {
-      return false;
-    }
-    
-    // Check if user role is included in item roles
-    const hasRole = item.roles.includes(userRole);
-    
-    // If no role match, deny access
-    if (!hasRole) {
-      return false;
-    }
-    
-    // Check permission if item has a permission property
-    const hasPermissionCheck = item.permission ? hasPermission(item.permission) : true;
-    
-    console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
-    
-    return hasPermissionCheck;
-  });
 
   console.log(`Filtered menu items for role ${userRole}:`, filteredMenuItems.map(item => item.title));
 

@@ -1,10 +1,9 @@
 
 import { Settings } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { settingsMenuItems } from "./settingsItems";
-import { SidebarMenuItem as MenuItem } from "./SidebarMenuItem";
 import { useState, useEffect } from "react";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
 
@@ -14,6 +13,7 @@ interface SettingsSubmenuProps {
 
 export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { hasPermission, loadingPermission } = useCheckPermission();
   const isSettingsRoute = location.pathname.startsWith('/configuracoes');
   const [isOpen, setIsOpen] = useState(isSettingsRoute);
@@ -51,6 +51,11 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
 
   if (filteredSettingsItems.length === 0) return null;
 
+  const handleItemClick = (path: string) => {
+    console.log(`[SettingsSubmenu] Navegando para: ${path}`);
+    navigate(path);
+  };
+
   return (
     <div className="space-y-1">
       <SidebarMenuButton
@@ -67,12 +72,18 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
       {isOpen && (
         <div className="ml-6 mt-2 space-y-1">
           {filteredSettingsItems.map((item) => (
-            <MenuItem
-              key={item.title}
-              title={item.title}
-              icon={item.icon}
-              path={item.path}
-            />
+            <div key={item.title} className="w-full">
+              <SidebarMenuButton
+                className={cn(
+                  "flex items-center w-full text-sm",
+                  location.pathname === item.path && "bg-sidebar-accent"
+                )}
+                onClick={() => handleItemClick(item.path)}
+              >
+                <item.icon className="mr-2 h-4 w-4" />
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </div>
           ))}
         </div>
       )}
