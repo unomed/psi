@@ -1,4 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 export interface ActionTemplate {
   id: string;
@@ -34,25 +36,64 @@ export interface GeneratedActionPlan {
   compliance_requirements: string[];
 }
 
+type PsychosocialRiskCategory = Database['public']['Enums']['psychosocial_risk_category'];
+type PsychosocialExposureLevel = Database['public']['Enums']['psychosocial_exposure_level'];
+
 export class IntelligentActionPlanner {
   
   async getTemplatesForRisk(category: string, exposureLevel: string): Promise<ActionTemplate[]> {
     const { data, error } = await supabase
       .from('nr01_action_templates')
       .select('*')
-      .eq('category', category)
-      .eq('exposure_level', exposureLevel)
+      .eq('category', category as PsychosocialRiskCategory)
+      .eq('exposure_level', exposureLevel as PsychosocialExposureLevel)
       .order('is_mandatory', { ascending: false });
 
     if (error) throw error;
     
-    // Convert database rows to ActionTemplate interface
+    // Convert database rows to ActionTemplate interface with proper type conversion
     return (data || []).map(template => ({
-      ...template,
-      template_actions: Array.isArray(template.template_actions) 
-        ? template.template_actions as ActionItem[]
-        : []
+      id: template.id,
+      template_name: template.template_name,
+      category: template.category,
+      exposure_level: template.exposure_level,
+      description: template.description || '',
+      is_mandatory: template.is_mandatory || false,
+      recommended_timeline_days: template.recommended_timeline_days || 90,
+      template_actions: this.parseActionItems(template.template_actions),
+      legal_requirements: template.legal_requirements || undefined,
+      responsible_roles: this.parseResponsibleRoles(template.responsible_roles)
     }));
+  }
+
+  private parseActionItems(templateActions: any): ActionItem[] {
+    if (!templateActions) return [];
+    
+    try {
+      const actions = Array.isArray(templateActions) ? templateActions : JSON.parse(templateActions);
+      return actions.map((action: any) => ({
+        title: action.title || '',
+        description: action.description || '',
+        mandatory: action.mandatory || false,
+        timeline_days: action.timeline_days || 30,
+        responsible_role: action.responsible_role || '',
+        estimated_hours: action.estimated_hours || 0,
+        priority: action.priority || 'medium',
+        dependencies: action.dependencies || []
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  private parseResponsibleRoles(responsibleRoles: any): string[] {
+    if (!responsibleRoles) return [];
+    
+    try {
+      return Array.isArray(responsibleRoles) ? responsibleRoles : JSON.parse(responsibleRoles);
+    } catch {
+      return [];
+    }
   }
 
   async generateActionPlan(

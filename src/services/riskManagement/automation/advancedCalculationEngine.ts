@@ -1,5 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ActionItem } from "./intelligentActionPlanner";
+import type { Database } from "@/integrations/supabase/types";
 
 export interface RiskCalculationInput {
   assessmentResponseId: string;
@@ -32,6 +34,9 @@ export interface CalculationContext {
   };
   categoryWeights: Record<string, number>;
 }
+
+type PsychosocialRiskCategory = Database['public']['Enums']['psychosocial_risk_category'];
+type PsychosocialExposureLevel = Database['public']['Enums']['psychosocial_exposure_level'];
 
 export class AdvancedCalculationEngine {
   
@@ -250,19 +255,29 @@ export class AdvancedCalculationEngine {
   ): Promise<string[]> {
     const recommendations: string[] = [];
 
-    // Get template recommendations
+    // Get template recommendations with proper type casting
     const { data: templates } = await supabase
       .from('nr01_action_templates')
       .select('template_actions')
-      .eq('category', category)
-      .eq('exposure_level', exposureLevel)
+      .eq('category', category as PsychosocialRiskCategory)
+      .eq('exposure_level', exposureLevel as PsychosocialExposureLevel)
       .limit(1);
 
     if (templates?.[0]?.template_actions) {
-      const actions = Array.isArray(templates[0].template_actions) 
-        ? templates[0].template_actions as ActionItem[]
-        : [];
-      recommendations.push(...actions.map(action => action.title));
+      try {
+        const actionsData = templates[0].template_actions;
+        let actions: ActionItem[] = [];
+        
+        if (Array.isArray(actionsData)) {
+          actions = actionsData as unknown as ActionItem[];
+        } else if (typeof actionsData === 'string') {
+          actions = JSON.parse(actionsData);
+        }
+        
+        recommendations.push(...actions.map(action => action.title));
+      } catch (error) {
+        console.error('Error parsing template actions:', error);
+      }
     }
 
     // Add factor-specific recommendations

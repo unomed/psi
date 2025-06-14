@@ -13,7 +13,6 @@ export interface ProcessingJob {
   error_message?: string;
   retry_count: number;
   max_retries: number;
-  metadata: Record<string, any>;
 }
 
 export interface ProcessingStatus {
@@ -117,10 +116,19 @@ export class BackgroundProcessor {
       if (!pendingJobs?.length) return;
 
       for (const job of pendingJobs) {
-        // Convert database row to ProcessingJob interface
+        // Convert database row to ProcessingJob interface with proper typing
         const processingJob: ProcessingJob = {
-          ...job,
-          metadata: {} // Default empty metadata
+          id: job.id,
+          assessment_response_id: job.assessment_response_id,
+          company_id: job.company_id,
+          status: job.status as 'pending' | 'processing' | 'completed' | 'error' | 'cancelled',
+          priority: job.priority as 'low' | 'medium' | 'high' | 'critical',
+          created_at: job.created_at,
+          started_at: job.started_at || undefined,
+          completed_at: job.completed_at || undefined,
+          error_message: job.error_message || undefined,
+          retry_count: job.retry_count,
+          max_retries: job.max_retries
         };
         await this.processJob(processingJob);
       }
