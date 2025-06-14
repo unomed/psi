@@ -1,6 +1,7 @@
 
-import { Building2, MapPin, Phone, Mail, Briefcase, User } from "lucide-react";
+import { Building2, MapPin, Phone, Mail, Briefcase, User, Edit, Eye } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface CompanyData {
@@ -21,9 +22,12 @@ interface CompanyCardProps {
   company: CompanyData;
   className?: string;
   onClick?: () => void;
+  onEdit?: (company: CompanyData) => void;
+  onView?: (company: CompanyData) => void;
+  canEdit?: boolean;
 }
 
-export function CompanyCard({ company, className, onClick }: CompanyCardProps) {
+export function CompanyCard({ company, className, onClick, onEdit, onView, canEdit = false }: CompanyCardProps) {
   return (
     <Card 
       className={cn("cursor-pointer hover:shadow-md transition-shadow", className)} 
@@ -65,6 +69,37 @@ export function CompanyCard({ company, className, onClick }: CompanyCardProps) {
             </div>
           </div>
         </div>
+
+        {(onEdit || onView) && (
+          <div className="flex gap-2 pt-2">
+            {onView && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(company);
+                }}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Ver
+              </Button>
+            )}
+            {onEdit && canEdit && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(company);
+                }}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Editar
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

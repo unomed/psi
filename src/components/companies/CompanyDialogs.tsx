@@ -22,28 +22,29 @@ import {
 
 interface CompanyDialogsProps {
   isCreateDialogOpen: boolean;
-  setIsCreateDialogOpen: (open: boolean) => void;
+  onCreateDialogChange: (open: boolean) => void;
   isEditDialogOpen: boolean;
-  setIsEditDialogOpen: (open: boolean) => void;
-  isDeleteDialogOpen: boolean;
-  setIsDeleteDialogOpen: (open: boolean) => void;
+  onEditDialogChange: (open: boolean) => void;
+  isDeleteDialogOpen?: boolean;
+  onDeleteDialogChange?: (open: boolean) => void;
   isViewDialogOpen: boolean;
-  setIsViewDialogOpen: (open: boolean) => void;
+  onViewDialogChange: (open: boolean) => void;
   selectedCompany: CompanyData | null;
-  handleCreate: (data: Omit<CompanyData, "id">) => void;
-  handleEdit: (data: Omit<CompanyData, "id">) => void;
-  handleDelete: () => void;
+  onCompanySelect?: (company: CompanyData | null) => void;
+  handleCreate?: (data: Omit<CompanyData, "id">) => void;
+  handleEdit?: (data: Omit<CompanyData, "id">) => void;
+  handleDelete?: () => void;
 }
 
 export function CompanyDialogs({
   isCreateDialogOpen,
-  setIsCreateDialogOpen,
+  onCreateDialogChange,
   isEditDialogOpen,
-  setIsEditDialogOpen,
-  isDeleteDialogOpen,
-  setIsDeleteDialogOpen,
+  onEditDialogChange,
+  isDeleteDialogOpen = false,
+  onDeleteDialogChange,
   isViewDialogOpen,
-  setIsViewDialogOpen,
+  onViewDialogChange,
   selectedCompany,
   handleCreate,
   handleEdit,
@@ -51,7 +52,7 @@ export function CompanyDialogs({
 }: CompanyDialogsProps) {
   return (
     <>
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+      <Dialog open={isCreateDialogOpen} onOpenChange={onCreateDialogChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Cadastro de Empresa</DialogTitle>
@@ -59,11 +60,11 @@ export function CompanyDialogs({
               Preencha os dados da empresa para cadastrá-la no sistema.
             </DialogDescription>
           </DialogHeader>
-          <CompanyForm onSubmit={handleCreate} />
+          {handleCreate && <CompanyForm onSubmit={handleCreate} />}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={onEditDialogChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Empresa</DialogTitle>
@@ -71,7 +72,7 @@ export function CompanyDialogs({
               Atualize os dados da empresa.
             </DialogDescription>
           </DialogHeader>
-          {selectedCompany && (
+          {selectedCompany && handleEdit && (
             <CompanyForm 
               onSubmit={handleEdit} 
               defaultValues={selectedCompany}
@@ -82,30 +83,32 @@ export function CompanyDialogs({
 
       <CompanyViewDialog
         isOpen={isViewDialogOpen}
-        onOpenChange={setIsViewDialogOpen}
+        onOpenChange={onViewDialogChange}
         company={selectedCompany}
       />
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso excluirá permanentemente a empresa
-              e todos os dados associados a ela.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {onDeleteDialogChange && handleDelete && (
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={onDeleteDialogChange}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação não pode ser desfeita. Isso excluirá permanentemente a empresa
+                e todos os dados associados a ela.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
-export function useCompanyFilter() {
+export function useCompanyFilter(companies: any[] = []) {
   const { userRole, userCompanies } = useAuth();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [availableCompanies, setAvailableCompanies] = useState<{ companyId: string; companyName: string; }[]>([]);
@@ -26,6 +26,16 @@ export function useCompanyFilter() {
     }
   }, [userRole, userCompanies, selectedCompanyId]);
 
+  const filteredCompanies = useMemo(() => {
+    if (userRole === 'superadmin') {
+      return companies; // Superadmin sees all companies
+    } else {
+      // Other roles see only their assigned companies
+      const allowedCompanyIds = userCompanies.map(uc => uc.companyId);
+      return companies.filter(company => allowedCompanyIds.includes(company.id));
+    }
+  }, [companies, userRole, userCompanies]);
+
   const getCompanyFilter = () => {
     if (userRole === 'superadmin') {
       return selectedCompanyId; // Can be null to see all companies
@@ -42,6 +52,7 @@ export function useCompanyFilter() {
     selectedCompanyId,
     setSelectedCompanyId,
     availableCompanies,
+    filteredCompanies,
     getCompanyFilter,
     canAccessAllCompanies
   };

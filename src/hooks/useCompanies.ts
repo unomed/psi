@@ -6,7 +6,7 @@ import { toast } from "sonner";
 export function useCompanies() {
   const queryClient = useQueryClient();
 
-  const { data: companies, isLoading } = useQuery({
+  const { data: companies, isLoading, error } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -130,6 +130,7 @@ export function useCompanies() {
   return { 
     companies: companies || [], 
     isLoading,
+    error,
     createCompany,
     updateCompany,
     deleteCompany
