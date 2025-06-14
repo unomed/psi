@@ -16,7 +16,6 @@ import Funcionarios from "@/pages/Funcionarios";
 import Setores from "@/pages/Setores";
 import Funcoes from "@/pages/Funcoes";
 import Checklists from "@/pages/Checklists";
-import Avaliacoes from "@/pages/Avaliacoes";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
 import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
@@ -75,12 +74,6 @@ export function AppRoutes() {
         <Route path="templates" element={
           <RouteGuard requirePermission="view_checklists">
             <Checklists />
-          </RouteGuard>
-        } />
-        
-        <Route path="avaliacoes" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_assessments">
-            <Avaliacoes />
           </RouteGuard>
         } />
         

@@ -27,8 +27,8 @@ export async function generateAssessmentLink(
     console.log("Existing link check result:", existingLink);
 
     if (existingLink?.token) {
-      // Use the public domain instead of window.location.origin
-      const link = `https://avaliacao.unomed.med.br/avaliacao/${existingLink.token}`;
+      // Use window.location.origin for local development and production
+      const link = `${window.location.origin}/assessment/${existingLink.token}`;
       console.log("Using existing link:", link);
       return link;
     }
@@ -74,8 +74,8 @@ export async function generateAssessmentLink(
 
     console.log("Link generated successfully:", data);
 
-    // Return the complete URL with the custom domain
-    const finalLink = `https://avaliacao.unomed.med.br/avaliacao/${token}`;
+    // Return the complete URL with the current domain
+    const finalLink = `${window.location.origin}/assessment/${token}`;
     console.log("Final link generated:", finalLink);
     return finalLink;
   } catch (error) {

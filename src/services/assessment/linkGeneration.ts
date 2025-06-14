@@ -34,7 +34,7 @@ export async function generateUniqueAssessmentLink(
       return null;
     }
     
-    // Generate the public URL
+    // Generate the public URL using current domain
     const baseUrl = window.location.origin;
     const linkUrl = `${baseUrl}/assessment/${token}`;
     

@@ -1,112 +1,85 @@
 
 import { 
-  BarChart3, 
-  FileText, 
+  LayoutDashboard, 
+  Building, 
   Users, 
-  Building2, 
-  Briefcase, 
-  MapPin,
-  CheckSquare,
+  MapPin, 
+  UserCog, 
+  FileText, 
   Calendar,
-  TrendingUp,
-  Shield,
+  BarChart3, 
+  ClipboardList, 
+  Shield, 
   CreditCard,
-  UserCheck,
-  CalendarClock,
-  ClipboardList
+  Settings
 } from "lucide-react";
-import { MenuItem } from "./types";
+import type { MenuItem } from "./types";
 
 export const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
-    icon: BarChart3,
     href: "/dashboard",
-    roles: ["superadmin", "admin", "evaluator", "profissionais"],
-    permission: "view_dashboard"
+    icon: LayoutDashboard,
   },
   {
-    title: "Empresas",
-    icon: Building2,
+    title: "Empresas", 
     href: "/empresas",
-    roles: ["superadmin"],
-    permission: "view_companies"
+    icon: Building,
   },
   {
     title: "Funcionários",
+    href: "/funcionarios", 
     icon: Users,
-    href: "/funcionarios",
-    roles: ["superadmin", "admin"],
-    permission: "view_employees"
   },
   {
     title: "Setores",
-    icon: MapPin,
     href: "/setores",
-    roles: ["superadmin", "admin"],
-    permission: "view_sectors"
+    icon: MapPin,
   },
   {
     title: "Funções",
-    icon: Briefcase,
     href: "/funcoes",
-    roles: ["superadmin", "admin"],
-    permission: "view_functions"
+    icon: UserCog,
   },
   {
     title: "Templates",
-    icon: CheckSquare,
     href: "/templates",
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_checklists"
-  },
-  {
-    title: "Avaliações",
-    icon: UserCheck,
-    href: "/avaliacoes",
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_assessments"
+    icon: FileText,
   },
   {
     title: "Agendamentos",
-    icon: CalendarClock,
     href: "/agendamentos",
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_scheduling"
+    icon: Calendar,
   },
   {
     title: "Resultados",
-    icon: ClipboardList,
     href: "/resultados",
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_results"
-  },
-  {
-    title: "Gestão de Riscos",
-    icon: Shield,
-    href: "/gestao-riscos",
-    roles: ["superadmin", "admin"],
-    permission: "view_risk_management"
-  },
-  {
-    title: "Plano de Ação",
-    icon: FileText,
-    href: "/plano-acao",
-    roles: ["superadmin", "admin"],
-    permission: "view_action_plans"
+    icon: BarChart3,
   },
   {
     title: "Relatórios",
-    icon: TrendingUp,
     href: "/relatorios",
-    roles: ["superadmin", "admin"],
-    permission: "view_reports"
+    icon: ClipboardList,
+  },
+  {
+    title: "Plano de Ação",
+    href: "/plano-acao",
+    icon: ClipboardList,
+  },
+  {
+    title: "Gestão de Riscos",
+    href: "/gestao-riscos",
+    icon: Shield,
   },
   {
     title: "Faturamento",
-    icon: CreditCard,
     href: "/faturamento",
-    roles: ["superadmin"],
-    permission: "view_billing"
-  }
+    icon: CreditCard,
+  },
+  {
+    title: "Configurações",
+    href: "/configuracoes",
+    icon: Settings,
+    hasSubmenu: true,
+  },
 ];
