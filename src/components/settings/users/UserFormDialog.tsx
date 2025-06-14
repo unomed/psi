@@ -26,12 +26,13 @@ import { useCreateUser } from "@/hooks/users/useCreateUser";
 import { useUpdateUserRole } from "@/hooks/users/useUpdateUserRole";
 import { useCompanies } from "@/hooks/useCompanies";
 import { toast } from "sonner";
+import { User } from "@/hooks/users/types";
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  role: z.enum(["superadmin", "admin", "user"]),
-  company_id: z.string().optional(),
+  role: z.enum(["superadmin", "admin", "evaluator"]),
+  companyIds: z.array(z.string()).optional(),
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -39,7 +40,7 @@ type UserFormData = z.infer<typeof userFormSchema>;
 interface UserFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  user?: any;
+  user?: User;
   mode: "create" | "edit";
 }
 
@@ -54,8 +55,8 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
     defaultValues: {
       email: user?.email || "",
       full_name: user?.full_name || "",
-      role: user?.role || "user",
-      company_id: user?.company_id || "",
+      role: user?.role || "evaluator",
+      companyIds: [],
     },
   });
 
@@ -67,12 +68,12 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
           email: data.email,
           full_name: data.full_name,
           role: data.role,
-          company_id: data.company_id,
+          companyIds: data.companyIds,
         });
         toast.success("Usuário criado com sucesso!");
       } else {
         await updateUserRoleMutation.mutateAsync({
-          userId: user.id,
+          userId: user!.id,
           role: data.role
         });
         toast.success("Usuário atualizado com sucesso!");
@@ -149,7 +150,7 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="user">Usuário</SelectItem>
+                      <SelectItem value="evaluator">Avaliador</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                       <SelectItem value="superadmin">Super Administrador</SelectItem>
                     </SelectContent>
@@ -162,11 +163,11 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
             {form.watch("role") !== "superadmin" && companies && (
               <FormField
                 control={form.control}
-                name="company_id"
+                name="companyIds"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Empresa</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Empresas</FormLabel>
+                    <Select onValueChange={(value) => field.onChange([value])} defaultValue={field.value?.[0]}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma empresa" />

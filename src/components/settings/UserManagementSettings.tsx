@@ -1,32 +1,30 @@
-import { useState, useEffect } from "react";
-import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+
+import { useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useUsers } from "@/hooks/users/useUsers";
 import { UserFormDialog } from "./users/UserFormDialog";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction, AlertDialogFooter } from "@/components/ui/alert-dialog";
 import { useDeleteUser } from "@/hooks/users/useDeleteUser";
 import { toast } from "sonner";
+import { DataTable } from "@/components/ui/data-table";
+import { User } from "@/hooks/users/types";
 
 export default function UserManagementSettings() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<any | null>(null);
-  const [deletingUser, setDeletingUser] = useState<any | null>(null);
-  const { users, isLoading, refetch } = useUsers();
-  const { deleteUser } = useDeleteUser();
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const { users, isLoading } = useUsers();
+  const deleteUserMutation = useDeleteUser();
 
   const handleDeleteUser = async () => {
     if (deletingUser) {
       try {
-        await deleteUser(deletingUser.id);
+        await deleteUserMutation.mutateAsync(deletingUser.id);
         toast.success("Usuário deletado com sucesso!");
         setDeletingUser(null);
-        refetch(); // Refresh the user list
       } catch (error) {
         console.error("Erro ao deletar usuário:", error);
         toast.error("Erro ao deletar usuário");
@@ -34,37 +32,41 @@ export default function UserManagementSettings() {
     }
   };
 
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'email', headerName: 'Email', width: 200 },
-    { field: 'full_name', headerName: 'Nome Completo', width: 200 },
+  const columns: ColumnDef<User>[] = [
     {
-      field: 'role',
-      headerName: 'Função',
-      width: 120,
-      valueGetter: (params) => params.row.role,
+      accessorKey: 'id',
+      header: 'ID',
     },
     {
-      field: 'company',
-      headerName: 'Empresa',
-      width: 150,
-      valueGetter: (params) => params.row.company?.name || 'Nenhuma',
+      accessorKey: 'email',
+      header: 'Email',
     },
     {
-      field: 'actions',
-      headerName: 'Ações',
-      width: 150,
-      renderCell: (params: GridRenderCellParams) => (
+      accessorKey: 'full_name',
+      header: 'Nome Completo',
+    },
+    {
+      accessorKey: 'role',
+      header: 'Função',
+    },
+    {
+      id: 'actions',
+      header: 'Ações',
+      cell: ({ row }) => (
         <div className="flex gap-2">
           <Button size="icon" onClick={() => {
-            setEditingUser(params.row);
+            setEditingUser(row.original);
             setIsEditDialogOpen(true);
           }}>
             <Pencil className="h-4 w-4" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="icon">
+              <Button 
+                variant="destructive" 
+                size="icon"
+                onClick={() => setDeletingUser(row.original)}
+              >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
@@ -96,16 +98,13 @@ export default function UserManagementSettings() {
         </Button>
       </div>
 
-      <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={users || []}
-          columns={columns}
-          loading={isLoading}
-          getRowId={(row) => row.id}
-        />
-      </div>
+      <DataTable
+        columns={columns}
+        data={users || []}
+        isLoading={isLoading}
+      />
 
-      {/* Dialogs - using isOpen instead of open */}
+      {/* Dialogs */}
       <UserFormDialog
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}

@@ -31,10 +31,8 @@ export async function getRiskAssessments(companyId?: string) {
       .from('assessment_responses')
       .select(`
         *,
-        employees!inner(
-          id, name, company_id, role_id, sector_id,
-          roles(name),
-          sectors(name)
+        employees!assessment_responses_employee_id_fkey(
+          id, name, company_id, role_id, sector_id
         )
       `)
       .order('completed_at', { ascending: false });
@@ -44,7 +42,10 @@ export async function getRiskAssessments(companyId?: string) {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching risk assessments:", error);
+      return [];
+    }
 
     // Transform assessment responses into risk assessments format
     return data?.map(response => ({
