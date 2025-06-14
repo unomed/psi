@@ -57,7 +57,9 @@ export function useActionPlans() {
     queryKey: ['actionPlans'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_action_plans');
+        .from('action_plans')
+        .select('*')
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching action plans:', error);
@@ -72,20 +74,21 @@ export function useActionPlans() {
   const createActionPlan = useMutation({
     mutationFn: async (planData: Partial<ActionPlan>) => {
       // Se não tem company_id, usar a primeira empresa do usuário
-      const companyId = planData.company_id || (userCompanies && userCompanies.length > 0 ? userCompanies[0].id : null);
+      const companyId = planData.company_id || (userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : null);
       
       if (!companyId) {
         throw new Error('É necessário estar associado a uma empresa para criar planos de ação');
       }
 
       const { data, error } = await supabase
-        .rpc('create_action_plan', { 
-          plan_data: {
-            ...planData,
-            company_id: companyId,
-            created_by: user?.id
-          }
-        });
+        .from('action_plans')
+        .insert({
+          ...planData,
+          company_id: companyId,
+          created_by: user?.id
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error creating action plan:', error);
@@ -104,7 +107,11 @@ export function useActionPlans() {
   const updateActionPlan = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ActionPlan> & { id: string }) => {
       const { data, error } = await supabase
-        .rpc('update_action_plan', { plan_id: id, plan_data: updates });
+        .from('action_plans')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
       if (error) {
         console.error('Error updating action plan:', error);
@@ -123,7 +130,9 @@ export function useActionPlans() {
   const deleteActionPlan = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .rpc('delete_action_plan', { plan_id: id });
+        .from('action_plans')
+        .delete()
+        .eq('id', id);
 
       if (error) {
         console.error('Error deleting action plan:', error);

@@ -6,9 +6,6 @@ import { useState } from "react";
 import {
   SidebarMenuButton,
   SidebarMenuItem as SidebarMenuItemBase,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -51,22 +48,21 @@ export function SidebarMenuItem({
   if (hasSubmenu) {
     return (
       <Collapsible
-        asChild
-        value={isOpen ? "open" : "closed"}
-        onValueChange={(value) => setIsOpen(value === "open")}
+        open={isOpen}
+        onOpenChange={setIsOpen}
       >
         <SidebarMenuItemBase>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton onClick={handleClick} isActive={isCurrentPath}>
+            <SidebarMenuButton onClick={handleClick}>
               <Icon className="mr-2 h-4 w-4" />
               <span>{title}</span>
               <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub>
+            <div className="ml-4 mt-2 space-y-1">
               {children}
-            </SidebarMenuSub>
+            </div>
           </CollapsibleContent>
         </SidebarMenuItemBase>
       </Collapsible>
@@ -75,7 +71,7 @@ export function SidebarMenuItem({
 
   return (
     <SidebarMenuItemBase>
-      <SidebarMenuButton onClick={handleClick} isActive={isCurrentPath}>
+      <SidebarMenuButton onClick={handleClick}>
         <Icon className="mr-2 h-4 w-4" />
         <span>{title}</span>
       </SidebarMenuButton>
@@ -103,10 +99,8 @@ export function SidebarMenuSubItemComponent({
   const isCurrentPath = location.pathname === href || isActive;
 
   return (
-    <SidebarMenuSubItem>
-      <SidebarMenuSubButton onClick={handleClick} isActive={isCurrentPath}>
-        <span>{title}</span>
-      </SidebarMenuSubButton>
-    </SidebarMenuSubItem>
+    <div className={`px-3 py-2 text-sm cursor-pointer rounded-md hover:bg-accent ${isCurrentPath ? 'bg-accent' : ''}`} onClick={handleClick}>
+      <span>{title}</span>
+    </div>
   );
 }

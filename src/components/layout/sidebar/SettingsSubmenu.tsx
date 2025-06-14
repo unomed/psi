@@ -4,14 +4,14 @@ import { useLocation } from "react-router-dom";
 import { SidebarMenuItem, SidebarMenuSubItemComponent } from "./SidebarMenuItem";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
-import { settingsItems } from "./settingsItems";
+import { settingsMenuItems } from "./settingsItems";
 
 export function SettingsSubmenu() {
   const { userRole } = useAuth();
   const { hasPermission } = useCheckPermission();
   const location = useLocation();
 
-  const filteredItems = settingsItems.filter((item) => {
+  const filteredItems = settingsMenuItems.filter((item) => {
     const hasRole = !item.roles || item.roles.includes(userRole!);
     const hasItemPermission = !item.permission || hasPermission(item.permission);
     
@@ -31,10 +31,10 @@ export function SettingsSubmenu() {
     >
       {filteredItems.map((item) => (
         <SidebarMenuSubItemComponent
-          key={item.href}
+          key={item.path}
           title={item.title}
-          href={item.href}
-          isActive={location.pathname === item.href}
+          href={item.path}
+          isActive={location.pathname === item.path}
         />
       ))}
     </SidebarMenuItem>

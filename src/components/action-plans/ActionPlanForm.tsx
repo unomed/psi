@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -117,8 +116,8 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
                     </FormControl>
                     <SelectContent>
                       {userCompanies?.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
+                        <SelectItem key={company.companyId} value={company.companyId}>
+                          {company.companyName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -129,6 +128,7 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
             />
           )}
 
+          
           <FormField
             control={form.control}
             name="status"
