@@ -1,4 +1,3 @@
-
 import { 
   BarChart3, 
   FileText, 
@@ -103,6 +102,14 @@ export const menuItems: MenuItem[] = [
     icon: FileText,
     href: "/plano-acao",
     path: "/plano-acao",
+    roles: ["superadmin", "admin"],
+    permission: "view_action_plans"
+  },
+  {
+    title: "Planos V2",
+    icon: FileText,
+    href: "/plano-acao-v2",
+    path: "/plano-acao-v2", 
     roles: ["superadmin", "admin"],
     permission: "view_action_plans"
   },
