@@ -8,7 +8,6 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
   // Fetch all companies when component mounts
   useEffect(() => {
@@ -26,13 +25,6 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
         } else if (data) {
           console.log("[useCompanySelection] Empresas carregadas:", data.length);
           setCompanies(data);
-          
-          // If user is Super Admin, select all companies automatically
-          if (user?.role === 'superadmin') {
-            console.log("[useCompanySelection] Usuário é superadmin, selecionando todas as empresas");
-            setSelectedCompanies(data.map(c => c.id));
-            form.setValue('companyIds', data.map(c => c.id));
-          }
         }
       } catch (error) {
         console.error('[useCompanySelection] Erro inesperado ao carregar empresas:', error);
@@ -41,7 +33,7 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
     };
 
     fetchCompanies();
-  }, [user?.role, form]);
+  }, []);
 
   // Fetch user's current company assignments when editing
   useEffect(() => {
@@ -71,16 +63,29 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
 
       fetchUserCompanies();
     }
-  }, [user, form]);
+  }, [user?.id, form]);
+
+  // Watch role changes and auto-select all companies for superadmin
+  useEffect(() => {
+    const role = form.watch('role');
+    if (role === 'superadmin' && companies.length > 0) {
+      console.log("[useCompanySelection] Usuário é superadmin, selecionando todas as empresas");
+      const allCompanyIds = companies.map(c => c.id);
+      setSelectedCompanies(allCompanyIds);
+      form.setValue('companyIds', allCompanyIds);
+    }
+  }, [form.watch('role'), companies, form]);
 
   const handleToggleCompany = (companyId: string) => {
-    let updatedCompanies: string[];
+    const currentRole = form.getValues('role');
     
     // Se o papel for superadmin, não permitir desmarcar empresas
-    if (form.getValues('role') === 'superadmin') {
+    if (currentRole === 'superadmin') {
       toast.info('Super Admin tem acesso a todas as empresas por padrão');
       return;
     }
+    
+    let updatedCompanies: string[];
     
     if (selectedCompanies.includes(companyId)) {
       updatedCompanies = selectedCompanies.filter(id => id !== companyId);
@@ -105,7 +110,5 @@ export const useCompanySelection = (user: any, form: ReturnType<typeof useForm>)
     searchQuery,
     setSearchQuery,
     handleToggleCompany,
-    error,
-    setError
   };
 };

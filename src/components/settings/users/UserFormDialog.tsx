@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,6 +20,7 @@ import { User } from "@/hooks/users/types";
 import { BasicUserInfo } from "./form-sections/BasicUserInfo";
 import { CompanySection } from "./form-sections/CompanySection";
 import { UserFormData } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -50,9 +51,50 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
     },
   });
 
+  // Carregar empresas do usuário quando em modo de edição
+  useEffect(() => {
+    if (mode === "edit" && user?.id && isOpen) {
+      const loadUserCompanies = async () => {
+        try {
+          console.log("[UserFormDialog] Carregando empresas do usuário:", user.id);
+          const { data, error } = await supabase
+            .from('user_companies')
+            .select('company_id')
+            .eq('user_id', user.id);
+          
+          if (error) {
+            console.error('[UserFormDialog] Erro ao carregar empresas:', error);
+          } else if (data) {
+            const companyIds = data.map(item => item.company_id);
+            console.log("[UserFormDialog] Empresas carregadas:", companyIds);
+            form.setValue('companyIds', companyIds);
+          }
+        } catch (error) {
+          console.error('[UserFormDialog] Erro inesperado:', error);
+        }
+      };
+
+      loadUserCompanies();
+    }
+  }, [mode, user?.id, isOpen, form]);
+
+  // Reset form quando o dialog abre/fecha ou o usuário muda
+  useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        email: user?.email || "",
+        full_name: user?.full_name || "",
+        role: user?.role || "evaluator",
+        companyIds: [],
+      });
+    }
+  }, [isOpen, user, form]);
+
   const onSubmit = async (data: UserFormData) => {
     setIsSubmitting(true);
     try {
+      console.log("[UserFormDialog] Dados do formulário:", data);
+      
       if (mode === "create") {
         await createUserMutation.mutateAsync({
           email: data.email,
@@ -97,7 +139,7 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <BasicUserInfo form={form} mode={mode} />
-            <CompanySection form={form} />
+            <CompanySection form={form} user={user} />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>

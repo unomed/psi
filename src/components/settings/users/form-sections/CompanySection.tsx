@@ -1,20 +1,32 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
-import { useCompanies } from "@/hooks/useCompanies";
 import { UserFormData } from "../types";
+import { CompanySelection } from "./CompanySelection";
+import { useCompanySelection } from "@/hooks/users/useCompanySelection";
 
 interface CompanySectionProps {
   form: UseFormReturn<UserFormData>;
+  user?: any;
 }
 
-export function CompanySection({ form }: CompanySectionProps) {
-  const { companies } = useCompanies();
+export function CompanySection({ form, user }: CompanySectionProps) {
   const role = form.watch("role");
+  
+  const {
+    companies,
+    selectedCompanies,
+    searchQuery,
+    setSearchQuery,
+    handleToggleCompany,
+  } = useCompanySelection(user, form);
 
-  if (role === "superadmin" || !companies) {
-    return null;
+  if (role === "superadmin") {
+    return (
+      <div className="text-sm text-muted-foreground p-3 bg-muted rounded">
+        Super Administradores têm acesso a todas as empresas automaticamente.
+      </div>
+    );
   }
 
   return (
@@ -23,31 +35,13 @@ export function CompanySection({ form }: CompanySectionProps) {
       name="companyIds"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Empresas</FormLabel>
-          <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-3">
-            {companies.map((company) => (
-              <div key={company.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`company-${company.id}`}
-                  checked={field.value?.includes(company.id) || false}
-                  onCheckedChange={(checked) => {
-                    const currentValues = field.value || [];
-                    if (checked) {
-                      field.onChange([...currentValues, company.id]);
-                    } else {
-                      field.onChange(currentValues.filter(id => id !== company.id));
-                    }
-                  }}
-                />
-                <label
-                  htmlFor={`company-${company.id}`}
-                  className="text-sm cursor-pointer"
-                >
-                  {company.name}
-                </label>
-              </div>
-            ))}
-          </div>
+          <CompanySelection
+            companies={companies}
+            selectedCompanies={selectedCompanies}
+            onToggleCompany={handleToggleCompany}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
           <FormMessage />
         </FormItem>
       )}
