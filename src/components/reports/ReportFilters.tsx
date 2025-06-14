@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +10,7 @@ import {
 import { SafeSelect } from "@/components/ui/SafeSelect";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Dispatch, SetStateAction } from "react";
-import { CompanyAccess } from "@/hooks/useUserRole"; // This hook might not exist or be correctly named if useUserRole is not in the context
+import { CompanyAccess } from "@/hooks/useUserRole";
 import { DateRange } from "@/types/date";
 
 interface ReportCompany {
@@ -28,7 +27,7 @@ interface ReportFiltersProps {
   setSelectedRole: (role: string) => void;
   selectedCompany?: string | null;
   onCompanyChange?: (value: string) => void;
-  userCompanies?: CompanyAccess[]; // Ensure CompanyAccess is correctly defined and imported
+  userCompanies?: CompanyAccess[];
   userRole?: string | null;
 }
 
@@ -65,8 +64,8 @@ export function ReportFilters({
 
   // Prepare company data for SafeSelect
   const companiesForSelect: ReportCompany[] = (userCompanies || []).map(c => ({
-    companyId: c.companyId, // This will be the value
-    companyName: c.companyName // This will be the label
+    companyId: c.companyId,
+    companyName: c.companyName
   }));
 
   return (
@@ -76,8 +75,7 @@ export function ReportFilters({
           {onCompanyChange && (
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
-              {/* Corrected syntax for SafeSelect generic type */}
-              <SafeSelect<ReportCompany>
+              <SafeSelect
                 data={companiesForSelect}
                 value={selectedCompany}
                 onChange={onCompanyChange}
@@ -105,7 +103,7 @@ export function ReportFilters({
               </SelectTrigger>
               <SelectContent>
                 {sectors.map(sector => (
-                  <SelectItem key={sector.id} value={sector.id}> {/* Static, ID is guaranteed non-empty by filter */}
+                  <SelectItem key={sector.id} value={sector.id}>
                     {sector.name}
                   </SelectItem>
                 ))}
@@ -121,7 +119,7 @@ export function ReportFilters({
               </SelectTrigger>
               <SelectContent>
                 {roles.map(role => (
-                  <SelectItem key={role.id} value={role.id}> {/* Static, ID is guaranteed non-empty by filter */}
+                  <SelectItem key={role.id} value={role.id}>
                     {role.name}
                   </SelectItem>
                 ))}
