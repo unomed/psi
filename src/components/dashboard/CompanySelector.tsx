@@ -2,7 +2,14 @@
 import { SafeSelect } from "@/components/ui/SafeSelect"; // Import SafeSelect
 import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { Building2 } from "lucide-react";
-import { SelectItem } from "@/components/ui/select"; // Keep for "Todas as empresas"
+// Added missing imports for Select, SelectTrigger, SelectValue, SelectContent
+import { 
+  Select, 
+  SelectTrigger, 
+  SelectValue, 
+  SelectContent, 
+  SelectItem 
+} from "@/components/ui/select"; 
 
 interface CompanyFilterItem { // Define a type for availableCompanies items
   companyId: string;

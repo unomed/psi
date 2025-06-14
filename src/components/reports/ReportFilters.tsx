@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,7 +11,7 @@ import {
 import { SafeSelect } from "@/components/ui/SafeSelect";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Dispatch, SetStateAction } from "react";
-import { CompanyAccess } from "@/hooks/useUserRole";
+import { CompanyAccess } from "@/hooks/useUserRole"; // This hook might not exist or be correctly named if useUserRole is not in the context
 import { DateRange } from "@/types/date";
 
 interface ReportCompany {
@@ -27,7 +28,7 @@ interface ReportFiltersProps {
   setSelectedRole: (role: string) => void;
   selectedCompany?: string | null;
   onCompanyChange?: (value: string) => void;
-  userCompanies?: CompanyAccess[];
+  userCompanies?: CompanyAccess[]; // Ensure CompanyAccess is correctly defined and imported
   userRole?: string | null;
 }
 
@@ -75,6 +76,7 @@ export function ReportFilters({
           {onCompanyChange && (
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
+              {/* Corrected syntax for SafeSelect generic type */}
               <SafeSelect<ReportCompany>
                 data={companiesForSelect}
                 value={selectedCompany}
