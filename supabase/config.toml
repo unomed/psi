@@ -26,3 +26,6 @@ verify_jwt = true
 
 [functions.send-supabase-email]
 verify_jwt = true
+
+[functions.send-email-resend]
+verify_jwt = true

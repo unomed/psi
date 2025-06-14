@@ -211,7 +211,6 @@ export async function markLinkAsUsed(token: string): Promise<void> {
   }
 }
 
-// New function to delete assessment
 export async function deleteAssessment(assessmentId: string): Promise<void> {
   try {
     console.log("Deleting assessment:", assessmentId);
@@ -235,7 +234,7 @@ export async function deleteAssessment(assessmentId: string): Promise<void> {
   }
 }
 
-// Updated sendAssessmentEmail function
+// Updated sendAssessmentEmail function using Resend
 export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
   try {
     console.log("Sending email for assessment:", assessmentId);
@@ -289,9 +288,9 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
       console.log("Assessment link generated successfully");
     }
     
-    console.log("Calling send-supabase-email edge function...");
-    // Call the new Supabase email function
-    const { data, error } = await supabase.functions.invoke('send-supabase-email', {
+    console.log("Calling send-email-resend edge function...");
+    // Call the new Resend email function
+    const { data, error } = await supabase.functions.invoke('send-email-resend', {
       body: {
         employeeId: assessment.employee_id,
         employeeName: assessment.employee_name || employee.name,
@@ -304,7 +303,7 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
     });
 
     if (error) {
-      console.error("Error calling send-supabase-email function:", error);
+      console.error("Error calling send-email-resend function:", error);
       toast.error(`Erro ao enviar email: ${error.message}`);
       throw new Error(`Erro ao enviar email: ${error.message}`);
     }
@@ -315,7 +314,7 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
       throw new Error(data?.error || "Falha ao enviar email");
     }
     
-    console.log("Assessment email sent successfully");
+    console.log("Assessment email sent successfully via Resend");
     toast.success("Email enviado com sucesso!");
     
   } catch (error) {
