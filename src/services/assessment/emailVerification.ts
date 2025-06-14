@@ -85,3 +85,12 @@ export async function testEmailConnection(): Promise<boolean> {
     return false;
   }
 }
+
+export function isDevelopmentMode(): boolean {
+  // Check various indicators that we're in development
+  return window.location.hostname === 'localhost' ||
+         window.location.hostname === '127.0.0.1' ||
+         window.location.hostname.includes('.lovableproject.com') ||
+         window.location.hostname.includes('ngrok.io') ||
+         process?.env?.NODE_ENV === 'development';
+}

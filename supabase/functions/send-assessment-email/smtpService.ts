@@ -17,8 +17,83 @@ export interface EmailContent {
   text?: string;
 }
 
-export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent): Promise<boolean> {
-  console.log('=== SMTP SERVICE STARTED ===');
+// Check if we're in development mode
+function isDevelopmentMode(): boolean {
+  const isDev = Deno.env.get('ENVIRONMENT') === 'development' || 
+               Deno.env.get('DENO_DEPLOYMENT_ID') === undefined;
+  console.log('Environment check:', {
+    ENVIRONMENT: Deno.env.get('ENVIRONMENT'),
+    DENO_DEPLOYMENT_ID: Deno.env.get('DENO_DEPLOYMENT_ID'),
+    isDevelopment: isDev
+  });
+  return isDev;
+}
+
+// Test SMTP connectivity before attempting to send
+async function testSMTPConnectivity(config: SMTPConfig): Promise<boolean> {
+  console.log('Testing SMTP connectivity...');
+  
+  try {
+    const connection = await Deno.connect({
+      hostname: config.server,
+      port: config.port,
+    });
+    
+    console.log('SMTP connectivity test successful');
+    connection.close();
+    return true;
+  } catch (error) {
+    console.error('SMTP connectivity test failed:', error);
+    return false;
+  }
+}
+
+// Try alternative SMTP configurations
+async function tryAlternativeConfigs(config: SMTPConfig, email: EmailContent): Promise<boolean> {
+  console.log('Trying alternative SMTP configurations...');
+  
+  // Try port 587 with STARTTLS
+  if (config.port === 465) {
+    console.log('Trying port 587 with STARTTLS...');
+    const altConfig = { ...config, port: 587, useTLS: true };
+    const connected = await testSMTPConnectivity(altConfig);
+    if (connected) {
+      return await sendEmailViaSMTPDirect(altConfig, email);
+    }
+  }
+  
+  // Try port 25 without TLS
+  if (config.port !== 25) {
+    console.log('Trying port 25 without TLS...');
+    const altConfig = { ...config, port: 25, useTLS: false };
+    const connected = await testSMTPConnectivity(altConfig);
+    if (connected) {
+      return await sendEmailViaSMTPDirect(altConfig, email);
+    }
+  }
+  
+  return false;
+}
+
+// Simulate email sending in development
+function simulateEmailSend(config: SMTPConfig, email: EmailContent): boolean {
+  console.log('=== DEVELOPMENT MODE: Simulating email send ===');
+  console.log('Email that would be sent:', {
+    from: `${config.senderName} <${config.senderEmail}>`,
+    to: email.to,
+    subject: email.subject,
+    server: config.server,
+    port: config.port,
+    htmlPreview: email.html.substring(0, 200) + '...'
+  });
+  
+  console.log('Email simulation completed successfully');
+  return true;
+}
+
+// Direct SMTP sending implementation
+async function sendEmailViaSMTPDirect(config: SMTPConfig, email: EmailContent): Promise<boolean> {
+  console.log('=== DIRECT SMTP SENDING ===');
   console.log('SMTP Configuration:', {
     server: config.server,
     port: config.port,
@@ -70,18 +145,23 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
     console.log('Email message prepared, size:', fullMessage.length, 'characters');
 
     console.log('Attempting to connect to SMTP server...');
-    // Conectar ao servidor SMTP
-    const connection = await Deno.connect({
-      hostname: config.server,
-      port: config.port,
-    });
+    // Conectar ao servidor SMTP com timeout
+    const connection = await Promise.race([
+      Deno.connect({
+        hostname: config.server,
+        port: config.port,
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      )
+    ]) as Deno.TcpConn;
 
     console.log('Connected to SMTP server successfully');
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
 
-    // Função para enviar comando e ler resposta
+    // Função para enviar comando e ler resposta com timeout
     async function sendCommand(command: string): Promise<string> {
       const logCommand = command.replace(/PASS.*/, 'PASS [HIDDEN]').replace(/AUTH LOGIN.*/, 'AUTH LOGIN [HIDDEN]');
       console.log('SMTP Command:', logCommand);
@@ -89,7 +169,13 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
       await connection.write(encoder.encode(command + '\r\n'));
       
       const buffer = new Uint8Array(1024);
-      const bytesRead = await connection.read(buffer);
+      const bytesRead = await Promise.race([
+        connection.read(buffer),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Read timeout')), 5000)
+        )
+      ]) as number | null;
+      
       const response = decoder.decode(buffer.subarray(0, bytesRead || 0));
       console.log('SMTP Response:', response.trim());
       return response;
@@ -160,7 +246,13 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
       await connection.write(encoder.encode(fullMessage + '\r\n.\r\n'));
       
       const dataBuffer = new Uint8Array(1024);
-      const dataBytesRead = await connection.read(dataBuffer);
+      const dataBytesRead = await Promise.race([
+        connection.read(dataBuffer),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Data read timeout')), 10000)
+        )
+      ]) as number | null;
+      
       const dataResponse = decoder.decode(dataBuffer.subarray(0, dataBytesRead || 0));
       console.log('DATA Response:', dataResponse.trim());
       
@@ -184,28 +276,39 @@ export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent):
     }
 
   } catch (error) {
-    console.error('=== SMTP SENDING ERROR ===');
+    console.error('=== DIRECT SMTP SENDING ERROR ===');
     console.error('Error type:', error.constructor.name);
     console.error('Error message:', error.message);
     console.error('Error details:', error);
     
-    // Check if we're in development mode
-    const isDevelopment = Deno.env.get('ENVIRONMENT') === 'development' || 
-                         Deno.env.get('DENO_DEPLOYMENT_ID') === undefined;
-    
-    if (isDevelopment) {
-      console.log('=== DEVELOPMENT MODE FALLBACK ===');
-      console.log('SMTP failed, but simulating success in development mode');
-      console.log('Email that would have been sent:', {
-        to: email.to,
-        subject: email.subject,
-        from: `${config.senderName} <${config.senderEmail}>`,
-        htmlPreview: email.html.substring(0, 200) + '...'
-      });
-      return true;
-    }
-    
-    // In production, return false to indicate failure
     return false;
   }
+}
+
+export async function sendEmailViaSMTP(config: SMTPConfig, email: EmailContent): Promise<boolean> {
+  console.log('=== SMTP SERVICE STARTED ===');
+  
+  // Check if we're in development mode
+  if (isDevelopmentMode()) {
+    return simulateEmailSend(config, email);
+  }
+  
+  console.log('Production mode - attempting real SMTP send');
+  
+  // Test connectivity first
+  const canConnect = await testSMTPConnectivity(config);
+  if (!canConnect) {
+    console.warn('Initial connectivity test failed, trying alternatives...');
+    return await tryAlternativeConfigs(config, email);
+  }
+  
+  // Try direct SMTP sending
+  const directSuccess = await sendEmailViaSMTPDirect(config, email);
+  if (directSuccess) {
+    return true;
+  }
+  
+  // If direct sending fails, try alternatives
+  console.warn('Direct SMTP sending failed, trying alternatives...');
+  return await tryAlternativeConfigs(config, email);
 }

@@ -211,32 +211,15 @@ serve(async (req) => {
     
     console.log('Step 7: Sending email via SMTP...');
     
-    // Check if we're in development mode
-    const isDevelopment = Deno.env.get('ENVIRONMENT') === 'development' || 
-                         Deno.env.get('DENO_DEPLOYMENT_ID') === undefined;
+    // Send email via SMTP (with development fallback handled inside the service)
+    const emailSent = await sendEmailViaSMTP(smtpConfig, emailContent);
     
-    if (isDevelopment) {
-      console.log('=== DEVELOPMENT MODE: Simulating email send ===');
-      console.log('Email that would be sent:', {
-        from: `${smtpConfig.senderName} <${smtpConfig.senderEmail}>`,
-        to: emailContent.to,
-        subject: emailContent.subject,
-        bodyPreview: emailContent.html.substring(0, 200) + '...'
-      });
-      
-      // Simulate successful sending in development
-      console.log('Email simulation completed successfully');
-    } else {
-      // Send email via SMTP in production
-      const emailSent = await sendEmailViaSMTP(smtpConfig, emailContent);
-      
-      if (!emailSent) {
-        console.error('SMTP sending failed');
-        throw new Error('Falha ao enviar email via SMTP');
-      }
-      
-      console.log('Email sent successfully via SMTP');
+    if (!emailSent) {
+      console.error('SMTP sending failed completely');
+      throw new Error('Falha ao enviar email via SMTP - todas as tentativas falharam');
     }
+    
+    console.log('Email processing completed successfully');
     
     console.log('Step 8: Updating database records...');
     // Update the assessment status in scheduled_assessments
@@ -277,10 +260,13 @@ serve(async (req) => {
     
     console.log('=== EMAIL SENDING PROCESS COMPLETED SUCCESSFULLY ===');
     
+    const isDevelopment = Deno.env.get('ENVIRONMENT') === 'development' || 
+                         Deno.env.get('DENO_DEPLOYMENT_ID') === undefined;
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Email enviado com sucesso para ${requestData.employeeEmail}`,
+        message: `Email ${isDevelopment ? 'simulado' : 'enviado'} com sucesso para ${requestData.employeeEmail}`,
         emailSent: true,
         isDevelopment
       }),
