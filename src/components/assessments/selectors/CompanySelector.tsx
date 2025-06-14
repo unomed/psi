@@ -4,8 +4,8 @@ import { useCompanies } from "@/hooks/useCompanies";
 import { useAuth } from "@/contexts/AuthContext";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SafeSelect } from "@/components/ui/SafeSelect"; // Import SafeSelect
-import type { Company } from "@/types/company"; // Assuming Company type exists
+import { SafeSelect } from "@/components/ui/SafeSelect";
+import type { Company } from "@/types/company";
 
 interface CompanySelectorProps {
   selectedCompany: string | null;
@@ -25,9 +25,6 @@ export function CompanySelector({
         (authUserCompanies || []).some(userCompany => userCompany.companyId === company.id)
       );
 
-  // The SafeSelect component will handle internal filtering for valid ID and name.
-  // We just need to pass the potentially raw data.
-
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -40,14 +37,14 @@ export function CompanySelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>
-      <SafeSelect<Company> // Specify the type for SafeSelect
+      <SafeSelect
         data={companiesForUser}
         value={selectedCompany}
         onChange={onCompanyChange}
         placeholder="Selecione uma empresa"
-        valueField="id" // Default, but explicit
-        labelField="name" // Default, but explicit
-        className="w-full" // Added for consistent styling if needed
+        valueField="id"
+        labelField="name"
+        className="w-full"
       />
     </div>
   );

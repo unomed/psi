@@ -4,7 +4,7 @@ import { useRoles } from "@/hooks/useRoles";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SafeSelect } from "@/components/ui/SafeSelect";
-import type { Role } from "@/types/role"; // Assuming Role type exists
+import type { Role } from "@/types/role";
 
 interface RoleSelectorProps {
   selectedSector: string | null;
@@ -35,7 +35,7 @@ export function RoleSelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="role">Função</Label>
-      <SafeSelect<Role>
+      <SafeSelect
         data={filteredRoles}
         value={selectedRole}
         onChange={onRoleChange}
