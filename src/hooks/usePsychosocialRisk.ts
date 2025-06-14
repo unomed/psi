@@ -62,7 +62,7 @@ export function usePsychosocialRisk(companyId?: string) {
   const targetCompanyId = companyId || (userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : null);
 
   // Buscar critérios psicossociais
-  const { data: criteria, isLoading: criteriaLoading } = useQuery({
+  const { data: criteria, isLoading: criteriaLoading, error: criteriaError } = useQuery({
     queryKey: ['psychosocialCriteria', targetCompanyId],
     queryFn: async () => {
       let query = supabase
@@ -89,7 +89,7 @@ export function usePsychosocialRisk(companyId?: string) {
   });
 
   // Buscar análises de risco psicossocial
-  const { data: riskAnalyses, isLoading: analysesLoading } = useQuery({
+  const { data: riskAnalyses, isLoading: analysesLoading, error: analysesError } = useQuery({
     queryKey: ['psychosocialRiskAnalyses', targetCompanyId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -113,7 +113,7 @@ export function usePsychosocialRisk(companyId?: string) {
   });
 
   // Buscar templates de ação NR-01
-  const { data: actionTemplates, isLoading: templatesLoading } = useQuery({
+  const { data: actionTemplates, isLoading: templatesLoading, error: templatesError } = useQuery({
     queryKey: ['nr01ActionTemplates'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -216,11 +216,15 @@ export function usePsychosocialRisk(companyId?: string) {
     }
   });
 
+  // Combine all errors
+  const error = criteriaError || analysesError || templatesError;
+
   return {
     criteria: criteria || [],
     riskAnalyses: riskAnalyses || [],
     actionTemplates: actionTemplates || [],
     isLoading: criteriaLoading || analysesLoading || templatesLoading,
+    error,
     calculatePsychosocialRisk,
     generateNR01ActionPlan,
     createRiskAnalysis

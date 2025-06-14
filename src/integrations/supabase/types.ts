@@ -1373,6 +1373,51 @@ export type Database = {
           },
         ]
       }
+      psychosocial_risk_config: {
+        Row: {
+          auto_generate_plans: boolean
+          company_id: string
+          created_at: string
+          id: string
+          notification_enabled: boolean
+          periodicidade_dias: number
+          prazo_acao_alta_dias: number
+          prazo_acao_critica_dias: number
+          threshold_high: number
+          threshold_low: number
+          threshold_medium: number
+          updated_at: string
+        }
+        Insert: {
+          auto_generate_plans?: boolean
+          company_id: string
+          created_at?: string
+          id?: string
+          notification_enabled?: boolean
+          periodicidade_dias?: number
+          prazo_acao_alta_dias?: number
+          prazo_acao_critica_dias?: number
+          threshold_high?: number
+          threshold_low?: number
+          threshold_medium?: number
+          updated_at?: string
+        }
+        Update: {
+          auto_generate_plans?: boolean
+          company_id?: string
+          created_at?: string
+          id?: string
+          notification_enabled?: boolean
+          periodicidade_dias?: number
+          prazo_acao_alta_dias?: number
+          prazo_acao_critica_dias?: number
+          threshold_high?: number
+          threshold_low?: number
+          threshold_medium?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           created_at: string
