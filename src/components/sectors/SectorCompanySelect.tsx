@@ -10,12 +10,12 @@ interface SectorCompanySelectProps {
 }
 
 export function SectorCompanySelect({ companies, selectedCompany, onCompanyChange }: SectorCompanySelectProps) {
-  const validCompanies = (companies || []).filter(company => 
-    company && 
+  const validCompanies = (companies || []).filter(company =>
+    company &&
     company.id !== null &&
     company.id !== undefined &&
     String(company.id).trim() !== "" &&
-    company.name && 
+    company.name &&
     String(company.name).trim() !== ""
   );
 
@@ -28,11 +28,18 @@ export function SectorCompanySelect({ companies, selectedCompany, onCompanyChang
           </SelectTrigger>
           <SelectContent>
             {validCompanies.length > 0 ? (
-              validCompanies.map((company) => (
-                <SelectItem key={String(company.id)} value={String(company.id)}>
-                  {company.name}
-                </SelectItem>
-              ))
+              validCompanies.map((company) => {
+                const companyIdStr = String(company.id);
+                if (companyIdStr.trim() === "") {
+                  console.error("[Sectors/SectorCompanySelect] Attempting to render SelectItem with empty value for company:", company);
+                  return null;
+                }
+                return (
+                  <SelectItem key={companyIdStr} value={companyIdStr}>
+                    {company.name}
+                  </SelectItem>
+                );
+              }).filter(Boolean)
             ) : (
               <SelectItem value="no-companies-available" disabled>
                 Nenhuma empresa disponível
@@ -47,3 +54,4 @@ export function SectorCompanySelect({ companies, selectedCompany, onCompanyChang
     </div>
   );
 }
+

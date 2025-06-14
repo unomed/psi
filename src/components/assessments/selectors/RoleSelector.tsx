@@ -28,12 +28,12 @@ export function RoleSelector({
     ? (roles || []).filter(role => role.sectorId === selectedSector)
     : [];
 
-  const validRoles = baseFilteredRoles.filter(role => 
-    role && 
+  const validRoles = baseFilteredRoles.filter(role =>
+    role &&
     role.id !== null &&
     role.id !== undefined &&
     String(role.id).trim() !== "" &&
-    role.name && 
+    role.name &&
     String(role.name).trim() !== ""
   );
 
@@ -59,11 +59,18 @@ export function RoleSelector({
         </SelectTrigger>
         <SelectContent>
           {validRoles.length > 0 ? (
-            validRoles.map((role) => (
-              <SelectItem key={String(role.id)} value={String(role.id)}>
-                {role.name}
-              </SelectItem>
-            ))
+            validRoles.map((role) => {
+              const roleIdStr = String(role.id);
+              if (roleIdStr.trim() === "") {
+                console.error("[Assessments/RoleSelector] Attempting to render SelectItem with empty value for role:", role);
+                return null;
+              }
+              return (
+                <SelectItem key={roleIdStr} value={roleIdStr}>
+                  {role.name}
+                </SelectItem>
+              );
+            }).filter(Boolean)
           ) : (
             <SelectItem value="no-roles-available" disabled>
               {selectedSector ? "Nenhuma função encontrada" : "Selecione um setor primeiro"}
@@ -74,3 +81,4 @@ export function RoleSelector({
     </div>
   );
 }
+

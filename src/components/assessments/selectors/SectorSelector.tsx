@@ -23,18 +23,17 @@ export function SectorSelector({
   onSectorChange,
 }: SectorSelectorProps) {
   const { sectors, isLoading } = useSectors();
-  
+
   const baseFilteredSectors = selectedCompany
     ? (sectors || []).filter(sector => sector.companyId === selectedCompany)
-    : []; // If no company, no sectors to show from this specific filter logic, or show all if desired.
-           // For now, only company-specific.
+    : [];
 
-  const validSectors = baseFilteredSectors.filter(sector => 
-    sector && 
+  const validSectors = baseFilteredSectors.filter(sector =>
+    sector &&
     sector.id !== null &&
     sector.id !== undefined &&
     String(sector.id).trim() !== "" &&
-    sector.name && 
+    sector.name &&
     String(sector.name).trim() !== ""
   );
 
@@ -60,11 +59,18 @@ export function SectorSelector({
         </SelectTrigger>
         <SelectContent>
           {validSectors.length > 0 ? (
-            validSectors.map((sector) => (
-              <SelectItem key={String(sector.id)} value={String(sector.id)}>
-                {sector.name}
-              </SelectItem>
-            ))
+            validSectors.map((sector) => {
+              const sectorIdStr = String(sector.id);
+              if (sectorIdStr.trim() === "") {
+                console.error("[Assessments/SectorSelector] Attempting to render SelectItem with empty value for sector:", sector);
+                return null;
+              }
+              return (
+                <SelectItem key={sectorIdStr} value={sectorIdStr}>
+                  {sector.name}
+                </SelectItem>
+              );
+            }).filter(Boolean)
           ) : (
             <SelectItem value="no-sectors-available" disabled>
               {selectedCompany ? "Nenhum setor encontrado" : "Selecione uma empresa primeiro"}
@@ -75,3 +81,4 @@ export function SectorSelector({
     </div>
   );
 }
+

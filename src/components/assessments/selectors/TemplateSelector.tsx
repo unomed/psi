@@ -12,7 +12,8 @@ import { ChecklistTemplate } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface TemplateSelectorProps {
-  selectedEmployee: string | null; // Keep selectedEmployee to enable/disable
+  selectedEmployee: string | null;
+  selectedTemplateValue?: string; // Added for controlled value
   templates: ChecklistTemplate[];
   isTemplatesLoading: boolean;
   onTemplateSelect: (templateId: string) => void;
@@ -20,16 +21,17 @@ interface TemplateSelectorProps {
 
 export function TemplateSelector({
   selectedEmployee,
+  selectedTemplateValue,
   templates,
   isTemplatesLoading,
   onTemplateSelect,
 }: TemplateSelectorProps) {
-  const validTemplates = (templates || []).filter(template => 
-    template && 
+  const validTemplates = (templates || []).filter(template =>
+    template &&
     template.id !== null &&
     template.id !== undefined &&
     String(template.id).trim() !== "" &&
-    template.title && 
+    template.title &&
     String(template.title).trim() !== ""
   );
 
@@ -46,19 +48,27 @@ export function TemplateSelector({
     <div className="space-y-2">
       <Label htmlFor="template">Modelo de Avaliação</Label>
       <Select
+        value={selectedTemplateValue || "no-template-selected"}
         onValueChange={onTemplateSelect}
-        disabled={!selectedEmployee || validTemplates.length === 0} // Also disable if no valid templates
+        disabled={!selectedEmployee || validTemplates.length === 0}
       >
         <SelectTrigger id="template">
           <SelectValue placeholder="Selecione um modelo de avaliação" />
         </SelectTrigger>
         <SelectContent>
           {validTemplates.length > 0 ? (
-            validTemplates.map((template) => (
-              <SelectItem key={String(template.id)} value={String(template.id)}>
-                {template.title}
-              </SelectItem>
-            ))
+            validTemplates.map((template) => {
+              const templateIdStr = String(template.id);
+              if (templateIdStr.trim() === "") {
+                console.error("[Assessments/TemplateSelector] Attempting to render SelectItem with empty value for template:", template);
+                return null;
+              }
+              return (
+                <SelectItem key={templateIdStr} value={templateIdStr}>
+                  {template.title}
+                </SelectItem>
+              );
+            }).filter(Boolean)
           ) : (
             <SelectItem value="no-templates-available" disabled>
               Nenhum modelo encontrado
@@ -69,3 +79,4 @@ export function TemplateSelector({
     </div>
   );
 }
+

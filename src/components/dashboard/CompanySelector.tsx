@@ -4,34 +4,36 @@ import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { Building2 } from "lucide-react";
 
 export function CompanySelector() {
-  const { 
-    selectedCompanyId, 
-    setSelectedCompanyId, 
-    availableCompanies, 
-    canAccessAllCompanies 
+  const {
+    selectedCompanyId,
+    setSelectedCompanyId,
+    availableCompanies,
+    canAccessAllCompanies
   } = useCompanyFilter();
 
   // Early return if no companies available
   if (!availableCompanies || availableCompanies.length === 0) {
+    console.log("[CompanySelector] No available companies, returning null.");
     return null;
   }
 
   // Don't show selector if only one company available and user cannot access all companies
   if (availableCompanies.length === 1 && !canAccessAllCompanies()) {
+    console.log("[CompanySelector] Only one company and no access to all, returning null.");
     return null;
   }
 
   // Filter companies rigorously
-  const validCompanies = availableCompanies.filter(company => 
-    company && 
-    company.companyId !== null && 
-    company.companyId !== undefined && 
+  const validCompanies = availableCompanies.filter(company =>
+    company &&
+    company.companyId !== null &&
+    company.companyId !== undefined &&
     String(company.companyId).trim() !== "" &&
-    company.companyName && // Ensure name also exists, though not for value
+    company.companyName &&
     String(company.companyName).trim() !== ""
   );
 
-  console.log("[CompanySelector] Rendering. SelectedID:", selectedCompanyId, "Filtered companies:", validCompanies);
+  console.log("[CompanySelector] Rendering. SelectedID:", selectedCompanyId, "Initial available companies:", availableCompanies.length, "Filtered valid companies:", validCompanies.length);
 
   return (
     <div className="flex items-center gap-2 mb-4">
@@ -45,16 +47,21 @@ export function CompanySelector() {
             <SelectItem value="all-companies">Todas as empresas</SelectItem>
           )}
           {validCompanies.map((company) => {
-            // Log each company's details before creating SelectItem
-            console.log("[CompanySelector] Mapping company:", company, "Value to be used:", String(company.companyId));
+            const companyIdStr = String(company.companyId);
+            // console.log("[CompanySelector] Mapping company:", company, "Value to be used:", companyIdStr);
+            if (companyIdStr.trim() === "") {
+              console.error("[CompanySelector] CRITICAL: Filter failed. Attempting to render SelectItem with empty value. Company:", company);
+              return null; 
+            }
             return (
-              <SelectItem key={String(company.companyId)} value={String(company.companyId)}>
+              <SelectItem key={companyIdStr} value={companyIdStr}>
                 {company.companyName}
               </SelectItem>
             );
-          })}
+          }).filter(Boolean)}
         </SelectContent>
       </Select>
     </div>
   );
 }
+

@@ -35,11 +35,11 @@ interface CompanyAndSectorFieldsProps {
   sectors: Sector[];
 }
 
-export function CompanyAndSectorFields({ 
-  control, 
-  shouldShowCompanySelect, 
-  userCompanies, 
-  sectors 
+export function CompanyAndSectorFields({
+  control,
+  shouldShowCompanySelect,
+  userCompanies,
+  sectors
 }: CompanyAndSectorFieldsProps) {
   const selectedCompany = useWatch({
     control,
@@ -49,14 +49,14 @@ export function CompanyAndSectorFields({
   const validUserCompanies = (userCompanies || []).filter(company =>
     company && company.companyId && String(company.companyId).trim() !== "" && company.companyName && String(company.companyName).trim() !== ""
   );
-  
-  const validSectors = (sectors || []).filter(sector =>
+
+  const validSectorsBase = (sectors || []).filter(sector =>
     sector && sector.id && String(sector.id).trim() !== "" && sector.name && String(sector.name).trim() !== ""
   );
-  
-  const filteredSectors = selectedCompany 
-    ? validSectors.filter(sector => sector.companyId === selectedCompany)
-    : validSectors; // Show all valid sectors if no company is selected, or an empty array if validSectors is empty
+
+  const filteredSectors = selectedCompany
+    ? validSectorsBase.filter(sector => sector.companyId === selectedCompany)
+    : validSectorsBase;
 
   return (
     <>
@@ -74,11 +74,21 @@ export function CompanyAndSectorFields({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {validUserCompanies.map((company) => (
-                      <SelectItem key={String(company.companyId)} value={String(company.companyId)}>
+                  {validUserCompanies.map((company) => {
+                    const companyIdStr = String(company.companyId);
+                    if (companyIdStr.trim() === "") {
+                       console.error("[ActionPlans/CompanyAndSectorFields] Attempting to render Company SelectItem with empty value:", company);
+                      return null;
+                    }
+                    return (
+                      <SelectItem key={companyIdStr} value={companyIdStr}>
                         {company.companyName}
                       </SelectItem>
-                  ))}
+                    );
+                  }).filter(Boolean)}
+                  {validUserCompanies.length === 0 && (
+                    <SelectItem value="no-actionplan-companies-available" disabled>Nenhuma empresa disponível</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -100,11 +110,21 @@ export function CompanyAndSectorFields({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {filteredSectors.map((sector) => (
-                    <SelectItem key={String(sector.id)} value={String(sector.id)}>
+                {filteredSectors.map((sector) => {
+                   const sectorIdStr = String(sector.id);
+                    if (sectorIdStr.trim() === "") {
+                      console.error("[ActionPlans/CompanyAndSectorFields] Attempting to render Sector SelectItem with empty value:", sector);
+                      return null;
+                    }
+                  return (
+                    <SelectItem key={sectorIdStr} value={sectorIdStr}>
                       {sector.name}
                     </SelectItem>
-                ))}
+                  );
+                }).filter(Boolean)}
+                {filteredSectors.length === 0 && (
+                    <SelectItem value="no-actionplan-sectors-available" disabled>Nenhum setor disponível</SelectItem>
+                  )}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -114,3 +134,4 @@ export function CompanyAndSectorFields({
     </>
   );
 }
+

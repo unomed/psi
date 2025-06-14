@@ -28,12 +28,12 @@ export function EmployeeSelector({
     ? (employees || []).filter(emp => emp.role_id === selectedRole)
     : [];
 
-  const validEmployees = baseFilteredEmployees.filter(emp => 
-    emp && 
+  const validEmployees = baseFilteredEmployees.filter(emp =>
+    emp &&
     emp.id !== null &&
     emp.id !== undefined &&
     String(emp.id).trim() !== "" &&
-    emp.name && 
+    emp.name &&
     String(emp.name).trim() !== ""
   );
 
@@ -59,11 +59,18 @@ export function EmployeeSelector({
         </SelectTrigger>
         <SelectContent>
           {validEmployees.length > 0 ? (
-            validEmployees.map((employee) => (
-              <SelectItem key={String(employee.id)} value={String(employee.id)}>
-                {employee.name}
-              </SelectItem>
-            ))
+            validEmployees.map((employee) => {
+              const employeeIdStr = String(employee.id);
+              if (employeeIdStr.trim() === "") {
+                console.error("[Assessments/EmployeeSelector] Attempting to render SelectItem with empty value for employee:", employee);
+                return null;
+              }
+              return (
+                <SelectItem key={employeeIdStr} value={employeeIdStr}>
+                  {employee.name}
+                </SelectItem>
+              );
+            }).filter(Boolean)
           ) : (
             <SelectItem value="no-employees-available" disabled>
               {selectedRole ? "Nenhum funcionário encontrado" : "Selecione uma função primeiro"}
@@ -74,3 +81,4 @@ export function EmployeeSelector({
     </div>
   );
 }
+

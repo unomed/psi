@@ -21,24 +21,24 @@ export function CompanySelector({
   selectedCompany,
   onCompanyChange,
 }: CompanySelectorProps) {
-  const { userRole, userCompanies: authUserCompanies } = useAuth(); // Renamed to avoid conflict
+  const { userRole, userCompanies: authUserCompanies } = useAuth();
   const { companies: allCompanies, isLoading } = useCompanies();
 
-  const companiesForUser = userRole === 'superadmin' 
-    ? allCompanies 
-    : allCompanies.filter(company => 
-        authUserCompanies.some(userCompany => userCompany.companyId === company.id)
+  const companiesForUser = userRole === 'superadmin'
+    ? allCompanies
+    : (allCompanies || []).filter(company =>
+        (authUserCompanies || []).some(userCompany => userCompany.companyId === company.id)
       );
 
-  const validCompanies = (companiesForUser || []).filter(company => 
-    company && 
+  const baseValidCompanies = (companiesForUser || []).filter(company =>
+    company &&
     company.id !== null &&
     company.id !== undefined &&
     String(company.id).trim() !== "" &&
-    company.name && 
+    company.name &&
     String(company.name).trim() !== ""
   );
-  
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -59,12 +59,19 @@ export function CompanySelector({
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
-          {validCompanies.length > 0 ? (
-            validCompanies.map((company) => (
-              <SelectItem key={String(company.id)} value={String(company.id)}>
-                {company.name}
-              </SelectItem>
-            ))
+          {baseValidCompanies.length > 0 ? (
+            baseValidCompanies.map((company) => {
+              const companyIdStr = String(company.id);
+              if (companyIdStr.trim() === "") {
+                console.error("[Assessments/CompanySelector] Attempting to render SelectItem with empty value for company:", company);
+                return null;
+              }
+              return (
+                <SelectItem key={companyIdStr} value={companyIdStr}>
+                  {company.name}
+                </SelectItem>
+              );
+            }).filter(Boolean)
           ) : (
             <SelectItem value="no-companies-available" disabled>
               Nenhuma empresa disponível
@@ -75,3 +82,4 @@ export function CompanySelector({
     </div>
   );
 }
+
