@@ -75,7 +75,7 @@ export function AutomationTriggerConfig({ companyId }: AutomationTriggerConfigPr
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <LoadingSkeleton variant="card" lines={6} />
+          <LoadingSkeleton lines={6} />
         </CardContent>
       </Card>
     );

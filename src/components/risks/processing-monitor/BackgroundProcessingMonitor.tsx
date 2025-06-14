@@ -37,7 +37,7 @@ export function BackgroundProcessingMonitor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <LoadingSkeleton variant="card" lines={4} />
+          <LoadingSkeleton lines={4} />
         </CardContent>
       </Card>
     );
