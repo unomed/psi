@@ -174,6 +174,54 @@ export type Database = {
           },
         ]
       }
+      advanced_alerts: {
+        Row: {
+          alert_name: string
+          alert_type: string
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          notification_channels: Json | null
+          recipients: Json
+          trigger_conditions: Json
+          trigger_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_name: string
+          alert_type: string
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          notification_channels?: Json | null
+          recipients?: Json
+          trigger_conditions: Json
+          trigger_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_name?: string
+          alert_type?: string
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          notification_channels?: Json | null
+          recipients?: Json
+          trigger_conditions?: Json
+          trigger_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       assessment_billing_records: {
         Row: {
           amount_charged: number
@@ -716,6 +764,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dashboard_widgets: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          height: number | null
+          id: string
+          is_active: boolean | null
+          position_x: number | null
+          position_y: number | null
+          updated_at: string | null
+          user_id: string | null
+          widget_config: Json
+          widget_name: string
+          widget_type: string
+          width: number | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          is_active?: boolean | null
+          position_x?: number | null
+          position_y?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          widget_config?: Json
+          widget_name: string
+          widget_type: string
+          width?: number | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          is_active?: boolean | null
+          position_x?: number | null
+          position_y?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          widget_config?: Json
+          widget_name?: string
+          widget_type?: string
+          width?: number | null
+        }
+        Relationships: []
       }
       email_server_settings: {
         Row: {
@@ -1373,6 +1469,57 @@ export type Database = {
           },
         ]
       }
+      psychosocial_metrics: {
+        Row: {
+          calculation_date: string
+          company_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_type: string
+          metric_unit: string | null
+          metric_value: number
+          period_end: string | null
+          period_start: string | null
+          role_id: string | null
+          sector_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          calculation_date?: string
+          company_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_type: string
+          metric_unit?: string | null
+          metric_value: number
+          period_end?: string | null
+          period_start?: string | null
+          role_id?: string | null
+          sector_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          calculation_date?: string
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string
+          metric_unit?: string | null
+          metric_value?: number
+          period_end?: string | null
+          period_start?: string | null
+          role_id?: string | null
+          sector_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       psychosocial_notifications: {
         Row: {
           company_id: string
@@ -1689,6 +1836,56 @@ export type Database = {
           },
         ]
       }
+      report_history: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          error_message: string | null
+          file_url: string | null
+          generation_date: string | null
+          id: string
+          recipients_sent: Json | null
+          report_data: Json
+          report_name: string
+          scheduled_report_id: string | null
+          status: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          error_message?: string | null
+          file_url?: string | null
+          generation_date?: string | null
+          id?: string
+          recipients_sent?: Json | null
+          report_data: Json
+          report_name: string
+          scheduled_report_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          file_url?: string | null
+          generation_date?: string | null
+          id?: string
+          recipients_sent?: Json | null
+          report_data?: Json
+          report_name?: string
+          scheduled_report_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_history_scheduled_report_id_fkey"
+            columns: ["scheduled_report_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_assessments: {
         Row: {
           assessment_response_id: string | null
@@ -1954,6 +2151,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scheduled_reports: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          last_generated_at: string | null
+          next_generation_date: string | null
+          recipients: Json
+          report_filters: Json | null
+          report_name: string
+          report_type: string
+          schedule_day: number | null
+          schedule_frequency: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_generated_at?: string | null
+          next_generation_date?: string | null
+          recipients?: Json
+          report_filters?: Json | null
+          report_name: string
+          report_type: string
+          schedule_day?: number | null
+          schedule_frequency: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_generated_at?: string | null
+          next_generation_date?: string | null
+          recipients?: Json
+          report_filters?: Json | null
+          report_name?: string
+          report_type?: string
+          schedule_day?: number | null
+          schedule_frequency?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sector_benchmarks: {
+        Row: {
+          benchmark_score: number
+          created_at: string | null
+          data_source: string | null
+          id: string
+          industry_sector: string
+          percentile_25: number | null
+          percentile_50: number | null
+          percentile_75: number | null
+          percentile_90: number | null
+          risk_category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          sample_size: number | null
+          updated_at: string | null
+          validity_period_end: string | null
+          validity_period_start: string | null
+        }
+        Insert: {
+          benchmark_score: number
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          industry_sector: string
+          percentile_25?: number | null
+          percentile_50?: number | null
+          percentile_75?: number | null
+          percentile_90?: number | null
+          risk_category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          sample_size?: number | null
+          updated_at?: string | null
+          validity_period_end?: string | null
+          validity_period_start?: string | null
+        }
+        Update: {
+          benchmark_score?: number
+          created_at?: string | null
+          data_source?: string | null
+          id?: string
+          industry_sector?: string
+          percentile_25?: number | null
+          percentile_50?: number | null
+          percentile_75?: number | null
+          percentile_90?: number | null
+          risk_category?: Database["public"]["Enums"]["psychosocial_risk_category"]
+          sample_size?: number | null
+          updated_at?: string | null
+          validity_period_end?: string | null
+          validity_period_start?: string | null
+        }
+        Relationships: []
       }
       sector_risk_profiles: {
         Row: {
@@ -2247,6 +2546,14 @@ export type Database = {
         Args: { _user_id: string; _company_id: string }
         Returns: boolean
       }
+      calculate_psychosocial_metrics: {
+        Args: { p_company_id: string; p_calculation_date?: string }
+        Returns: {
+          metric_name: string
+          metric_value: number
+          metric_unit: string
+        }[]
+      }
       calculate_psychosocial_risk: {
         Args: { p_assessment_response_id: string; p_company_id: string }
         Returns: {
@@ -2356,6 +2663,10 @@ export type Database = {
           created_at: string
           updated_at: string
         }[]
+      }
+      get_dashboard_analytics: {
+        Args: { p_company_id: string; p_period_days?: number }
+        Returns: Json
       }
       get_psychosocial_processing_stats: {
         Args: {

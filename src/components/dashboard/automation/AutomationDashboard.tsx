@@ -2,12 +2,13 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, BarChart3, TrendingUp, Bot } from "lucide-react";
+import { Activity, BarChart3, TrendingUp, Bot, Brain } from "lucide-react";
 import { RealTimeAutomationMetrics } from "./RealTimeAutomationMetrics";
 import { ProcessingTrendsChart } from "./ProcessingTrendsChart";
 import { RiskDistributionChart } from "./RiskDistributionChart";
 import { PerformanceMetrics } from "./PerformanceMetrics";
 import { AutomationActivityFeed } from "./AutomationActivityFeed";
+import { AdvancedAnalyticsDashboard } from "@/components/analytics/AdvancedAnalyticsDashboard";
 
 interface AutomationDashboardProps {
   companyId?: string;
@@ -30,10 +31,14 @@ export function AutomationDashboard({ companyId }: AutomationDashboardProps) {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Analytics
           </TabsTrigger>
           <TabsTrigger value="trends" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
@@ -83,6 +88,10 @@ export function AutomationDashboard({ companyId }: AutomationDashboardProps) {
               </Card>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AdvancedAnalyticsDashboard companyId={companyId} />
         </TabsContent>
 
         <TabsContent value="trends">

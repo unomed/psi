@@ -1,13 +1,15 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users, Bot, Activity } from "lucide-react";
+import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users, Bot, Activity, TrendingUp } from "lucide-react";
 import RiskAnalysisFormIntegrated from "@/components/risks/RiskAnalysisFormIntegrated";
 import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
 import { AutomationDashboard } from "@/components/dashboard/automation";
+import { AdvancedAnalyticsDashboard } from "@/components/analytics/AdvancedAnalyticsDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function GestaoRiscos() {
@@ -26,10 +28,14 @@ export default function GestaoRiscos() {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Analytics
           </TabsTrigger>
           <TabsTrigger value="psychosocial" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
@@ -59,6 +65,10 @@ export default function GestaoRiscos() {
 
         <TabsContent value="dashboard">
           <AutomationDashboard companyId={companyId} />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AdvancedAnalyticsDashboard companyId={companyId} />
         </TabsContent>
 
         <TabsContent value="psychosocial">
