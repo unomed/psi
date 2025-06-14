@@ -19,8 +19,8 @@ import { menuItems } from "./sidebar/menuItems";
 export function AppSidebar() {
   // Adicionar proteção para garantir que o AuthContext está disponível
   let userRole: string | null = null;
-  let hasPermission: (permission: string) => boolean = () => false;
-  let loadingPermission = true;
+  let hasPermission: (permission: string) => boolean = () => true; // Default allow para evitar logout
+  let loadingPermission = false;
 
   try {
     const authContext = useAuth();
@@ -45,33 +45,49 @@ export function AppSidebar() {
 
   // Memoize filtered menu items to prevent unnecessary recalculations
   const filteredMenuItems = useMemo(() => {
-    if (loadingPermission || !userRole) return [];
+    if (loadingPermission) return [];
 
     return menuItems.filter(item => {
-      // Always allow dashboard access for authenticated users
-      if (item.permission === 'view_dashboard') {
+      try {
+        // Always allow dashboard access for authenticated users
+        if (item.permission === 'view_dashboard') {
+          return true;
+        }
+
+        // Check if user role exists and item has roles array
+        if (!item.roles || !Array.isArray(item.roles) || !userRole) {
+          return false;
+        }
+        
+        // Check if user role is included in item roles
+        const hasRole = item.roles.includes(userRole);
+        
+        // If no role match, deny access
+        if (!hasRole) {
+          return false;
+        }
+        
+        // Check permission if item has a permission property
+        // Use try-catch to prevent permission errors from breaking the menu
+        let hasPermissionCheck = true;
+        if (item.permission) {
+          try {
+            hasPermissionCheck = hasPermission(item.permission);
+          } catch (error) {
+            console.warn(`[AppSidebar] Error checking permission ${item.permission}:`, error);
+            // Default to allow access if permission check fails to prevent logout
+            hasPermissionCheck = true;
+          }
+        }
+        
+        console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
+        
+        return hasPermissionCheck;
+      } catch (error) {
+        console.warn(`[AppSidebar] Error processing menu item ${item.title}:`, error);
+        // Default to allow access if there's an error to prevent logout
         return true;
       }
-
-      // Check if user role exists and item has roles array
-      if (!item.roles || !Array.isArray(item.roles)) {
-        return false;
-      }
-      
-      // Check if user role is included in item roles
-      const hasRole = item.roles.includes(userRole);
-      
-      // If no role match, deny access
-      if (!hasRole) {
-        return false;
-      }
-      
-      // Check permission if item has a permission property
-      const hasPermissionCheck = item.permission ? hasPermission(item.permission) : true;
-      
-      console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
-      
-      return hasPermissionCheck;
     });
   }, [userRole, hasPermission, loadingPermission]);
 

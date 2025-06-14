@@ -170,9 +170,16 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
     case 'evaluator':
       defaultPermissions.view_dashboard = true;
       defaultPermissions.view_checklists = true;
+      defaultPermissions.create_checklists = true;
+      defaultPermissions.edit_checklists = true;
       defaultPermissions.view_assessments = true;
       defaultPermissions.create_assessments = true;
       defaultPermissions.edit_assessments = true;
+      break;
+    case 'profissionais':
+      defaultPermissions.view_dashboard = true;
+      defaultPermissions.view_checklists = true;
+      defaultPermissions.view_assessments = true;
       break;
     default:
       defaultPermissions.view_dashboard = true;

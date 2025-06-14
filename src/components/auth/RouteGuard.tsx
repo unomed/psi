@@ -29,8 +29,8 @@ export function RouteGuard({
   // Proteção contra loop infinito - contador global de redirects
   const redirectAttempts = useRef(0);
   const lastRedirectTime = useRef(0);
-  const maxRedirectAttempts = 2; // Reduzido para evitar loops
-  const redirectCooldown = 1000; // 1 segundo
+  const maxRedirectAttempts = 2;
+  const redirectCooldown = 1000;
 
   // Reset contador após período de cooldown
   useEffect(() => {
@@ -119,15 +119,24 @@ export function RouteGuard({
   }
 
   // Verificar permissão específica (apenas se não for dashboard)
-  if (requirePermission && !hasPermission(requirePermission)) {
-    console.log(`[RouteGuard] Permissão negada: ${requirePermission} para perfil ${userRole}`);
-    
-    if (safeRedirect('/dashboard', `Permissão negada: ${requirePermission}`)) {
-      toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
-      return <Navigate to="/dashboard" replace />;
+  if (requirePermission) {
+    try {
+      const hasRequiredPermission = hasPermission(requirePermission);
+      if (!hasRequiredPermission) {
+        console.log(`[RouteGuard] Permissão negada: ${requirePermission} para perfil ${userRole}`);
+        
+        if (safeRedirect('/dashboard', `Permissão negada: ${requirePermission}`)) {
+          toast.error(`Acesso negado: Você não tem permissão "${requirePermission}" para acessar esta funcionalidade`);
+          return <Navigate to="/dashboard" replace />;
+        }
+        
+        return <LoadingSpinner />;
+      }
+    } catch (error) {
+      console.error(`[RouteGuard] Erro ao verificar permissão ${requirePermission}:`, error);
+      // Em caso de erro na verificação de permissão, permitir acesso para evitar logout
+      console.log('[RouteGuard] Permitindo acesso devido a erro na verificação de permissão');
     }
-    
-    return <LoadingSpinner />;
   }
 
   // Verificar acesso à empresa (apenas se requireCompanyAccess for especificado)

@@ -57,7 +57,7 @@ export const menuItems: MenuItem[] = [
     permission: "view_functions"
   },
   {
-    title: "Checklists",
+    title: "Templates",
     icon: CheckSquare,
     href: "/templates",
     path: "/templates",
@@ -69,6 +69,14 @@ export const menuItems: MenuItem[] = [
     icon: UserCheck,
     href: "/avaliacoes",
     path: "/avaliacoes",
+    roles: ["superadmin", "admin", "evaluator"],
+    permission: "view_assessments"
+  },
+  {
+    title: "Agendamentos",
+    icon: Calendar,
+    href: "/agendamentos",
+    path: "/agendamentos",
     roles: ["superadmin", "admin", "evaluator"],
     permission: "view_assessments"
   },
