@@ -152,12 +152,12 @@ export class IntelligentActionPlanner {
   ): Promise<ActionPlanTemplate | null> {
     
     try {
-      // Buscar template sem conversão de tipos - usar string diretamente
+      // Buscar template com type assertion
       const { data: genericTemplates } = await supabase
         .from('nr01_action_templates')
         .select('*')
-        .eq('category', category)
-        .eq('exposure_level', riskLevel)
+        .eq('category', category as any)
+        .eq('exposure_level', riskLevel as any)
         .order('is_mandatory', { ascending: false });
 
       if (genericTemplates && genericTemplates.length > 0) {

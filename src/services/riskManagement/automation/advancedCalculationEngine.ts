@@ -298,12 +298,12 @@ export class AdvancedCalculationEngine {
   ): Promise<string[]> {
     
     try {
-      // Buscar templates de ação específicos sem conversão de tipos
+      // Buscar templates de ação específicos com type assertion
       const { data: actionTemplates } = await supabase
         .from('nr01_action_templates')
         .select('*')
-        .eq('category', category)
-        .eq('exposure_level', riskLevel);
+        .eq('category', category as any)
+        .eq('exposure_level', riskLevel as any);
 
       if (actionTemplates && actionTemplates.length > 0) {
         return actionTemplates.map(template => template.template_name);
