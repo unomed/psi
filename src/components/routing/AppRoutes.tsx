@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { RouteGuard } from "@/components/auth/RouteGuard";
-import { settingsRoutes } from "./SettingsRoutes";
+import { SettingsRoutes } from "./SettingsRoutes";
 
 // Import pages
 import Dashboard from "@/pages/Dashboard";
@@ -174,9 +174,7 @@ export function AppRoutes() {
         path="/configuracoes/*" 
         element={
           <MainLayout>
-            <Routes>
-              {settingsRoutes}
-            </Routes>
+            <SettingsRoutes />
           </MainLayout>
         } 
       />
