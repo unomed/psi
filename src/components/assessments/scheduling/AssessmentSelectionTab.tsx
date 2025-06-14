@@ -38,10 +38,45 @@ export function AssessmentSelectionTab({
 }: AssessmentSelectionTabProps) {
   // Use either onEmployeeSelect or onEmployeeChange based on what's provided
   const handleEmployeeChange = (employeeId: string) => {
+    // Validate employeeId before proceeding
+    const validEmployeeId = employeeId && employeeId.trim() !== "" ? employeeId : "";
+    
     if (onEmployeeChange) {
-      onEmployeeChange(employeeId);
+      onEmployeeChange(validEmployeeId);
     } else if (onEmployeeSelect) {
-      onEmployeeSelect(employeeId);
+      onEmployeeSelect(validEmployeeId);
+    }
+  };
+
+  const handleCompanyChange = (companyId: string) => {
+    // Validate companyId before proceeding
+    const validCompanyId = companyId && companyId.trim() !== "" ? companyId : "";
+    if (onCompanyChange) {
+      onCompanyChange(validCompanyId);
+    }
+  };
+
+  const handleSectorChange = (sectorId: string) => {
+    // Validate sectorId before proceeding
+    const validSectorId = sectorId && sectorId.trim() !== "" ? sectorId : "";
+    if (onSectorChange) {
+      onSectorChange(validSectorId);
+    }
+  };
+
+  const handleRoleChange = (roleId: string) => {
+    // Validate roleId before proceeding
+    const validRoleId = roleId && roleId.trim() !== "" ? roleId : "";
+    if (onRoleChange) {
+      onRoleChange(validRoleId);
+    }
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    // Validate templateId before proceeding
+    const validTemplateId = templateId && templateId.trim() !== "" ? templateId : "";
+    if (validTemplateId) {
+      onTemplateSelect(validTemplateId);
     }
   };
 
@@ -55,13 +90,13 @@ export function AssessmentSelectionTab({
         templates={templates}
         isTemplatesLoading={isTemplatesLoading}
         onEmployeeSelect={handleEmployeeChange}
-        onTemplateSelect={onTemplateSelect}
+        onTemplateSelect={handleTemplateSelect}
         selectedCompany={selectedCompany}
         selectedSector={selectedSector}
         selectedRole={selectedRole}
-        onCompanyChange={onCompanyChange}
-        onSectorChange={onSectorChange}
-        onRoleChange={onRoleChange}
+        onCompanyChange={handleCompanyChange}
+        onSectorChange={handleSectorChange}
+        onRoleChange={handleRoleChange}
         onNext={onNext}
       />
     </div>

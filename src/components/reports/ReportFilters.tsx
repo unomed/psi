@@ -40,7 +40,7 @@ export function ReportFilters({
     { id: 'it', name: 'TI' },
     { id: 'commercial', name: 'Comercial' },
     { id: 'logistics', name: 'Logística' },
-  ];
+  ].filter(sector => sector.id && sector.id.trim() !== "" && sector.name && sector.name.trim() !== "");
   
   const roles = [
     { id: 'all-roles', name: 'Todas as Funções' },
@@ -49,14 +49,23 @@ export function ReportFilters({
     { id: 'operator', name: 'Operador' },
     { id: 'assistant', name: 'Assistente' },
     { id: 'technician', name: 'Técnico' },
-  ];
+  ].filter(role => role.id && role.id.trim() !== "" && role.name && role.name.trim() !== "");
+
+  // Filter companies to ensure valid data
+  const validCompanies = (userCompanies || []).filter(company => 
+    company && 
+    company.companyId && 
+    company.companyId.toString().trim() !== "" &&
+    company.companyName && 
+    company.companyName.trim() !== ""
+  );
   
   return (
     <Card>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Seletor de Empresa (apenas se o usuário tiver empresas associadas) */}
-          {onCompanyChange && userCompanies && userCompanies.length > 0 && (
+          {onCompanyChange && validCompanies && validCompanies.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
               <Select 
@@ -67,18 +76,11 @@ export function ReportFilters({
                   <SelectValue placeholder="Selecione uma empresa" />
                 </SelectTrigger>
                 <SelectContent>
-                  {userCompanies.map(company => {
-                    const companyId = company.companyId || `company-fallback-${Date.now()}`;
-                    if (!companyId || companyId.trim() === '') {
-                      console.error('Empty company ID detected in ReportFilters:', company);
-                      return null;
-                    }
-                    return (
-                      <SelectItem key={companyId} value={companyId}>
-                        {company.companyName || 'Empresa sem nome'}
-                      </SelectItem>
-                    );
-                  }).filter(Boolean)}
+                  {validCompanies.map(company => (
+                    <SelectItem key={company.companyId} value={company.companyId}>
+                      {company.companyName}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -99,17 +101,11 @@ export function ReportFilters({
                 <SelectValue placeholder="Todos os Setores" />
               </SelectTrigger>
               <SelectContent>
-                {sectors.map(sector => {
-                  if (!sector.id || sector.id.trim() === '') {
-                    console.error('Empty sector ID detected in ReportFilters:', sector);
-                    return null;
-                  }
-                  return (
-                    <SelectItem key={sector.id} value={sector.id}>
-                      {sector.name || 'Setor sem nome'}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
+                {sectors.map(sector => (
+                  <SelectItem key={sector.id} value={sector.id}>
+                    {sector.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -121,17 +117,11 @@ export function ReportFilters({
                 <SelectValue placeholder="Todas as Funções" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map(role => {
-                  if (!role.id || role.id.trim() === '') {
-                    console.error('Empty role ID detected in ReportFilters:', role);
-                    return null;
-                  }
-                  return (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name || 'Função sem nome'}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
+                {roles.map(role => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

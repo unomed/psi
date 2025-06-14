@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
@@ -50,6 +51,15 @@ export function NewAssessmentDialog({
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  // Safe recurrence options with validation
+  const recurrenceOptions = [
+    { value: "none", label: "Sem recorrência" },
+    { value: "monthly", label: "Mensal" },
+    { value: "quarterly", label: "Trimestral" },
+    { value: "semiannual", label: "Semestral" },
+    { value: "annual", label: "Anual" }
+  ].filter(option => option.value && option.value.trim() !== "");
 
   useEffect(() => {
     if (isOpen) {
@@ -104,9 +114,11 @@ export function NewAssessmentDialog({
   };
 
   const handleRecurrenceChange = (value: string) => {
-    setRecurrenceType(value as RecurrenceType);
+    // Validate value before setting
+    const validValue = value && recurrenceOptions.some(opt => opt.value === value) ? value : "none";
+    setRecurrenceType(validValue as RecurrenceType);
     
-    if (value !== 'none' && !scheduledDate) {
+    if (validValue !== 'none' && !scheduledDate) {
       setShowRecurrenceWarning(true);
     } else {
       setShowRecurrenceWarning(false);
@@ -252,12 +264,29 @@ export function NewAssessmentDialog({
               )}
             </div>
 
-            <AssessmentPeriodicitySection
-              recurrenceType={recurrenceType}
-              onRecurrenceChange={handleRecurrenceChange}
-              showRecurrenceWarning={showRecurrenceWarning}
-              employeeId={selectedEmployee}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="recurrenceType">Periodicidade</Label>
+              <Select value={recurrenceType} onValueChange={handleRecurrenceChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a periodicidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {recurrenceOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {showRecurrenceWarning && (
+                <div className="flex items-center gap-2 text-amber-600">
+                  <AlertCircle className="h-4 w-4" />
+                  <p className="text-xs">
+                    Para recorrência, é necessário definir uma data inicial.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end">
