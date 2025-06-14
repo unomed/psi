@@ -1,96 +1,79 @@
 
 import { 
-  Building, 
-  Users, 
-  Briefcase, 
-  MapPin, 
-  CheckSquare, 
   BarChart3, 
   FileText, 
-  ClipboardList,
-  UserCheck,
+  Users, 
+  Building2, 
+  Briefcase, 
+  MapPin,
+  CheckSquare,
   Calendar,
-  DollarSign
+  TrendingUp,
+  Shield,
+  CreditCard,
+  UserCheck
 } from "lucide-react";
-import type { MenuItem } from "./types";
+import { MenuItem } from "./types";
 
 export const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
     icon: BarChart3,
-    href: "/dashboard",
-    roles: ["superadmin", "admin", "manager", "user"]
+    path: "/dashboard"
   },
   {
     title: "Empresas",
-    icon: Building,
-    href: "/empresas",
-    roles: ["superadmin", "admin"]
+    icon: Building2,
+    path: "/empresas"
   },
   {
-    title: "Funcionários", 
+    title: "Funcionários",
     icon: Users,
-    href: "/funcionarios",
-    roles: ["superadmin", "admin", "manager"]
+    path: "/funcionarios"
   },
   {
     title: "Setores",
     icon: MapPin,
-    href: "/setores",
-    roles: ["superadmin", "admin", "manager"]
+    path: "/setores"
   },
   {
     title: "Funções",
     icon: Briefcase,
-    href: "/funcoes",
-    roles: ["superadmin", "admin", "manager"]
+    path: "/funcoes"
   },
   {
-    title: "Templates",
+    title: "Checklists",
     icon: CheckSquare,
-    href: "/templates",
-    roles: ["superadmin", "admin", "manager", "user"]
+    path: "/checklists"
   },
   {
     title: "Avaliações",
     icon: UserCheck,
-    href: "/avaliacoes",
-    roles: ["superadmin", "admin", "manager", "user"]
-  },
-  {
-    title: "Agendamentos",
-    icon: Calendar,
-    href: "/agendamentos", 
-    roles: ["superadmin", "admin", "manager"]
+    path: "/avaliacoes"
   },
   {
     title: "Resultados",
-    icon: BarChart3,
-    href: "/resultados",
-    roles: ["superadmin", "admin", "manager"]
-  },
-  {
-    title: "Faturamento",
-    icon: DollarSign,
-    href: "/faturamento",
-    roles: ["superadmin"]
+    icon: TrendingUp,
+    path: "/resultados"
   },
   {
     title: "Gestão de Riscos",
-    icon: FileText,
-    href: "/gestao-riscos",
-    roles: ["superadmin", "admin", "manager"]
+    icon: Shield,
+    path: "/gestao-riscos"
   },
   {
     title: "Plano de Ação",
-    icon: ClipboardList,
-    href: "/plano-acao",
-    roles: ["superadmin", "admin", "manager"]
+    icon: FileText,
+    path: "/plano-acao"
   },
   {
     title: "Relatórios",
     icon: BarChart3,
-    href: "/relatorios",
-    roles: ["superadmin", "admin", "manager"]
+    path: "/relatorios"
+  },
+  {
+    title: "Faturamento",
+    icon: CreditCard,
+    path: "/faturamento"
   }
 ];
