@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Control, useWatch } from 'react-hook-form';
 import {
@@ -24,8 +23,8 @@ interface Sector {
 }
 
 interface UserCompany {
-  companyId: string;
-  companyName: string;
+  companyId: string; // This is the ID
+  companyName: string; // This is the name
 }
 
 interface CompanyAndSectorFieldsProps {
@@ -46,17 +45,31 @@ export function CompanyAndSectorFields({
     name: 'company_id'
   });
 
-  const validUserCompanies = (userCompanies || []).filter(company =>
-    company && company.companyId && String(company.companyId).trim() !== "" && company.companyName && String(company.companyName).trim() !== ""
-  );
+  // Strict filtering for UserCompany items
+  const validUserCompanies = (userCompanies || [])
+    .filter(company => 
+      company && 
+      company.companyId !== null && 
+      company.companyId !== undefined && 
+      String(company.companyId).trim() !== "" &&
+      company.companyName && 
+      String(company.companyName).trim() !== ""
+    );
 
-  const validSectorsBase = (sectors || []).filter(sector =>
-    sector && sector.id && String(sector.id).trim() !== "" && sector.name && String(sector.name).trim() !== ""
-  );
+  // Strict filtering for Sector items
+  const validSectorsBase = (sectors || [])
+    .filter(sector =>
+      sector && 
+      sector.id !== null && 
+      sector.id !== undefined && 
+      String(sector.id).trim() !== "" &&
+      sector.name && 
+      String(sector.name).trim() !== ""
+    );
 
   const filteredSectors = selectedCompany
     ? validSectorsBase.filter(sector => sector.companyId === selectedCompany)
-    : validSectorsBase;
+    : validSectorsBase; // Show all valid if no company, or specific if company selected
 
   return (
     <>
@@ -67,26 +80,31 @@ export function CompanyAndSectorFields({
           render={({ field }) => (
             <FormItem className="md:col-span-2">
               <FormLabel>Empresa</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || "no-company-selected"}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || undefined} // Use undefined for placeholder if value is empty
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a empresa" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {validUserCompanies.map((company) => {
-                    const companyIdStr = String(company.companyId);
-                    if (companyIdStr.trim() === "") {
-                       console.error("[ActionPlans/CompanyAndSectorFields] Attempting to render Company SelectItem with empty value:", company);
-                      return null;
-                    }
-                    return (
-                      <SelectItem key={companyIdStr} value={companyIdStr}>
-                        {company.companyName}
-                      </SelectItem>
-                    );
-                  }).filter(Boolean)}
-                  {validUserCompanies.length === 0 && (
+                  {validUserCompanies.length > 0 ? (
+                    validUserCompanies.map((company) => {
+                      const companyIdStr = String(company.companyId);
+                      // This console.error was in your original code
+                      if (companyIdStr.trim() === "") {
+                         console.error("[ActionPlans/CompanyAndSectorFields] Attempting to render Company SelectItem with empty value:", company);
+                        return null;
+                      }
+                      return (
+                        <SelectItem key={companyIdStr} value={companyIdStr}>
+                          {company.companyName}
+                        </SelectItem>
+                      );
+                    }).filter(Boolean) // Filter out any nulls from the map
+                  ) : (
                     <SelectItem value="no-actionplan-companies-available" disabled>Nenhuma empresa disponível</SelectItem>
                   )}
                 </SelectContent>
@@ -103,27 +121,35 @@ export function CompanyAndSectorFields({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Setor</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value || "no-sector-selected"}>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value || undefined} // Use undefined for placeholder
+              disabled={shouldShowCompanySelect && !selectedCompany && validUserCompanies.length > 0} // Disable if company select is shown but no company selected
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o setor" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {filteredSectors.map((sector) => {
-                   const sectorIdStr = String(sector.id);
-                    if (sectorIdStr.trim() === "") {
-                      console.error("[ActionPlans/CompanyAndSectorFields] Attempting to render Sector SelectItem with empty value:", sector);
-                      return null;
-                    }
-                  return (
-                    <SelectItem key={sectorIdStr} value={sectorIdStr}>
-                      {sector.name}
+                {filteredSectors.length > 0 ? (
+                  filteredSectors.map((sector) => {
+                     const sectorIdStr = String(sector.id);
+                      // This console.error was in your original code
+                      if (sectorIdStr.trim() === "") {
+                        console.error("[ActionPlans/CompanyAndSectorFields] Attempting to render Sector SelectItem with empty value:", sector);
+                        return null;
+                      }
+                    return (
+                      <SelectItem key={sectorIdStr} value={sectorIdStr}>
+                        {sector.name}
+                      </SelectItem>
+                    );
+                  }).filter(Boolean) // Filter out any nulls
+                ) : (
+                    <SelectItem value="no-actionplan-sectors-available" disabled>
+                      {shouldShowCompanySelect && selectedCompany ? "Nenhum setor para esta empresa" : "Nenhum setor disponível"}
                     </SelectItem>
-                  );
-                }).filter(Boolean)}
-                {filteredSectors.length === 0 && (
-                    <SelectItem value="no-actionplan-sectors-available" disabled>Nenhum setor disponível</SelectItem>
                   )}
               </SelectContent>
             </Select>
@@ -134,4 +160,3 @@ export function CompanyAndSectorFields({
     </>
   );
 }
-

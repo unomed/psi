@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AssessmentSelectionTab } from "@/components/assessments/scheduling/AssessmentSelectionTab";
@@ -271,9 +270,7 @@ export function NewAssessmentDialog({
                   <SelectValue placeholder="Selecione a periodicidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  {recurrenceOptions
-                    .filter(option => option.value && option.value.trim() !== "")
-                    .map((option) => (
+                  {recurrenceOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

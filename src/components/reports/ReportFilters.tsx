@@ -1,11 +1,22 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SafeSelect } from "@/components/ui/SafeSelect";
 import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Dispatch, SetStateAction } from "react";
 import { CompanyAccess } from "@/hooks/useUserRole";
 import { DateRange } from "@/types/date";
+
+interface ReportCompany {
+  companyId: string;
+  companyName: string;
+}
 
 interface ReportFiltersProps {
   dateRange: DateRange;
@@ -32,6 +43,7 @@ export function ReportFilters({
   userCompanies = [],
   userRole
 }: ReportFiltersProps) {
+  // Static data for sectors and roles - ensure values are non-empty
   const sectors = [
     { id: 'all-sectors', name: 'Todos os Setores' },
     { id: 'production', name: 'Produção' },
@@ -50,56 +62,28 @@ export function ReportFilters({
     { id: 'technician', name: 'Técnico' },
   ].filter(role => role && role.id && String(role.id).trim() !== "" && role.name && String(role.name).trim() !== "");
 
-  const validCompanies = (userCompanies || []).filter(company =>
-    company &&
-    company.companyId !== null &&
-    company.companyId !== undefined &&
-    String(company.companyId).trim() !== "" &&
-    company.companyName &&
-    String(company.companyName).trim() !== ""
-  );
-
-  // Determine a safe default for company select if onCompanyChange is defined
-  let companySelectValue = selectedCompany;
-  if (onCompanyChange && !selectedCompany && validCompanies.length > 0) {
-    companySelectValue = String(validCompanies[0].companyId);
-  } else if (onCompanyChange && !selectedCompany) {
-    companySelectValue = "no-company-filter-selected"; // Fallback if no companies but selector is shown
-  }
-
+  // Prepare company data for SafeSelect
+  const companiesForSelect: ReportCompany[] = (userCompanies || []).map(c => ({
+    companyId: c.companyId, // This will be the value
+    companyName: c.companyName // This will be the label
+  }));
 
   return (
     <Card>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {onCompanyChange && ( // Simplified condition: always show if onCompanyChange is provided
+          {onCompanyChange && (
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
-              <Select
-                value={companySelectValue || "no-company-filter-selected-value"}
-                onValueChange={onCompanyChange}
-              >
-                <SelectTrigger id="company">
-                  <SelectValue placeholder="Selecione uma empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {validCompanies.map(company => {
-                    const companyIdStr = String(company.companyId);
-                     if (companyIdStr.trim() === "") {
-                       console.error("[ReportFilters] Attempting to render Company SelectItem with empty value:", company);
-                       return null;
-                     }
-                    return (
-                      <SelectItem key={companyIdStr} value={companyIdStr}>
-                        {company.companyName}
-                      </SelectItem>
-                    );
-                  }).filter(Boolean)}
-                  {validCompanies.length === 0 && (
-                     <SelectItem value="no-report-companies-available" disabled>Nenhuma empresa</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <SafeSelect<ReportCompany>
+                data={companiesForSelect}
+                value={selectedCompany}
+                onChange={onCompanyChange}
+                placeholder="Selecione uma empresa"
+                valueField="companyId"
+                labelField="companyName"
+                className="w-full"
+              />
             </div>
           )}
 
@@ -118,19 +102,11 @@ export function ReportFilters({
                 <SelectValue placeholder="Todos os Setores" />
               </SelectTrigger>
               <SelectContent>
-                {sectors.map(sector => {
-                  const sectorIdStr = String(sector.id);
-                  // Static list, but good practice if it were dynamic
-                  if (sectorIdStr.trim() === "") {
-                     console.error("[ReportFilters] Attempting to render Sector SelectItem with empty value:", sector);
-                     return null;
-                  }
-                  return (
-                    <SelectItem key={sectorIdStr} value={sectorIdStr}>
-                      {sector.name}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
+                {sectors.map(sector => (
+                  <SelectItem key={sector.id} value={sector.id}> {/* Static, ID is guaranteed non-empty by filter */}
+                    {sector.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -142,19 +118,11 @@ export function ReportFilters({
                 <SelectValue placeholder="Todas as Funções" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map(role => {
-                  const roleIdStr = String(role.id);
-                   // Static list, but good practice if it were dynamic
-                  if (roleIdStr.trim() === "") {
-                     console.error("[ReportFilters] Attempting to render Role SelectItem with empty value:", role);
-                     return null;
-                  }
-                  return (
-                    <SelectItem key={roleIdStr} value={roleIdStr}>
-                      {role.name}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
+                {roles.map(role => (
+                  <SelectItem key={role.id} value={role.id}> {/* Static, ID is guaranteed non-empty by filter */}
+                    {role.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -163,4 +131,3 @@ export function ReportFilters({
     </Card>
   );
 }
-

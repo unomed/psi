@@ -1,13 +1,19 @@
-
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SafeSelect } from "@/components/ui/SafeSelect";
 import type { CompanyData } from "@/components/companies/CompanyCard";
+
+interface SectorForRoleSelect {
+  id: string;
+  name: string;
+  companyId: string;
+}
 
 interface RoleCompanySelectProps {
   companies: CompanyData[];
   selectedCompany: string | null;
   selectedSector: string | null;
-  sectors: { id: string; name: string; companyId: string }[];
+  sectors: SectorForRoleSelect[];
   onCompanyChange: (value: string) => void;
   onSectorChange: (value: string) => void;
 }
@@ -21,80 +27,38 @@ export function RoleCompanySelect({
   onSectorChange
 }: RoleCompanySelectProps) {
 
-  const validCompanies = (companies || []).filter(company =>
-    company && company.id && String(company.id).trim() !== "" && company.name && String(company.name).trim() !== ""
-  );
-
-  const baseValidSectors = (sectors || []).filter(sector =>
-    sector && sector.id && String(sector.id).trim() !== "" && sector.name && String(sector.name).trim() !== ""
-  );
-
   const filteredSectors = selectedCompany
-    ? baseValidSectors.filter(sector => sector.companyId === selectedCompany)
-    : []; // Show empty if no company selected, or all valid if that's the desired logic. Current logic: only company-specific.
+    ? (sectors || []).filter(sector => sector.companyId === selectedCompany)
+    : []; 
 
   return (
     <div className="flex items-center space-x-4 mb-6">
       <div className="space-y-4 w-full md:w-auto md:space-y-0 md:space-x-4 md:flex md:items-center">
         <div className="w-full md:w-64">
-          <Select
-            onValueChange={onCompanyChange}
-            value={selectedCompany || "no-company-selected"} // Ensure placeholder value is not empty
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione uma empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              {validCompanies.map((company) => {
-                const companyIdStr = String(company.id);
-                if (companyIdStr.trim() === "") {
-                  console.error("[Roles/RoleCompanySelect] Attempting to render Company SelectItem with empty value:", company);
-                  return null;
-                }
-                return (
-                  <SelectItem key={companyIdStr} value={companyIdStr}>
-                    {company.name}
-                  </SelectItem>
-                );
-              }).filter(Boolean)}
-               {validCompanies.length === 0 && (
-                <SelectItem value="no-companies-pls-select" disabled>Nenhuma empresa disponível</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+          <SafeSelect<CompanyData>
+            data={companies}
+            value={selectedCompany}
+            onChange={onCompanyChange}
+            placeholder="Selecione uma empresa"
+            valueField="id"
+            labelField="name"
+          />
         </div>
 
         {selectedCompany && (
           <div className="w-full md:w-64">
-            <Select
-              onValueChange={onSectorChange}
-              value={selectedSector || "no-sector-selected"} // Ensure placeholder value is not empty
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um setor" />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredSectors.map((sector) => {
-                  const sectorIdStr = String(sector.id);
-                  if (sectorIdStr.trim() === "") {
-                    console.error("[Roles/RoleCompanySelect] Attempting to render Sector SelectItem with empty value:", sector);
-                    return null;
-                  }
-                  return (
-                    <SelectItem key={sectorIdStr} value={sectorIdStr}>
-                      {sector.name}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
-                {filteredSectors.length === 0 && (
-                  <SelectItem value="no-sectors-pls-select" disabled>Nenhum setor disponível</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <SafeSelect<SectorForRoleSelect>
+              data={filteredSectors}
+              value={selectedSector}
+              onChange={onSectorChange}
+              placeholder="Selecione um setor"
+              valueField="id"
+              labelField="name"
+              disabled={filteredSectors.length === 0} // Disable if no sectors for the company
+            />
           </div>
         )}
       </div>
     </div>
   );
 }
-

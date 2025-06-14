@@ -2,15 +2,10 @@
 import React from "react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SafeSelect } from "@/components/ui/SafeSelect"; // Import SafeSelect
+import type { Company } from "@/types/company"; // Assuming Company type exists
 
 interface CompanySelectorProps {
   selectedCompany: string | null;
@@ -30,14 +25,8 @@ export function CompanySelector({
         (authUserCompanies || []).some(userCompany => userCompany.companyId === company.id)
       );
 
-  const baseValidCompanies = (companiesForUser || []).filter(company =>
-    company &&
-    company.id !== null &&
-    company.id !== undefined &&
-    String(company.id).trim() !== "" &&
-    company.name &&
-    String(company.name).trim() !== ""
-  );
+  // The SafeSelect component will handle internal filtering for valid ID and name.
+  // We just need to pass the potentially raw data.
 
   if (isLoading) {
     return (
@@ -51,35 +40,15 @@ export function CompanySelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>
-      <Select
-        value={selectedCompany || "no-company-selected"}
-        onValueChange={onCompanyChange}
-      >
-        <SelectTrigger id="company">
-          <SelectValue placeholder="Selecione uma empresa" />
-        </SelectTrigger>
-        <SelectContent>
-          {baseValidCompanies.length > 0 ? (
-            baseValidCompanies.map((company) => {
-              const companyIdStr = String(company.id);
-              if (companyIdStr.trim() === "") {
-                console.error("[Assessments/CompanySelector] Attempting to render SelectItem with empty value for company:", company);
-                return null;
-              }
-              return (
-                <SelectItem key={companyIdStr} value={companyIdStr}>
-                  {company.name}
-                </SelectItem>
-              );
-            }).filter(Boolean)
-          ) : (
-            <SelectItem value="no-companies-available" disabled>
-              Nenhuma empresa disponível
-            </SelectItem>
-          )}
-        </SelectContent>
-      </Select>
+      <SafeSelect<Company> // Specify the type for SafeSelect
+        data={companiesForUser}
+        value={selectedCompany}
+        onChange={onCompanyChange}
+        placeholder="Selecione uma empresa"
+        valueField="id" // Default, but explicit
+        labelField="name" // Default, but explicit
+        className="w-full" // Added for consistent styling if needed
+      />
     </div>
   );
 }
-

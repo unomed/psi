@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCompanies } from "@/hooks/useCompanies";
@@ -7,6 +7,11 @@ import { useRoles } from "@/hooks/useRoles";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
 import { DatePicker } from "@/components/ui/date-picker";
 import { isValidDate } from "@/utils/dateUtils";
+
+interface EmploymentItem { // Helper type for select items
+  id: string;
+  name: string;
+}
 
 interface EmploymentFieldsProps {
   form: any;
@@ -24,36 +29,38 @@ export function EmploymentFields({
   onSectorChange 
 }: EmploymentFieldsProps) {
   const { companies } = useCompanies();
-  const { sectors } = useSectors();
-  const { roles } = useRoles();
+  const { sectors_ } = useSectors(); // Renamed to avoid conflict with local 'sectors' var if any
+  const { roles_ } = useRoles(); // Renamed
   const { filterResourcesByCompany } = useCompanyAccessCheck();
   
-  const formattedCompanies = companies.map(company => ({
+  const formattedCompanies = (companies || []).map(company => ({ // Ensure companies is an array
     company_id: company.id,
     ...company
   }));
   
   const accessibleCompanyRecords = filterResourcesByCompany(formattedCompanies);
   
-  const accessibleCompanies = accessibleCompanyRecords
+  const companyItems: EmploymentItem[] = accessibleCompanyRecords
     .map(company => ({
-      id: company.company_id || "",
+      id: company.company_id || "", // Will be filtered later
       name: company.name || "",
     }))
-    .filter(company => company && company.id && String(company.id).trim() !== "" && company.name && String(company.name).trim() !== "");
+    .filter(company => company.id && String(company.id).trim() !== ""); // Strict filter
 
-  const companyItems = accessibleCompanies || [];
-  const sectorItems = (sectors || [])
-    .filter(s => s && s.id && String(s.id).trim() !== "" && s.name && String(s.name).trim() !== "" && (!selectedCompany || s.companyId === selectedCompany));
-  const roleItems = (roles || [])
-    .filter(r => r && r.id && String(r.id).trim() !== "" && r.name && String(r.name).trim() !== "" && (!selectedCompany || r.companyId === selectedCompany));
+  const sectorItems: EmploymentItem[] = (sectors_ || []) // Use renamed hook data
+    .filter(s => s && s.id && String(s.id).trim() !== "" && s.name && String(s.name).trim() !== "" && (!selectedCompany || s.companyId === selectedCompany))
+    .map(s => ({ id: s.id, name: s.name })); // Ensure correct mapping
+
+  const roleItems: EmploymentItem[] = (roles_ || []) // Use renamed hook data
+    .filter(r => r && r.id && String(r.id).trim() !== "" && r.name && String(r.name).trim() !== "" && (!selectedCompany || r.companyId === selectedCompany) && (!selectedSector || r.sectorId === selectedSector)) // Also filter by sector if selected
+    .map(r => ({ id: r.id, name: r.name })); // Ensure correct mapping
 
   const statusOptions = [
     { value: "active", label: "Ativo" },
     { value: "inactive", label: "Inativo" },
     { value: "vacation", label: "Férias" },
     { value: "medical_leave", label: "Licença Médica" }
-  ].filter(option => option && option.value && String(option.value).trim() !== "");
+  ].filter(option => option && option.value && String(option.value).trim() !== ""); // Already good
   
   useEffect(() => {
     if (selectedCompany && !form.getValues("company_id")) {
@@ -73,13 +80,13 @@ export function EmploymentFields({
             <FormLabel>Empresa</FormLabel>
             <FormControl>
               <Select
-                value={field.value || "no-company-selected"}
+                value={field.value || undefined} // Use undefined for placeholder
                 onValueChange={(value) => {
-                  if (value !== "no-company-selected") {
+                  if (value) { // Ensure value is not empty/null/undefined
                     field.onChange(value);
                     onCompanyChange(value);
-                    form.setValue("sector_id", "");
-                    form.setValue("role_id", "");
+                    form.setValue("sector_id", ""); // Or undefined for placeholder
+                    form.setValue("role_id", "");   // Or undefined for placeholder
                   }
                 }}
               >
@@ -113,12 +120,12 @@ export function EmploymentFields({
             <FormLabel>Setor</FormLabel>
             <FormControl>
               <Select
-                value={field.value || "no-sector-selected"}
+                value={field.value || undefined} // Use undefined for placeholder
                 onValueChange={(value) => {
-                  if (value !== "no-sector-selected") {
+                  if (value) {
                     field.onChange(value);
                     onSectorChange(value);
-                    form.setValue("role_id", "");
+                    form.setValue("role_id", ""); // Or undefined
                   }
                 }}
                 disabled={!selectedCompany}
@@ -153,13 +160,13 @@ export function EmploymentFields({
             <FormLabel>Função</FormLabel>
             <FormControl>
               <Select
-                value={field.value || "no-role-selected"}
+                value={field.value || undefined} // Use undefined for placeholder
                 onValueChange={(value) => {
-                  if (value !== "no-role-selected") {
+                  if (value) {
                     field.onChange(value);
                   }
                 }}
-                disabled={!selectedCompany}
+                disabled={!selectedSector} // Should be disabled if no sector is selected
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma função" />
@@ -173,7 +180,7 @@ export function EmploymentFields({
                       ))
                   ) : (
                     <SelectItem value="no-roles-available" disabled>
-                      {selectedCompany ? "Nenhuma função encontrada" : "Selecione uma empresa primeiro"}
+                      {selectedSector ? "Nenhuma função encontrada" : "Selecione um setor primeiro"}
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -191,14 +198,14 @@ export function EmploymentFields({
             <FormLabel>Status</FormLabel>
             <FormControl>
               <Select
-                value={field.value || "active"}
+                value={field.value || "active"} // Default to active if undefined
                 onValueChange={field.onChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions.map((option) => (
+                  {statusOptions.map((option) => ( // statusOptions already filtered for valid values
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>
