@@ -42,7 +42,7 @@ export function RoleSelector({
     <div className="space-y-2">
       <Label htmlFor="role">Função</Label>
       <Select
-        value={selectedRole || ""}
+        value={selectedRole || undefined}
         onValueChange={onRoleChange}
         disabled={!selectedSector}
       >
@@ -51,7 +51,7 @@ export function RoleSelector({
         </SelectTrigger>
         <SelectContent>
           {filteredRoles.map((role) => (
-            <SelectItem key={role.id} value={role.id}>
+            <SelectItem key={role.id} value={role.id || `role-${Math.random()}`}>
               {role.name}
             </SelectItem>
           ))}

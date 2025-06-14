@@ -45,7 +45,7 @@ export function CompanySelector({
     <div className="space-y-2">
       <Label htmlFor="company">Empresa</Label>
       <Select
-        value={selectedCompany || ""}
+        value={selectedCompany || undefined}
         onValueChange={onCompanyChange}
       >
         <SelectTrigger id="company">
@@ -53,7 +53,7 @@ export function CompanySelector({
         </SelectTrigger>
         <SelectContent>
           {availableCompanies.map((company) => (
-            <SelectItem key={company.id} value={company.id}>
+            <SelectItem key={company.id} value={company.id || `company-${Math.random()}`}>
               {company.name}
             </SelectItem>
           ))}

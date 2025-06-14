@@ -42,7 +42,7 @@ export function EmployeeSelector({
     <div className="space-y-2">
       <Label htmlFor="employee">Funcionário</Label>
       <Select
-        value={selectedEmployee || ""}
+        value={selectedEmployee || undefined}
         onValueChange={onEmployeeChange}
         disabled={!selectedRole}
       >
@@ -51,7 +51,7 @@ export function EmployeeSelector({
         </SelectTrigger>
         <SelectContent>
           {filteredEmployees.map((employee) => (
-            <SelectItem key={employee.id} value={employee.id}>
+            <SelectItem key={employee.id} value={employee.id || `employee-${Math.random()}`}>
               {employee.name}
             </SelectItem>
           ))}

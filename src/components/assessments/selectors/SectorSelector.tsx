@@ -42,7 +42,7 @@ export function SectorSelector({
     <div className="space-y-2">
       <Label htmlFor="sector">Setor</Label>
       <Select
-        value={selectedSector || ""}
+        value={selectedSector || undefined}
         onValueChange={onSectorChange}
         disabled={!selectedCompany}
       >
@@ -51,7 +51,7 @@ export function SectorSelector({
         </SelectTrigger>
         <SelectContent>
           {filteredSectors.map((sector) => (
-            <SelectItem key={sector.id} value={sector.id}>
+            <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
               {sector.name}
             </SelectItem>
           ))}

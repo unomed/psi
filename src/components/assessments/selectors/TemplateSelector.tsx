@@ -33,11 +33,6 @@ export function TemplateSelector({
     );
   }
 
-  // Ensure we always have at least one item to select with a non-empty string value
-  const availableTemplates = templates.length > 0 
-    ? templates 
-    : [{ id: "no-template", title: "Nenhum modelo encontrado", type: "disc", questions: [], createdAt: new Date() }];
-
   return (
     <div className="space-y-2">
       <Label htmlFor="template">Modelo de Avaliação</Label>
@@ -49,11 +44,17 @@ export function TemplateSelector({
           <SelectValue placeholder="Selecione um modelo de avaliação" />
         </SelectTrigger>
         <SelectContent>
-          {availableTemplates.map((template) => (
-            <SelectItem key={template.id} value={template.id}>
-              {template.title}
+          {templates.length > 0 ? (
+            templates.map((template) => (
+              <SelectItem key={template.id} value={template.id || `template-${Math.random()}`}>
+                {template.title}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem key="no-template" value="no-template">
+              Nenhum modelo encontrado
             </SelectItem>
-          ))}
+          )}
         </SelectContent>
       </Select>
     </div>
