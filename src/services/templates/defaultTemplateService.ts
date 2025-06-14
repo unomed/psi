@@ -1,8 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MTE_PSICOSSOCIAL_TEMPLATE } from "@/data/psicossocialTemplates";
-import { ChecklistTemplate } from "@/types/checklist";
-import { ScaleType } from "@/types";
 
 export async function createDefaultPsicossocialTemplate(): Promise<string | null> {
   try {
@@ -10,7 +8,7 @@ export async function createDefaultPsicossocialTemplate(): Promise<string | null
     const { data: existingTemplates } = await supabase
       .from('checklist_templates')
       .select('id')
-      .eq('type', 'psicossocial')
+      .eq('type', 'custom')
       .eq('is_standard', true)
       .limit(1);
 
@@ -23,8 +21,8 @@ export async function createDefaultPsicossocialTemplate(): Promise<string | null
     const templateData = {
       title: 'Avaliação de Riscos Psicossociais - MTE',
       description: 'Template baseado no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego',
-      type: 'psicossocial',
-      scale_type: 'psicossocial',
+      type: 'custom' as const,
+      scale_type: 'custom' as const,
       is_active: true,
       is_standard: true,
       company_id: null,

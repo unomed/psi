@@ -147,10 +147,10 @@ export const PSICOSSOCIAL_CATEGORIES = [
 ];
 
 export const RISK_THRESHOLDS = {
-  baixo: { min: 0, max: 30, color: "green", label: "Baixo Risco" },
-  medio: { min: 31, max: 60, color: "yellow", label: "Médio Risco" },
-  alto: { min: 61, max: 80, color: "orange", label: "Alto Risco" },
-  critico: { min: 81, max: 100, color: "red", label: "Risco Crítico" }
+  baixo: { level: "baixo", min: 0, max: 30, color: "green", label: "Baixo Risco" },
+  medio: { level: "medio", min: 31, max: 60, color: "yellow", label: "Médio Risco" },
+  alto: { level: "alto", min: 61, max: 80, color: "orange", label: "Alto Risco" },
+  critico: { level: "critico", min: 81, max: 100, color: "red", label: "Risco Crítico" }
 };
 
 export function calculatePsicossocialRisk(score: number): { level: string; color: string; label: string } {

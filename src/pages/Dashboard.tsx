@@ -36,7 +36,7 @@ export default function Dashboard() {
   // Calcular métricas
   const totalEmployees = 0; // TODO: Implementar contagem de funcionários
   const totalTemplates = checklists?.length || 0;
-  const pendingAssessments = scheduledAssessments?.filter(a => a.status === 'pending')?.length || 0;
+  const pendingAssessments = scheduledAssessments?.filter(a => a.status === 'scheduled')?.length || 0;
   const completedAssessments = results?.length || 0;
   const criticalRisks = results?.filter(r => {
     const score = typeof r.results === 'object' && 'score' in r.results ? r.results.score : 0;
