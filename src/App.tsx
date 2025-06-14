@@ -3,16 +3,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 
 // Pages
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import EmployeePortal from "./pages/EmployeePortal"; // Nova página
-import { AuthRoutes } from "@/components/routing/AuthRoutes";
+import EmployeePortal from "./pages/EmployeePortal";
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
 import { MainRoutes } from "@/components/routing/MainRoutes";
 
 const queryClient = new QueryClient();
@@ -34,7 +34,9 @@ function App() {
                 <Route path="/" element={<Index />} />
                 
                 {/* Rotas de autenticação */}
-                <AuthRoutes />
+                <Route path="/auth/login" element={<Login />} />
+                <Route path="/auth/register" element={<Register />} />
+                <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
                 
                 {/* Rotas protegidas */}
                 <Route path="/*" element={

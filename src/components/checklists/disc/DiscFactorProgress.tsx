@@ -1,33 +1,31 @@
 
 import { Progress } from "@/components/ui/progress";
-import { DiscFactorType } from "@/types";
-import { getFactorProgressColor } from "./DiscFactorsData";
+import { DiscFactorData } from "./DiscFactorsData";
 
 interface DiscFactorProgressProps {
-  factor: DiscFactorType;
-  percentage: number;
+  factor: DiscFactorData;
+  score: number;
+  maxScore: number;
 }
 
-export function DiscFactorProgress({ factor, percentage }: DiscFactorProgressProps) {
-  // Garantir que o percentual está limitado entre 0 e 100
-  const normalizedPercentage = Math.max(0, Math.min(100, percentage));
+export function DiscFactorProgress({ factor, score, maxScore }: DiscFactorProgressProps) {
+  const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
   
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-sm">
-        <span className="font-medium">
-          {factor === "D" && "Dominância (D)"}
-          {factor === "I" && "Influência (I)"}
-          {factor === "S" && "Estabilidade (S)"}
-          {factor === "C" && "Conformidade (C)"}
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">{factor.name}</span>
+        <span className="text-sm text-muted-foreground">
+          {score}/{maxScore}
         </span>
-        <span>{normalizedPercentage}%</span>
       </div>
       <Progress 
-        value={normalizedPercentage} 
-        className="h-2 bg-gray-200" 
-        indicatorClassName={getFactorProgressColor(factor)} 
+        value={percentage} 
+        className="h-2"
       />
+      <p className="text-xs text-muted-foreground">
+        {factor.description}
+      </p>
     </div>
   );
 }

@@ -52,26 +52,28 @@ export function useEmployeeAuthProvider() {
         throw error;
       }
 
-      const authData = data[0] as EmployeeAuth;
+      const authData = data[0];
       
-      if (!authData?.isValid) {
+      if (!authData?.is_valid) {
         return { success: false, error: 'CPF ou senha inválidos' };
       }
 
+      // Mapear os dados do banco para o tipo EmployeeAuth
+      const employee: EmployeeAuth = {
+        employeeId: authData.employee_id,
+        employeeName: authData.employee_name,
+        companyId: authData.company_id,
+        companyName: authData.company_name,
+        isValid: authData.is_valid
+      };
+
       const newSession: EmployeeSession = {
-        employee: authData,
+        employee,
         isAuthenticated: true
       };
 
       setSession(newSession);
       localStorage.setItem('employee-session', JSON.stringify(newSession));
-
-      // Definir CPF na sessão para RLS
-      await supabase.rpc('set_config', {
-        setting_name: 'app.current_employee_cpf',
-        setting_value: cpf,
-        is_local: false
-      });
 
       return { success: true };
     } catch (error: any) {

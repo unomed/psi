@@ -1,101 +1,102 @@
-
+import { useState } from "react";
+import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Pencil, Trash2, Check, X } from "lucide-react";
-import { User } from "@/hooks/users/types";
-import { Switch } from "@/components/ui/switch";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { User } from "@/types";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 interface UserTableRowProps {
   user: User;
-  onEdit: (user: User) => void;
-  onDelete: (user: User) => void;
-  onToggleActive: (user: User) => void;
+  isLoading?: boolean;
 }
 
-export function UserTableRow({ user, onEdit, onDelete, onToggleActive }: UserTableRowProps) {
+export function UserTableRow({ user, isLoading }: UserTableRowProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteUser } = useMutation({
+    mutationFn: async (id: string) => {
+      setIsDeleting(true);
+      return api.delete(`/users/${id}`);
+    },
+    onSuccess: () => {
+      toast.success("Usuário excluído com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error: any) => {
+      toast.error(`Erro ao excluir usuário: ${error.message}`);
+    },
+    onSettled: () => {
+      setIsDeleting(false);
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <tr>
+        <td>
+          <Skeleton className="h-4 w-[150px]" />
+        </td>
+        <td>
+          <Skeleton className="h-4 w-[100px]" />
+        </td>
+        <td>
+          <Skeleton className="h-4 w-[100px]" />
+        </td>
+        <td>
+          <Skeleton className="h-4 w-[50px]" />
+        </td>
+        <td>
+          <Skeleton className="h-4 w-[50px]" />
+        </td>
+      </tr>
+    );
+  }
+
   return (
-    <TableRow>
-      <TableCell>{user.full_name}</TableCell>
-      <TableCell>{user.email}</TableCell>
-      <TableCell>
-        {user.role === 'admin' ? 'Administrador' : 
-         user.role === 'superadmin' ? 'Super Admin' : 
-         user.role === 'profissionais' ? 'Profissional' : 'Avaliador'}
-      </TableCell>
-      <TableCell>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center">
-                {user.role === 'superadmin' ? (
-                  <div className="flex items-center text-green-600">
-                    <Check className="h-4 w-4 mr-1" />
-                    <span>Todas empresas</span>
-                  </div>
-                ) : (
-                  user.companies.length > 0 ? (
-                    <span>{user.companies.join(", ")}</span>
-                  ) : (
-                    <div className="flex items-center text-amber-600">
-                      <X className="h-4 w-4 mr-1" />
-                      <span>Nenhuma empresa</span>
-                    </div>
-                  )
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              {user.role === 'superadmin' 
-                ? 'Super Admin tem acesso a todas as empresas' 
-                : user.companies.length > 0 
-                  ? `Empresas associadas: ${user.companies.join(", ")}` 
-                  : 'Este usuário não tem acesso a nenhuma empresa'}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </TableCell>
-      <TableCell>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={user.is_active}
-                  onCheckedChange={() => onToggleActive(user)}
-                  aria-label="Toggle user active status"
-                  className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-300"
-                />
-                <Badge variant={user.is_active ? "success" : "destructive"} className="px-2 py-0.5">
-                  {user.is_active ? 'Ativo' : 'Inativo'}
-                </Badge>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              {user.is_active 
-                ? 'Usuário ativo no sistema' 
-                : 'Usuário inativo no sistema'}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </TableCell>
-      <TableCell className="text-right space-x-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => onEdit(user)}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="destructive"
-          size="icon"
-          onClick={() => onDelete(user)}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </TableCell>
-    </TableRow>
+    <tr>
+      <td>{user.name}</td>
+      <td>{user.email}</td>
+      <td>{user.role}</td>
+      <td>
+        <Badge variant={user.status === 'active' ? "default" : "destructive"}>
+          {user.status === 'active' ? 'Ativo' : 'Inativo'}
+        </Badge>
+      </td>
+      <td>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuItem>
+              <Edit className="mr-2 h-4 w-4" /> Editar
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => deleteUser(user.id)}
+              disabled={isDeleting}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </td>
+    </tr>
   );
 }

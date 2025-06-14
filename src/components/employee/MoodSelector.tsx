@@ -15,7 +15,7 @@ export function MoodSelector({ employeeId }: MoodSelectorProps) {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const handleMoodSelect = async (mood: typeof MOOD_OPTIONS[0]) => {
+  const handleMoodSelect = async (mood: typeof MOOD_OPTIONS[number]) => {
     setSaving(true);
     setSelectedMood(mood.score);
     
@@ -38,10 +38,10 @@ export function MoodSelector({ employeeId }: MoodSelectorProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center">
-            <div className="text-6xl mb-2">{todayMood.mood_emoji}</div>
-            <p className="text-lg font-medium">{todayMood.mood_description}</p>
+            <div className="text-6xl mb-2">{todayMood.moodEmoji}</div>
+            <p className="text-lg font-medium">{todayMood.moodDescription}</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Registrado às {new Date(todayMood.created_at).toLocaleTimeString()}
+              Registrado às {new Date(todayMood.createdAt).toLocaleTimeString()}
             </p>
           </div>
         </CardContent>

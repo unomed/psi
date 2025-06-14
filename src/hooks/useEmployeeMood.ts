@@ -26,7 +26,20 @@ export function useEmployeeMood(employeeId: string) {
         .maybeSingle();
 
       if (error) throw error;
-      setTodayMood(data);
+      
+      if (data) {
+        // Mapear os dados do banco para o tipo MoodLog
+        const moodLog: MoodLog = {
+          id: data.id,
+          employeeId: data.employee_id,
+          moodScore: data.mood_score,
+          moodEmoji: data.mood_emoji,
+          moodDescription: data.mood_description,
+          logDate: data.log_date,
+          createdAt: data.created_at
+        };
+        setTodayMood(moodLog);
+      }
     } catch (error) {
       console.error('Erro ao carregar humor do dia:', error);
     }
@@ -41,7 +54,14 @@ export function useEmployeeMood(employeeId: string) {
 
       if (error) throw error;
       if (data && data.length > 0) {
-        setMoodStats(data[0]);
+        // Mapear os dados do banco para o tipo MoodStats
+        const stats: MoodStats = {
+          avgMood: data[0].avg_mood,
+          moodTrend: data[0].mood_trend,
+          totalLogs: data[0].total_logs,
+          moodDistribution: data[0].mood_distribution
+        };
+        setMoodStats(stats);
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas de humor:', error);
