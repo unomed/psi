@@ -1,13 +1,13 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users, Bot } from "lucide-react";
+import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users, Bot, Activity } from "lucide-react";
 import RiskAnalysisFormIntegrated from "@/components/risks/RiskAnalysisFormIntegrated";
 import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
+import { AutomationDashboard } from "@/components/dashboard/automation";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function GestaoRiscos() {
@@ -25,19 +25,23 @@ export default function GestaoRiscos() {
         </div>
       </div>
 
-      <Tabs defaultValue="psychosocial" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs defaultValue="dashboard" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="dashboard" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Dashboard
+          </TabsTrigger>
           <TabsTrigger value="psychosocial" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
-            Riscos Psicossociais
+            Análise
           </TabsTrigger>
           <TabsTrigger value="automation" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
-            Automação
+            Monitor
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Análise de Risco
+            Cálculos
           </TabsTrigger>
           <TabsTrigger value="assessments" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
@@ -49,9 +53,13 @@ export default function GestaoRiscos() {
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Configurações
+            Config
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard">
+          <AutomationDashboard companyId={companyId} />
+        </TabsContent>
 
         <TabsContent value="psychosocial">
           <Card>
