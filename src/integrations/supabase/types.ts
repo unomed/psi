@@ -1159,6 +1159,152 @@ export type Database = {
           },
         ]
       }
+      risk_assessments: {
+        Row: {
+          assessment_response_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          employee_id: string | null
+          id: string
+          mitigation_actions: Json | null
+          next_assessment_date: string | null
+          probability_index: number
+          recommended_action: string | null
+          risk_factors: Json | null
+          risk_level: string
+          risk_value: number
+          role_id: string | null
+          sector_id: string | null
+          severity_index: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_response_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          id?: string
+          mitigation_actions?: Json | null
+          next_assessment_date?: string | null
+          probability_index: number
+          recommended_action?: string | null
+          risk_factors?: Json | null
+          risk_level: string
+          risk_value: number
+          role_id?: string | null
+          sector_id?: string | null
+          severity_index: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_response_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          id?: string
+          mitigation_actions?: Json | null
+          next_assessment_date?: string | null
+          probability_index?: number
+          recommended_action?: string | null
+          risk_factors?: Json | null
+          risk_level?: string
+          risk_value?: number
+          role_id?: string | null
+          sector_id?: string | null
+          severity_index?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_assessments_assessment_response_id_fkey"
+            columns: ["assessment_response_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "risk_assessments_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_matrix_configurations: {
+        Row: {
+          col_labels: Json
+          company_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          matrix_size: number
+          risk_actions: Json
+          risk_matrix: Json
+          row_labels: Json
+          updated_at: string
+        }
+        Insert: {
+          col_labels?: Json
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          matrix_size?: number
+          risk_actions?: Json
+          risk_matrix?: Json
+          row_labels?: Json
+          updated_at?: string
+        }
+        Update: {
+          col_labels?: Json
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          matrix_size?: number
+          risk_actions?: Json
+          risk_matrix?: Json
+          row_labels?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_matrix_configurations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roles: {
         Row: {
           company_id: string
@@ -1526,6 +1672,19 @@ export type Database = {
         Args: { _user_id: string; _company_id: string }
         Returns: boolean
       }
+      calculate_risk_level: {
+        Args: {
+          p_company_id: string
+          p_severity_index: number
+          p_probability_index: number
+        }
+        Returns: {
+          risk_value: number
+          risk_level: string
+          recommended_action: string
+          risk_color: string
+        }[]
+      }
       check_company_access: {
         Args: { user_id: string; company_id: string }
         Returns: boolean
@@ -1606,6 +1765,32 @@ export type Database = {
           budget_allocated: number
           budget_used: number
           created_by: string
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      get_risk_assessments_by_company: {
+        Args: { p_company_id?: string }
+        Returns: {
+          id: string
+          company_id: string
+          company_name: string
+          employee_id: string
+          employee_name: string
+          sector_id: string
+          sector_name: string
+          role_id: string
+          role_name: string
+          assessment_response_id: string
+          severity_index: number
+          probability_index: number
+          risk_value: number
+          risk_level: string
+          recommended_action: string
+          risk_factors: Json
+          mitigation_actions: Json
+          status: string
+          next_assessment_date: string
           created_at: string
           updated_at: string
         }[]
