@@ -18,6 +18,13 @@ export interface FormValues {
   riskLowPeriodicity: PeriodicityType;
 }
 
+const PERIODICITY_OPTIONS = [
+  { value: "monthly", label: "Mensal" },
+  { value: "quarterly", label: "Trimestral" },
+  { value: "semiannual", label: "Semestral" },
+  { value: "annual", label: "Anual" }
+];
+
 export function PeriodicityForm({ defaultValues, onSubmit }: PeriodicityFormProps) {
   const form = useForm<FormValues>({
     defaultValues
@@ -32,15 +39,16 @@ export function PeriodicityForm({ defaultValues, onSubmit }: PeriodicityFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Periodicidade Padrão</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || "monthly"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a periodicidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">Mensal</SelectItem>
-                  <SelectItem value="quarterly">Trimestral</SelectItem>
-                  <SelectItem value="semiannual">Semestral</SelectItem>
-                  <SelectItem value="annual">Anual</SelectItem>
+                  {PERIODICITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormItem>
@@ -53,15 +61,16 @@ export function PeriodicityForm({ defaultValues, onSubmit }: PeriodicityFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Periodicidade para Risco Alto</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || "monthly"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a periodicidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">Mensal</SelectItem>
-                  <SelectItem value="quarterly">Trimestral</SelectItem>
-                  <SelectItem value="semiannual">Semestral</SelectItem>
-                  <SelectItem value="annual">Anual</SelectItem>
+                  {PERIODICITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormItem>
@@ -74,15 +83,16 @@ export function PeriodicityForm({ defaultValues, onSubmit }: PeriodicityFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Periodicidade para Risco Médio</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || "quarterly"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a periodicidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">Mensal</SelectItem>
-                  <SelectItem value="quarterly">Trimestral</SelectItem>
-                  <SelectItem value="semiannual">Semestral</SelectItem>
-                  <SelectItem value="annual">Anual</SelectItem>
+                  {PERIODICITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormItem>
@@ -95,15 +105,16 @@ export function PeriodicityForm({ defaultValues, onSubmit }: PeriodicityFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Periodicidade para Risco Baixo</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || "annual"}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a periodicidade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">Mensal</SelectItem>
-                  <SelectItem value="quarterly">Trimestral</SelectItem>
-                  <SelectItem value="semiannual">Semestral</SelectItem>
-                  <SelectItem value="annual">Anual</SelectItem>
+                  {PERIODICITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormItem>

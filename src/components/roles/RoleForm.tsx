@@ -26,6 +26,12 @@ interface RoleFormProps {
   sectors: { id: string; name: string }[];
 }
 
+const RISK_LEVELS = [
+  { value: "low", label: "Baixo" },
+  { value: "medium", label: "Médio" },
+  { value: "high", label: "Alto" }
+];
+
 export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
   const [skills, setSkills] = React.useState<string[]>(defaultValues?.requiredSkills || []);
 
@@ -90,11 +96,18 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
                       <SelectValue placeholder="Selecione um setor" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sectors.map((sector) => (
-                        <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
-                          {sector.name}
-                        </SelectItem>
-                      ))}
+                      {sectors.map((sector) => {
+                        const sectorId = sector.id || `sector-fallback-${Date.now()}-${Math.random()}`;
+                        if (!sectorId || sectorId.trim() === '') {
+                          console.error('Empty sector ID detected in RoleForm:', sector);
+                          return null;
+                        }
+                        return (
+                          <SelectItem key={sectorId} value={sectorId}>
+                            {sector.name || 'Setor sem nome'}
+                          </SelectItem>
+                        );
+                      }).filter(Boolean)}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -126,9 +139,11 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
                     <SelectValue placeholder="Será definido após avaliações" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Baixo</SelectItem>
-                    <SelectItem value="medium">Médio</SelectItem>
-                    <SelectItem value="high">Alto</SelectItem>
+                    {RISK_LEVELS.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        {level.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </FormControl>

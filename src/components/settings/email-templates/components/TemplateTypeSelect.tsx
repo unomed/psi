@@ -19,7 +19,7 @@ export function TemplateTypeSelect({ form, allowedTemplateNames }: TemplateTypeS
           <FormLabel>Tipo de Modelo</FormLabel>
           <Select
             onValueChange={field.onChange}
-            defaultValue={field.value}
+            value={field.value || undefined}
           >
             <FormControl>
               <SelectTrigger>
@@ -27,11 +27,17 @@ export function TemplateTypeSelect({ form, allowedTemplateNames }: TemplateTypeS
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {allowedTemplateNames.map((name) => (
-                <SelectItem key={name} value={name}>
-                  {name}
-                </SelectItem>
-              ))}
+              {allowedTemplateNames.map((name) => {
+                if (!name || name.trim() === '') {
+                  console.error('Empty template name detected in TemplateTypeSelect:', name);
+                  return null;
+                }
+                return (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                );
+              }).filter(Boolean)}
             </SelectContent>
           </Select>
           <FormDescription>

@@ -36,11 +36,18 @@ export function RoleCompanySelect({
               <SelectValue placeholder="Selecione uma empresa" />
             </SelectTrigger>
             <SelectContent>
-              {companies.map((company) => (
-                <SelectItem key={company.id} value={company.id || `company-${Math.random()}`}>
-                  {company.name}
-                </SelectItem>
-              ))}
+              {companies.map((company) => {
+                const companyId = company.id || `company-fallback-${Date.now()}-${Math.random()}`;
+                if (!companyId || companyId.trim() === '') {
+                  console.error('Empty company ID detected in RoleCompanySelect:', company);
+                  return null;
+                }
+                return (
+                  <SelectItem key={companyId} value={companyId}>
+                    {company.name || 'Empresa sem nome'}
+                  </SelectItem>
+                );
+              }).filter(Boolean)}
             </SelectContent>
           </Select>
         </div>
@@ -55,11 +62,18 @@ export function RoleCompanySelect({
                 <SelectValue placeholder="Selecione um setor" />
               </SelectTrigger>
               <SelectContent>
-                {filteredSectors.map((sector) => (
-                  <SelectItem key={sector.id} value={sector.id || `sector-${Math.random()}`}>
-                    {sector.name}
-                  </SelectItem>
-                ))}
+                {filteredSectors.map((sector) => {
+                  const sectorId = sector.id || `sector-fallback-${Date.now()}-${Math.random()}`;
+                  if (!sectorId || sectorId.trim() === '') {
+                    console.error('Empty sector ID detected in RoleCompanySelect:', sector);
+                    return null;
+                  }
+                  return (
+                    <SelectItem key={sectorId} value={sectorId}>
+                      {sector.name || 'Setor sem nome'}
+                    </SelectItem>
+                  );
+                }).filter(Boolean)}
               </SelectContent>
             </Select>
           </div>
