@@ -10,8 +10,7 @@ import {
   BarChart3, 
   ClipboardList, 
   Shield, 
-  CreditCard,
-  Settings
+  CreditCard
 } from "lucide-react";
 import type { MenuItem } from "./types";
 
@@ -87,11 +86,5 @@ export const menuItems: MenuItem[] = [
     href: "/faturamento",
     icon: CreditCard,
     roles: ["superadmin"],
-  },
-  {
-    title: "Configurações",
-    href: "/configuracoes",
-    icon: Settings,
-    roles: ["superadmin", "admin"],
   },
 ];
