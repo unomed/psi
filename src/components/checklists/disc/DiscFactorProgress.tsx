@@ -1,6 +1,7 @@
 
 import { Progress } from "@/components/ui/progress";
-import { discFactors, getFactorProgressColor, DiscFactorType } from "./DiscFactorsData";
+import { DiscFactorType } from "@/types";
+import { discFactors, getFactorProgressColor } from "./DiscFactorsData";
 
 interface DiscFactorProgressProps {
   factor: DiscFactorType;
