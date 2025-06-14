@@ -55,28 +55,25 @@ export function useActionPlans() {
     queryKey: ['actionPlans'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('action_plans')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_action_plans');
       
       if (error) {
+        console.error('Error fetching action plans:', error);
         toast.error('Erro ao carregar planos de ação');
         throw error;
       }
       
-      return data as ActionPlan[];
+      return (data || []) as ActionPlan[];
     }
   });
 
   const createActionPlan = useMutation({
     mutationFn: async (planData: Partial<ActionPlan>) => {
       const { data, error } = await supabase
-        .from('action_plans')
-        .insert(planData)
-        .select()
-        .single();
+        .rpc('create_action_plan', { plan_data: planData });
 
       if (error) {
+        console.error('Error creating action plan:', error);
         toast.error('Erro ao criar plano de ação');
         throw error;
       }
@@ -92,13 +89,10 @@ export function useActionPlans() {
   const updateActionPlan = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ActionPlan> & { id: string }) => {
       const { data, error } = await supabase
-        .from('action_plans')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+        .rpc('update_action_plan', { plan_id: id, plan_data: updates });
 
       if (error) {
+        console.error('Error updating action plan:', error);
         toast.error('Erro ao atualizar plano de ação');
         throw error;
       }
@@ -114,11 +108,10 @@ export function useActionPlans() {
   const deleteActionPlan = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('action_plans')
-        .delete()
-        .eq('id', id);
+        .rpc('delete_action_plan', { plan_id: id });
 
       if (error) {
+        console.error('Error deleting action plan:', error);
         toast.error('Erro ao excluir plano de ação');
         throw error;
       }

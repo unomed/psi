@@ -13,17 +13,15 @@ export function useActionPlanItems(actionPlanId?: string) {
       if (!actionPlanId) return [];
       
       const { data, error } = await supabase
-        .from('action_plan_items')
-        .select('*')
-        .eq('action_plan_id', actionPlanId)
-        .order('created_at', { ascending: true });
+        .rpc('get_action_plan_items', { plan_id: actionPlanId });
       
       if (error) {
+        console.error('Error fetching action plan items:', error);
         toast.error('Erro ao carregar itens do plano');
         throw error;
       }
       
-      return data as ActionPlanItem[];
+      return (data || []) as ActionPlanItem[];
     },
     enabled: !!actionPlanId
   });
@@ -31,12 +29,10 @@ export function useActionPlanItems(actionPlanId?: string) {
   const createItem = useMutation({
     mutationFn: async (itemData: Partial<ActionPlanItem>) => {
       const { data, error } = await supabase
-        .from('action_plan_items')
-        .insert(itemData)
-        .select()
-        .single();
+        .rpc('create_action_plan_item', { item_data: itemData });
 
       if (error) {
+        console.error('Error creating action plan item:', error);
         toast.error('Erro ao criar item do plano');
         throw error;
       }
@@ -53,13 +49,10 @@ export function useActionPlanItems(actionPlanId?: string) {
   const updateItem = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ActionPlanItem> & { id: string }) => {
       const { data, error } = await supabase
-        .from('action_plan_items')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+        .rpc('update_action_plan_item', { item_id: id, item_data: updates });
 
       if (error) {
+        console.error('Error updating action plan item:', error);
         toast.error('Erro ao atualizar item');
         throw error;
       }
@@ -76,11 +69,10 @@ export function useActionPlanItems(actionPlanId?: string) {
   const deleteItem = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('action_plan_items')
-        .delete()
-        .eq('id', id);
+        .rpc('delete_action_plan_item', { item_id: id });
 
       if (error) {
+        console.error('Error deleting action plan item:', error);
         toast.error('Erro ao excluir item');
         throw error;
       }
