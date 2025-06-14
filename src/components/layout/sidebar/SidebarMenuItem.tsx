@@ -13,15 +13,23 @@ interface MenuItemProps {
 export function SidebarMenuItem({ title, icon: Icon, path }: MenuItemProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const isActive = location.pathname === path;
+  
+  // Considerar ativo se o caminho atual corresponde exatamente ou é um subcaminho
+  const isActive = location.pathname === path || 
+    (path !== "/dashboard" && location.pathname.startsWith(path));
+
+  const handleClick = () => {
+    console.log(`[SidebarMenuItem] Navegando para: ${path}`);
+    navigate(path);
+  };
 
   return (
     <MenuItem>
       <SidebarMenuButton
-        onClick={() => navigate(path)}
+        onClick={handleClick}
         className={cn(
-          "flex items-center w-full",
-          isActive && "bg-sidebar-accent"
+          "flex items-center w-full cursor-pointer",
+          isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
         )}
       >
         <Icon className="mr-2 h-5 w-5" />

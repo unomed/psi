@@ -18,7 +18,7 @@ export const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
     icon: BarChart3,
-    href: "/",
+    href: "/dashboard",
     roles: ["superadmin", "admin", "manager", "user"]
   },
   {
@@ -46,9 +46,9 @@ export const menuItems: MenuItem[] = [
     roles: ["superadmin", "admin", "manager"]
   },
   {
-    title: "Checklists",
+    title: "Templates",
     icon: CheckSquare,
-    href: "/checklists",
+    href: "/templates",
     roles: ["superadmin", "admin", "manager", "user"]
   },
   {
@@ -58,9 +58,15 @@ export const menuItems: MenuItem[] = [
     roles: ["superadmin", "admin", "manager", "user"]
   },
   {
-    title: "Agendamento",
+    title: "Agendamentos",
     icon: Calendar,
-    href: "/agendamento-avaliacoes", 
+    href: "/agendamentos", 
+    roles: ["superadmin", "admin", "manager"]
+  },
+  {
+    title: "Resultados",
+    icon: BarChart3,
+    href: "/resultados",
     roles: ["superadmin", "admin", "manager"]
   },
   {

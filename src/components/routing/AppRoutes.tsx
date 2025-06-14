@@ -19,6 +19,7 @@ import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
 import Relatorios from "@/pages/Relatorios";
 import PlanoAcao from "@/pages/PlanoAcao";
+import GestaoRiscos from "@/pages/GestaoRiscos";
 import Faturamento from "@/pages/Faturamento";
 
 export function AppRoutes() {
@@ -134,6 +135,16 @@ export function AppRoutes() {
           <MainLayout>
             <RouteGuard requireCompanyAccess="action_plans">
               <PlanoAcao />
+            </RouteGuard>
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/gestao-riscos" 
+        element={
+          <MainLayout>
+            <RouteGuard requireCompanyAccess="risk_management">
+              <GestaoRiscos />
             </RouteGuard>
           </MainLayout>
         } 
