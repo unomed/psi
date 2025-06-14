@@ -48,7 +48,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         id: n.id,
         title: n.title,
         message: n.message,
-        type: n.priority === 'high' ? 'warning' : 'info' as const,
+        type: (n.priority === 'high' ? 'warning' : 'info') as 'info' | 'warning' | 'error' | 'success',
         createdAt: n.created_at,
         read: n.status === 'read'
       }));

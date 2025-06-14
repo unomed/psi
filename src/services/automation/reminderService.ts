@@ -18,16 +18,17 @@ export class ReminderService {
     recipients: string[];
   }) {
     try {
+      // Use psychosocial_notifications table instead of scheduled_reminders
       const { data, error } = await supabase
-        .from('scheduled_reminders')
+        .from('psychosocial_notifications')
         .insert({
-          entity_id: config.entityId,
-          entity_type: config.entityType,
-          due_date: config.dueDate,
-          reminder_type: config.reminderType,
+          company_id: config.entityId, // This should be company_id from context
+          title: this.getReminderTitle(config.reminderType),
+          message: this.getReminderMessage(config),
+          notification_type: config.reminderType,
+          priority: this.getReminderPriority(config.reminderType),
           recipients: config.recipients,
-          status: 'scheduled',
-          created_at: new Date().toISOString()
+          status: 'pending'
         });
 
       if (error) throw error;
@@ -40,11 +41,12 @@ export class ReminderService {
 
   static async processScheduledReminders() {
     try {
+      // Use psychosocial_notifications for reminders
       const { data: reminders, error } = await supabase
-        .from('scheduled_reminders')
+        .from('psychosocial_notifications')
         .select('*')
-        .eq('status', 'scheduled')
-        .lte('reminder_date', new Date().toISOString());
+        .eq('status', 'pending')
+        .lte('created_at', new Date().toISOString());
 
       if (error) throw error;
 
@@ -53,7 +55,7 @@ export class ReminderService {
         
         // Mark as sent
         await supabase
-          .from('scheduled_reminders')
+          .from('psychosocial_notifications')
           .update({ 
             status: 'sent', 
             sent_at: new Date().toISOString() 
@@ -70,32 +72,19 @@ export class ReminderService {
 
   private static async sendReminder(reminder: any) {
     try {
-      // Create notification
-      await supabase
-        .from('psychosocial_notifications')
-        .insert({
-          company_id: reminder.company_id,
-          title: this.getReminderTitle(reminder.reminder_type),
-          message: this.getReminderMessage(reminder),
-          notification_type: reminder.reminder_type,
-          priority: this.getReminderPriority(reminder.reminder_type),
-          recipients: reminder.recipients,
-          status: 'pending'
-        });
-
       // Send email if configured
       if (reminder.recipients?.length > 0) {
         await supabase.functions.invoke('send-reminder-email', {
           body: {
             recipients: reminder.recipients,
-            subject: this.getReminderTitle(reminder.reminder_type),
-            body: this.getReminderMessage(reminder),
-            reminderType: reminder.reminder_type
+            subject: reminder.title,
+            body: reminder.message,
+            reminderType: reminder.notification_type
           }
         });
       }
 
-      toast.success(`Lembrete enviado: ${this.getReminderTitle(reminder.reminder_type)}`);
+      toast.success(`Lembrete enviado: ${reminder.title}`);
     } catch (error) {
       console.error('Error sending reminder:', error);
       toast.error('Erro ao enviar lembrete');
@@ -113,8 +102,8 @@ export class ReminderService {
   }
 
   private static getReminderMessage(reminder: any): string {
-    const baseMessage = `Este é um lembrete automático sobre: ${reminder.entity_type}`;
-    const dueDate = new Date(reminder.due_date).toLocaleDateString('pt-BR');
+    const baseMessage = `Este é um lembrete automático sobre: ${reminder.entityType}`;
+    const dueDate = new Date(reminder.dueDate).toLocaleDateString('pt-BR');
     return `${baseMessage}\nData de vencimento: ${dueDate}\nPor favor, tome as ações necessárias.`;
   }
 
@@ -136,7 +125,7 @@ export class ReminderService {
       reminderDate.setDate(reminderDate.getDate() - days);
 
       await this.createReminder({
-        entityId: assessmentId,
+        entityId: companyId,
         entityType: 'assessment',
         dueDate: dueDate,
         reminderType: 'assessment_due',
@@ -153,7 +142,7 @@ export class ReminderService {
       reminderDate.setDate(reminderDate.getDate() - days);
 
       await this.createReminder({
-        entityId: actionPlanId,
+        entityId: companyId,
         entityType: 'action_plan',
         dueDate: dueDate,
         reminderType: 'action_plan_overdue',

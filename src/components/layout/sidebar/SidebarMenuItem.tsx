@@ -18,7 +18,7 @@ export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
 
   return (
     <BaseSidebarMenuItem>
-      <SidebarMenuButton asChild>
+      <SidebarMenuButton>
         <Link 
           to={item.href} 
           onClick={handleNavigation} 
