@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User, DollarSign, Edit, Trash2, Eye } from 'lucide-react';
+import { Calendar, Clock, User, DollarSign, Edit, Trash2, Eye, Building2 } from 'lucide-react';
 import { ActionPlan } from '@/hooks/useActionPlans';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -122,12 +122,12 @@ export function ActionPlanCard({ plan, onEdit, onDelete, onView }: ActionPlanCar
           </div>
         )}
 
-        {plan.department && (
+        {plan.sector_name && (
           <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-muted-foreground" />
+            <Building2 className="h-4 w-4 text-muted-foreground" />
             <div>
-              <div className="text-muted-foreground">Departamento</div>
-              <div className="font-medium">{plan.department}</div>
+              <div className="text-muted-foreground">Setor</div>
+              <div className="font-medium">{plan.sector_name}</div>
             </div>
           </div>
         )}

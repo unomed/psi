@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ActionPlan } from '@/hooks/useActionPlans';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSectors } from '@/hooks/useSectors';
 
 const actionPlanSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -29,7 +31,7 @@ const actionPlanSchema = z.object({
   status: z.enum(['draft', 'active', 'completed', 'cancelled']),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
   company_id: z.string().optional(),
-  department: z.string().optional(),
+  sector_id: z.string().optional(),
   start_date: z.string().optional(),
   due_date: z.string().optional(),
   risk_level: z.enum(['low', 'medium', 'high']).optional(),
@@ -47,6 +49,7 @@ interface ActionPlanFormProps {
 
 export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPlanFormProps) {
   const { userRole, userCompanies } = useAuth();
+  const { sectors } = useSectors();
   const shouldShowCompanySelect = userRole === 'superadmin' && userCompanies && userCompanies.length > 1;
 
   const form = useForm<ActionPlanFormData>({
@@ -57,13 +60,20 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
       status: plan?.status || 'draft',
       priority: plan?.priority || 'medium',
       company_id: plan?.company_id || '',
-      department: plan?.department || '',
+      sector_id: plan?.sector_id || '',
       start_date: plan?.start_date || '',
       due_date: plan?.due_date || '',
       risk_level: plan?.risk_level || 'medium',
       budget_allocated: plan?.budget_allocated || undefined,
     },
   });
+
+  const selectedCompany = form.watch('company_id');
+  
+  // Filtrar setores pela empresa selecionada
+  const filteredSectors = selectedCompany 
+    ? sectors.filter(sector => sector.companyId === selectedCompany)
+    : sectors;
 
   return (
     <Form {...form}>
@@ -128,7 +138,6 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
             />
           )}
 
-          
           <FormField
             control={form.control}
             name="status"
@@ -179,13 +188,24 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
 
           <FormField
             control={form.control}
-            name="department"
+            name="sector_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Departamento</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Recursos Humanos" {...field} />
-                </FormControl>
+                <FormLabel>Setor</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o setor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {filteredSectors.map((sector) => (
+                      <SelectItem key={sector.id} value={sector.id}>
+                        {sector.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

@@ -13,7 +13,8 @@ export interface ActionPlan {
   status: 'draft' | 'active' | 'completed' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'critical';
   responsible_user_id?: string;
-  department?: string;
+  sector_id?: string;
+  sector_name?: string;
   start_date?: string;
   due_date?: string;
   completion_date?: string;
@@ -35,7 +36,7 @@ export interface ActionPlanItem {
   priority: 'low' | 'medium' | 'high' | 'critical';
   responsible_name?: string;
   responsible_email?: string;
-  department?: string;
+  sector_id?: string;
   estimated_hours?: number;
   actual_hours?: number;
   start_date?: string;
@@ -58,7 +59,10 @@ export function useActionPlans() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('action_plans')
-        .select('*')
+        .select(`
+          *,
+          sectors!action_plans_sector_id_fkey(name)
+        `)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -67,7 +71,10 @@ export function useActionPlans() {
         throw error;
       }
       
-      return (data || []) as ActionPlan[];
+      return (data || []).map(plan => ({
+        ...plan,
+        sector_name: plan.sectors?.name || null
+      })) as ActionPlan[];
     }
   });
 
@@ -83,8 +90,17 @@ export function useActionPlans() {
       const { data, error } = await supabase
         .from('action_plans')
         .insert({
-          ...planData,
+          title: planData.title,
+          description: planData.description,
+          status: planData.status || 'draft',
+          priority: planData.priority || 'medium',
           company_id: companyId,
+          sector_id: planData.sector_id,
+          responsible_user_id: planData.responsible_user_id,
+          start_date: planData.start_date,
+          due_date: planData.due_date,
+          risk_level: planData.risk_level,
+          budget_allocated: planData.budget_allocated,
           created_by: user?.id
         })
         .select()
@@ -108,7 +124,20 @@ export function useActionPlans() {
     mutationFn: async ({ id, ...updates }: Partial<ActionPlan> & { id: string }) => {
       const { data, error } = await supabase
         .from('action_plans')
-        .update(updates)
+        .update({
+          title: updates.title,
+          description: updates.description,
+          status: updates.status,
+          priority: updates.priority,
+          sector_id: updates.sector_id,
+          responsible_user_id: updates.responsible_user_id,
+          start_date: updates.start_date,
+          due_date: updates.due_date,
+          completion_date: updates.completion_date,
+          risk_level: updates.risk_level,
+          budget_allocated: updates.budget_allocated,
+          budget_used: updates.budget_used
+        })
         .eq('id', id)
         .select()
         .single();

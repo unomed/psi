@@ -1589,7 +1589,8 @@ export type Database = {
           status: string
           priority: string
           responsible_user_id: string
-          department: string
+          sector_id: string
+          sector_name: string
           start_date: string
           due_date: string
           completion_date: string
