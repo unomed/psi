@@ -16,3 +16,11 @@ export interface SubMenuItem {
   roles?: string[];
   permission?: string;
 }
+
+export interface SettingsMenuItem {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  roles?: string[];
+  permission?: string;
+}

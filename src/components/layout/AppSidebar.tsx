@@ -17,82 +17,46 @@ import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
 
 export function AppSidebar() {
-  // Adicionar proteção para garantir que o AuthContext está disponível
-  let userRole: string | null = null;
-  let hasPermission: (permission: string) => boolean = () => true; // Default allow para evitar logout
-  let loadingPermission = false;
+  const { userRole, loading } = useAuth();
+  const { hasPermission, loadingPermission } = useCheckPermission();
 
-  try {
-    const authContext = useAuth();
-    userRole = authContext.userRole;
-    const permissionContext = useCheckPermission();
-    hasPermission = permissionContext.hasPermission;
-    loadingPermission = permissionContext.loadingPermission;
-  } catch (error) {
-    console.warn("[AppSidebar] AuthContext não disponível:", error);
-    // Retornar sidebar básico sem funcionalidades de auth
-    return (
-      <Sidebar className="border-r">
-        <SidebarHeader />
-        <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
-          <SidebarGroup className="flex-1">
-            <SidebarGroupLabel>Carregando...</SidebarGroupLabel>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-    );
-  }
+  console.log('[AppSidebar] Current user role:', userRole);
+  console.log('[AppSidebar] Loading states:', { loading, loadingPermission });
 
-  // Memoize filtered menu items to prevent unnecessary recalculations
+  // Memoize filtered menu items
   const filteredMenuItems = useMemo(() => {
-    if (loadingPermission) return [];
+    if (loading || loadingPermission || !userRole) {
+      console.log('[AppSidebar] Still loading, returning empty menu');
+      return [];
+    }
 
     return menuItems.filter(item => {
       try {
-        // Always allow dashboard access for authenticated users
-        if (item.permission === 'view_dashboard') {
-          return true;
+        // Check role access
+        const hasRole = item.roles.includes(userRole);
+        if (!hasRole) {
+          console.log(`[AppSidebar] ${item.title}: Role check failed for ${userRole}`);
+          return false;
         }
 
-        // Check if user role exists and item has roles array
-        if (!item.roles || !Array.isArray(item.roles) || !userRole) {
-          return false;
-        }
-        
-        // Check if user role is included in item roles
-        const hasRole = item.roles.includes(userRole);
-        
-        // If no role match, deny access
-        if (!hasRole) {
-          return false;
-        }
-        
-        // Check permission if item has a permission property
-        // Use try-catch to prevent permission errors from breaking the menu
-        let hasPermissionCheck = true;
+        // Check permission if specified
         if (item.permission) {
-          try {
-            hasPermissionCheck = hasPermission(item.permission);
-          } catch (error) {
-            console.warn(`[AppSidebar] Error checking permission ${item.permission}:`, error);
-            // Default to allow access if permission check fails to prevent logout
-            hasPermissionCheck = true;
-          }
+          const hasRequiredPermission = hasPermission(item.permission);
+          console.log(`[AppSidebar] ${item.title}: Permission ${item.permission} = ${hasRequiredPermission}`);
+          return hasRequiredPermission;
         }
-        
-        console.log(`Menu item ${item.title}: hasRole=${hasRole}, hasPermission=${hasPermissionCheck}`);
-        
-        return hasPermissionCheck;
-      } catch (error) {
-        console.warn(`[AppSidebar] Error processing menu item ${item.title}:`, error);
-        // Default to allow access if there's an error to prevent logout
+
+        console.log(`[AppSidebar] ${item.title}: Access granted`);
         return true;
+      } catch (error) {
+        console.error(`[AppSidebar] Error checking access for ${item.title}:`, error);
+        return false;
       }
     });
-  }, [userRole, hasPermission, loadingPermission]);
+  }, [userRole, hasPermission, loading, loadingPermission]);
 
-  // Show loading state while permissions are being fetched
-  if (loadingPermission) {
+  // Show loading state
+  if (loading || loadingPermission) {
     return (
       <Sidebar className="border-r">
         <SidebarHeader />
@@ -105,7 +69,7 @@ export function AppSidebar() {
     );
   }
 
-  console.log(`Filtered menu items for role ${userRole}:`, filteredMenuItems.map(item => item.title));
+  console.log('[AppSidebar] Filtered menu items:', filteredMenuItems.map(item => item.title));
 
   return (
     <Sidebar className="border-r">

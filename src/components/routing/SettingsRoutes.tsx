@@ -4,6 +4,8 @@ import NotificationsPage from "@/pages/configuracoes/NotificationsPage";
 import EmailPage from "@/pages/configuracoes/EmailPage";
 import AutomacaoPsicossocialPage from "@/pages/configuracoes/AutomacaoPsicossocialPage";
 import NR01Page from "@/pages/relatorios/NR01Page";
+import UsuariosPage from "@/pages/configuracoes/UsuariosPage";
+import PermissoesPage from "@/pages/configuracoes/PermissoesPage";
 
 export function SettingsRoutes() {
   return (
@@ -12,6 +14,8 @@ export function SettingsRoutes() {
       <Route path="email" element={<EmailPage />} />
       <Route path="automacao-psicossocial" element={<AutomacaoPsicossocialPage />} />
       <Route path="relatorios-nr01" element={<NR01Page />} />
+      <Route path="usuarios" element={<UsuariosPage />} />
+      <Route path="permissoes" element={<PermissoesPage />} />
     </Routes>
   );
 }

@@ -32,10 +32,10 @@ export function SettingsSubmenu() {
     >
       {filteredItems.map((item) => (
         <SidebarMenuSubItemComponent
-          key={item.url}
+          key={item.href}
           title={item.title}
-          href={item.url}
-          isActive={location.pathname === item.url}
+          href={item.href}
+          isActive={location.pathname === item.href}
         />
       ))}
     </CollapsibleMenuItem>

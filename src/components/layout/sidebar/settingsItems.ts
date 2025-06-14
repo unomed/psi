@@ -1,36 +1,36 @@
 
 import { Settings, Bell, Mail, Zap, FileText, Shield, Users, Lock } from "lucide-react";
-import type { MenuItem } from "./types";
+import type { SettingsMenuItem } from "./types";
 
-export const settingsItems: MenuItem[] = [
+export const settingsItems: SettingsMenuItem[] = [
   {
     title: "Notificações",
-    url: "/configuracoes/notificacoes",
+    href: "/configuracoes/notificacoes",
     icon: Bell,
   },
   {
     title: "Email",
-    url: "/configuracoes/email", 
+    href: "/configuracoes/email", 
     icon: Mail,
   },
   {
     title: "Automação Psicossocial",
-    url: "/configuracoes/automacao-psicossocial",
+    href: "/configuracoes/automacao-psicossocial",
     icon: Zap,
   },
   {
     title: "Relatórios NR-01",
-    url: "/configuracoes/relatorios-nr01",
+    href: "/configuracoes/relatorios-nr01",
     icon: Shield,
   },
   {
     title: "Usuários",
-    url: "/configuracoes/usuarios",
+    href: "/configuracoes/usuarios",
     icon: Users,
   },
   {
     title: "Permissões",
-    url: "/configuracoes/permissoes", 
+    href: "/configuracoes/permissoes", 
     icon: Lock,
   },
 ];

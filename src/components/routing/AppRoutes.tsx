@@ -40,129 +40,97 @@ export function AppRoutes() {
       <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
       
       {/* Main authenticated routes with MainLayout */}
-      <Route 
-        path="/*" 
-        element={
-          <MainLayout>
-            <Routes>
-              <Route 
-                path="/dashboard" 
-                element={
-                  <RouteGuard requirePermission="view_dashboard">
-                    <Dashboard />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/empresas" 
-                element={
-                  <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_companies">
-                    <Empresas />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/funcionarios" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_employees">
-                    <Funcionarios />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/setores" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_sectors">
-                    <Setores />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/funcoes" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_functions">
-                    <Funcoes />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/templates" 
-                element={
-                  <RouteGuard requirePermission="view_checklists">
-                    <Checklists />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/avaliacoes" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_assessments">
-                    <Avaliacoes />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/agendamentos" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_scheduling">
-                    <AssessmentScheduling />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/resultados" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_results">
-                    <AssessmentResults />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/relatorios" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_reports">
-                    <Relatorios />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/plano-acao" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
-                    <PlanoAcao />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/gestao-riscos" 
-                element={
-                  <RouteGuard requireCompanyAccess="any" requirePermission="view_risk_management">
-                    <GestaoRiscos />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/faturamento" 
-                element={
-                  <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_billing">
-                    <Faturamento />
-                  </RouteGuard>
-                } 
-              />
-              <Route 
-                path="/configuracoes/*" 
-                element={<SettingsRoutes />} 
-              />
-              
-              {/* Root route - redirect based on authentication */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </MainLayout>
-        } 
-      />
-      
-      {/* Fallback routes */}
-      <Route path="*" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/*" element={
+        <MainLayout>
+          <Routes>
+            <Route path="/dashboard" element={
+              <RouteGuard requirePermission="view_dashboard">
+                <Dashboard />
+              </RouteGuard>
+            } />
+            
+            <Route path="/empresas" element={
+              <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_companies">
+                <Empresas />
+              </RouteGuard>
+            } />
+            
+            <Route path="/funcionarios" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_employees">
+                <Funcionarios />
+              </RouteGuard>
+            } />
+            
+            <Route path="/setores" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_sectors">
+                <Setores />
+              </RouteGuard>
+            } />
+            
+            <Route path="/funcoes" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_functions">
+                <Funcoes />
+              </RouteGuard>
+            } />
+            
+            <Route path="/templates" element={
+              <RouteGuard requirePermission="view_checklists">
+                <Checklists />
+              </RouteGuard>
+            } />
+            
+            <Route path="/avaliacoes" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_assessments">
+                <Avaliacoes />
+              </RouteGuard>
+            } />
+            
+            <Route path="/agendamentos" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_scheduling">
+                <AssessmentScheduling />
+              </RouteGuard>
+            } />
+            
+            <Route path="/resultados" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_results">
+                <AssessmentResults />
+              </RouteGuard>
+            } />
+            
+            <Route path="/relatorios" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_reports">
+                <Relatorios />
+              </RouteGuard>
+            } />
+            
+            <Route path="/plano-acao" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
+                <PlanoAcao />
+              </RouteGuard>
+            } />
+            
+            <Route path="/gestao-riscos" element={
+              <RouteGuard requireCompanyAccess="any" requirePermission="view_risk_management">
+                <GestaoRiscos />
+              </RouteGuard>
+            } />
+            
+            <Route path="/faturamento" element={
+              <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_billing">
+                <Faturamento />
+              </RouteGuard>
+            } />
+            
+            <Route path="/configuracoes/*" element={<SettingsRoutes />} />
+            
+            {/* Root route - redirect to dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            
+            {/* Catch all other routes and redirect to dashboard */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </MainLayout>
+      } />
     </Routes>
   );
 }
