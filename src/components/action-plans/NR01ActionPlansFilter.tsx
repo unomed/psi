@@ -1,9 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Brain, Calendar, AlertTriangle, CheckCircle, Search, Filter } from "lucide-react";
 import { ActionPlan } from "@/hooks/useActionPlans";
 
 interface NR01ActionPlansFilterProps {
@@ -12,15 +14,29 @@ interface NR01ActionPlansFilterProps {
 }
 
 export function NR01ActionPlansFilter({ actionPlans, onPlanSelect }: NR01ActionPlansFilterProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+
   // Filtrar planos que são originados de NR-01 (título contém "NR-01")
   const nr01Plans = actionPlans.filter(plan => 
     plan.title.includes('NR-01') || plan.description?.includes('psicossocial')
   );
 
+  // Aplicar filtros
+  const filteredPlans = nr01Plans.filter(plan => {
+    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         plan.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || plan.status === statusFilter;
+    const matchesPriority = priorityFilter === "all" || plan.priority === priorityFilter;
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
+
   // Agrupar por prioridade/urgência
-  const criticalPlans = nr01Plans.filter(p => p.priority === 'critical');
-  const highPlans = nr01Plans.filter(p => p.priority === 'high');
-  const mediumPlans = nr01Plans.filter(p => p.priority === 'medium');
+  const criticalPlans = filteredPlans.filter(p => p.priority === 'critical');
+  const highPlans = filteredPlans.filter(p => p.priority === 'high');
+  const mediumPlans = filteredPlans.filter(p => p.priority === 'medium');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -76,10 +92,50 @@ export function NR01ActionPlansFilter({ actionPlans, onPlanSelect }: NR01ActionP
               <Brain className="h-5 w-5" />
               Planos de Ação NR-01
             </div>
-            <Badge variant="outline">{nr01Plans.length} planos</Badge>
+            <Badge variant="outline">{filteredPlans.length} de {nr01Plans.length} planos</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por título ou descrição..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="draft">Rascunho</SelectItem>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="completed">Concluído</SelectItem>
+                <SelectItem value="cancelled">Cancelado</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Prioridade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Prioridades</SelectItem>
+                <SelectItem value="critical">Crítica</SelectItem>
+                <SelectItem value="high">Alta</SelectItem>
+                <SelectItem value="medium">Média</SelectItem>
+                <SelectItem value="low">Baixa</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Estatísticas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-bold text-red-600">{criticalPlans.length}</div>
@@ -213,6 +269,15 @@ export function NR01ActionPlansFilter({ actionPlans, onPlanSelect }: NR01ActionP
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Mensagem quando não há resultados */}
+            {filteredPlans.length === 0 && nr01Plans.length > 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <Filter className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Nenhum plano encontrado com os filtros aplicados</p>
+                <p className="text-sm">Tente ajustar os critérios de busca</p>
               </div>
             )}
           </div>
