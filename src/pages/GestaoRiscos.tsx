@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BarChart3, FileText, Settings } from "lucide-react";
+import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users } from "lucide-react";
 import RiskAnalysisFormIntegrated from "@/components/risks/RiskAnalysisFormIntegrated";
 import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
+import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function GestaoRiscos() {
@@ -18,13 +19,17 @@ export default function GestaoRiscos() {
         <div>
           <h1 className="text-3xl font-bold">Gestão de Riscos</h1>
           <p className="text-muted-foreground">
-            Análise e gerenciamento de riscos psicossociais
+            Análise e gerenciamento de riscos psicossociais conforme NR-01
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="analysis" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="psychosocial" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="psychosocial" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Riscos Psicossociais
+          </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Análise de Risco
@@ -42,6 +47,23 @@ export default function GestaoRiscos() {
             Configurações
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="psychosocial">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Análise de Riscos Psicossociais - NR-01
+              </CardTitle>
+              <CardDescription>
+                Análise baseada no Manual de Fatores de Riscos Psicossociais do MTE e diretrizes da NR-01
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PsychosocialRiskAnalysis companyId={companyId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="analysis">
           <Card>

@@ -989,6 +989,116 @@ export type Database = {
           },
         ]
       }
+      nr01_action_templates: {
+        Row: {
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          created_at: string | null
+          description: string | null
+          exposure_level: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          id: string
+          is_mandatory: boolean | null
+          legal_requirements: string | null
+          mandatory_actions: Json
+          recommended_timeline_days: number | null
+          responsible_roles: Json | null
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          created_at?: string | null
+          description?: string | null
+          exposure_level: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          id?: string
+          is_mandatory?: boolean | null
+          legal_requirements?: string | null
+          mandatory_actions?: Json
+          recommended_timeline_days?: number | null
+          responsible_roles?: Json | null
+          template_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["psychosocial_risk_category"]
+          created_at?: string | null
+          description?: string | null
+          exposure_level?: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          id?: string
+          is_mandatory?: boolean | null
+          legal_requirements?: string | null
+          mandatory_actions?: Json
+          recommended_timeline_days?: number | null
+          responsible_roles?: Json | null
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      nr01_compliance: {
+        Row: {
+          action_plans_completed: number | null
+          action_plans_generated: number | null
+          auditor_notes: string | null
+          company_id: string
+          compliance_percentage: number | null
+          created_at: string | null
+          employees_evaluated: number | null
+          evaluation_period_end: string
+          evaluation_period_start: string
+          high_risk_findings: number | null
+          id: string
+          last_audit_date: string | null
+          next_audit_date: string | null
+          sectors_evaluated: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          action_plans_completed?: number | null
+          action_plans_generated?: number | null
+          auditor_notes?: string | null
+          company_id: string
+          compliance_percentage?: number | null
+          created_at?: string | null
+          employees_evaluated?: number | null
+          evaluation_period_end: string
+          evaluation_period_start: string
+          high_risk_findings?: number | null
+          id?: string
+          last_audit_date?: string | null
+          next_audit_date?: string | null
+          sectors_evaluated?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          action_plans_completed?: number | null
+          action_plans_generated?: number | null
+          auditor_notes?: string | null
+          company_id?: string
+          compliance_percentage?: number | null
+          created_at?: string | null
+          employees_evaluated?: number | null
+          evaluation_period_end?: string
+          evaluation_period_start?: string
+          high_risk_findings?: number | null
+          id?: string
+          last_audit_date?: string | null
+          next_audit_date?: string | null
+          sectors_evaluated?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nr01_compliance_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_transactions: {
         Row: {
           amount: number
@@ -1117,6 +1227,151 @@ export type Database = {
           is_active?: boolean
         }
         Relationships: []
+      }
+      psychosocial_criteria: {
+        Row: {
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          company_id: string | null
+          created_at: string | null
+          description: string | null
+          factor_name: string
+          id: string
+          is_active: boolean | null
+          mandatory_actions: Json | null
+          threshold_high: number | null
+          threshold_low: number | null
+          threshold_medium: number | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          factor_name: string
+          id?: string
+          is_active?: boolean | null
+          mandatory_actions?: Json | null
+          threshold_high?: number | null
+          threshold_low?: number | null
+          threshold_medium?: number | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["psychosocial_risk_category"]
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          factor_name?: string
+          id?: string
+          is_active?: boolean | null
+          mandatory_actions?: Json | null
+          threshold_high?: number | null
+          threshold_low?: number | null
+          threshold_medium?: number | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "psychosocial_criteria_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      psychosocial_risk_analysis: {
+        Row: {
+          assessment_response_id: string | null
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          company_id: string
+          contributing_factors: Json | null
+          created_at: string | null
+          created_by: string | null
+          evaluation_date: string
+          exposure_level: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          id: string
+          mandatory_measures: Json | null
+          next_evaluation_date: string | null
+          recommended_actions: Json | null
+          risk_score: number
+          role_id: string | null
+          sector_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assessment_response_id?: string | null
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          company_id: string
+          contributing_factors?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          evaluation_date?: string
+          exposure_level: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          id?: string
+          mandatory_measures?: Json | null
+          next_evaluation_date?: string | null
+          recommended_actions?: Json | null
+          risk_score: number
+          role_id?: string | null
+          sector_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assessment_response_id?: string | null
+          category?: Database["public"]["Enums"]["psychosocial_risk_category"]
+          company_id?: string
+          contributing_factors?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          evaluation_date?: string
+          exposure_level?: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          id?: string
+          mandatory_measures?: Json | null
+          next_evaluation_date?: string | null
+          recommended_actions?: Json | null
+          risk_score?: number
+          role_id?: string | null
+          sector_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "psychosocial_risk_analysis_assessment_response_id_fkey"
+            columns: ["assessment_response_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "psychosocial_risk_analysis_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "psychosocial_risk_analysis_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "psychosocial_risk_analysis_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions: {
         Row: {
@@ -1672,6 +1927,15 @@ export type Database = {
         Args: { _user_id: string; _company_id: string }
         Returns: boolean
       }
+      calculate_psychosocial_risk: {
+        Args: { p_assessment_response_id: string; p_company_id: string }
+        Returns: {
+          category: Database["public"]["Enums"]["psychosocial_risk_category"]
+          risk_score: number
+          exposure_level: Database["public"]["Enums"]["psychosocial_exposure_level"]
+          recommended_actions: Json
+        }[]
+      }
       calculate_risk_level: {
         Args: {
           p_company_id: string
@@ -1717,6 +1981,10 @@ export type Database = {
       }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_nr01_action_plan: {
+        Args: { p_risk_analysis_id: string }
         Returns: string
       }
       get_action_plan_items: {
@@ -1836,6 +2104,13 @@ export type Database = {
         | "eri"
         | "disc"
         | "custom"
+      psychosocial_exposure_level: "baixo" | "medio" | "alto" | "critico"
+      psychosocial_risk_category:
+        | "organizacao_trabalho"
+        | "condicoes_ambientais"
+        | "relacoes_socioprofissionais"
+        | "reconhecimento_crescimento"
+        | "elo_trabalho_vida_social"
       result_classification:
         | "normal"
         | "mild"
@@ -1980,6 +2255,14 @@ export const Constants = {
         "eri",
         "disc",
         "custom",
+      ],
+      psychosocial_exposure_level: ["baixo", "medio", "alto", "critico"],
+      psychosocial_risk_category: [
+        "organizacao_trabalho",
+        "condicoes_ambientais",
+        "relacoes_socioprofissionais",
+        "reconhecimento_crescimento",
+        "elo_trabalho_vida_social",
       ],
       result_classification: [
         "normal",
