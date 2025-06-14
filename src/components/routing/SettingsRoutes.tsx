@@ -21,12 +21,12 @@ export const settingsRoutes = [
       <EmailPage />
     </RouteGuard>
   } />,
-  <Route key="servidor-email" path="servidor-email" element={
+  <Route key="email-server" path="email-server" element={
     <RouteGuard requirePermission="view_settings">
       <EmailServerPage />
     </RouteGuard>
   } />,
-  <Route key="emails" path="emails" element={
+  <Route key="email-templates" path="email-templates" element={
     <RouteGuard requirePermission="view_settings">
       <EmailTemplatesPage />
     </RouteGuard>
