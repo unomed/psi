@@ -1371,6 +1371,22 @@ export type Database = {
           | { template_id: string; company_id: string; new_title?: string }
         Returns: string
       }
+      create_action_plan: {
+        Args: { plan_data: Json }
+        Returns: string
+      }
+      create_action_plan_item: {
+        Args: { item_data: Json }
+        Returns: string
+      }
+      delete_action_plan: {
+        Args: { plan_id: string }
+        Returns: undefined
+      }
+      delete_action_plan_item: {
+        Args: { item_id: string }
+        Returns: undefined
+      }
       dissociate_user_from_company: {
         Args: { _user_id: string; _company_id: string }
         Returns: boolean
@@ -1378,6 +1394,55 @@ export type Database = {
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_action_plan_items: {
+        Args: { plan_id: string }
+        Returns: {
+          id: string
+          action_plan_id: string
+          title: string
+          description: string
+          status: string
+          priority: string
+          responsible_name: string
+          responsible_email: string
+          department: string
+          estimated_hours: number
+          actual_hours: number
+          start_date: string
+          due_date: string
+          completion_date: string
+          progress_percentage: number
+          dependencies: string[]
+          notes: string
+          created_by: string
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      get_action_plans: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          company_id: string
+          assessment_response_id: string
+          title: string
+          description: string
+          status: string
+          priority: string
+          responsible_user_id: string
+          department: string
+          start_date: string
+          due_date: string
+          completion_date: string
+          progress_percentage: number
+          risk_level: string
+          budget_allocated: number
+          budget_used: number
+          created_by: string
+          created_at: string
+          updated_at: string
+        }[]
       }
       get_user_emails: {
         Args: { user_ids: string[] }
@@ -1396,6 +1461,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      update_action_plan: {
+        Args: { plan_id: string; plan_data: Json }
+        Returns: string
+      }
+      update_action_plan_item: {
+        Args: { item_id: string; item_data: Json }
+        Returns: string
       }
     }
     Enums: {
