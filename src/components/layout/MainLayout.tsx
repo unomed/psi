@@ -6,7 +6,7 @@ import { UserProfileMenu } from "./UserProfileMenu";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { NotificationProvider } from "@/components/notifications/NotificationService";
 
-export function MainLayout() {
+export default function MainLayout() {
   return (
     <NotificationProvider>
       <SidebarProvider>
