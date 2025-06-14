@@ -44,7 +44,7 @@ export function AppRoutes() {
         path="/dashboard" 
         element={
           <MainLayout>
-            <RouteGuard>
+            <RouteGuard requirePermission="view_dashboard">
               <Dashboard />
             </RouteGuard>
           </MainLayout>
@@ -54,7 +54,7 @@ export function AppRoutes() {
         path="/empresas" 
         element={
           <MainLayout>
-            <RouteGuard allowedRoles={["superadmin"]}>
+            <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_companies">
               <Empresas />
             </RouteGuard>
           </MainLayout>
@@ -64,7 +64,7 @@ export function AppRoutes() {
         path="/funcionarios" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_employees">
               <Funcionarios />
             </RouteGuard>
           </MainLayout>
@@ -74,7 +74,7 @@ export function AppRoutes() {
         path="/setores" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_sectors">
               <Setores />
             </RouteGuard>
           </MainLayout>
@@ -84,7 +84,7 @@ export function AppRoutes() {
         path="/funcoes" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_functions">
               <Funcoes />
             </RouteGuard>
           </MainLayout>
@@ -94,7 +94,7 @@ export function AppRoutes() {
         path="/templates" 
         element={
           <MainLayout>
-            <RouteGuard>
+            <RouteGuard requirePermission="view_checklists">
               <Checklists />
             </RouteGuard>
           </MainLayout>
@@ -104,7 +104,7 @@ export function AppRoutes() {
         path="/avaliacoes" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_assessments">
               <Avaliacoes />
             </RouteGuard>
           </MainLayout>
@@ -114,7 +114,7 @@ export function AppRoutes() {
         path="/agendamentos" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_scheduling">
               <AssessmentScheduling />
             </RouteGuard>
           </MainLayout>
@@ -124,7 +124,7 @@ export function AppRoutes() {
         path="/resultados" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_results">
               <AssessmentResults />
             </RouteGuard>
           </MainLayout>
@@ -134,7 +134,7 @@ export function AppRoutes() {
         path="/relatorios" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_reports">
               <Relatorios />
             </RouteGuard>
           </MainLayout>
@@ -144,7 +144,7 @@ export function AppRoutes() {
         path="/plano-acao" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
               <PlanoAcao />
             </RouteGuard>
           </MainLayout>
@@ -154,7 +154,7 @@ export function AppRoutes() {
         path="/gestao-riscos" 
         element={
           <MainLayout>
-            <RouteGuard requireCompanyAccess="any">
+            <RouteGuard requireCompanyAccess="any" requirePermission="view_risk_management">
               <GestaoRiscos />
             </RouteGuard>
           </MainLayout>
@@ -164,7 +164,7 @@ export function AppRoutes() {
         path="/faturamento" 
         element={
           <MainLayout>
-            <RouteGuard allowedRoles={["superadmin"]}>
+            <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_billing">
               <Faturamento />
             </RouteGuard>
           </MainLayout>

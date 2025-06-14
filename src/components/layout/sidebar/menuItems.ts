@@ -11,7 +11,9 @@ import {
   TrendingUp,
   Shield,
   CreditCard,
-  UserCheck
+  UserCheck,
+  CalendarClock,
+  ClipboardList
 } from "lucide-react";
 import { MenuItem } from "./types";
 
@@ -74,19 +76,19 @@ export const menuItems: MenuItem[] = [
   },
   {
     title: "Agendamentos",
-    icon: Calendar,
+    icon: CalendarClock,
     href: "/agendamentos",
     path: "/agendamentos",
     roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_assessments"
+    permission: "view_scheduling"
   },
   {
     title: "Resultados",
-    icon: TrendingUp,
+    icon: ClipboardList,
     href: "/resultados",
     path: "/resultados",
     roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_reports"
+    permission: "view_results"
   },
   {
     title: "Gestão de Riscos",
@@ -94,7 +96,7 @@ export const menuItems: MenuItem[] = [
     href: "/gestao-riscos",
     path: "/gestao-riscos",
     roles: ["superadmin", "admin"],
-    permission: "view_reports"
+    permission: "view_risk_management"
   },
   {
     title: "Plano de Ação",
@@ -102,11 +104,11 @@ export const menuItems: MenuItem[] = [
     href: "/plano-acao",
     path: "/plano-acao",
     roles: ["superadmin", "admin"],
-    permission: "view_reports"
+    permission: "view_action_plans"
   },
   {
     title: "Relatórios",
-    icon: BarChart3,
+    icon: TrendingUp,
     href: "/relatorios",
     path: "/relatorios",
     roles: ["superadmin", "admin"],
@@ -118,6 +120,6 @@ export const menuItems: MenuItem[] = [
     href: "/faturamento",
     path: "/faturamento",
     roles: ["superadmin"],
-    permission: "view_settings"
+    permission: "view_billing"
   }
 ];

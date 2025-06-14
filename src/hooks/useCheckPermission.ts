@@ -38,7 +38,6 @@ export function useCheckPermission() {
 
         if (error) {
           console.error('[useCheckPermission] Error fetching permissions:', error);
-          // Set default permissions based on role if database fetch fails
           const defaultPermissions = getDefaultPermissionsForRole(userRole);
           setPermissions(defaultPermissions);
         } else if (data && data.permissions) {
@@ -74,18 +73,14 @@ export function useCheckPermission() {
     };
   }, [userRole]);
 
-  // Memoize and debounce the hasPermission function to prevent unnecessary re-renders
   const hasPermission = useCallback((permissionKey: string): boolean => {
-    // If superadmin, always grant access
     if (userRole === 'superadmin') return true;
     
-    // If permissions are still loading, deny access
     if (loadingPermission) return false;
     
     console.log(`[useCheckPermission] Checking permission ${permissionKey} for role ${userRole}:`, 
       permissions ? permissions[permissionKey] : "no permissions data");
     
-    // Check if key directly exists in permissions object
     if (permissions && permissions[permissionKey] === true) {
       return true;
     }
@@ -100,7 +95,6 @@ export function useCheckPermission() {
   };
 }
 
-// Helper function to provide default permissions when database fails
 function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
   const defaultPermissions: Record<string, boolean> = {
     view_dashboard: false,
@@ -128,16 +122,34 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
     create_assessments: false,
     edit_assessments: false,
     delete_assessments: false,
+    view_scheduling: false,
+    create_scheduling: false,
+    edit_scheduling: false,
+    delete_scheduling: false,
+    view_results: false,
+    export_results: false,
+    analyze_results: false,
+    view_risk_management: false,
+    create_risk_plans: false,
+    edit_risk_matrix: false,
+    view_action_plans: false,
+    create_action_plans: false,
+    edit_action_plans: false,
+    approve_action_plans: false,
     view_reports: false,
     export_reports: false,
+    create_custom_reports: false,
+    view_billing: false,
+    manage_billing: false,
+    view_invoices: false,
     view_settings: false,
     edit_settings: false,
+    manage_users: false,
+    manage_permissions: false,
   };
 
-  // Set basic permissions based on role
   switch (role) {
     case 'superadmin':
-      // Superadmin gets all permissions
       Object.keys(defaultPermissions).forEach(key => {
         defaultPermissions[key] = true;
       });
@@ -164,8 +176,21 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
       defaultPermissions.create_assessments = true;
       defaultPermissions.edit_assessments = true;
       defaultPermissions.delete_assessments = true;
+      defaultPermissions.view_scheduling = true;
+      defaultPermissions.create_scheduling = true;
+      defaultPermissions.edit_scheduling = true;
+      defaultPermissions.view_results = true;
+      defaultPermissions.export_results = true;
+      defaultPermissions.view_risk_management = true;
+      defaultPermissions.create_risk_plans = true;
+      defaultPermissions.edit_risk_matrix = true;
+      defaultPermissions.view_action_plans = true;
+      defaultPermissions.create_action_plans = true;
+      defaultPermissions.edit_action_plans = true;
       defaultPermissions.view_reports = true;
       defaultPermissions.export_reports = true;
+      defaultPermissions.view_settings = true;
+      defaultPermissions.manage_users = true;
       break;
     case 'evaluator':
       defaultPermissions.view_dashboard = true;
@@ -175,11 +200,18 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
       defaultPermissions.view_assessments = true;
       defaultPermissions.create_assessments = true;
       defaultPermissions.edit_assessments = true;
+      defaultPermissions.view_scheduling = true;
+      defaultPermissions.create_scheduling = true;
+      defaultPermissions.edit_scheduling = true;
+      defaultPermissions.view_results = true;
+      defaultPermissions.export_results = true;
       break;
     case 'profissionais':
       defaultPermissions.view_dashboard = true;
       defaultPermissions.view_checklists = true;
       defaultPermissions.view_assessments = true;
+      defaultPermissions.view_scheduling = true;
+      defaultPermissions.view_results = true;
       break;
     default:
       defaultPermissions.view_dashboard = true;
