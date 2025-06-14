@@ -17,9 +17,26 @@ export function useCompanies() {
         throw error;
       }
       
-      return data;
+      // Transform database response to match expected interface
+      return data.map(company => ({
+        id: company.id,
+        name: company.name,
+        cnpj: company.cnpj,
+        email: company.email,
+        phone: company.phone,
+        address: company.address,
+        city: company.city,
+        state: company.state,
+        industry: company.industry,
+        logoUrl: company.logo_url,
+        contactName: company.contact_name,
+        contactEmail: company.contact_email,
+        contactPhone: company.contact_phone,
+        createdAt: new Date(company.created_at),
+        updatedAt: new Date(company.updated_at)
+      }));
     }
   });
 
-  return { companies, isLoading };
+  return { companies: companies || [], isLoading };
 }

@@ -17,9 +17,20 @@ export function useRoles() {
         throw error;
       }
       
-      return data;
+      // Transform database response to match expected interface
+      return data.map(role => ({
+        id: role.id,
+        name: role.name,
+        description: role.description,
+        companyId: role.company_id,
+        sectorId: role.sector_id,
+        requiredSkills: role.required_skills,
+        riskLevel: role.risk_level,
+        createdAt: new Date(role.created_at),
+        updatedAt: new Date(role.updated_at)
+      }));
     }
   });
 
-  return { roles, isLoading };
+  return { roles: roles || [], isLoading };
 }

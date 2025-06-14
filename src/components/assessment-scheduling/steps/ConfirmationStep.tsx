@@ -92,7 +92,7 @@ export function ConfirmationStep({ employee, template, details }: ConfirmationSt
               )}
               <div className="flex gap-2 mt-2">
                 <Badge variant="outline" className="text-xs">{template?.type}</Badge>
-                {template?.is_standard && (
+                {template?.isStandard && (
                   <Badge variant="secondary" className="text-xs">Padrão</Badge>
                 )}
               </div>

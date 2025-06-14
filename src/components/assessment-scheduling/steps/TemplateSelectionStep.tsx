@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,42 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
         .order('title');
 
       if (error) throw error;
-      return data as ChecklistTemplate[];
+      
+      // Transform database response to match ChecklistTemplate interface
+      return data.map(template => ({
+        id: template.id,
+        title: template.title,
+        description: template.description || '',
+        type: template.type,
+        questions: [], // Will be loaded separately if needed
+        createdAt: new Date(template.created_at),
+        scaleType: template.scale_type,
+        isStandard: template.is_standard,
+        companyId: template.company_id,
+        derivedFromId: template.derived_from_id,
+        estimatedTimeMinutes: template.estimated_time_minutes,
+        instructions: template.instructions,
+        interpretationGuide: template.interpretation_guide,
+        maxScore: template.max_score,
+        cutoffScores: template.cutoff_scores,
+        isActive: template.is_active,
+        version: template.version,
+        updatedAt: template.updated_at ? new Date(template.updated_at) : undefined,
+        createdBy: template.created_by,
+        // Keep database field names for compatibility
+        estimated_time_minutes: template.estimated_time_minutes,
+        is_standard: template.is_standard,
+        company_id: template.company_id,
+        derived_from_id: template.derived_from_id,
+        scale_type: template.scale_type,
+        created_at: template.created_at,
+        updated_at: template.updated_at,
+        created_by: template.created_by,
+        is_active: template.is_active,
+        cutoff_scores: template.cutoff_scores,
+        max_score: template.max_score,
+        interpretation_guide: template.interpretation_guide
+      })) as ChecklistTemplate[];
     }
   });
 
@@ -43,7 +77,8 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
       copsoq: "COPSOQ",
       jcq: "JCQ",
       eri: "ERI",
-      disc: "DISC"
+      disc: "DISC",
+      psicossocial: "Psicossocial"
     };
     return types[type as keyof typeof types] || type;
   };
@@ -112,7 +147,7 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
               
               <CardContent className="pt-0">
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {template.is_standard && (
+                  {template.isStandard && (
                     <Badge variant="secondary" className="text-xs">
                       <Star className="h-3 w-3 mr-1" />
                       Padrão
@@ -121,22 +156,22 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
                   <Badge variant="outline" className="text-xs">
                     {getTemplateTypeLabel(template.type)}
                   </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {getScaleTypeLabel(template.scale_type)}
-                  </Badge>
+                  {template.scaleType && (
+                    <Badge variant="outline" className="text-xs">
+                      {getScaleTypeLabel(template.scaleType)}
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  {template.questions?.length && (
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      {template.questions.length} questões
-                    </div>
-                  )}
-                  {template.estimated_time_minutes && (
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    Questões disponíveis
+                  </div>
+                  {template.estimatedTimeMinutes && (
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      ~{template.estimated_time_minutes} min
+                      ~{template.estimatedTimeMinutes} min
                     </div>
                   )}
                 </div>

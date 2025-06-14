@@ -17,9 +17,20 @@ export function useSectors() {
         throw error;
       }
       
-      return data;
+      // Transform database response to match expected interface
+      return data.map(sector => ({
+        id: sector.id,
+        name: sector.name,
+        description: sector.description,
+        companyId: sector.company_id,
+        location: sector.location,
+        responsibleName: sector.responsible_name,
+        riskLevel: sector.risk_level,
+        createdAt: new Date(sector.created_at),
+        updatedAt: new Date(sector.updated_at)
+      }));
     }
   });
 
-  return { sectors, isLoading };
+  return { sectors: sectors || [], isLoading };
 }

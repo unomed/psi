@@ -10,12 +10,12 @@ export interface PsicossocialQuestion {
   weight?: number;
 }
 
-export type ChecklistTemplateType = "disc" | "custom" | "psicossocial";
+export type ChecklistTemplateType = "disc" | "custom" | "psicossocial" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri";
 
 // Define ChecklistQuestion as a union type
 export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion;
 
-// For disc + custom: DiscQuestion[]; for psicossocial: PsicossocialQuestion[]
+// Updated ChecklistTemplate interface to match database schema
 export interface ChecklistTemplate {
   id: string;
   title: string;
@@ -27,6 +27,29 @@ export interface ChecklistTemplate {
   isStandard?: boolean;
   companyId?: string | null;
   derivedFromId?: string | null;
+  // Additional properties from database
+  estimatedTimeMinutes?: number;
+  instructions?: string;
+  interpretationGuide?: string;
+  maxScore?: number;
+  cutoffScores?: any;
+  isActive?: boolean;
+  version?: number;
+  updatedAt?: Date;
+  createdBy?: string;
+  // Database field names for compatibility
+  estimated_time_minutes?: number;
+  is_standard?: boolean;
+  company_id?: string | null;
+  derived_from_id?: string | null;
+  scale_type?: string;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
+  is_active?: boolean;
+  cutoff_scores?: any;
+  max_score?: number;
+  interpretation_guide?: string;
 }
 
 export interface ChecklistResult {
