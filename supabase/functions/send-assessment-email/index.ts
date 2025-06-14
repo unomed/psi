@@ -209,14 +209,31 @@ serve(async (req) => {
       hasText: !!emailContent.text
     });
     
-    console.log('Step 7: Sending email via SMTP...');
+    console.log('Step 7: Sending email via enhanced SMTP...');
     
-    // Send email via SMTP (with development fallback handled inside the service)
+    // Send email via enhanced SMTP service
     const emailSent = await sendEmailViaSMTP(smtpConfig, emailContent);
     
     if (!emailSent) {
-      console.error('SMTP sending failed completely');
-      throw new Error('Falha ao enviar email via SMTP - todas as tentativas falharam');
+      console.error('Enhanced SMTP sending failed completely');
+      
+      // In case of complete failure, save to pending queue for manual retry
+      const { error: queueError } = await supabase
+        .from('assessment_emails')
+        .insert({
+          scheduled_assessment_id: requestData.assessmentId,
+          recipient_email: requestData.employeeEmail,
+          subject: emailSubject,
+          body: emailBody,
+          delivery_status: 'failed',
+          sent_at: null
+        });
+      
+      if (queueError) {
+        console.error('Failed to save to pending queue:', queueError);
+      }
+      
+      throw new Error('Falha ao enviar email via SMTP - email salvo na fila para reenvio manual');
     }
     
     console.log('Email processing completed successfully');
