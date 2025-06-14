@@ -1,4 +1,5 @@
 
+import { useMemo, useCallback } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +15,6 @@ import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem as MenuItem } from "./sidebar/SidebarMenuItem";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
-import { useMemo } from "react";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
@@ -52,6 +52,11 @@ export function AppSidebar() {
     });
   }, [userRole, hasPermission, loadingPermission]);
 
+  // Memoize the settings submenu to prevent unnecessary re-renders
+  const settingsSubmenu = useMemo(() => (
+    <SettingsSubmenu userRole={userRole} />
+  ), [userRole]);
+
   // Show loading state while permissions are being fetched
   if (loadingPermission) {
     return (
@@ -88,7 +93,7 @@ export function AppSidebar() {
               ))}
               
               <SidebarMenuItem>
-                <SettingsSubmenu userRole={userRole} />
+                {settingsSubmenu}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

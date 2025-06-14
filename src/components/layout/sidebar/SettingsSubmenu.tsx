@@ -72,18 +72,17 @@ export function SettingsSubmenu({ userRole }: SettingsSubmenuProps) {
       {isOpen && (
         <div className="ml-6 mt-2 space-y-1">
           {filteredSettingsItems.map((item) => (
-            <div key={item.title} className="w-full">
-              <SidebarMenuButton
-                className={cn(
-                  "flex items-center w-full text-sm",
-                  location.pathname === item.path && "bg-sidebar-accent"
-                )}
-                onClick={() => handleItemClick(item.path)}
-              >
-                <item.icon className="mr-2 h-4 w-4" />
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </div>
+            <SidebarMenuButton
+              key={item.title}
+              className={cn(
+                "flex items-center w-full text-sm",
+                location.pathname === item.path && "bg-sidebar-accent"
+              )}
+              onClick={() => handleItemClick(item.path)}
+            >
+              <item.icon className="mr-2 h-4 w-4" />
+              <span>{item.title}</span>
+            </SidebarMenuButton>
           ))}
         </div>
       )}

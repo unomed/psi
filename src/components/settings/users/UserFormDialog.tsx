@@ -11,22 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateUser } from "@/hooks/users/useCreateUser";
 import { useUpdateUserRole } from "@/hooks/users/useUpdateUserRole";
-import { useCompanies } from "@/hooks/useCompanies";
 import { toast } from "sonner";
 import { User } from "@/hooks/users/types";
+import { BasicUserInfo } from "./form-sections/BasicUserInfo";
+import { CompanySection } from "./form-sections/CompanySection";
 
 const userFormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -46,7 +38,6 @@ interface UserFormDialogProps {
 
 export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { companies } = useCompanies();
   const createUserMutation = useCreateUser();
   const updateUserRoleMutation = useUpdateUserRole();
 
@@ -105,88 +96,8 @@ export function UserFormDialog({ isOpen, onClose, user, mode }: UserFormDialogPr
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      type="email" 
-                      disabled={mode === "edit"} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Função</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma função" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="evaluator">Avaliador</SelectItem>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="superadmin">Super Administrador</SelectItem>
-                      <SelectItem value="profissionais">Profissionais</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {form.watch("role") !== "superadmin" && companies && (
-              <FormField
-                control={form.control}
-                name="companyIds"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Empresas</FormLabel>
-                    <Select onValueChange={(value) => field.onChange([value])} defaultValue={field.value?.[0]}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma empresa" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>
-                            {company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <BasicUserInfo form={form} mode={mode} />
+            <CompanySection form={form} />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>

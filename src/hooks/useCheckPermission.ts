@@ -1,6 +1,6 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PermissionItem {
@@ -14,11 +14,15 @@ export function useCheckPermission() {
   const [permissions, setPermissions] = useState<Record<string, boolean> | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchPermissions = async () => {
       if (!userRole) {
         console.log("No user role found, setting default permissions");
-        setLoadingPermission(false);
-        setPermissions({});
+        if (isMounted) {
+          setLoadingPermission(false);
+          setPermissions({});
+        }
         return;
       }
 
@@ -29,6 +33,8 @@ export function useCheckPermission() {
           .select('permissions')
           .eq('role', userRole)
           .single();
+
+        if (!isMounted) return;
 
         if (error) {
           console.error('Error fetching permissions:', error);
@@ -46,36 +52,41 @@ export function useCheckPermission() {
           }
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Error in permission check:', error);
         const defaultPermissions = getDefaultPermissionsForRole(userRole);
         setPermissions(defaultPermissions);
       } finally {
-        setLoadingPermission(false);
+        if (isMounted) {
+          setLoadingPermission(false);
+        }
       }
     };
 
     fetchPermissions();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [userRole]);
 
-  // Memoize the hasPermission function to prevent unnecessary re-renders
-  const hasPermission = useMemo(() => {
-    return (permissionKey: string): boolean => {
-      // If superadmin, always grant access
-      if (userRole === 'superadmin') return true;
-      
-      // If permissions are still loading, deny access
-      if (loadingPermission) return false;
-      
-      console.log(`Checking permission ${permissionKey} for role ${userRole}:`, 
-        permissions ? permissions[permissionKey] : "no permissions data");
-      
-      // Check if key directly exists in permissions object
-      if (permissions && permissions[permissionKey] === true) {
-        return true;
-      }
-      
-      return false;
-    };
+  // Memoize and debounce the hasPermission function to prevent unnecessary re-renders
+  const hasPermission = useCallback((permissionKey: string): boolean => {
+    // If superadmin, always grant access
+    if (userRole === 'superadmin') return true;
+    
+    // If permissions are still loading, deny access
+    if (loadingPermission) return false;
+    
+    console.log(`Checking permission ${permissionKey} for role ${userRole}:`, 
+      permissions ? permissions[permissionKey] : "no permissions data");
+    
+    // Check if key directly exists in permissions object
+    if (permissions && permissions[permissionKey] === true) {
+      return true;
+    }
+    
+    return false;
   }, [userRole, loadingPermission, permissions]);
 
   return {
