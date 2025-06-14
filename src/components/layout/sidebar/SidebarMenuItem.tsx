@@ -1,40 +1,112 @@
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { LucideIcon } from "lucide-react";
-import { SidebarMenuButton, SidebarMenuItem as MenuItem } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem as SidebarMenuItemBase,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
-interface MenuItemProps {
+interface SidebarMenuItemProps {
   title: string;
   icon: LucideIcon;
-  path: string;
+  href?: string;
+  isActive?: boolean;
+  children?: React.ReactNode;
+  hasSubmenu?: boolean;
 }
 
-export function SidebarMenuItem({ title, icon: Icon, path }: MenuItemProps) {
+export function SidebarMenuItem({ 
+  title, 
+  icon: Icon, 
+  href, 
+  isActive = false, 
+  children, 
+  hasSubmenu = false 
+}: SidebarMenuItemProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Considerar ativo se o caminho atual corresponde exatamente ou é um subcaminho
-  const isActive = location.pathname === path || 
-    (path !== "/dashboard" && location.pathname.startsWith(path));
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleClick = () => {
-    console.log(`[SidebarMenuItem] Navegando para: ${path}`);
-    navigate(path);
+    if (href && !hasSubmenu) {
+      console.log(`[SidebarMenuItem] Navegando para: ${href}`);
+      navigate(href);
+    } else if (hasSubmenu) {
+      setIsOpen(!isOpen);
+    }
   };
 
-  return (
-    <MenuItem>
-      <SidebarMenuButton
-        onClick={handleClick}
-        className={cn(
-          "flex items-center w-full cursor-pointer",
-          isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
-        )}
+  const isCurrentPath = location.pathname === href || isActive;
+
+  if (hasSubmenu) {
+    return (
+      <Collapsible
+        asChild
+        value={isOpen ? "open" : "closed"}
+        onValueChange={(value) => setIsOpen(value === "open")}
       >
-        <Icon className="mr-2 h-5 w-5" />
+        <SidebarMenuItemBase>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton onClick={handleClick} isActive={isCurrentPath}>
+              <Icon className="mr-2 h-4 w-4" />
+              <span>{title}</span>
+              <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {children}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItemBase>
+      </Collapsible>
+    );
+  }
+
+  return (
+    <SidebarMenuItemBase>
+      <SidebarMenuButton onClick={handleClick} isActive={isCurrentPath}>
+        <Icon className="mr-2 h-4 w-4" />
         <span>{title}</span>
       </SidebarMenuButton>
-    </MenuItem>
+    </SidebarMenuItemBase>
+  );
+}
+
+export function SidebarMenuSubItemComponent({ 
+  title, 
+  href, 
+  isActive = false 
+}: { 
+  title: string; 
+  href: string; 
+  isActive?: boolean; 
+}) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClick = () => {
+    console.log(`[SettingsSubmenu] Navegando para: ${href}`);
+    navigate(href);
+  };
+
+  const isCurrentPath = location.pathname === href || isActive;
+
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton onClick={handleClick} isActive={isCurrentPath}>
+        <span>{title}</span>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
   );
 }

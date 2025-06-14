@@ -9,6 +9,164 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      action_plan_items: {
+        Row: {
+          action_plan_id: string
+          actual_hours: number | null
+          completion_date: string | null
+          created_at: string
+          created_by: string | null
+          department: string | null
+          dependencies: string[] | null
+          description: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          id: string
+          notes: string | null
+          priority: string
+          progress_percentage: number
+          responsible_email: string | null
+          responsible_name: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action_plan_id: string
+          actual_hours?: number | null
+          completion_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          progress_percentage?: number
+          responsible_email?: string | null
+          responsible_name?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action_plan_id?: string
+          actual_hours?: number | null
+          completion_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          progress_percentage?: number
+          responsible_email?: string | null
+          responsible_name?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_plan_items_action_plan_id_fkey"
+            columns: ["action_plan_id"]
+            isOneToOne: false
+            referencedRelation: "action_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      action_plans: {
+        Row: {
+          assessment_response_id: string | null
+          budget_allocated: number | null
+          budget_used: number | null
+          company_id: string | null
+          completion_date: string | null
+          created_at: string
+          created_by: string | null
+          department: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          progress_percentage: number
+          responsible_user_id: string | null
+          risk_level: string | null
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_response_id?: string | null
+          budget_allocated?: number | null
+          budget_used?: number | null
+          company_id?: string | null
+          completion_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          progress_percentage?: number
+          responsible_user_id?: string | null
+          risk_level?: string | null
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_response_id?: string | null
+          budget_allocated?: number | null
+          budget_used?: number | null
+          company_id?: string | null
+          completion_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          progress_percentage?: number
+          responsible_user_id?: string | null
+          risk_level?: string | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_plans_assessment_response_id_fkey"
+            columns: ["assessment_response_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_billing_records: {
         Row: {
           amount_charged: number

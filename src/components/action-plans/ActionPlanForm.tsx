@@ -22,12 +22,14 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ActionPlan } from '@/hooks/useActionPlans';
+import { useAuth } from '@/contexts/AuthContext';
 
 const actionPlanSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
   description: z.string().optional(),
   status: z.enum(['draft', 'active', 'completed', 'cancelled']),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
+  company_id: z.string().optional(),
   department: z.string().optional(),
   start_date: z.string().optional(),
   due_date: z.string().optional(),
@@ -45,6 +47,9 @@ interface ActionPlanFormProps {
 }
 
 export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPlanFormProps) {
+  const { userRole, userCompanies } = useAuth();
+  const shouldShowCompanySelect = userRole === 'superadmin' && userCompanies && userCompanies.length > 1;
+
   const form = useForm<ActionPlanFormData>({
     resolver: zodResolver(actionPlanSchema),
     defaultValues: {
@@ -52,6 +57,7 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
       description: plan?.description || '',
       status: plan?.status || 'draft',
       priority: plan?.priority || 'medium',
+      company_id: plan?.company_id || '',
       department: plan?.department || '',
       start_date: plan?.start_date || '',
       due_date: plan?.due_date || '',
@@ -95,6 +101,33 @@ export function ActionPlanForm({ plan, onSubmit, onCancel, isLoading }: ActionPl
               </FormItem>
             )}
           />
+
+          {shouldShowCompanySelect && (
+            <FormField
+              control={form.control}
+              name="company_id"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Empresa</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a empresa" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {userCompanies?.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <FormField
             control={form.control}

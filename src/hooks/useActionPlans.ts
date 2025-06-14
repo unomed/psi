@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface ActionPlan {
   id: string;
@@ -50,6 +51,7 @@ export interface ActionPlanItem {
 
 export function useActionPlans() {
   const queryClient = useQueryClient();
+  const { user, userCompanies } = useAuth();
 
   const { data: actionPlans, isLoading } = useQuery({
     queryKey: ['actionPlans'],
@@ -69,8 +71,21 @@ export function useActionPlans() {
 
   const createActionPlan = useMutation({
     mutationFn: async (planData: Partial<ActionPlan>) => {
+      // Se não tem company_id, usar a primeira empresa do usuário
+      const companyId = planData.company_id || (userCompanies && userCompanies.length > 0 ? userCompanies[0].id : null);
+      
+      if (!companyId) {
+        throw new Error('É necessário estar associado a uma empresa para criar planos de ação');
+      }
+
       const { data, error } = await supabase
-        .rpc('create_action_plan', { plan_data: planData });
+        .rpc('create_action_plan', { 
+          plan_data: {
+            ...planData,
+            company_id: companyId,
+            created_by: user?.id
+          }
+        });
 
       if (error) {
         console.error('Error creating action plan:', error);
