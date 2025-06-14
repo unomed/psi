@@ -7,13 +7,12 @@ export interface MenuItem {
   href: string;
   roles: string[];
   permission?: string;
-  path?: string;
   subItems?: SubMenuItem[];
 }
 
 export interface SubMenuItem {
   title: string;
-  path: string;
+  href: string;
   roles?: string[];
   permission?: string;
 }

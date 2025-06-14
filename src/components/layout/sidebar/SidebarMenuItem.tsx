@@ -10,17 +10,17 @@ interface SidebarMenuItemProps {
 
 export function SidebarMenuItem({ item }: SidebarMenuItemProps) {
   const location = useLocation();
-  const isActive = location.pathname === item.path || location.pathname === item.href;
+  const isActive = location.pathname === item.href;
 
   const handleNavigation = () => {
-    console.log(`[SidebarMenuItem] Navegando para: ${item.path || item.href}`);
+    console.log(`[SidebarMenuItem] Navegando para: ${item.href}`);
   };
 
   return (
     <BaseSidebarMenuItem>
-      <SidebarMenuButton>
+      <SidebarMenuButton asChild>
         <Link 
-          to={item.path || item.href} 
+          to={item.href} 
           onClick={handleNavigation} 
           className={`flex items-center gap-2 w-full ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
         >
