@@ -18,7 +18,7 @@ export function useCheckPermission() {
     
     const fetchPermissions = async () => {
       if (!userRole) {
-        console.log("No user role found, setting default permissions");
+        console.log("[useCheckPermission] No user role found, setting default permissions");
         if (isMounted) {
           setLoadingPermission(false);
           setPermissions({});
@@ -27,33 +27,37 @@ export function useCheckPermission() {
       }
 
       try {
-        console.log("Fetching permissions for role:", userRole);
+        console.log("[useCheckPermission] Fetching permissions for role:", userRole);
         const { data, error } = await supabase
           .from('permission_settings')
           .select('permissions')
           .eq('role', userRole)
-          .single();
+          .maybeSingle();
 
         if (!isMounted) return;
 
         if (error) {
-          console.error('Error fetching permissions:', error);
+          console.error('[useCheckPermission] Error fetching permissions:', error);
           // Set default permissions based on role if database fetch fails
           const defaultPermissions = getDefaultPermissionsForRole(userRole);
           setPermissions(defaultPermissions);
-        } else {
-          console.log("Permissions data:", data.permissions);
-          if (data.permissions && typeof data.permissions === 'object') {
+        } else if (data && data.permissions) {
+          console.log("[useCheckPermission] Permissions data:", data.permissions);
+          if (typeof data.permissions === 'object') {
             setPermissions(data.permissions as Record<string, boolean>);
           } else {
-            console.error('Invalid permissions format:', data.permissions);
+            console.error('[useCheckPermission] Invalid permissions format:', data.permissions);
             const defaultPermissions = getDefaultPermissionsForRole(userRole);
             setPermissions(defaultPermissions);
           }
+        } else {
+          console.log("[useCheckPermission] No permissions found, using defaults");
+          const defaultPermissions = getDefaultPermissionsForRole(userRole);
+          setPermissions(defaultPermissions);
         }
       } catch (error) {
         if (!isMounted) return;
-        console.error('Error in permission check:', error);
+        console.error('[useCheckPermission] Error in permission check:', error);
         const defaultPermissions = getDefaultPermissionsForRole(userRole);
         setPermissions(defaultPermissions);
       } finally {
@@ -78,7 +82,7 @@ export function useCheckPermission() {
     // If permissions are still loading, deny access
     if (loadingPermission) return false;
     
-    console.log(`Checking permission ${permissionKey} for role ${userRole}:`, 
+    console.log(`[useCheckPermission] Checking permission ${permissionKey} for role ${userRole}:`, 
       permissions ? permissions[permissionKey] : "no permissions data");
     
     // Check if key directly exists in permissions object

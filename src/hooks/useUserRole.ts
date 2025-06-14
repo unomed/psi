@@ -22,9 +22,9 @@ export function useUserRole() {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (roleError && roleError.code !== 'PGRST116') {
+      if (roleError) {
         console.error('[useUserRole] Erro ao buscar papel do usuário:', roleError);
         setUserRole('user');
       } else if (roleData) {
@@ -65,7 +65,7 @@ export function useUserRole() {
             // Fetch company names for the associated companies
             const companyIds = userCompanyData.map(item => item.company_id);
             
-            // IMPORTANTE: Aqui precisamos garantir que mesmo se o tipo de company_id for diferente do esperado, ele seja convertido corretamente
+            // Garantir que os IDs são válidos
             const validCompanyIds = companyIds.filter(id => typeof id === 'string' && id.trim() !== '');
             
             if (validCompanyIds.length > 0) {

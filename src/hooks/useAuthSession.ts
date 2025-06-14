@@ -62,6 +62,10 @@ export function useAuthSession() {
           console.error("[useAuthSession] Erro ao processar mudança de estado:", error);
           setSession(null);
           setUser(null);
+        } finally {
+          if (mounted) {
+            setLoading(false);
+          }
         }
       }
     );
