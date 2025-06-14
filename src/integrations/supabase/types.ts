@@ -2415,6 +2415,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_superadmin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
       process_psychosocial_assessment_auto: {
         Args: { p_assessment_response_id: string }
         Returns: Json
@@ -2426,6 +2430,10 @@ export type Database = {
       update_action_plan_item: {
         Args: { item_id: string; item_data: Json }
         Returns: string
+      }
+      user_has_company_access: {
+        Args: { company_id: string; user_id?: string }
+        Returns: boolean
       }
     }
     Enums: {
