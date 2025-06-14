@@ -29,7 +29,7 @@ export function MainRoutes() {
       <Route 
         path="/empresas" 
         element={
-          <RouteGuard requiredRole="superadmin">
+          <RouteGuard allowedRoles={["superadmin"]}>
             <Empresas />
           </RouteGuard>
         } 
@@ -37,7 +37,7 @@ export function MainRoutes() {
       <Route 
         path="/funcionarios" 
         element={
-          <RouteGuard requireCompanyAccess>
+          <RouteGuard requireCompanyAccess="employees">
             <Funcionarios />
           </RouteGuard>
         } 
@@ -45,7 +45,7 @@ export function MainRoutes() {
       <Route 
         path="/setores" 
         element={
-          <RouteGuard requireCompanyAccess>
+          <RouteGuard requireCompanyAccess="sectors">
             <Setores />
           </RouteGuard>
         } 
@@ -53,7 +53,7 @@ export function MainRoutes() {
       <Route 
         path="/funcoes" 
         element={
-          <RouteGuard requireCompanyAccess>
+          <RouteGuard requireCompanyAccess="roles">
             <Funcoes />
           </RouteGuard>
         } 
@@ -69,7 +69,7 @@ export function MainRoutes() {
       <Route 
         path="/avaliacoes" 
         element={
-          <RouteGuard requireCompanyAccess>
+          <RouteGuard requireCompanyAccess="assessments">
             <Avaliacoes />
           </RouteGuard>
         } 
@@ -77,7 +77,7 @@ export function MainRoutes() {
       <Route 
         path="/agendamentos" 
         element={
-          <RouteGuard requireCompanyAccess>
+          <RouteGuard requireCompanyAccess="scheduling">
             <AssessmentScheduling />
           </RouteGuard>
         } 
@@ -85,7 +85,7 @@ export function MainRoutes() {
       <Route 
         path="/resultados" 
         element={
-          <RouteGuard requireCompanyAccess>
+          <RouteGuard requireCompanyAccess="results">
             <AssessmentResults />
           </RouteGuard>
         } 

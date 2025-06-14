@@ -3,7 +3,8 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate
+  Navigate,
+  Outlet
 } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { RouteGuard } from "@/components/auth/RouteGuard";
@@ -26,7 +27,7 @@ export function AppRoutes() {
       <Route path="/assessment/:token" element={<PublicAssessment />} />
       
       {/* Main authenticated routes */}
-      <Route element={<MainLayout />}>
+      <Route element={<MainLayout><Outlet /></MainLayout>}>
         <Route 
           path="/dashboard" 
           element={
@@ -38,7 +39,7 @@ export function AppRoutes() {
         <Route 
           path="/empresas" 
           element={
-            <RouteGuard requiredRole="superadmin">
+            <RouteGuard allowedRoles={["superadmin"]}>
               <Empresas />
             </RouteGuard>
           } 
@@ -46,7 +47,7 @@ export function AppRoutes() {
         <Route 
           path="/funcionarios" 
           element={
-            <RouteGuard requireCompanyAccess>
+            <RouteGuard requireCompanyAccess="employees">
               <Funcionarios />
             </RouteGuard>
           } 
@@ -54,7 +55,7 @@ export function AppRoutes() {
         <Route 
           path="/setores" 
           element={
-            <RouteGuard requireCompanyAccess>
+            <RouteGuard requireCompanyAccess="sectors">
               <Setores />
             </RouteGuard>
           } 
@@ -62,7 +63,7 @@ export function AppRoutes() {
         <Route 
           path="/funcoes" 
           element={
-            <RouteGuard requireCompanyAccess>
+            <RouteGuard requireCompanyAccess="roles">
               <Funcoes />
             </RouteGuard>
           } 
@@ -78,7 +79,7 @@ export function AppRoutes() {
         <Route 
           path="/avaliacoes" 
           element={
-            <RouteGuard requireCompanyAccess>
+            <RouteGuard requireCompanyAccess="assessments">
               <Avaliacoes />
             </RouteGuard>
           } 
@@ -86,7 +87,7 @@ export function AppRoutes() {
         <Route 
           path="/agendamentos" 
           element={
-            <RouteGuard requireCompanyAccess>
+            <RouteGuard requireCompanyAccess="scheduling">
               <AssessmentScheduling />
             </RouteGuard>
           } 
@@ -94,7 +95,7 @@ export function AppRoutes() {
         <Route 
           path="/resultados" 
           element={
-            <RouteGuard requireCompanyAccess>
+            <RouteGuard requireCompanyAccess="results">
               <AssessmentResults />
             </RouteGuard>
           } 
