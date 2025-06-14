@@ -19,6 +19,7 @@ import PublicAssessment from "@/pages/PublicAssessment";
 import AssessmentResults from "@/pages/AssessmentResults";
 import Relatorios from "@/pages/Relatorios";
 import PlanoAcao from "@/pages/PlanoAcao";
+import Faturamento from "@/pages/Faturamento";
 
 export function AppRoutes() {
   return (
@@ -138,10 +139,22 @@ export function AppRoutes() {
         } 
       />
       <Route 
+        path="/faturamento" 
+        element={
+          <MainLayout>
+            <RouteGuard allowedRoles={["superadmin"]}>
+              <Faturamento />
+            </RouteGuard>
+          </MainLayout>
+        } 
+      />
+      <Route 
         path="/configuracoes/*" 
         element={
           <MainLayout>
-            <SettingsRoutes />
+            <Routes>
+              <SettingsRoutes />
+            </Routes>
           </MainLayout>
         } 
       />
