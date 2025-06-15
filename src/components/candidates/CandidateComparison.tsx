@@ -36,9 +36,9 @@ export function CandidateComparison({ selectedCompany }: CandidateComparisonProp
   // Calcular score de adequação para um candidato
   const calculateCandidateScore = (candidate: Employee, roleId: string) => {
     // Lógica simplificada de score baseado em tags
-    const candidateTags = candidate.employee_tags || [];
+    const candidateTags = Array.isArray(candidate.employee_tags) ? candidate.employee_tags as string[] : [];
     const role = roles?.find(r => r.id === roleId);
-    const requiredTags = role?.required_tags || [];
+    const requiredTags = Array.isArray(role?.required_tags) ? role.required_tags as string[] : [];
     
     if (requiredTags.length === 0) return 0;
     
@@ -62,7 +62,7 @@ export function CandidateComparison({ selectedCompany }: CandidateComparisonProp
       
       selectedCandidates.forEach(candidateId => {
         const candidate = candidates.find(c => c.id === candidateId);
-        const tags = candidate?.employee_tags || [];
+        const tags = Array.isArray(candidate?.employee_tags) ? candidate.employee_tags as string[] : [];
         
         // Simular pontuação baseada em tags (0-100)
         const hasTag = tags.some(tag => tag.toLowerCase().includes(category.toLowerCase()));
@@ -89,7 +89,7 @@ export function CandidateComparison({ selectedCompany }: CandidateComparisonProp
       return {
         name: candidate?.name,
         score: calculateCandidateScore(candidate!, selectedRole),
-        tags: candidate?.employee_tags || []
+        tags: Array.isArray(candidate?.employee_tags) ? candidate.employee_tags as string[] : []
       };
     });
     
@@ -123,7 +123,7 @@ export function CandidateComparison({ selectedCompany }: CandidateComparisonProp
               <SelectValue placeholder="Selecione uma função" />
             </SelectTrigger>
             <SelectContent>
-              {roles?.filter(role => role.company_id === selectedCompany).map(role => (
+              {roles?.filter(role => role.companyId === selectedCompany).map(role => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
                 </SelectItem>
@@ -180,14 +180,16 @@ export function CandidateComparison({ selectedCompany }: CandidateComparisonProp
                   </div>
                   
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {candidate.employee_tags?.slice(0, 3).map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {(candidate.employee_tags?.length || 0) > 3 && (
+                    {Array.isArray(candidate.employee_tags) && 
+                      (candidate.employee_tags as string[]).slice(0, 3).map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))
+                    }
+                    {Array.isArray(candidate.employee_tags) && (candidate.employee_tags as string[]).length > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{(candidate.employee_tags?.length || 0) - 3}
+                        +{(candidate.employee_tags as string[]).length - 3}
                       </Badge>
                     )}
                   </div>
@@ -278,7 +280,7 @@ export function CandidateComparison({ selectedCompany }: CandidateComparisonProp
                               <div>
                                 <p className="font-medium">{candidate?.name}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {candidate?.employee_tags?.length || 0} competências
+                                  {Array.isArray(candidate?.employee_tags) ? (candidate.employee_tags as string[]).length : 0} competências
                                 </p>
                               </div>
                             </div>

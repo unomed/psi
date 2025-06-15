@@ -41,7 +41,7 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
   const candidateTemplates = templates.filter(template => {
     const isCandidateRelevant = 
       template.type === 'disc' || 
-      template.type === 'psicossocial' ||
+      template.type === 'custom' ||
       template.title.toLowerCase().includes('candidato') ||
       template.title.toLowerCase().includes('entrevista') ||
       template.description?.toLowerCase().includes('seleção');
@@ -57,14 +57,12 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
   const templateCategories = [
     { value: 'all', label: 'Todos os tipos' },
     { value: 'disc', label: 'DISC' },
-    { value: 'psicossocial', label: 'Psicossocial' },
     { value: 'custom', label: 'Personalizado' }
   ];
 
   const getTemplateTypeLabel = (type: string) => {
     switch (type) {
       case 'disc': return 'DISC';
-      case 'psicossocial': return 'Psicossocial';
       case 'custom': return 'Personalizado';
       default: return type;
     }
@@ -73,7 +71,6 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
   const getTemplateTypeColor = (type: string) => {
     switch (type) {
       case 'disc': return 'bg-blue-100 text-blue-800';
-      case 'psicossocial': return 'bg-green-100 text-green-800';
       case 'custom': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -210,9 +207,9 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
-                {candidateTemplates.filter(t => t.type === 'psicossocial').length}
+                {candidateTemplates.filter(t => t.type === 'custom').length}
               </p>
-              <p className="text-sm text-muted-foreground">Templates Psicossociais</p>
+              <p className="text-sm text-muted-foreground">Templates Personalizados</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-600">
