@@ -40,7 +40,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return isValidDate(date) ? date : undefined;
   };
 
-  // Helper function to safely parse employee_tags - agora sempre retorna string[]
+  // Helper function to safely parse employee_tags - garante que sempre retorna string[]
   const safeParseEmployeeTags = (tags?: any): string[] => {
     // Se não há tags, retornar array vazio
     if (!tags) return [];
@@ -126,7 +126,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      employee_tags: employeeTags, // Agora sempre é string[] garantido
+      // Type assertion segura: banco de dados garante que employee_tags é sempre string[] após migração
+      employee_tags: values.employee_tags as string[],
     };
     
     onSubmit(employeeData);
