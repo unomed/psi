@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Search, Mail, ExternalLink, Trash2, Link, Copy, Settings } from "lucide-react";
+import { Calendar, Search, Mail, Trash2, Link, Copy, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -271,13 +271,13 @@ export function ScheduledAssessmentsList() {
                         {sendingEmail === assessment.id ? 'Enviando...' : 'Enviar Email'}
                       </Button>
 
-                      {/* Botão para gerar/copiar link */}
+                      {/* Botão único para gerar/copiar link */}
                       {assessment.link_url ? (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleCopyLink(assessment.link_url)}
-                          title="Copiar link"
+                          title="Copiar link da avaliação"
                         >
                           <Copy className="h-4 w-4 mr-1" />
                           Copiar Link
@@ -288,23 +288,10 @@ export function ScheduledAssessmentsList() {
                           variant="outline"
                           onClick={() => handleGenerateLink(assessment)}
                           disabled={generatingLink === assessment.id || assessment.status === 'completed'}
-                          title="Gerar link público"
+                          title="Gerar link da avaliação"
                         >
                           <Link className="h-4 w-4 mr-1" />
                           {generatingLink === assessment.id ? 'Gerando...' : 'Gerar Link'}
-                        </Button>
-                      )}
-
-                      {/* Botão de visualizar link existente */}
-                      {assessment.link_url && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(assessment.link_url, '_blank')}
-                          title="Abrir link em nova aba"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          Abrir
                         </Button>
                       )}
 

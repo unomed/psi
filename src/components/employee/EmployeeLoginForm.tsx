@@ -1,104 +1,89 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { User, Lock, AlertCircle } from "lucide-react";
+import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, User, Lock } from "lucide-react";
 
 interface EmployeeLoginFormProps {
   onLoginSuccess: (employeeData: any) => void;
+  expectedEmployeeId?: string | null;
+  assessmentToken?: string | null;
+  templateId?: string;
 }
 
-export function EmployeeLoginForm({ onLoginSuccess }: EmployeeLoginFormProps) {
+export function EmployeeLoginForm({ 
+  onLoginSuccess, 
+  expectedEmployeeId,
+  assessmentToken,
+  templateId 
+}: EmployeeLoginFormProps) {
   const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { login } = useEmployeeAuth();
+  const navigate = useNavigate();
 
-  // Formatar CPF
   const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    return numbers.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    // Remove tudo que não é dígito
+    const digits = value.replace(/\D/g, '');
+    
+    // Aplica a formatação XXX.XXX.XXX-XX
+    return digits
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+      .slice(0, 14);
   };
 
-  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCPF(e.target.value);
-    setCpf(formatted);
-    
-    // Auto-preencher senha com últimos 4 dígitos
-    const numbers = e.target.value.replace(/\D/g, '');
-    if (numbers.length >= 4) {
-      const lastFour = numbers.slice(-4);
-      setPassword(lastFour);
-    }
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedCpf = formatCPF(e.target.value);
+    setCpf(formattedCpf);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!cpf.trim()) {
-      toast.error("Por favor, informe seu CPF");
-      return;
-    }
-
-    if (!password.trim()) {
-      toast.error("Por favor, informe sua senha");
-      return;
-    }
-
+    setError("");
     setIsLoading(true);
 
     try {
-      // Remover formatação do CPF
-      const cleanCPF = cpf.replace(/\D/g, '');
+      // Remove formatação do CPF
+      const cleanCpf = cpf.replace(/\D/g, '');
       
-      // Verificar se CPF tem 11 dígitos
-      if (cleanCPF.length !== 11) {
-        toast.error("CPF deve ter 11 dígitos");
-        setIsLoading(false);
+      if (cleanCpf.length !== 11) {
+        setError("CPF deve conter 11 dígitos");
         return;
       }
 
-      console.log("Tentando autenticar funcionário:", { cpf: cleanCPF, password });
-
-      // Chamar função RPC do Supabase
-      const { data, error } = await supabase.rpc('authenticate_employee', {
-        p_cpf: cleanCPF,
-        p_password: password
-      });
-
-      console.log("Resposta da autenticação:", { data, error });
-
-      if (error) {
-        console.error("Erro na autenticação:", error);
-        toast.error("Erro ao verificar credenciais. Tente novamente.");
-        setIsLoading(false);
+      if (password.length !== 4) {
+        setError("Senha deve conter 4 dígitos");
         return;
       }
 
-      if (!data || data.length === 0) {
-        toast.error("Funcionário não encontrado ou credenciais inválidas");
-        setIsLoading(false);
-        return;
-      }
-
-      const employeeData = data[0];
+      const result = await login(cleanCpf, password);
       
-      if (!employeeData.is_valid) {
-        toast.error("CPF ou senha incorretos");
-        setIsLoading(false);
-        return;
+      if (result.success) {
+        // Se há um token de avaliação e ID esperado, verificar se corresponde
+        if (expectedEmployeeId && assessmentToken) {
+          // Aqui você pode adicionar validação adicional se necessário
+          toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
+        } else {
+          toast.success("Login realizado com sucesso!");
+        }
+        
+        onLoginSuccess(result);
+      } else {
+        setError(result.error || "Erro no login. Verifique suas credenciais.");
       }
-
-      console.log("Login bem-sucedido:", employeeData);
-      toast.success(`Bem-vindo(a), ${employeeData.employee_name}!`);
-      onLoginSuccess(employeeData);
-
     } catch (error) {
-      console.error("Erro inesperado na autenticação:", error);
-      toast.error("Erro inesperado. Tente novamente.");
+      console.error("Erro no login:", error);
+      setError("Erro interno. Tente novamente mais tarde.");
     } finally {
       setIsLoading(false);
     }
@@ -106,62 +91,89 @@ export function EmployeeLoginForm({ onLoginSuccess }: EmployeeLoginFormProps) {
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle className="flex items-center justify-center gap-2">
-          <User className="h-5 w-5" />
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl text-center">
           Portal do Funcionário
         </CardTitle>
-        <CardDescription>
-          Faça login com seu CPF e os últimos 4 dígitos do seu CPF como senha
-        </CardDescription>
+        <p className="text-center text-muted-foreground">
+          {assessmentToken ? 
+            "Faça login para acessar sua avaliação" : 
+            "Entre com seu CPF e senha"
+          }
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="cpf">CPF</Label>
-            <Input
-              id="cpf"
-              type="text"
-              placeholder="000.000.000-00"
-              value={cpf}
-              onChange={handleCPFChange}
-              maxLength={14}
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="cpf"
+                type="text"
+                placeholder="000.000.000-00"
+                value={cpf}
+                onChange={handleCpfChange}
+                className="pl-10"
+                required
+                maxLength={14}
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Senha (últimos 4 dígitos do CPF)</Label>
+            <Label htmlFor="password">Senha (4 últimos dígitos do CPF)</Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
                 type="password"
                 placeholder="0000"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                maxLength={4}
-                disabled={isLoading}
+                onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 className="pl-10"
+                required
+                maxLength={4}
               />
             </div>
+            <p className="text-sm text-muted-foreground">
+              Digite os 4 últimos dígitos do seu CPF
+            </p>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Entrando...
-              </>
-            ) : (
-              'Entrar'
-            )}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {assessmentToken && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Você foi direcionado para completar uma avaliação. Faça login para continuar.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
         
-        <div className="mt-4 text-sm text-muted-foreground text-center">
-          <p>Sua senha são os últimos 4 dígitos do seu CPF.</p>
-          <p>Por exemplo, se seu CPF for 123.456.789-01, sua senha é 9001.</p>
+        <div className="mt-6 text-center">
+          <Button 
+            variant="link" 
+            onClick={() => navigate("/")}
+            className="text-sm"
+          >
+            Voltar ao início
+          </Button>
         </div>
       </CardContent>
     </Card>

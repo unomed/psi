@@ -9,6 +9,7 @@ export default function EmployeePortal() {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
   const employeeIdFromUrl = searchParams.get("employee");
+  const tokenFromUrl = searchParams.get("token");
   const { session, login } = useEmployeeAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -19,10 +20,20 @@ export default function EmployeePortal() {
   if (!isAuthenticated && !session?.isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <EmployeeLoginForm onLoginSuccess={handleLoginSuccess} />
+        <EmployeeLoginForm 
+          onLoginSuccess={handleLoginSuccess}
+          expectedEmployeeId={employeeIdFromUrl}
+          assessmentToken={tokenFromUrl}
+          templateId={templateId}
+        />
       </div>
     );
   }
 
-  return <EmployeeDashboard />;
+  return (
+    <EmployeeDashboard 
+      assessmentToken={tokenFromUrl}
+      templateId={templateId}
+    />
+  );
 }
