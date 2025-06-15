@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Lock, AlertCircle } from "lucide-react";
+import { User, Lock, AlertCircle, Info } from "lucide-react";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { toast } from "sonner";
 
@@ -42,9 +42,23 @@ export function EmployeeLoginForm({
       .slice(0, 14);
   };
 
+  const getLastFourDigits = (cpfValue: string) => {
+    const digits = cpfValue.replace(/\D/g, '');
+    if (digits.length >= 4) {
+      return digits.slice(-4);
+    }
+    return '';
+  };
+
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedCpf = formatCPF(e.target.value);
     setCpf(formattedCpf);
+    
+    // Auto-preencher a senha com os 4 últimos dígitos se o CPF estiver completo
+    const lastFour = getLastFourDigits(formattedCpf);
+    if (lastFour.length === 4) {
+      setPassword(lastFour);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,12 +80,13 @@ export function EmployeeLoginForm({
         return;
       }
 
+      console.log(`[EmployeeLogin] Tentando login com CPF: ${cleanCpf.slice(0, 3)}***`, `Senha: ${password}`);
+
       const result = await login(cleanCpf, password);
       
       if (result.success) {
         // Se há um token de avaliação e ID esperado, verificar se corresponde
         if (expectedEmployeeId && assessmentToken) {
-          // Aqui você pode adicionar validação adicional se necessário
           toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
         } else {
           toast.success("Login realizado com sucesso!");
@@ -79,6 +94,7 @@ export function EmployeeLoginForm({
         
         onLoginSuccess(result);
       } else {
+        console.error(`[EmployeeLogin] Erro no login:`, result.error);
         setError(result.error || "Erro no login. Verifique suas credenciais.");
       }
     } catch (error) {
@@ -88,6 +104,8 @@ export function EmployeeLoginForm({
       setIsLoading(false);
     }
   };
+
+  const lastFourDigits = getLastFourDigits(cpf);
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -122,7 +140,7 @@ export function EmployeeLoginForm({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Senha (4 últimos dígitos do CPF)</Label>
+            <Label htmlFor="password">Senha</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -136,9 +154,17 @@ export function EmployeeLoginForm({
                 maxLength={4}
               />
             </div>
-            <p className="text-sm text-muted-foreground">
-              Digite os 4 últimos dígitos do seu CPF
-            </p>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>Digite os 4 últimos dígitos do seu CPF (sem pontuação)</p>
+              {lastFourDigits && (
+                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md border">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <span className="text-blue-800 font-medium">
+                    Sua senha deve ser: <strong>{lastFourDigits}</strong>
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {error && (
@@ -174,6 +200,13 @@ export function EmployeeLoginForm({
           >
             Voltar ao início
           </Button>
+        </div>
+
+        {/* Exemplo de como usar */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
+          <strong>Exemplo:</strong><br />
+          CPF: 123.456.789-12<br />
+          Senha: 9712 (últimos 4 dígitos)
         </div>
       </CardContent>
     </Card>
