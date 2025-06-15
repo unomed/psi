@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { EmployeeLoginForm } from "@/components/employee/EmployeeLoginForm";
 import { EmployeeDashboard } from "@/components/employee/EmployeeDashboard";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 
@@ -39,14 +40,18 @@ export default function EmployeePortal() {
           assessmentToken={tokenFromUrl}
           templateId={templateId}
         />
+        <InstallPrompt />
       </div>
     );
   }
 
   return (
-    <EmployeeDashboard 
-      assessmentToken={tokenFromUrl}
-      templateId={templateId}
-    />
+    <>
+      <EmployeeDashboard 
+        assessmentToken={tokenFromUrl}
+        templateId={templateId}
+      />
+      <InstallPrompt />
+    </>
   );
 }

@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
@@ -41,6 +40,16 @@ export function AppRoutes() {
         }
       />
 
+      {/* Rotas diretas para avaliações por nome */}
+      <Route 
+        path="/:assessmentName" 
+        element={
+          <EmployeeAuthProvider>
+            <EmployeePortal />
+          </EmployeeAuthProvider>
+        }
+      />
+
       {/* Login do funcionário envolvido por EmployeeAuthProvider para evitar erro de contexto */}
       <Route
         path="/auth/employee"
@@ -67,7 +76,7 @@ export function AppRoutes() {
       {/* Rotas de autenticação para administradores, etc */}
       {!user && (
         <Route 
-          path="/*" 
+          path="/auth/*" 
           element={<AuthRoutes />} 
         />
       )}
@@ -78,6 +87,31 @@ export function AppRoutes() {
           <Route path="/configuracoes/*" element={
             <MainLayout>
               <SettingsRoutes />
+            </MainLayout>
+          } />
+          <Route path="/dashboard" element={
+            <MainLayout>
+              <MainRoutes />
+            </MainLayout>
+          } />
+          <Route path="/empresas" element={
+            <MainLayout>
+              <MainRoutes />
+            </MainLayout>
+          } />
+          <Route path="/funcionarios" element={
+            <MainLayout>
+              <MainRoutes />
+            </MainLayout>
+          } />
+          <Route path="/checklists" element={
+            <MainLayout>
+              <MainRoutes />
+            </MainLayout>
+          } />
+          <Route path="/relatorios" element={
+            <MainLayout>
+              <MainRoutes />
             </MainLayout>
           } />
           <Route path="/*" element={
