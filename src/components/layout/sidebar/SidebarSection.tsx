@@ -11,7 +11,7 @@ export function SidebarSection({ title, children }: SidebarSectionProps) {
   return (
     <SidebarGroup className="px-3 py-2">
       {title && (
-        <SidebarGroupLabel className="px-2 py-2 text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2">
+        <SidebarGroupLabel className="px-2 py-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-2 border-b border-sidebar-border">
           {title}
         </SidebarGroupLabel>
       )}

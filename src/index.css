@@ -35,13 +35,14 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 195 73% 8%;
-    --sidebar-foreground: 210 40% 98%;
+    /* Sidebar colors - Fixed for better contrast */
+    --sidebar-background: 0 0% 98%; /* Light gray background */
+    --sidebar-foreground: 222.2 84% 4.9%; /* Dark text */
     --sidebar-primary: 195 85% 41%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 199 89% 13%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 199 89% 16%;
+    --sidebar-accent: 195 85% 45%; /* Slightly different blue for hover */
+    --sidebar-accent-foreground: 0 0% 100%; /* White text on blue */
+    --sidebar-border: 214.3 31.8% 85%; /* Slightly darker border */
     --sidebar-ring: 199 89% 48%;
   }
 
@@ -74,13 +75,14 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 195 85% 41%;
 
-    --sidebar-background: 195 73% 8%;
-    --sidebar-foreground: 210 40% 98%;
+    /* Dark mode sidebar */
+    --sidebar-background: 222.2 84% 4.9%; /* Dark background */
+    --sidebar-foreground: 210 40% 98%; /* Light text */
     --sidebar-primary: 195 85% 41%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 199 89% 13%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 199 89% 16%;
+    --sidebar-accent: 199 89% 20%; /* Darker blue for hover */
+    --sidebar-accent-foreground: 210 40% 98%; /* Light text on dark blue */
+    --sidebar-border: 217.2 32.6% 17.5%;
     --sidebar-ring: 199 89% 48%;
   }
 }
