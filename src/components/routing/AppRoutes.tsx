@@ -7,6 +7,7 @@ import { EmployeeRoutes } from "./EmployeeRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AdminGuard } from "@/components/auth/AdminGuard";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -34,58 +35,43 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas de autenticação para administradores */}
-      {!user && (
-        <Route 
-          path="/auth/*" 
-          element={<AuthRoutes />} 
-        />
-      )}
+      {/* Rotas de autenticação para administradores - PRIORIDADE MÁXIMA */}
+      <Route path="/auth/*" element={<AuthRoutes />} />
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/register" element={<Navigate to="/auth/register" replace />} />
 
-      {/* Rotas específicas de funcionários - ISOLADAS */}
-      <Route
-        path="/auth/employee"
-        element={<EmployeeRoutes />}
-      />
-      
-      <Route 
-        path="/employee-portal/*" 
-        element={<EmployeeRoutes />}
-      />
+      {/* Rotas específicas de funcionários - ISOLADAS E PRIORITÁRIAS */}
+      <Route path="/auth/employee" element={<EmployeeRoutes />} />
+      <Route path="/employee-portal/*" element={<EmployeeRoutes />} />
+      <Route path="/avaliacao/:token" element={<EmployeeRoutes />} />
+      <Route path="/assessment/:token" element={<EmployeeRoutes />} />
 
-      <Route 
-        path="/avaliacao/:token" 
-        element={<EmployeeRoutes />}
-      />
-      
-      <Route 
-        path="/assessment/:token" 
-        element={<EmployeeRoutes />}
-      />
-
-      {/* Rotas principais protegidas para usuários administrativos */}
+      {/* Rotas administrativas protegidas - APENAS PARA USUÁRIOS AUTENTICADOS */}
       {user && (
         <>
-          <Route path="/configuracoes/*" element={
-            <MainLayout>
-              <SettingsRoutes />
-            </MainLayout>
-          } />
+          <Route 
+            path="/configuracoes/*" 
+            element={
+              <AdminGuard>
+                <MainLayout>
+                  <SettingsRoutes />
+                </MainLayout>
+              </AdminGuard>
+            } 
+          />
           
-          {/* Todas as rotas administrativas usando AdminRoutes */}
-          <Route path="/*" element={
-            <MainLayout>
-              <AdminRoutes />
-            </MainLayout>
-          } />
+          <Route 
+            path="/*" 
+            element={
+              <AdminGuard>
+                <MainLayout>
+                  <AdminRoutes />
+                </MainLayout>
+              </AdminGuard>
+            } 
+          />
         </>
       )}
-
-      {/* Rotas dinâmicas por nome de avaliação - DEVE SER A ÚLTIMA */}
-      <Route 
-        path="/:assessmentName" 
-        element={<EmployeeRoutes />}
-      />
 
       {/* Redirecionamento padrão baseado no estado de auth */}
       <Route 

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export type CompanyAccess = {
@@ -11,10 +11,21 @@ export function useUserRole() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userCompanies, setUserCompanies] = useState<CompanyAccess[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
+  
+  // Ref para evitar chamadas duplicadas
+  const fetchingRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
   const fetchUserRoleAndCompanies = async (userId: string) => {
+    // Evitar chamadas duplicadas para o mesmo usuário
+    if (fetchingRef.current || lastUserIdRef.current === userId) {
+      return;
+    }
+
     try {
       console.log("[useUserRole] Buscando role e empresas para usuário:", userId);
+      fetchingRef.current = true;
+      lastUserIdRef.current = userId;
       setRoleLoading(true);
       
       // Fetch user role
@@ -27,6 +38,7 @@ export function useUserRole() {
       if (roleError) {
         console.error('[useUserRole] Erro ao buscar papel do usuário:', roleError);
         setUserRole('user');
+        setUserCompanies([]);
       } else if (roleData) {
         console.log("[useUserRole] Dados do papel do usuário:", roleData);
         setUserRole(roleData.role);
@@ -63,26 +75,19 @@ export function useUserRole() {
             console.log("[useUserRole] Dados de empresas do usuário:", userCompanyData);
             
             // Fetch company names for the associated companies
-            // Converter company_id para UUID se necessário
-            const companyIds = userCompanyData.map(item => {
-              // Se company_id é string, converter para UUID
-              if (typeof item.company_id === 'string') {
-                return item.company_id;
-              }
-              return item.company_id;
-            });
+            const companyIds = userCompanyData
+              .map(item => item.company_id)
+              .filter(id => id && typeof id === 'string' && id.trim() !== '');
             
-            // Garantir que os IDs são válidos
-            const validCompanyIds = companyIds.filter(id => id && id.trim() !== '');
-            
-            if (validCompanyIds.length > 0) {
+            if (companyIds.length > 0) {
               const { data: companiesData, error: companiesError } = await supabase
                 .from('companies')
                 .select('id, name')
-                .in('id', validCompanyIds);
+                .in('id', companyIds);
                 
               if (companiesError) {
                 console.error('[useUserRole] Erro ao buscar detalhes das empresas:', companiesError);
+                setUserCompanies([]);
               } else if (companiesData) {
                 const formattedCompanies = companiesData.map(company => ({
                   companyId: company.id,
@@ -110,6 +115,7 @@ export function useUserRole() {
       setUserCompanies([]);
     } finally {
       setRoleLoading(false);
+      fetchingRef.current = false;
     }
   };
 

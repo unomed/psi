@@ -21,9 +21,6 @@ export function EmployeeRoutes() {
         {/* Avaliações públicas com tokens */}
         <Route path="/avaliacao/:token" element={<PublicAssessment />} />
         <Route path="/assessment/:token" element={<PublicAssessment />} />
-        
-        {/* Rotas dinâmicas por nome de avaliação */}
-        <Route path="/:assessmentName" element={<EmployeePortal />} />
       </Routes>
     </EmployeeAuthProvider>
   );
