@@ -10,7 +10,6 @@ import { PersonalInfoFields } from "./form-sections/PersonalInfoFields";
 import { EmploymentFields } from "./form-sections/EmploymentFields";
 import { AdditionalFields } from "./form-sections/AdditionalFields";
 import { EmployeeTypeAndTagsFields } from "./form-sections/EmployeeTypeAndTagsFields";
-import { EmployeeTagsSelector } from "./form-sections/EmployeeTagsSelector";
 import { useRoles } from "@/hooks/useRoles";
 import { isValidDate } from "@/utils/dateUtils";
 
@@ -120,12 +119,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
           form={form}
           selectedRole={selectedRole}
           requiredTags={[]} // Will be handled by new component
-        />
-        
-        {/* New Relational Tags Component */}
-        <EmployeeTagsSelector
           employeeId={initialData?.id}
-          selectedRole={selectedRole}
         />
         
         <AdditionalFields form={form} />

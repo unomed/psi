@@ -46,7 +46,7 @@ export function EmployeeTypeAndTagsFields({
         />
       </div>
 
-      {/* Tags Section */}
+      {/* Tags Section - Integrada aqui para evitar duplicação */}
       <EmployeeTagsSelector 
         employeeId={employeeId}
         selectedRole={selectedRole}
