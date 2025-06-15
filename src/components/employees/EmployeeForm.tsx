@@ -10,6 +10,7 @@ import { PersonalInfoFields } from "./form-sections/PersonalInfoFields";
 import { EmploymentFields } from "./form-sections/EmploymentFields";
 import { AdditionalFields } from "./form-sections/AdditionalFields";
 import { EmployeeTypeAndTagsFields } from "./form-sections/EmployeeTypeAndTagsFields";
+import { EmployeeTagsSelector } from "./form-sections/EmployeeTagsSelector";
 import { useRoles } from "@/hooks/useRoles";
 import { isValidDate } from "@/utils/dateUtils";
 
@@ -40,52 +41,6 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return isValidDate(date) ? date : undefined;
   };
 
-  // Helper function to safely parse employee_tags - garante que sempre retorna string[]
-  const safeParseEmployeeTags = (tags?: any): string[] => {
-    // Se não há tags, retornar array vazio
-    if (!tags) return [];
-    
-    // Se já é um array, filtrar para garantir que são strings
-    if (Array.isArray(tags)) {
-      return tags.filter((tag): tag is string => typeof tag === 'string');
-    }
-    
-    // Se é uma string, tentar fazer parse como JSON
-    if (typeof tags === 'string') {
-      try {
-        const parsed = JSON.parse(tags);
-        if (Array.isArray(parsed)) {
-          return parsed.filter((tag): tag is string => typeof tag === 'string');
-        }
-      } catch {
-        // Se o parse falhar, retornar array vazio
-        return [];
-      }
-    }
-    
-    // Para qualquer outro tipo, retornar array vazio
-    return [];
-  };
-
-  // Type guard robusto para garantir que employee_tags seja string[]
-  const ensureStringArray = (value: any): string[] => {
-    // Se é undefined ou null, retornar array vazio
-    if (value == null) return [];
-    
-    // Se já é array e todos elementos são strings
-    if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
-      return value as string[];
-    }
-    
-    // Se é array mas tem elementos não-string, filtrar
-    if (Array.isArray(value)) {
-      return value.filter(item => typeof item === 'string');
-    }
-    
-    // Para qualquer outro tipo, usar o helper existente
-    return safeParseEmployeeTags(value);
-  };
-
   const form = useForm<EmployeeFormSchema>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: initialData ? {
@@ -93,7 +48,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       birth_date: safeParseDate(initialData.birth_date),
       start_date: safeParseDate(initialData.start_date) || new Date(),
       employee_type: initialData.employee_type || "funcionario",
-      employee_tags: safeParseEmployeeTags(initialData.employee_tags),
+      employee_tags: [], // Now handled by relational tags
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",
@@ -117,15 +72,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     },
   });
 
-  // Encontrar tags obrigatórias da função selecionada
-  const selectedRoleData = roles?.find(role => role.id === selectedRole);
-  const requiredTags = selectedRoleData?.required_tags || [];
-
   const handleSubmit = (values: EmployeeFormSchema) => {
-    // Forçar tipo string[] usando asserção de tipo mais robusta
-    const employeeTagsFromForm = values.employee_tags;
-    const employeeTagsProcessed: string[] = ensureStringArray(employeeTagsFromForm);
-    
     const employeeData: EmployeeFormData = {
       name: values.name,
       cpf: values.cpf,
@@ -146,7 +93,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      employee_tags: employeeTagsProcessed,
+      employee_tags: [], // Tags are now managed relationally
     };
     
     onSubmit(employeeData);
@@ -172,8 +119,15 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
         <EmployeeTypeAndTagsFields 
           form={form}
           selectedRole={selectedRole}
-          requiredTags={requiredTags}
+          requiredTags={[]} // Will be handled by new component
         />
+        
+        {/* New Relational Tags Component */}
+        <EmployeeTagsSelector
+          employeeId={initialData?.id}
+          selectedRole={selectedRole}
+        />
+        
         <AdditionalFields form={form} />
 
         <div className="flex justify-end gap-4">

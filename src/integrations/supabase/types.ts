@@ -932,6 +932,84 @@ export type Database = {
           },
         ]
       }
+      employee_tag_types: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employee_tags: {
+        Row: {
+          acquired_date: string | null
+          created_at: string
+          employee_id: string
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          tag_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          acquired_date?: string | null
+          created_at?: string
+          employee_id: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          tag_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          acquired_date?: string | null
+          created_at?: string
+          employee_id?: string
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          tag_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_tags_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_tags_tag_type_id_fkey"
+            columns: ["tag_type_id"]
+            isOneToOne: false
+            referencedRelation: "employee_tag_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           address: string | null
@@ -2079,6 +2157,45 @@ export type Database = {
           },
         ]
       }
+      role_required_tags: {
+        Row: {
+          created_at: string
+          id: string
+          is_mandatory: boolean
+          role_id: string
+          tag_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_mandatory?: boolean
+          role_id: string
+          tag_type_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_mandatory?: boolean
+          role_id?: string
+          tag_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_required_tags_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_required_tags_tag_type_id_fkey"
+            columns: ["tag_type_id"]
+            isOneToOne: false
+            referencedRelation: "employee_tag_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roles: {
         Row: {
           company_id: string
@@ -2748,6 +2865,17 @@ export type Database = {
           days_remaining: number
         }[]
       }
+      get_employee_tags: {
+        Args: { p_employee_id: string }
+        Returns: {
+          tag_id: string
+          tag_name: string
+          tag_description: string
+          tag_category: string
+          acquired_date: string
+          expiry_date: string
+        }[]
+      }
       get_psychosocial_processing_stats: {
         Args: {
           p_company_id: string
@@ -2791,6 +2919,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_role_required_tags: {
+        Args: { p_role_id: string }
+        Returns: {
+          tag_id: string
+          tag_name: string
+          tag_description: string
+          is_mandatory: boolean
+        }[]
+      }
       get_user_emails: {
         Args: { user_ids: string[] }
         Returns: {
@@ -2812,6 +2949,10 @@ export type Database = {
       is_superadmin: {
         Args: { user_id?: string }
         Returns: boolean
+      }
+      migrate_employee_tags_from_jsonb: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       process_psychosocial_assessment_auto: {
         Args: { p_assessment_response_id: string }

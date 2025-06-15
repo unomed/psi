@@ -17,7 +17,7 @@ export const employeeFormSchema = z.object({
   sector_id: z.string().min(1, "Setor é obrigatório"),
   role_id: z.string().min(1, "Função é obrigatória"),
   employee_type: z.enum(["funcionario", "candidato"]),
-  employee_tags: z.array(z.string()).default([]),
+  employee_tags: z.array(z.string()).default([]).optional(), // Keep for backward compatibility but not used
 });
 
 export type EmployeeFormSchema = z.infer<typeof employeeFormSchema>;
