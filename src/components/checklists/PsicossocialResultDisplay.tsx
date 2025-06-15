@@ -13,9 +13,9 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
   const categoryResults = result.categorizedResults || {};
   
   const getRiskLevel = (score: number) => {
-    if (score <= 40) return { level: "Baixo", color: "bg-green-500", icon: CheckCircle };
-    if (score <= 70) return { level: "Médio", color: "bg-yellow-500", icon: AlertTriangle };
-    return { level: "Alto", color: "bg-red-500", icon: AlertCircle };
+    if (score <= 40) return { level: "Baixo", color: "bg-green-500", icon: CheckCircle, variant: "default" as const };
+    if (score <= 70) return { level: "Médio", color: "bg-yellow-500", icon: AlertTriangle, variant: "secondary" as const };
+    return { level: "Alto", color: "bg-red-500", icon: AlertCircle, variant: "destructive" as const };
   };
 
   const getRecommendations = (category: string, score: number) => {
@@ -36,6 +36,11 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
         "Baixo": ["Fortaleça relacionamentos com colegas", "Participe de atividades em equipe"],
         "Médio": ["Mantenha comunicação aberta com supervisores", "Busque mentoria"],
         "Alto": ["Considere participar de grupos de apoio", "Melhore a comunicação interpessoal"]
+      },
+      "Geral": {
+        "Baixo": ["Mantenha práticas saudáveis de trabalho"],
+        "Médio": ["Busque equilíbrio entre vida pessoal e profissional"],
+        "Alto": ["Considere buscar orientação profissional especializada"]
       }
     };
 
@@ -65,7 +70,7 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{category}</CardTitle>
-                  <Badge variant="outline" className="flex items-center gap-1">
+                  <Badge variant={risk.variant} className="flex items-center gap-1">
                     <Icon className="h-4 w-4" />
                     Risco {risk.level}
                   </Badge>

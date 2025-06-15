@@ -13,9 +13,9 @@ export function DiscAssessmentForm({ template, onSubmit, onCancel }: DiscAssessm
   console.log("Tipo do template:", template.type);
   console.log("Número de questões:", template.questions?.length);
 
-  // Por enquanto, vamos tratar todos os templates como psicossocial
-  // Isso simplifica o fluxo enquanto desenvolvemos
-  if (template.type === "psicossocial" || template.type === "custom" || template.questions.length > 0) {
+  // Simplificando: vamos tratar todos os templates como psicossocial por enquanto
+  // Isso elimina problemas de mapeamento de tipos
+  if (template.questions && template.questions.length > 0) {
     return (
       <PsicossocialAssessmentForm 
         template={template}
@@ -25,11 +25,12 @@ export function DiscAssessmentForm({ template, onSubmit, onCancel }: DiscAssessm
     );
   }
 
+  // Fallback se não houver questões
   return (
     <div className="text-center p-8">
-      <h3 className="text-lg font-semibold mb-2">Tipo de questionário não disponível</h3>
+      <h3 className="text-lg font-semibold mb-2">Questionário não disponível</h3>
       <p className="text-muted-foreground mb-4">
-        Este tipo de questionário ainda não está implementado.
+        Este questionário não possui perguntas configuradas.
       </p>
       <button 
         onClick={onCancel}

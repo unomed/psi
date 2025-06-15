@@ -19,11 +19,12 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const psicossocialQuestions = template.questions as PsicossocialQuestion[];
-  const currentQuestion = psicossocialQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / psicossocialQuestions.length) * 100;
+  // Assumir que todas as questões são do tipo psicossocial
+  const questions = template.questions as PsicossocialQuestion[];
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-  // Opções de resposta para escala Likert 5 pontos
+  // Opções de resposta padrão para questionários psicossociais
   const responseOptions = [
     { value: 1, label: "Nunca" },
     { value: 2, label: "Raramente" },
@@ -45,7 +46,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
       return;
     }
 
-    if (currentQuestionIndex < psicossocialQuestions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       handleSubmit();
@@ -59,7 +60,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
   };
 
   const handleSubmit = async () => {
-    if (Object.keys(responses).length !== psicossocialQuestions.length) {
+    if (Object.keys(responses).length !== questions.length) {
       toast.error("Por favor, responda todas as perguntas.");
       return;
     }
@@ -84,6 +85,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
         factorsScores: categorizedResults
       };
 
+      console.log("Enviando resultado:", resultData);
       await onSubmit(resultData);
     } catch (error) {
       console.error("Erro ao enviar avaliação:", error);
@@ -97,8 +99,8 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
     const categoryScores: Record<string, number> = {};
     const categoryCounts: Record<string, number> = {};
 
-    psicossocialQuestions.forEach(question => {
-      const category = question.category;
+    questions.forEach(question => {
+      const category = question.category || "Geral";
       const response = responses[question.id] || 0;
 
       if (!categoryScores[category]) {
@@ -110,13 +112,26 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
       categoryCounts[category]++;
     });
 
-    // Calcular média por categoria
+    // Calcular média por categoria e converter para escala 0-100
     Object.keys(categoryScores).forEach(category => {
-      categoryScores[category] = Math.round((categoryScores[category] / categoryCounts[category]) * 20); // Escala 0-100
+      const average = categoryScores[category] / categoryCounts[category];
+      categoryScores[category] = Math.round((average / 5) * 100); // Converter escala 1-5 para 0-100
     });
 
     return categoryScores;
   };
+
+  if (!currentQuestion) {
+    return (
+      <div className="text-center p-8">
+        <h3 className="text-lg font-semibold mb-2">Questionário vazio</h3>
+        <p className="text-muted-foreground mb-4">
+          Este questionário não possui perguntas configuradas.
+        </p>
+        <Button onClick={onCancel}>Voltar</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -127,7 +142,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
               {template.title}
             </CardTitle>
             <span className="text-sm text-muted-foreground">
-              {currentQuestionIndex + 1} de {psicossocialQuestions.length}
+              {currentQuestionIndex + 1} de {questions.length}
             </span>
           </div>
           <Progress value={progress} className="w-full" />
@@ -183,7 +198,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
                 onClick={handleNext}
                 disabled={!responses[currentQuestion.id] || isSubmitting}
               >
-                {currentQuestionIndex === psicossocialQuestions.length - 1 
+                {currentQuestionIndex === questions.length - 1 
                   ? (isSubmitting ? "Enviando..." : "Finalizar")
                   : "Próxima"
                 }
