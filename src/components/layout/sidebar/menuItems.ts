@@ -1,5 +1,5 @@
 
-import { BarChart3, Building2, Users, Briefcase, MapPin, FileText, ClipboardList, AlertTriangle, Target, FileBarChart, CreditCard, Calendar } from "lucide-react";
+import { BarChart3, Building2, Users, Briefcase, MapPin, FileText, ClipboardList, AlertTriangle, Target, FileBarChart, CreditCard, Calendar, UserCheck } from "lucide-react";
 import type { MenuItem } from "./types";
 
 export const menuItems: MenuItem[] = [
@@ -78,6 +78,13 @@ export const menuItems: MenuItem[] = [
     icon: Calendar,
     roles: ["superadmin", "admin", "evaluator"],
     permission: "view_scheduling"
+  },
+  {
+    title: "Portal do Funcionário",
+    href: "/employee-portal",
+    icon: UserCheck,
+    roles: ["superadmin", "admin", "evaluator"],
+    isExternal: true
   },
   {
     title: "Faturamento",

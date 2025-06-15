@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SidebarMenuButton, SidebarMenuItem as BaseSidebarMenuItem } from '@/components/ui/sidebar';
+import { ExternalLink } from 'lucide-react';
 import type { MenuItem } from './types';
 
 interface SidebarMenuItemProps {
@@ -15,19 +16,32 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
 
   const handleNavigation = () => {
     console.log(`[SidebarMenuItem] Navegando para: ${item.href}`);
+    
+    if (item.isExternal) {
+      window.open(item.href, '_blank');
+    }
   };
+
+  const content = (
+    <div className={`flex items-center gap-2 w-full ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'} ${isSubItem ? 'ml-4' : ''}`}>
+      {item.icon && <item.icon />}
+      <span>{item.title}</span>
+      {item.isExternal && <ExternalLink className="h-3 w-3 ml-auto" />}
+    </div>
+  );
 
   return (
     <BaseSidebarMenuItem>
       <SidebarMenuButton>
-        <Link 
-          to={item.href} 
-          onClick={handleNavigation} 
-          className={`flex items-center gap-2 w-full ${isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'} ${isSubItem ? 'ml-4' : ''}`}
-        >
-          {item.icon && <item.icon />}
-          <span>{item.title}</span>
-        </Link>
+        {item.isExternal ? (
+          <button onClick={handleNavigation} className="flex items-center gap-2 w-full text-left">
+            {content}
+          </button>
+        ) : (
+          <Link to={item.href} onClick={handleNavigation}>
+            {content}
+          </Link>
+        )}
       </SidebarMenuButton>
     </BaseSidebarMenuItem>
   );
