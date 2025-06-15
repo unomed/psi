@@ -36,18 +36,26 @@ export function useEmailSending() {
     let errorCount = 0;
 
     try {
-      // Buscar informações da empresa do usuário
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .select('name, address, phone')
-        .eq('id', user.user_metadata?.company_id)
+      // Buscar informações da empresa do usuário logado
+      const { data: userRole, error: userRoleError } = await supabase
+        .from('user_roles')
+        .select(`
+          company_id,
+          companies (
+            name,
+            address,
+            phone
+          )
+        `)
+        .eq('user_id', user.id)
         .single();
 
-      if (companyError) {
-        console.warn('Erro ao buscar dados da empresa:', companyError);
+      if (userRoleError || !userRole?.companies?.name) {
+        console.warn('Erro ao buscar dados da empresa do usuário:', userRoleError);
       }
 
-      const companyName = companyData?.name || 'Sua Empresa';
+      const companyName = userRole?.companies?.name || 'Sua Empresa';
+      console.log('Company name retrieved for emails:', companyName);
 
       for (const employee of employees) {
         try {
@@ -94,7 +102,7 @@ export function useEmailSending() {
             throw new Error(`Erro ao atualizar agendamento: ${updateError.message}`);
           }
 
-          // 4. Enviar email via edge function com informações da empresa
+          // 4. Enviar email via edge function com o nome correto da empresa
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email-resend', {
             body: {
               employeeId: employee.id,
@@ -143,7 +151,7 @@ export function useEmailSending() {
         }
       }
 
-      // Mostrar resultado final
+      // Mostrar resultado final com o nome correto da empresa
       if (successCount > 0) {
         toast.success(`${successCount} email(s) enviado(s) com sucesso para funcionários da ${companyName}!`);
       }

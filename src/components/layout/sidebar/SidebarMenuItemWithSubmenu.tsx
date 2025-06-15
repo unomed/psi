@@ -44,19 +44,21 @@ export function SidebarMenuItemWithSubmenu({
           </BaseSidebarMenuItem>
         </CollapsibleTrigger>
         
-        <CollapsibleContent className="ml-6 space-y-0.5 mt-1">
-          {items.map((item) => (
-            <BaseSidebarMenuItem key={item.href}>
-              <SidebarMenuButton 
-                className={location.pathname === item.href ? 'bg-accent text-accent-foreground' : ''}
-              >
-                <Link to={item.href} className="flex items-center gap-2 w-full">
-                  {item.icon && <item.icon className="h-4 w-4" />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </BaseSidebarMenuItem>
-          ))}
+        <CollapsibleContent className="ml-6 mt-1">
+          <div className="space-y-0.5">
+            {items.map((item) => (
+              <BaseSidebarMenuItem key={item.href} className="list-none">
+                <SidebarMenuButton 
+                  className={location.pathname === item.href ? 'bg-accent text-accent-foreground' : ''}
+                >
+                  <Link to={item.href} className="flex items-center gap-2 w-full">
+                    {item.icon && <item.icon className="h-4 w-4" />}
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </BaseSidebarMenuItem>
+            ))}
+          </div>
         </CollapsibleContent>
       </Collapsible>
     </div>

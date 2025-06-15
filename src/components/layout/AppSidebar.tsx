@@ -11,11 +11,11 @@ import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem as CustomSidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SidebarMenuItemWithSubmenu } from "./sidebar/SidebarMenuItemWithSubmenu";
 import { SidebarSection } from "./sidebar/SidebarSection";
-import { EmployeePortalAccess } from "./sidebar/EmployeePortalAccess";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
+import { ExternalLink } from "lucide-react";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
@@ -41,12 +41,13 @@ export function AppSidebar() {
   const gestaoItems = menuItems.filter(item => 
     ["/gestao-riscos", "/plano-acao", "/relatorios"].includes(item.href)
   );
-  const portalItems = menuItems.filter(item => 
-    item.href === "/employee-portal"
-  );
   const faturamentoItems = menuItems.filter(item => 
     item.href === "/faturamento"
   );
+
+  const handlePortalClick = () => {
+    window.open('https://avaliacao.unomed.med.br', '_blank');
+  };
 
   return (
     <Sidebar>
@@ -84,15 +85,17 @@ export function AppSidebar() {
           />
         )}
 
-        {/* Portais */}
-        {portalItems.some(shouldShowMenuItem) && (
-          <SidebarSection title="Portais">
-            {portalItems.filter(shouldShowMenuItem).map((item) => (
-              <CustomSidebarMenuItem key={item.href} item={item} />
-            ))}
-            <EmployeePortalAccess />
-          </SidebarSection>
-        )}
+        {/* Portal do Funcionário - Link simples */}
+        <SidebarSection title="Portais">
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handlePortalClick}>
+              <div className="flex items-center gap-2 w-full">
+                <ExternalLink className="h-4 w-4" />
+                <span>Portal do Funcionário</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarSection>
 
         {/* Faturamento */}
         {faturamentoItems.some(shouldShowMenuItem) && (

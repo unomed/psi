@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -33,9 +34,8 @@ export async function generateUniqueAssessmentLink(
       return null;
     }
     
-    // Generate the public URL using current domain and padronize for /avaliacao/
-    const baseUrl = window.location.origin;
-    const linkUrl = `${baseUrl}/avaliacao/${token}`;
+    // Generate the public URL using the correct domain
+    const linkUrl = `https://avaliacao.unomed.med.br/avaliacao/${token}`;
     
     return { linkUrl, token };
   } catch (error) {

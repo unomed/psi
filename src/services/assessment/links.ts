@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
@@ -74,8 +75,8 @@ export async function generateAssessmentLink(
     console.log("Existing link check result:", existingLink);
 
     if (existingLink?.token) {
-      // Usar /avaliacao/:token para novo padrão de link
-      const link = `${window.location.origin}/avaliacao/${existingLink.token}`;
+      // Usar o domínio correto para links existentes
+      const link = `https://avaliacao.unomed.med.br/avaliacao/${existingLink.token}`;
       console.log("Using existing link:", link);
       return link;
     }
@@ -121,8 +122,8 @@ export async function generateAssessmentLink(
 
     console.log("Link generated successfully:", data);
 
-    // Return the complete URL with the current domain
-    const finalLink = `${window.location.origin}/avaliacao/${token}`;
+    // Return the complete URL with the correct domain
+    const finalLink = `https://avaliacao.unomed.med.br/avaliacao/${token}`;
     console.log("Final link generated:", finalLink);
     return finalLink;
   } catch (error) {
