@@ -1,106 +1,95 @@
 
-import { BarChart3, Building2, Users, Briefcase, MapPin, FileText, ClipboardList, AlertTriangle, Target, FileBarChart, CreditCard, Calendar, UserCheck } from "lucide-react";
+import { 
+  Building2, 
+  Users, 
+  Briefcase, 
+  Factory, 
+  ClipboardList, 
+  BarChart3, 
+  Shield, 
+  FileText, 
+  Calendar,
+  CreditCard,
+  UserCheck,
+  GitCompare
+} from "lucide-react";
 import type { MenuItem } from "./types";
 
 export const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: BarChart3,
-    roles: ["superadmin", "admin", "evaluator", "profissionais"]
+    icon: BarChart3
   },
-  
-  // === SEÇÃO CADASTROS ===
   {
     title: "Empresas",
     href: "/empresas",
-    icon: Building2,
-    roles: ["superadmin", "admin"],
-    permission: "view_companies"
-  },
-  {
-    title: "Setores",
-    href: "/setores",
-    icon: MapPin,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_sectors"
-  },
-  {
-    title: "Funções",
-    href: "/funcoes",
-    icon: Briefcase,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_functions"
+    icon: Building2
   },
   {
     title: "Funcionários",
     href: "/funcionarios",
-    icon: Users,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_employees"
+    icon: Users
   },
-  
-  // === SEÇÃO AVALIAÇÕES ===
+  {
+    title: "Funções",
+    href: "/funcoes",
+    icon: Briefcase
+  },
+  {
+    title: "Setores",
+    href: "/setores",
+    icon: Factory
+  },
   {
     title: "Templates",
     href: "/checklists",
-    icon: FileText,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_checklists"
-  },
-  {
-    title: "Agendamentos",
-    href: "/agendamentos",
-    icon: Calendar,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_scheduling"
+    icon: ClipboardList
   },
   {
     title: "Resultados",
     href: "/resultados",
-    icon: ClipboardList,
-    roles: ["superadmin", "admin", "evaluator", "profissionais"],
-    permission: "view_results"
+    icon: BarChart3
   },
-  
-  // === SEÇÃO GESTÃO ===
   {
     title: "Gestão de Riscos",
-    href: "/gestao-riscos",
-    icon: AlertTriangle,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_risk_management"
+    href: "/gestao-riscos", 
+    icon: Shield
   },
   {
     title: "Plano de Ação",
     href: "/plano-acao",
-    icon: Target,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_action_plans"
+    icon: FileText
+  },
+  {
+    title: "Agendamentos",
+    href: "/agendamentos",
+    icon: Calendar
+  },
+  {
+    title: "Candidatos",
+    icon: UserCheck,
+    subItems: [
+      {
+        title: "Comparação",
+        href: "/candidatos/comparacao",
+        icon: GitCompare
+      },
+      {
+        title: "Avaliações",
+        href: "/candidatos/avaliacoes",
+        icon: ClipboardList
+      }
+    ]
   },
   {
     title: "Relatórios",
     href: "/relatorios",
-    icon: FileBarChart,
-    roles: ["superadmin", "admin", "evaluator", "profissionais"],
-    permission: "view_reports"
+    icon: FileText
   },
-  
-  // === SEÇÃO PORTAIS ===
-  {
-    title: "Portal do Funcionário",
-    href: "/employee-portal",
-    icon: UserCheck,
-    roles: ["superadmin", "admin", "evaluator"],
-    isExternal: true
-  },
-  
-  // === SEÇÃO FATURAMENTO ===
   {
     title: "Faturamento",
     href: "/faturamento",
-    icon: CreditCard,
-    roles: ["superadmin"],
-    permission: "view_billing"
+    icon: CreditCard
   }
 ];

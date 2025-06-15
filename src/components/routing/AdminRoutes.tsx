@@ -14,6 +14,20 @@ import NR01Page from "@/pages/relatorios/NR01Page";
 import Faturamento from "@/pages/Faturamento";
 import AssessmentPage from "@/pages/AssessmentPage";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
+import CandidatosComparacao from "@/pages/CandidatosComparacao";
+import CandidatosAvaliacoes from "@/pages/CandidatosAvaliacoes";
+
+// Settings imports
+import AssessmentCriteriaPage from "@/pages/configuracoes/AssessmentCriteriaPage";
+import AuditoriaPage from "@/pages/configuracoes/AuditoriaPage";
+import AutomacaoAvancadaPage from "@/pages/configuracoes/AutomacaoAvancadaPage";
+import AutomacaoPsicossocialPage from "@/pages/configuracoes/AutomacaoPsicossocialPage";
+import EmailServerPage from "@/pages/configuracoes/EmailServerPage";
+import EmailTemplatesPage from "@/pages/configuracoes/EmailTemplatesPage";
+import NotificationsPage from "@/pages/configuracoes/NotificationsPage";
+import PeriodicityPage from "@/pages/configuracoes/PeriodicityPage";
+import PermissionsPage from "@/pages/configuracoes/PermissionsPage";
+import UserManagementPage from "@/pages/configuracoes/UserManagementPage";
 
 export function AdminRoutes() {
   console.log('[AdminRoutes] Renderizando rotas administrativas');
@@ -37,6 +51,22 @@ export function AdminRoutes() {
       <Route path="/faturamento" element={<Faturamento />} />
       <Route path="/assessments/:id" element={<AssessmentPage />} />
       <Route path="/agendamentos" element={<AssessmentScheduling />} />
+      
+      {/* Rotas para candidatos */}
+      <Route path="/candidatos/comparacao" element={<CandidatosComparacao />} />
+      <Route path="/candidatos/avaliacoes" element={<CandidatosAvaliacoes />} />
+      
+      {/* Settings routes */}
+      <Route path="/configuracoes/criterios-avaliacao" element={<AssessmentCriteriaPage />} />
+      <Route path="/configuracoes/auditoria" element={<AuditoriaPage />} />
+      <Route path="/configuracoes/automacao-avancada" element={<AutomacaoAvancadaPage />} />
+      <Route path="/configuracoes/automacao-psicossocial" element={<AutomacaoPsicossocialPage />} />
+      <Route path="/configuracoes/servidor-email" element={<EmailServerPage />} />
+      <Route path="/configuracoes/templates-email" element={<EmailTemplatesPage />} />
+      <Route path="/configuracoes/notificacoes" element={<NotificationsPage />} />
+      <Route path="/configuracoes/periodicidade" element={<PeriodicityPage />} />
+      <Route path="/configuracoes/permissoes" element={<PermissionsPage />} />
+      <Route path="/configuracoes/usuarios" element={<UserManagementPage />} />
     </Routes>
   );
 }
