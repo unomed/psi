@@ -31,6 +31,8 @@ export function useEmployeeAuthProvider() {
       try {
         const parsedSession = JSON.parse(savedSession);
         setSession(parsedSession);
+        // Configurar a sessão no Supabase para RLS
+        configureEmployeeSession(parsedSession.employee.employeeId);
       } catch (error) {
         console.error('Erro ao recuperar sessão do funcionário:', error);
         localStorage.removeItem('employee-session');
@@ -38,6 +40,20 @@ export function useEmployeeAuthProvider() {
     }
     setLoading(false);
   }, []);
+
+  const configureEmployeeSession = async (employeeId: string) => {
+    try {
+      // Configurar o setting para a sessão atual do funcionário
+      await supabase.rpc('set_config', {
+        setting_name: 'app.current_employee_id',
+        setting_value: employeeId,
+        is_local: false
+      });
+      console.log(`[EmployeeAuth] Sessão configurada para funcionário: ${employeeId}`);
+    } catch (error) {
+      console.error('Erro ao configurar sessão do funcionário:', error);
+    }
+  };
 
   const login = async (cpf: string, password: string) => {
     try {
@@ -75,6 +91,9 @@ export function useEmployeeAuthProvider() {
       setSession(newSession);
       localStorage.setItem('employee-session', JSON.stringify(newSession));
 
+      // Configurar a sessão no Supabase para RLS
+      await configureEmployeeSession(authData.employee_id);
+
       return { success: true };
     } catch (error: any) {
       console.error('Erro no login do funcionário:', error);
@@ -84,7 +103,18 @@ export function useEmployeeAuthProvider() {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Limpar o setting da sessão
+      await supabase.rpc('set_config', {
+        setting_name: 'app.current_employee_id',
+        setting_value: '',
+        is_local: false
+      });
+    } catch (error) {
+      console.error('Erro ao limpar sessão do funcionário:', error);
+    }
+    
     setSession(null);
     localStorage.removeItem('employee-session');
   };

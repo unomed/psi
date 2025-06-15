@@ -18,6 +18,8 @@ export function useEmployeeMood(employeeId: string) {
 
   const loadTodayMood = async () => {
     try {
+      console.log(`[useEmployeeMood] Carregando humor do dia para funcionário: ${employeeId}`);
+      
       const { data, error } = await supabase
         .from('employee_mood_logs')
         .select('*')
@@ -25,7 +27,10 @@ export function useEmployeeMood(employeeId: string) {
         .eq('log_date', new Date().toISOString().split('T')[0])
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useEmployeeMood] Erro ao carregar humor do dia:', error);
+        throw error;
+      }
       
       if (data) {
         // Mapear os dados do banco para o tipo MoodLog
@@ -39,6 +44,10 @@ export function useEmployeeMood(employeeId: string) {
           createdAt: data.created_at
         };
         setTodayMood(moodLog);
+        console.log('[useEmployeeMood] Humor do dia carregado:', moodLog);
+      } else {
+        console.log('[useEmployeeMood] Nenhum humor registrado hoje');
+        setTodayMood(null);
       }
     } catch (error) {
       console.error('Erro ao carregar humor do dia:', error);
@@ -47,12 +56,18 @@ export function useEmployeeMood(employeeId: string) {
 
   const loadMoodStats = async () => {
     try {
+      console.log(`[useEmployeeMood] Carregando estatísticas de humor para funcionário: ${employeeId}`);
+      
       const { data, error } = await supabase.rpc('get_employee_mood_stats', {
         p_employee_id: employeeId,
         p_days: 30
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useEmployeeMood] Erro ao carregar estatísticas de humor:', error);
+        throw error;
+      }
+      
       if (data && data.length > 0) {
         // Mapear os dados do banco para o tipo MoodStats com type safety
         const rawData = data[0];
@@ -68,6 +83,7 @@ export function useEmployeeMood(employeeId: string) {
           moodDistribution
         };
         setMoodStats(stats);
+        console.log('[useEmployeeMood] Estatísticas de humor carregadas:', stats);
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas de humor:', error);
@@ -78,6 +94,12 @@ export function useEmployeeMood(employeeId: string) {
 
   const saveMood = async (moodScore: number, moodEmoji: string, moodDescription: string) => {
     try {
+      console.log(`[useEmployeeMood] Salvando humor para funcionário: ${employeeId}`, {
+        moodScore,
+        moodEmoji,
+        moodDescription
+      });
+
       const { error } = await supabase
         .from('employee_mood_logs')
         .upsert({
@@ -90,7 +112,12 @@ export function useEmployeeMood(employeeId: string) {
           onConflict: 'employee_id,log_date'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useEmployeeMood] Erro ao salvar humor:', error);
+        throw error;
+      }
+
+      console.log('[useEmployeeMood] Humor salvo com sucesso');
 
       toast({
         title: "Humor registrado!",
