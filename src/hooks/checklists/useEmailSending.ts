@@ -36,9 +36,9 @@ export function useEmailSending() {
     let errorCount = 0;
 
     try {
-      // Buscar informações da empresa do usuário logado
-      const { data: userRole, error: userRoleError } = await supabase
-        .from('user_roles')
+      // Buscar informações da empresa do usuário logado através da tabela user_companies
+      const { data: userCompany, error: userCompanyError } = await supabase
+        .from('user_companies')
         .select(`
           company_id,
           companies (
@@ -50,11 +50,11 @@ export function useEmailSending() {
         .eq('user_id', user.id)
         .single();
 
-      if (userRoleError || !userRole?.companies?.name) {
-        console.warn('Erro ao buscar dados da empresa do usuário:', userRoleError);
+      if (userCompanyError || !userCompany?.companies?.name) {
+        console.warn('Erro ao buscar dados da empresa do usuário:', userCompanyError);
       }
 
-      const companyName = userRole?.companies?.name || 'Sua Empresa';
+      const companyName = userCompany?.companies?.name || 'Sua Empresa';
       console.log('Company name retrieved for emails:', companyName);
 
       for (const employee of employees) {
