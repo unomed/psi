@@ -60,6 +60,15 @@ const actionColors: Record<string, string> = {
   report_generate: 'bg-violet-100 text-violet-800'
 };
 
+// Helper function to safely get user name from profiles
+const getUserName = (profiles: any): string => {
+  if (!profiles) return 'Sistema';
+  if (typeof profiles === 'object' && profiles.full_name) {
+    return profiles.full_name;
+  }
+  return 'Sistema';
+};
+
 export function AuditLogsList({ companyId }: AuditLogsListProps) {
   const [filters, setFilters] = useState({
     module: '',
@@ -115,7 +124,7 @@ export function AuditLogsList({ companyId }: AuditLogsListProps) {
       ['Data/Hora', 'Usuário', 'Ação', 'Módulo', 'Descrição', 'Empresa'].join(','),
       ...logs.map(log => [
         format(new Date(log.created_at), 'dd/MM/yyyy HH:mm:ss'),
-        log.profiles?.full_name || 'Sistema',
+        getUserName(log.profiles),
         actionTypeLabels[log.action_type] || log.action_type,
         moduleLabels[log.module] || log.module,
         log.description,
@@ -268,7 +277,7 @@ export function AuditLogsList({ companyId }: AuditLogsListProps) {
                 <div className="flex items-center justify-between">
                   <p className="text-sm">{log.description}</p>
                   <span className="text-sm text-muted-foreground">
-                    {log.profiles?.full_name || 'Sistema'}
+                    {getUserName(log.profiles)}
                   </span>
                 </div>
 
