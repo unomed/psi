@@ -13,17 +13,21 @@ import {
   UserCheck,
   GitCompare,
   BarChart3,
-  FileBarChart
+  FileBarChart,
+  User
 } from "lucide-react";
 import type { MenuItem } from "./types";
 
-export const menuItems: MenuItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: BarChart3,
-    roles: ["admin", "manager", "user"]
-  },
+// Dashboard (standalone)
+export const dashboardItem: MenuItem = {
+  title: "Dashboard",
+  href: "/dashboard",
+  icon: BarChart3,
+  roles: ["admin", "manager", "user"]
+};
+
+// Seção CADASTROS
+export const cadastrosItems: MenuItem[] = [
   {
     title: "Empresas",
     href: "/empresas",
@@ -47,7 +51,11 @@ export const menuItems: MenuItem[] = [
     href: "/setores",
     icon: Factory,
     roles: ["admin", "manager"]
-  },
+  }
+];
+
+// Seção AVALIAÇÕES
+export const avaliacoesItems: MenuItem[] = [
   {
     title: "Templates",
     href: "/checklists",
@@ -60,6 +68,22 @@ export const menuItems: MenuItem[] = [
     icon: TrendingUp,
     roles: ["admin", "manager", "user"]
   },
+  {
+    title: "Comparação",
+    href: "/candidatos/comparacao",
+    icon: GitCompare,
+    roles: ["admin", "manager"]
+  },
+  {
+    title: "Avaliações",
+    href: "/candidatos/avaliacoes",
+    icon: UserCheck,
+    roles: ["admin", "manager"]
+  }
+];
+
+// Seção GESTÃO
+export const gestaoItems: MenuItem[] = [
   {
     title: "Gestão de Riscos",
     href: "/gestao-riscos", 
@@ -79,35 +103,27 @@ export const menuItems: MenuItem[] = [
     roles: ["admin", "manager"]
   },
   {
-    title: "Candidatos",
-    href: "#",
-    icon: UserCheck,
-    roles: ["admin", "manager"],
-    subItems: [
-      {
-        title: "Comparação",
-        href: "/candidatos/comparacao",
-        icon: GitCompare,
-        roles: ["admin", "manager"]
-      },
-      {
-        title: "Avaliações",
-        href: "/candidatos/avaliacoes",
-        icon: ClipboardList,
-        roles: ["admin", "manager"]
-      }
-    ]
-  },
-  {
     title: "Relatórios",
     href: "/relatorios",
     icon: FileBarChart,
     roles: ["admin", "manager", "user"]
-  },
-  {
-    title: "Faturamento",
-    href: "/faturamento",
-    icon: CreditCard,
-    roles: ["admin"]
   }
 ];
+
+// Seção PORTAIS
+export const portaisItems: MenuItem[] = [
+  {
+    title: "Portal do Funcionário",
+    href: "/portal-funcionario",
+    icon: User,
+    roles: ["admin", "manager"]
+  }
+];
+
+// FATURAMENTO (standalone)
+export const faturamentoItem: MenuItem = {
+  title: "Faturamento",
+  href: "/faturamento",
+  icon: CreditCard,
+  roles: ["admin"]
+};

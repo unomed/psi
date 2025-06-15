@@ -22,35 +22,32 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
     }
   };
 
-  const content = (
-    <div className={`flex items-center gap-3 w-full transition-all duration-200 ${
-      isActive 
-        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
-        : 'hover:bg-sidebar-accent/50 text-sidebar-foreground'
-    } ${isSubItem ? 'ml-4' : ''}`}>
-      {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
-      <span className="font-medium truncate">{item.title}</span>
-      {item.isExternal && <ExternalLink className="h-4 w-4 ml-auto flex-shrink-0" />}
-    </div>
-  );
-
   return (
     <BaseSidebarMenuItem className="list-none">
-      <SidebarMenuButton className="w-full p-0">
+      <SidebarMenuButton 
+        className={`w-full px-3 py-2 transition-all duration-200 hover:bg-sidebar-accent/50 rounded-md ${
+          isActive 
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
+            : 'text-sidebar-foreground'
+        } ${isSubItem ? 'ml-4' : ''}`}
+      >
         {item.isExternal ? (
           <button 
             onClick={handleNavigation} 
-            className="flex items-center gap-3 w-full px-3 py-2 text-left transition-all duration-200 hover:bg-sidebar-accent/50 rounded-md"
+            className="flex items-center gap-3 w-full text-left"
           >
-            {content}
+            {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
+            <span className="font-medium truncate">{item.title}</span>
+            <ExternalLink className="h-4 w-4 ml-auto flex-shrink-0" />
           </button>
         ) : (
           <Link 
             to={item.href} 
             onClick={handleNavigation}
-            className="flex items-center gap-3 w-full px-3 py-2 transition-all duration-200 hover:bg-sidebar-accent/50 rounded-md"
+            className="flex items-center gap-3 w-full"
           >
-            {content}
+            {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
+            <span className="font-medium truncate">{item.title}</span>
           </Link>
         )}
       </SidebarMenuButton>

@@ -3,7 +3,14 @@ import { SidebarContent, SidebarHeader, SidebarMenu } from "@/components/ui/side
 import { SidebarSection } from "./sidebar/SidebarSection";
 import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SidebarMenuItemWithSubmenu } from "./sidebar/SidebarMenuItemWithSubmenu";
-import { menuItems } from "./sidebar/menuItems";
+import { 
+  dashboardItem, 
+  cadastrosItems, 
+  avaliacoesItems, 
+  gestaoItems,
+  portaisItems,
+  faturamentoItem 
+} from "./sidebar/menuItems";
 import { settingsItems } from "./sidebar/settingsItems";
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
 
@@ -15,39 +22,68 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent className="overflow-y-auto">
+        {/* Dashboard */}
         <SidebarSection title="">
           <SidebarMenu className="space-y-1">
-            {menuItems.map((item) => {
-              if (item.subItems) {
-                return (
-                  <SidebarMenuItemWithSubmenu
-                    key={item.title}
-                    title={item.title}
-                    items={item.subItems}
-                    icon={item.icon}
-                  />
-                );
-              }
-              return <SidebarMenuItem key={item.href} item={item} />;
-            })}
+            <SidebarMenuItem key={dashboardItem.href} item={dashboardItem} />
           </SidebarMenu>
         </SidebarSection>
 
+        {/* CADASTROS */}
+        <SidebarSection title="CADASTROS">
+          <SidebarMenu className="space-y-1">
+            {cadastrosItems.map((item) => (
+              <SidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* AVALIAÇÕES */}
+        <SidebarSection title="AVALIAÇÕES">
+          <SidebarMenu className="space-y-1">
+            {avaliacoesItems.map((item) => (
+              <SidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* GESTÃO */}
+        <SidebarSection title="GESTÃO">
+          <SidebarMenu className="space-y-1">
+            {gestaoItems.map((item) => (
+              <SidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* PORTAIS */}
+        <SidebarSection title="PORTAIS">
+          <SidebarMenu className="space-y-1">
+            {portaisItems.map((item) => (
+              <SidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* FATURAMENTO */}
+        <SidebarSection title="">
+          <SidebarMenu className="space-y-1">
+            <SidebarMenuItem key={faturamentoItem.href} item={faturamentoItem} />
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* CONFIGURAÇÕES */}
         <div className="mt-6 pt-6 border-t border-sidebar-border">
-          <SidebarSection title="Configurações">
-            <SidebarMenu className="space-y-1">
-              {settingsItems.map((item) => {
-                // Convert settingsItem (with url) to MenuItem (with href)
-                const menuItem = {
-                  title: item.title,
-                  href: item.url,
-                  icon: item.icon,
-                  roles: ["admin", "manager"] // Default roles for settings items
-                };
-                return <SidebarMenuItem key={item.url} item={menuItem} />;
-              })}
-            </SidebarMenu>
-          </SidebarSection>
+          <SidebarMenuItemWithSubmenu
+            title="Configurações"
+            items={settingsItems.map(item => ({
+              title: item.title,
+              href: item.url,
+              icon: item.icon,
+              roles: ["admin", "manager"]
+            }))}
+            icon={undefined}
+          />
         </div>
       </SidebarContent>
     </>

@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";
@@ -55,6 +54,9 @@ export function AdminRoutes() {
       {/* Rotas para candidatos */}
       <Route path="/candidatos/comparacao" element={<CandidatosComparacao />} />
       <Route path="/candidatos/avaliacoes" element={<CandidatosAvaliacoes />} />
+      
+      {/* Nova rota para Portal do Funcionário */}
+      <Route path="/portal-funcionario" element={<div className="p-6"><h1 className="text-2xl font-bold">Portal do Funcionário</h1><p>Em desenvolvimento...</p></div>} />
       
       {/* Settings routes */}
       <Route path="/configuracoes/criterios-avaliacao" element={<AssessmentCriteriaPage />} />
