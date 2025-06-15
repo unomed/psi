@@ -42,20 +42,24 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
 
   // Helper function to safely parse employee_tags - ensure it always returns string[]
   const safeParseEmployeeTags = (tags?: any): string[] => {
+    if (!tags) return [];
+    
     if (Array.isArray(tags)) {
       // Filter to ensure all elements are strings
-      return tags.filter(tag => typeof tag === 'string');
+      return tags.filter(tag => typeof tag === 'string') as string[];
     }
+    
     if (typeof tags === 'string') {
       try {
         const parsed = JSON.parse(tags);
         if (Array.isArray(parsed)) {
-          return parsed.filter(tag => typeof tag === 'string');
+          return parsed.filter(tag => typeof tag === 'string') as string[];
         }
       } catch {
         // If JSON parsing fails, return empty array
       }
     }
+    
     return [];
   };
 
