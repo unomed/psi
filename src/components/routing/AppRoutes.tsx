@@ -70,8 +70,8 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento padrão - prioriza funcionário */}
-      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/auth/employee"} replace />} />
+      {/* Redirecionamento padrão - sempre para login principal */}
+      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/auth/login"} replace />} />
     </Routes>
   );
 }

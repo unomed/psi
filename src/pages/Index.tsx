@@ -23,7 +23,7 @@ const Index = () => {
   if (user) {
     return <Navigate to="/dashboard" replace />;
   } else {
-    return <Navigate to="/auth/employee" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 };
 
