@@ -940,7 +940,7 @@ export type Database = {
           cpf: string
           created_at: string
           email: string | null
-          employee_tags: Json | null
+          employee_tags: Json
           employee_type: string
           gender: string | null
           id: string
@@ -961,7 +961,7 @@ export type Database = {
           cpf: string
           created_at?: string
           email?: string | null
-          employee_tags?: Json | null
+          employee_tags?: Json
           employee_type?: string
           gender?: string | null
           id?: string
@@ -982,7 +982,7 @@ export type Database = {
           cpf?: string
           created_at?: string
           email?: string | null
-          employee_tags?: Json | null
+          employee_tags?: Json
           employee_type?: string
           gender?: string | null
           id?: string

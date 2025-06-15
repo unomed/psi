@@ -40,15 +40,17 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return isValidDate(date) ? date : undefined;
   };
 
-  // Helper function to safely parse employee_tags - ensure it always returns string[]
+  // Helper function to safely parse employee_tags - agora sempre retorna string[]
   const safeParseEmployeeTags = (tags?: any): string[] => {
+    // Se não há tags, retornar array vazio
     if (!tags) return [];
     
+    // Se já é um array, filtrar para garantir que são strings
     if (Array.isArray(tags)) {
-      // Filter to ensure all elements are strings and return only valid strings
       return tags.filter((tag): tag is string => typeof tag === 'string');
     }
     
+    // Se é uma string, tentar fazer parse como JSON
     if (typeof tags === 'string') {
       try {
         const parsed = JSON.parse(tags);
@@ -56,11 +58,12 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
           return parsed.filter((tag): tag is string => typeof tag === 'string');
         }
       } catch {
-        // If JSON parsing fails, return empty array
+        // Se o parse falhar, retornar array vazio
         return [];
       }
     }
     
+    // Para qualquer outro tipo, retornar array vazio
     return [];
   };
 
@@ -120,7 +123,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      employee_tags: values.employee_tags,
+      employee_tags: values.employee_tags, // Agora sempre é string[]
     };
     
     onSubmit(employeeData);
