@@ -10,7 +10,7 @@ export const SidebarMenu = React.forwardRef<
     ref={ref}
     data-sidebar="menu"
     className={cn(
-      "flex min-w-0 flex-col gap-1 group-data-[collapsible=icon]:items-center",
+      "flex min-w-0 flex-col gap-1 group-data-[collapsible=icon]:items-center list-none",
       className
     )}
     {...props}
@@ -25,7 +25,7 @@ export const SidebarMenuItem = React.forwardRef<
   <li
     ref={ref}
     data-sidebar="menu-item"
-    className={cn("min-w-0", className)}
+    className={cn("min-w-0 list-none", className)}
     {...props}
   />
 ));

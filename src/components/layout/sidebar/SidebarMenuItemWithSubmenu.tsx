@@ -26,41 +26,39 @@ export function SidebarMenuItemWithSubmenu({
   const hasActiveSubItem = items.some(item => location.pathname === item.href);
 
   return (
-    <div className="mb-1">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <BaseSidebarMenuItem>
-            <SidebarMenuButton className={`w-full justify-between ${hasActiveSubItem ? 'bg-accent text-accent-foreground' : ''}`}>
-              <div className="flex items-center gap-2">
-                {Icon && <Icon className="h-4 w-4" />}
-                <span>{title}</span>
-              </div>
-              {isOpen ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </SidebarMenuButton>
-          </BaseSidebarMenuItem>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="ml-6 mt-1">
-          <div className="space-y-0.5">
-            {items.map((item) => (
-              <BaseSidebarMenuItem key={item.href} className="list-none">
-                <SidebarMenuButton 
-                  className={location.pathname === item.href ? 'bg-accent text-accent-foreground' : ''}
-                >
-                  <Link to={item.href} className="flex items-center gap-2 w-full">
-                    {item.icon && <item.icon className="h-4 w-4" />}
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </BaseSidebarMenuItem>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <BaseSidebarMenuItem className="list-none">
+          <SidebarMenuButton className={`w-full justify-between ${hasActiveSubItem ? 'bg-accent text-accent-foreground' : ''}`}>
+            <div className="flex items-center gap-2">
+              {Icon && <Icon className="h-4 w-4" />}
+              <span>{title}</span>
+            </div>
+            {isOpen ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </SidebarMenuButton>
+        </BaseSidebarMenuItem>
+      </CollapsibleTrigger>
+      
+      <CollapsibleContent className="ml-6">
+        <div className="space-y-0">
+          {items.map((item) => (
+            <BaseSidebarMenuItem key={item.href} className="list-none">
+              <SidebarMenuButton 
+                className={location.pathname === item.href ? 'bg-accent text-accent-foreground' : ''}
+              >
+                <Link to={item.href} className="flex items-center gap-2 w-full">
+                  {item.icon && <item.icon className="h-4 w-4" />}
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </BaseSidebarMenuItem>
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

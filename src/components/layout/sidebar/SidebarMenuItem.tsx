@@ -31,7 +31,7 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
   );
 
   return (
-    <BaseSidebarMenuItem>
+    <BaseSidebarMenuItem className="list-none">
       <SidebarMenuButton>
         {item.isExternal ? (
           <button onClick={handleNavigation} className="flex items-center gap-2 w-full text-left">
