@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export async function submitAssessmentResult(resultData: Omit<any, "id" | "completedAt">) {
@@ -47,63 +46,59 @@ export async function submitAssessmentResult(resultData: Omit<any, "id" | "compl
 
 export async function fetchAssessmentByToken(token: string) {
   try {
-    // Get link data from database
+    console.log("Buscando avaliação com token:", token);
+    
+    // Buscar link de avaliação pelo token
     const { data: linkData, error: linkError } = await supabase
       .from('assessment_links')
-      .select('*')
+      .select(`
+        id,
+        employee_id,
+        template_id,
+        expires_at,
+        used_at,
+        checklist_templates (
+          id,
+          title,
+          description,
+          type,
+          scale_type,
+          instructions,
+          company_id
+        )
+      `)
       .eq('token', token)
       .single();
 
     if (linkError) {
-      console.error("Link error:", linkError);
-      if (linkError.code === 'PGRST116') {
-        return { error: "Link de avaliação não encontrado ou expirado", template: null, assessmentId: null };
-      }
-      throw linkError;
+      console.error("Erro ao buscar link:", linkError);
+      return { error: "Link de avaliação não encontrado ou inválido" };
     }
 
-    // Check if link is expired
+    if (!linkData) {
+      return { error: "Link de avaliação não encontrado" };
+    }
+
+    // Verificar se o link expirou
     if (linkData.expires_at && new Date(linkData.expires_at) < new Date()) {
-      return { error: "Link de avaliação expirado", template: null, assessmentId: null };
+      return { error: "Link de avaliação expirado" };
     }
 
-    // Check if link has already been used
+    // Verificar se já foi usado
     if (linkData.used_at) {
-      return { error: "Link de avaliação já foi utilizado", template: null, assessmentId: null };
+      return { error: "Este link de avaliação já foi utilizado" };
     }
 
-    // Get template data
-    const { data: template, error: templateError } = await supabase
-      .from('checklist_templates')
-      .select('*')
-      .eq('id', linkData.template_id)
-      .single();
+    console.log("Link válido encontrado:", linkData);
 
-    if (templateError) {
-      console.error("Template error:", templateError);
-      return { error: "Modelo de avaliação não encontrado", template: null, assessmentId: null };
-    }
-
-    console.log("Template fetched:", template);
-
-    // Get assessment ID if available
-    const { data: assessmentData } = await supabase
-      .from('scheduled_assessments')
-      .select('id')
-      .eq('template_id', linkData.template_id)
-      .eq('employee_id', linkData.employee_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    return { 
-      template, 
-      error: null, 
-      assessmentId: assessmentData?.id || null,
-      linkId: linkData.id
+    return {
+      template: linkData.checklist_templates,
+      assessmentId: linkData.id,
+      linkId: linkData.id,
+      error: null
     };
   } catch (error) {
-    console.error("Error fetching assessment by token:", error);
-    return { error: "Erro ao buscar avaliação", template: null, assessmentId: null };
+    console.error("Erro ao buscar avaliação:", error);
+    return { error: "Erro interno ao buscar avaliação" };
   }
 }

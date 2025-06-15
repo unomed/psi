@@ -1,126 +1,79 @@
 
-import {
-  Routes,
-  Route,
-  Navigate,
-  Outlet
-} from "react-router-dom";
-import MainLayout from "@/components/layout/MainLayout";
-import { RouteGuard } from "@/components/auth/RouteGuard";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthRoutes } from "./AuthRoutes";
+import { MainRoutes } from "./MainRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
-
-// Import pages
-import Dashboard from "@/pages/Dashboard";
-import Empresas from "@/pages/Empresas";
-import Funcionarios from "@/pages/Funcionarios";
-import Setores from "@/pages/Setores";
-import Funcoes from "@/pages/Funcoes";
-import Checklists from "@/pages/Checklists";
-import AssessmentScheduling from "@/pages/AssessmentScheduling";
+import MainLayout from "@/components/layout/MainLayout";
+import AuthLayout from "@/components/layout/AuthLayout";
+import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
-import AssessmentResults from "@/pages/AssessmentResults";
-import Relatorios from "@/pages/Relatorios";
-import PlanoAcao from "@/pages/PlanoAcao";
-import GestaoRiscos from "@/pages/GestaoRiscos";
-import Faturamento from "@/pages/Faturamento";
-
-// Import auth pages
-import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
+import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
 
 export function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
-      {/* Public Assessment Route - outside of authenticated routes */}
-      <Route path="/assessment/:token" element={<PublicAssessment />} />
+      {/* Rotas públicas - não requerem autenticação */}
+      <Route 
+        path="/avaliacao/:token" 
+        element={
+          <EmployeeAuthProvider>
+            <PublicAssessment />
+          </EmployeeAuthProvider>
+        } 
+      />
       
-      {/* Authentication Routes */}
-      <Route path="/auth/login" element={<Login />} />
-      <Route path="/auth/register" element={<Register />} />
-      <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
-      
-      {/* Main authenticated routes with MainLayout */}
-      <Route path="/" element={<MainLayout />}>
-        <Route path="dashboard" element={
-          <RouteGuard requirePermission="view_dashboard">
-            <Dashboard />
-          </RouteGuard>
+      {/* Portal do funcionário - autenticação própria */}
+      <Route 
+        path="/employee-portal/*" 
+        element={
+          <EmployeeAuthProvider>
+            <Routes>
+              <Route path="/" element={<EmployeePortal />} />
+              <Route path="/:templateId" element={<EmployeePortal />} />
+            </Routes>
+          </EmployeeAuthProvider>
+        } 
+      />
+
+      {/* Rotas de autenticação */}
+      {!user && (
+        <Route path="/*" element={
+          <AuthLayout>
+            <AuthRoutes />
+          </AuthLayout>
         } />
-        
-        <Route path="empresas" element={
-          <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_companies">
-            <Empresas />
-          </RouteGuard>
-        } />
-        
-        <Route path="funcionarios" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_employees">
-            <Funcionarios />
-          </RouteGuard>
-        } />
-        
-        <Route path="setores" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_sectors">
-            <Setores />
-          </RouteGuard>
-        } />
-        
-        <Route path="funcoes" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_functions">
-            <Funcoes />
-          </RouteGuard>
-        } />
-        
-        <Route path="templates" element={
-          <RouteGuard requirePermission="view_checklists">
-            <Checklists />
-          </RouteGuard>
-        } />
-        
-        <Route path="agendamentos" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_scheduling">
-            <AssessmentScheduling />
-          </RouteGuard>
-        } />
-        
-        <Route path="resultados" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_results">
-            <AssessmentResults />
-          </RouteGuard>
-        } />
-        
-        <Route path="relatorios" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_reports">
-            <Relatorios />
-          </RouteGuard>
-        } />
-        
-        <Route path="plano-acao" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_action_plans">
-            <PlanoAcao />
-          </RouteGuard>
-        } />
-        
-        <Route path="gestao-riscos" element={
-          <RouteGuard requireCompanyAccess="any" requirePermission="view_risk_management">
-            <GestaoRiscos />
-          </RouteGuard>
-        } />
-        
-        <Route path="faturamento" element={
-          <RouteGuard allowedRoles={["superadmin"]} requirePermission="view_billing">
-            <Faturamento />
-          </RouteGuard>
-        } />
-        
-        <Route path="configuracoes/*" element={<SettingsRoutes />} />
-        
-        {/* Root route - redirect to dashboard */}
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        
-        {/* Catch all other routes and redirect to dashboard */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Route>
+      )}
+
+      {/* Rotas principais protegidas */}
+      {user && (
+        <>
+          <Route path="/configuracoes/*" element={
+            <MainLayout>
+              <SettingsRoutes />
+            </MainLayout>
+          } />
+          
+          <Route path="/*" element={
+            <MainLayout>
+              <MainRoutes />
+            </MainLayout>
+          } />
+        </>
+      )}
+
+      {/* Redirecionamento padrão */}
+      <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
     </Routes>
   );
 }
