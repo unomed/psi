@@ -9,26 +9,14 @@ export const menuItems: MenuItem[] = [
     icon: BarChart3,
     roles: ["superadmin", "admin", "evaluator", "profissionais"]
   },
+  
+  // === SEÇÃO CADASTROS ===
   {
     title: "Empresas",
     href: "/empresas",
     icon: Building2,
     roles: ["superadmin", "admin"],
     permission: "view_companies"
-  },
-  {
-    title: "Funcionários",
-    href: "/funcionarios",
-    icon: Users,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_employees"
-  },
-  {
-    title: "Funções",
-    href: "/funcoes",
-    icon: Briefcase,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_functions"
   },
   {
     title: "Setores",
@@ -38,11 +26,34 @@ export const menuItems: MenuItem[] = [
     permission: "view_sectors"
   },
   {
+    title: "Funções",
+    href: "/funcoes",
+    icon: Briefcase,
+    roles: ["superadmin", "admin", "evaluator"],
+    permission: "view_functions"
+  },
+  {
+    title: "Funcionários",
+    href: "/funcionarios",
+    icon: Users,
+    roles: ["superadmin", "admin", "evaluator"],
+    permission: "view_employees"
+  },
+  
+  // === SEÇÃO AVALIAÇÕES ===
+  {
     title: "Templates",
     href: "/checklists",
     icon: FileText,
     roles: ["superadmin", "admin", "evaluator"],
     permission: "view_checklists"
+  },
+  {
+    title: "Agendamentos",
+    href: "/agendamentos",
+    icon: Calendar,
+    roles: ["superadmin", "admin", "evaluator"],
+    permission: "view_scheduling"
   },
   {
     title: "Resultados",
@@ -51,6 +62,8 @@ export const menuItems: MenuItem[] = [
     roles: ["superadmin", "admin", "evaluator", "profissionais"],
     permission: "view_results"
   },
+  
+  // === SEÇÃO GESTÃO ===
   {
     title: "Gestão de Riscos",
     href: "/gestao-riscos",
@@ -72,13 +85,8 @@ export const menuItems: MenuItem[] = [
     roles: ["superadmin", "admin", "evaluator", "profissionais"],
     permission: "view_reports"
   },
-  {
-    title: "Agendamentos",
-    href: "/agendamentos",
-    icon: Calendar,
-    roles: ["superadmin", "admin", "evaluator"],
-    permission: "view_scheduling"
-  },
+  
+  // === SEÇÃO PORTAIS ===
   {
     title: "Portal do Funcionário",
     href: "/employee-portal",
@@ -86,6 +94,8 @@ export const menuItems: MenuItem[] = [
     roles: ["superadmin", "admin", "evaluator"],
     isExternal: true
   },
+  
+  // === SEÇÃO FATURAMENTO ===
   {
     title: "Faturamento",
     href: "/faturamento",

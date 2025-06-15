@@ -1,99 +1,128 @@
 
-import { useMemo } from "react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
+  SidebarFooter,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCheckPermission } from "@/hooks/useCheckPermission";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
-import { SidebarMenuItem as MenuItem } from "./sidebar/SidebarMenuItem";
+import { SidebarMenuItem as CustomSidebarMenuItem } from "./sidebar/SidebarMenuItem";
+import { SidebarSection } from "./sidebar/SidebarSection";
+import { CollapsibleMenuItem } from "./sidebar/CollapsibleMenuItem";
+import { EmployeePortalAccess } from "./sidebar/EmployeePortalAccess";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
+import { settingsItems } from "./sidebar/settingsItems";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCheckPermission } from "@/hooks/useCheckPermission";
+import { Building2, Users, Briefcase, MapPin, FileText, ClipboardList, AlertTriangle, Target, FileBarChart, Calendar, UserCheck, CreditCard } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
 export function AppSidebar() {
-  const { userRole, loading } = useAuth();
-  const { hasPermission, loadingPermission } = useCheckPermission();
+  const { userRole } = useAuth();
+  const { hasPermission } = useCheckPermission();
 
-  console.log('[AppSidebar] Current user role:', userRole);
-  console.log('[AppSidebar] Loading states:', { loading, loadingPermission });
-
-  // Memoize filtered menu items
-  const filteredMenuItems = useMemo(() => {
-    if (loading || loadingPermission || !userRole) {
-      console.log('[AppSidebar] Still loading, returning empty menu');
-      return [];
+  const shouldShowMenuItem = (item: any) => {
+    if (item.roles && !item.roles.includes(userRole)) {
+      return false;
     }
+    if (item.permission && !hasPermission(item.permission)) {
+      return false;
+    }
+    return true;
+  };
 
-    return menuItems.filter(item => {
-      try {
-        // Check role access
-        const hasRole = item.roles.includes(userRole);
-        if (!hasRole) {
-          console.log(`[AppSidebar] ${item.title}: Role check failed for ${userRole}`);
-          return false;
-        }
-
-        // Check permission if specified
-        if (item.permission) {
-          const hasRequiredPermission = hasPermission(item.permission);
-          console.log(`[AppSidebar] ${item.title}: Permission ${item.permission} = ${hasRequiredPermission}`);
-          return hasRequiredPermission;
-        }
-
-        console.log(`[AppSidebar] ${item.title}: Access granted`);
-        return true;
-      } catch (error) {
-        console.error(`[AppSidebar] Error checking access for ${item.title}:`, error);
-        return false;
-      }
-    });
-  }, [userRole, hasPermission, loading, loadingPermission]);
-
-  // Show loading state
-  if (loading || loadingPermission) {
-    return (
-      <Sidebar className="border-r">
-        <SidebarHeader />
-        <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
-          <SidebarGroup className="flex-1">
-            <SidebarGroupLabel>Carregando...</SidebarGroupLabel>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-    );
-  }
-
-  console.log('[AppSidebar] Filtered menu items:', filteredMenuItems.map(item => item.title));
+  const dashboardItems = menuItems.filter(item => item.href === "/dashboard");
+  const cadastroItems = menuItems.filter(item => 
+    ["/empresas", "/setores", "/funcoes", "/funcionarios"].includes(item.href)
+  );
+  const avaliacaoItems = menuItems.filter(item => 
+    ["/checklists", "/agendamentos", "/resultados"].includes(item.href)
+  );
+  const gestaoItems = menuItems.filter(item => 
+    ["/gestao-riscos", "/plano-acao", "/relatorios"].includes(item.href)
+  );
+  const portalItems = menuItems.filter(item => 
+    item.href === "/employee-portal"
+  );
+  const faturamentoItems = menuItems.filter(item => 
+    item.href === "/faturamento"
+  );
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar>
       <SidebarHeader />
-      
-      <SidebarContent className="flex flex-col h-[calc(100%-60px)]">
-        <SidebarGroup className="flex-1">
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {filteredMenuItems.map((item) => (
-                <MenuItem
-                  key={item.title}
-                  item={item}
-                />
-              ))}
-              
-              <SidebarMenuItem>
-                <SettingsSubmenu />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="px-2">
+        {/* Dashboard */}
+        <SidebarSection title="">
+          {dashboardItems.filter(shouldShowMenuItem).map((item) => (
+            <CustomSidebarMenuItem key={item.href} item={item} />
+          ))}
+        </SidebarSection>
+
+        {/* Cadastros */}
+        {cadastroItems.some(shouldShowMenuItem) && (
+          <SidebarSection title="Cadastros">
+            {cadastroItems.filter(shouldShowMenuItem).map((item) => (
+              <CustomSidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarSection>
+        )}
+
+        {/* Avaliações */}
+        {avaliacaoItems.some(shouldShowMenuItem) && (
+          <SidebarSection title="Avaliações">
+            {avaliacaoItems.filter(shouldShowMenuItem).map((item) => (
+              <CustomSidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarSection>
+        )}
+
+        {/* Gestão */}
+        {gestaoItems.some(shouldShowMenuItem) && (
+          <SidebarSection title="Gestão">
+            {gestaoItems.filter(shouldShowMenuItem).map((item) => (
+              <CustomSidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarSection>
+        )}
+
+        {/* Portais */}
+        {portalItems.some(shouldShowMenuItem) && (
+          <SidebarSection title="Portais">
+            {portalItems.filter(shouldShowMenuItem).map((item) => (
+              <CustomSidebarMenuItem key={item.href} item={item} />
+            ))}
+            <EmployeePortalAccess />
+          </SidebarSection>
+        )}
+
+        {/* Faturamento */}
+        {faturamentoItems.some(shouldShowMenuItem) && (
+          <SidebarSection title="Faturamento">
+            {faturamentoItems.filter(shouldShowMenuItem).map((item) => (
+              <CustomSidebarMenuItem key={item.href} item={item} />
+            ))}
+          </SidebarSection>
+        )}
+
+        {/* Configurações */}
+        <SidebarSection title="Configurações">
+          <CollapsibleMenuItem 
+            items={settingsItems.filter(shouldShowMenuItem)}
+            defaultOpen={false}
+          />
+        </SidebarSection>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SettingsSubmenu />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

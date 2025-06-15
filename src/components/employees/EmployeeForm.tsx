@@ -1,5 +1,4 @@
 
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -60,6 +59,11 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return [];
   };
 
+  // Parse employee tags safely outside of the form initialization
+  const parsedEmployeeTags: string[] = initialData 
+    ? safeParseEmployeeTags(initialData.employee_tags)
+    : [];
+
   const form = useForm<EmployeeFormSchema>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: initialData ? {
@@ -67,10 +71,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       birth_date: safeParseDate(initialData.birth_date),
       start_date: safeParseDate(initialData.start_date) || new Date(),
       employee_type: initialData.employee_type || "funcionario",
-      employee_tags: (() => {
-        const parsedTags = safeParseEmployeeTags(initialData.employee_tags);
-        return parsedTags;
-      })(),
+      employee_tags: parsedEmployeeTags,
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",
