@@ -5,12 +5,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Employee, EmployeeFormData } from "@/types/employee";
 
-export function useEmployees() {
+interface UseEmployeesParams {
+  companyId?: string;
+}
+
+export function useEmployees(params?: UseEmployeesParams) {
   const { userRole } = useAuth();
   const queryClient = useQueryClient();
+  const { companyId } = params || {};
 
   const { data: employees = [], isLoading, error } = useQuery({
-    queryKey: ['employees'],
+    queryKey: ['employees', companyId],
     queryFn: async () => {
       let query = supabase
         .from('employees')
@@ -34,9 +39,14 @@ export function useEmployees() {
           employee_tags,
           created_at,
           updated_at,
-          roles(name, required_tags),
-          sectors(name)
+          roles(id, name, required_tags),
+          sectors(id, name)
         `);
+
+      // Filter by company if companyId is provided
+      if (companyId) {
+        query = query.eq('company_id', companyId);
+      }
 
       const { data, error } = await query.order('name');
       
@@ -53,6 +63,10 @@ export function useEmployees() {
           id: emp.role_id,
           name: emp.roles.name,
           required_tags: Array.isArray(emp.roles.required_tags) ? emp.roles.required_tags : []
+        } : undefined,
+        sectors: emp.sectors ? {
+          id: emp.sector_id,
+          name: emp.sectors.name
         } : undefined
       })) as Employee[];
     }

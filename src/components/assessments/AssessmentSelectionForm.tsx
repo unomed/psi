@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,7 @@ export function AssessmentSelectionForm({
                       <div className="flex flex-col">
                         <span>{employee.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {employee.roles?.name} • {employee.sectors?.name}
+                          {employee.role?.name} • {employee.sectors?.name}
                         </span>
                       </div>
                     </SelectItem>

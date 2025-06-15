@@ -23,6 +23,10 @@ export interface Employee {
     risk_level?: string;
     required_tags?: string[];
   };
+  sectors?: {
+    id: string;
+    name: string;
+  };
   created_at: string;
   updated_at: string;
 }

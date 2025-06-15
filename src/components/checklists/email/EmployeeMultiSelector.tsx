@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,15 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, X } from "lucide-react";
 import { useEmployees } from "@/hooks/useEmployees";
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  cpf: string;
-  roles?: { name: string };
-  sectors?: { name: string };
-}
+import type { Employee } from "@/types/employee";
 
 interface EmployeeMultiSelectorProps {
   selectedEmployees: Employee[];
@@ -118,7 +111,7 @@ export function EmployeeMultiSelector({
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{employee.name}</div>
                 <div className="text-sm text-muted-foreground truncate">
-                  {employee.email} • {employee.roles?.name} • {employee.sectors?.name}
+                  {employee.email} • {employee.role?.name} • {employee.sectors?.name}
                 </div>
               </div>
             </div>
