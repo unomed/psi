@@ -22,7 +22,7 @@ export function useAuditLogs(filters: AuditLogFilters = {}) {
         .from('audit_logs')
         .select(`
           *,
-          profiles!audit_logs_user_id_fkey(full_name),
+          profiles(full_name),
           companies(name)
         `)
         .order('created_at', { ascending: false })
@@ -58,6 +58,26 @@ export function useAuditLogs(filters: AuditLogFilters = {}) {
       if (error) {
         console.error('Erro ao buscar logs de auditoria:', error);
         throw error;
+      }
+
+      // Se não conseguiu fazer o join com profiles, buscar os nomes separadamente
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(log => log.user_id).filter(Boolean))];
+        
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', userIds);
+
+          // Mapear os nomes dos usuários
+          const profilesMap = new Map(profilesData?.map(p => [p.id, p.full_name]) || []);
+          
+          return data.map(log => ({
+            ...log,
+            profiles: log.profiles || { full_name: profilesMap.get(log.user_id) || 'Sistema' }
+          }));
+        }
       }
 
       return data || [];
