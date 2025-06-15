@@ -7,22 +7,22 @@ import { LoadingSpinner } from '@/components/auth/LoadingSpinner';
 const Index = () => {
   const { user, loading } = useAuth();
 
-  // Log para debug
-  useEffect(() => {
-    console.log('[Index] Estado:', { hasUser: !!user, loading });
-  }, [user, loading]);
-
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <LoadingSpinner />
+          <p className="text-muted-foreground">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
   }
 
   // Redirecionar baseado no estado de autenticação
   if (user) {
-    console.log('[Index] Usuário autenticado, redirecionando para dashboard');
     return <Navigate to="/dashboard" replace />;
   } else {
-    console.log('[Index] Usuário não autenticado, redirecionando para login do funcionário');
     return <Navigate to="/auth/employee" replace />;
   }
 };

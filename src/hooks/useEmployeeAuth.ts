@@ -49,7 +49,6 @@ export function useEmployeeAuthProvider() {
         setting_value: employeeId,
         is_local: false
       });
-      console.log(`[EmployeeAuth] Sessão configurada para funcionário: ${employeeId}`);
     } catch (error) {
       console.error('Erro ao configurar sessão do funcionário:', error);
     }

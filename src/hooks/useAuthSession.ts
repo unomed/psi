@@ -22,8 +22,6 @@ export function useAuthSession() {
     
     let mounted = true;
     initialized.current = true;
-    
-    console.log("[useAuthSession] Inicializando hook de autenticação");
 
     // Primeiro verificar sessão existente
     const checkInitialSession = async () => {
@@ -31,16 +29,15 @@ export function useAuthSession() {
       initialCheckDone.current = true;
       
       try {
-        console.log("[useAuthSession] Verificando sessão inicial");
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("[useAuthSession] Erro ao obter sessão:", error);
+          console.error("Erro ao verificar autenticação:", error);
           // Limpar possível estado de auth corrompido
           try {
             await supabase.auth.signOut();
           } catch (signOutError) {
-            console.error("[useAuthSession] Erro ao fazer logout:", signOutError);
+            // Ignorar erros de logout
           }
         }
         
@@ -51,24 +48,22 @@ export function useAuthSession() {
         if (currentSession && currentSession.expires_at) {
           const now = Math.floor(Date.now() / 1000);
           if (currentSession.expires_at < now) {
-            console.log("[useAuthSession] Sessão inicial expirada");
             validSession = null;
             // Tentar refresh do token
             try {
               const { data: refreshData } = await supabase.auth.refreshSession();
               validSession = refreshData.session;
             } catch (refreshError) {
-              console.error("[useAuthSession] Erro ao renovar token:", refreshError);
+              // Ignorar erros de refresh
             }
           }
         }
         
-        console.log("[useAuthSession] Sessão inicial:", !!validSession);
         setSession(validSession);
         setUser(validSession?.user ?? null);
         setLoading(false);
       } catch (error) {
-        console.error("[useAuthSession] Erro ao verificar sessão inicial:", error);
+        console.error("Erro na verificação de autenticação:", error);
         setSession(null);
         setUser(null);
         setLoading(false);
@@ -79,8 +74,6 @@ export function useAuthSession() {
     const setupAuthListener = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, currentSession) => {
-          console.log("[useAuthSession] Mudança de estado de auth:", event, !!currentSession);
-          
           if (!mounted) return;
           
           try {
@@ -88,7 +81,6 @@ export function useAuthSession() {
             if (currentSession && currentSession.expires_at) {
               const now = Math.floor(Date.now() / 1000);
               if (currentSession.expires_at < now) {
-                console.log("[useAuthSession] Sessão expirada, limpando");
                 currentSession = null;
               }
             }
@@ -111,7 +103,7 @@ export function useAuthSession() {
               }
             }
           } catch (error) {
-            console.error("[useAuthSession] Erro ao processar mudança de estado:", error);
+            console.error("Erro ao processar mudança de autenticação:", error);
             setSession(null);
             setUser(null);
           }
@@ -130,7 +122,6 @@ export function useAuthSession() {
 
     // Cleanup
     return () => {
-      console.log("[useAuthSession] Limpando hook de autenticação");
       mounted = false;
       initialized.current = false;
       initialCheckDone.current = false;
