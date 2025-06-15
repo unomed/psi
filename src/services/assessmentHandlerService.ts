@@ -1,12 +1,19 @@
-
 import { toast } from "sonner";
 import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types";
 import { saveScheduledAssessment } from "@/services/checklist";
-import { generateAssessmentLink, getEmployeeInfo } from "@/components/assessments/assessmentUtils";
+import { generateAssessmentLink } from "@/components/assessments/assessmentUtils";
 import { supabase } from "@/integrations/supabase/client";
 
-export const getSelectedEmployeeName = (selectedEmployee: string | null) => {
-  return getEmployeeInfo(selectedEmployee).name;
+export const getSelectedEmployeeName = async (selectedEmployee: string | null): Promise<string> => {
+  if (!selectedEmployee) return "";
+  
+  const { data: employee } = await supabase
+    .from('employees')
+    .select('name')
+    .eq('id', selectedEmployee)
+    .single();
+    
+  return employee?.name || "";
 };
 
 export const handleSaveAssessment = async (
@@ -19,15 +26,26 @@ export const handleSaveAssessment = async (
   }
 
   try {
-    // Primeiro tentar salvar na tabela assessment_responses
-    const selectedEmployeeData = getEmployeeInfo(selectedEmployee);
+    // Get employee data from database
+    const { data: employeeData, error: employeeError } = await supabase
+      .from('employees')
+      .select('name, email')
+      .eq('id', selectedEmployee)
+      .single();
+
+    if (employeeError) {
+      console.error("Erro ao buscar dados do funcionário:", employeeError);
+      toast.error("Funcionário não encontrado.");
+      return false;
+    }
     
+    // Try to save to assessment_responses table
     const { error: responseError } = await supabase
       .from('assessment_responses')
       .insert({
         template_id: selectedTemplate.id,
         employee_id: selectedEmployee,
-        employee_name: selectedEmployeeData.name,
+        employee_name: employeeData.name,
         response_data: {},
         completed_at: new Date().toISOString()
       });
@@ -35,7 +53,7 @@ export const handleSaveAssessment = async (
     if (responseError) {
       console.error("Erro ao salvar na tabela assessment_responses:", responseError);
       
-      // Se falhar, tenta salvar como uma avaliação agendada
+      // If that fails, try to save as a scheduled assessment
       await saveScheduledAssessment({
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
