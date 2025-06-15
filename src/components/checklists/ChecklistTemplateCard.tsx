@@ -1,5 +1,5 @@
 
-import { ClipboardCheck, Clock, Pencil } from "lucide-react";
+import { ClipboardCheck, Clock, Pencil, Play } from "lucide-react";
 import { ChecklistTemplate } from "@/types/checklist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DiscQuestion, PsicossocialQuestion } from "@/types";
+import { isTemplateTypePsicossocial, getTemplateTypeDisplayName } from "@/services/checklist/templateUtils";
 
 interface ChecklistTemplateCardProps {
   template: ChecklistTemplate;
@@ -32,7 +33,7 @@ export function ChecklistTemplateCard({
     template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "C").length : 0;
 
   // Para templates psicossociais, contar categorias
-  const psicossocialCategories = template.type === "psicossocial" ?
+  const psicossocialCategories = isTemplateTypePsicossocial(template) ?
     Array.from(
       new Set(
         template.questions
@@ -40,6 +41,12 @@ export function ChecklistTemplateCard({
           .map(q => (q as PsicossocialQuestion).category)
       )
     ) : [];
+
+  const getTemplateTypeBadgeVariant = () => {
+    if (template.type === "disc") return "default";
+    if (isTemplateTypePsicossocial(template)) return "secondary";
+    return "outline";
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -52,8 +59,8 @@ export function ChecklistTemplateCard({
             </CardTitle>
             <CardDescription className="mt-1">{template.description}</CardDescription>
           </div>
-          <Badge variant={template.type === "disc" ? "default" : (template.type === "psicossocial" ? "secondary" : "outline")}>
-            {template.type === "disc" ? "DISC" : (template.type === "psicossocial" ? "Psicossocial" : "Personalizado")}
+          <Badge variant={getTemplateTypeBadgeVariant()}>
+            {getTemplateTypeDisplayName(template)}
           </Badge>
         </div>
       </CardHeader>
@@ -66,10 +73,15 @@ export function ChecklistTemplateCard({
             <Badge variant="outline" className="bg-blue-50">C: {cFactorCount}</Badge>
           </div>
         )}
-        {template.type === "psicossocial" && (
+        {isTemplateTypePsicossocial(template) && (
           <div className="text-sm">
             <span>Categorias: {psicossocialCategories.length}</span>
             <span className="ml-3">Perguntas: {template.questions.length}</span>
+          </div>
+        )}
+        {template.type === "custom" && !isTemplateTypePsicossocial(template) && (
+          <div className="text-sm">
+            <span>Perguntas: {template.questions.length}</span>
           </div>
         )}
         <div className="flex items-center text-sm text-muted-foreground">
@@ -83,6 +95,7 @@ export function ChecklistTemplateCard({
           Editar
         </Button>
         <Button size="sm" onClick={() => onTakeAssessment(template)}>
+          <Play className="h-4 w-4 mr-2" />
           Iniciar Avaliação
         </Button>
       </CardFooter>

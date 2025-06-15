@@ -4,6 +4,7 @@ import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
 import { ChecklistHeader } from "@/components/checklists/ChecklistHeader";
+import { StartAssessmentDialog } from "@/components/checklists/StartAssessmentDialog";
 import { useChecklistData } from "@/hooks/useChecklistData";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ export default function Checklists() {
   const [activeTab, setActiveTab] = useState("all");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
+  const [isStartAssessmentDialogOpen, setIsStartAssessmentDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -50,8 +52,7 @@ export default function Checklists() {
 
   const handleStartAssessment = (template: ChecklistTemplate) => {
     setSelectedTemplate(template);
-    setIsAssessmentDialogOpen(true);
-    toast.success(`Iniciando avaliação para ${template.title}`);
+    setIsStartAssessmentDialogOpen(true);
   };
 
   const handleDelete = async (template: ChecklistTemplate) => {
@@ -170,6 +171,15 @@ export default function Checklists() {
           setSelectedResult(null);
         }}
         isEditing={isEditing}
+      />
+
+      <StartAssessmentDialog
+        isOpen={isStartAssessmentDialogOpen}
+        onClose={() => {
+          setIsStartAssessmentDialogOpen(false);
+          setSelectedTemplate(null);
+        }}
+        selectedTemplate={selectedTemplate}
       />
     </div>
   );

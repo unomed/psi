@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Copy, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Loader2, Play } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,6 @@ export function BaseTemplateTable({
   caption,
   onEditTemplate,
   onDeleteTemplate,
-  onCopyTemplate,
   onStartAssessment,
   showCategories = false,
   isDeleting = false,
@@ -59,7 +58,7 @@ export function BaseTemplateTable({
   };
 
   const renderPsicossocialCategories = (template: ChecklistTemplate) => {
-    if (template.type === "psicossocial") {
+    if (template.type === "psicossocial" || (template.type === "custom" && template.title.toLowerCase().includes("psicossocial"))) {
       const categories = Array.from(new Set(template.questions.map(q => {
         if ('category' in q) {
           return q.category;
@@ -80,6 +79,19 @@ export function BaseTemplateTable({
     return null;
   };
 
+  const getTemplateTypeDisplay = (template: ChecklistTemplate) => {
+    if (template.type === "disc") return "DISC";
+    if (template.type === "psicossocial") return "Psicossocial";
+    if (template.type === "custom" && template.title.toLowerCase().includes("psicossocial")) return "Psicossocial";
+    return "Personalizado";
+  };
+
+  const getTemplateTypeBadgeVariant = (template: ChecklistTemplate) => {
+    if (template.type === "disc") return "default";
+    if (template.type === "psicossocial" || (template.type === "custom" && template.title.toLowerCase().includes("psicossocial"))) return "secondary";
+    return "outline";
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -88,7 +100,7 @@ export function BaseTemplateTable({
           <TableRow>
             <TableHead>Título</TableHead>
             <TableHead>Tipo</TableHead>
-            <TableHead>Fatores DISC</TableHead>
+            <TableHead>Questões</TableHead>
             <TableHead>Criado em</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -105,17 +117,17 @@ export function BaseTemplateTable({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant={template.type === "disc" ? "default" : (template.type === "psicossocial" ? "secondary" : "outline")}>
-                  {template.type === "disc" ? "DISC" : (template.type === "psicossocial" ? "Psicossocial" : "Personalizado")}
+                <Badge variant={getTemplateTypeBadgeVariant(template)}>
+                  {getTemplateTypeDisplay(template)}
                 </Badge>
               </TableCell>
               <TableCell>
                 {showCategories ? (
                   template.type === "disc" ? renderFactorBadges(template) :
-                  template.type === "psicossocial" ? renderPsicossocialCategories(template) :
-                  <span className="text-xs text-muted-foreground">N/A</span>
+                  (template.type === "psicossocial" || (template.type === "custom" && template.title.toLowerCase().includes("psicossocial"))) ? renderPsicossocialCategories(template) :
+                  <span className="text-xs text-muted-foreground">{template.questions.length} questões</span>
                 ) : (
-                  renderFactorBadges(template)
+                  renderFactorBadges(template) || <span className="text-xs text-muted-foreground">{template.questions.length} questões</span>
                 )}
               </TableCell>
               <TableCell>
@@ -123,13 +135,13 @@ export function BaseTemplateTable({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={() => onStartAssessment(template)}>
+                    <Play className="h-4 w-4 mr-2" />
+                    Iniciar Avaliação
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => onEditTemplate(template)}>
                     <Pencil className="h-4 w-4 mr-2" />
                     Editar
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onCopyTemplate(template)}>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -171,9 +183,6 @@ export function BaseTemplateTable({
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                  <Button variant="outline" size="sm" onClick={() => onStartAssessment(template)}>
-                    Iniciar Avaliação
-                  </Button>
                 </div>
               </TableCell>
             </TableRow>
