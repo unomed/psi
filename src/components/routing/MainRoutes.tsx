@@ -30,10 +30,21 @@ export function MainRoutes() {
       <Route path="/funcionarios" element={<Funcionarios />} />
       <Route path="/setores" element={<Setores />} />
       <Route path="/funcoes" element={<Funcoes />} />
+      
+      {/* Rotas dos templates/checklists */}
+      <Route path="/templates" element={<Checklists />} />
       <Route path="/checklists" element={<Checklists />} />
-      <Route path="/assessment/:templateId/:employeeId" element={<AssessmentPage />} />
-      <Route path="/assessment-results" element={<AssessmentResults />} />
+      
+      {/* Rotas de agendamentos */}
+      <Route path="/agendamentos" element={<AssessmentScheduling />} />
       <Route path="/agendamento-avaliacoes" element={<AssessmentScheduling />} />
+      
+      {/* Rotas de resultados */}
+      <Route path="/resultados" element={<AssessmentResults />} />
+      <Route path="/assessment-results" element={<AssessmentResults />} />
+      
+      {/* Outras rotas existentes */}
+      <Route path="/assessment/:templateId/:employeeId" element={<AssessmentPage />} />
       <Route path="/faturamento" element={<Faturamento />} />
       <Route path="/gestao-riscos" element={<GestaoRiscos />} />
       <Route path="/plano-acao" element={<PlanoAcao />} />
