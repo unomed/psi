@@ -9,15 +9,14 @@ export default function EmployeePortal() {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
   const employeeIdFromUrl = searchParams.get("employee");
-  const { employee, setEmployee } = useEmployeeAuth();
+  const { session, login } = useEmployeeAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleLoginSuccess = (employeeData: any) => {
-    setEmployee(employeeData);
     setIsAuthenticated(true);
   };
 
-  if (!isAuthenticated || !employee) {
+  if (!isAuthenticated && !session?.isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <EmployeeLoginForm onLoginSuccess={handleLoginSuccess} />

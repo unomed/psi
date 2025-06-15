@@ -70,7 +70,7 @@ export function getSafeDbScaleType(scaleType: ScaleType): string {
       return "likert";
     case ScaleType.Numeric:
       return "numeric";
-    case ScaleType.Binary:
+    case ScaleType.YesNo:
       return "binary";
     default:
       return "likert";
@@ -116,9 +116,9 @@ export function formatQuestionsForDb(
     const baseQuestion = {
       template_id: templateId,
       question_text: question.text,
-      order_number: question.order || index + 1,
+      order_number: index + 1,
       weight: question.weight || 1.0,
-      reverse_scored: question.reverseScored || false
+      reverse_scored: false
     };
 
     // Para questões DISC
