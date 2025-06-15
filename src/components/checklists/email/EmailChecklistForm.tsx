@@ -182,7 +182,7 @@ export function EmailChecklistForm({ templates, onSendEmails, companyId }: Email
               className="font-mono text-sm"
             />
             <div className="text-xs text-muted-foreground">
-              Variáveis disponíveis: <code>{{`{{employeeName}}`}}</code>, <code>{{`{{templateName}}`}}</code>, <code>{{`{{linkUrl}}`}}</code>
+              Variáveis disponíveis: <code>{'{{employeeName}}'}</code>, <code>{'{{templateName}}'}</code>, <code>{'{{linkUrl}}'}</code>
             </div>
           </div>
 
