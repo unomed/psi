@@ -1,5 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion } from "@/types";
+import { mapDbTemplateTypeToApp } from "@/services/checklist/templateUtils";
 
 export async function submitAssessmentResult(resultData: Omit<any, "id" | "completedAt">) {
   try {
@@ -114,14 +116,46 @@ export async function fetchAssessmentByToken(token: string) {
       console.error("Erro ao buscar questões:", questionsError);
     }
 
+    // Mapear tipo do template
+    const templateType = mapDbTemplateTypeToApp(linkData.checklist_templates.type);
+
+    // Transformar questões do banco para o formato esperado
+    let questions: (DiscQuestion | PsicossocialQuestion)[] = [];
+    
+    if (templateType === "disc") {
+      questions = (questionsData || []).map(q => ({
+        id: q.id,
+        text: q.question_text,
+        targetFactor: q.target_factor as any,
+        weight: q.weight || 1
+      }));
+    } else if (templateType === "psicossocial") {
+      questions = (questionsData || []).map(q => ({
+        id: q.id,
+        text: q.question_text,
+        category: q.target_factor || "Geral"
+      }));
+    } else {
+      // Para outros tipos, usar formato genérico como DiscQuestion
+      questions = (questionsData || []).map(q => ({
+        id: q.id,
+        text: q.question_text,
+        targetFactor: q.target_factor as any,
+        weight: q.weight || 1
+      })) as DiscQuestion[];
+    }
+
     // Montar o template completo com as propriedades obrigatórias
-    const template = {
-      ...linkData.checklist_templates,
-      questions: questionsData || [],
+    const template: ChecklistTemplate = {
+      id: linkData.checklist_templates.id,
+      title: linkData.checklist_templates.title,
+      description: linkData.checklist_templates.description || "",
+      type: templateType,
+      questions,
       createdAt: new Date(linkData.checklist_templates.created_at),
       updatedAt: linkData.checklist_templates.updated_at ? new Date(linkData.checklist_templates.updated_at) : undefined,
       // Mapear propriedades do banco para interface
-      scaleType: linkData.checklist_templates.scale_type,
+      scaleType: linkData.checklist_templates.scale_type as any,
       isStandard: linkData.checklist_templates.is_standard,
       companyId: linkData.checklist_templates.company_id,
       derivedFromId: linkData.checklist_templates.derived_from_id,
@@ -131,7 +165,8 @@ export async function fetchAssessmentByToken(token: string) {
       interpretationGuide: linkData.checklist_templates.interpretation_guide,
       isActive: linkData.checklist_templates.is_active,
       version: linkData.checklist_templates.version,
-      createdBy: linkData.checklist_templates.created_by
+      createdBy: linkData.checklist_templates.created_by,
+      instructions: linkData.checklist_templates.instructions
     };
 
     return {
