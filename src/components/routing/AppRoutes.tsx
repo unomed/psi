@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
@@ -50,7 +51,7 @@ export function AppRoutes() {
         }
       />
 
-      {/* Login do funcionário envolvido por EmployeeAuthProvider para evitar erro de contexto */}
+      {/* Login do funcionário */}
       <Route
         path="/auth/employee"
         element={
@@ -60,7 +61,7 @@ export function AppRoutes() {
         }
       />
 
-      {/* Portal do funcionário - autenticação própria */}
+      {/* Portal do funcionário */}
       <Route 
         path="/employee-portal/*" 
         element={
@@ -73,7 +74,7 @@ export function AppRoutes() {
         } 
       />
 
-      {/* Rotas de autenticação para administradores, etc */}
+      {/* Rotas de autenticação para administradores */}
       {!user && (
         <Route 
           path="/auth/*" 
@@ -89,31 +90,8 @@ export function AppRoutes() {
               <SettingsRoutes />
             </MainLayout>
           } />
-          <Route path="/dashboard" element={
-            <MainLayout>
-              <MainRoutes />
-            </MainLayout>
-          } />
-          <Route path="/empresas" element={
-            <MainLayout>
-              <MainRoutes />
-            </MainLayout>
-          } />
-          <Route path="/funcionarios" element={
-            <MainLayout>
-              <MainRoutes />
-            </MainLayout>
-          } />
-          <Route path="/checklists" element={
-            <MainLayout>
-              <MainRoutes />
-            </MainLayout>
-          } />
-          <Route path="/relatorios" element={
-            <MainLayout>
-              <MainRoutes />
-            </MainLayout>
-          } />
+          
+          {/* Todas as rotas protegidas usando MainLayout */}
           <Route path="/*" element={
             <MainLayout>
               <MainRoutes />

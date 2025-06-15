@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem as CustomSidebarMenuItem } from "./sidebar/SidebarMenuItem";
+import { SidebarMenuItemWithSubmenu } from "./sidebar/SidebarMenuItemWithSubmenu";
 import { SidebarSection } from "./sidebar/SidebarSection";
 import { EmployeePortalAccess } from "./sidebar/EmployeePortalAccess";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
@@ -58,30 +59,36 @@ export function AppSidebar() {
           ))}
         </SidebarSection>
 
-        {/* Cadastros */}
+        {/* Cadastros com submenu */}
         {cadastroItems.some(shouldShowMenuItem) && (
-          <SidebarSection title="Cadastros">
-            {cadastroItems.filter(shouldShowMenuItem).map((item) => (
-              <CustomSidebarMenuItem key={item.href} item={item} />
-            ))}
+          <SidebarSection title="">
+            <SidebarMenuItemWithSubmenu
+              title="Cadastros"
+              items={cadastroItems.filter(shouldShowMenuItem)}
+              icon={cadastroItems[0]?.icon}
+            />
           </SidebarSection>
         )}
 
-        {/* Avaliações */}
+        {/* Avaliações com submenu */}
         {avaliacaoItems.some(shouldShowMenuItem) && (
-          <SidebarSection title="Avaliações">
-            {avaliacaoItems.filter(shouldShowMenuItem).map((item) => (
-              <CustomSidebarMenuItem key={item.href} item={item} />
-            ))}
+          <SidebarSection title="">
+            <SidebarMenuItemWithSubmenu
+              title="Avaliações"
+              items={avaliacaoItems.filter(shouldShowMenuItem)}
+              icon={avaliacaoItems[0]?.icon}
+            />
           </SidebarSection>
         )}
 
-        {/* Gestão */}
+        {/* Gestão com submenu */}
         {gestaoItems.some(shouldShowMenuItem) && (
-          <SidebarSection title="Gestão">
-            {gestaoItems.filter(shouldShowMenuItem).map((item) => (
-              <CustomSidebarMenuItem key={item.href} item={item} />
-            ))}
+          <SidebarSection title="">
+            <SidebarMenuItemWithSubmenu
+              title="Gestão"
+              items={gestaoItems.filter(shouldShowMenuItem)}
+              icon={gestaoItems[0]?.icon}
+            />
           </SidebarSection>
         )}
 
