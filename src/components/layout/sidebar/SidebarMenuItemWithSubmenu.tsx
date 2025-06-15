@@ -47,10 +47,9 @@ export function SidebarMenuItemWithSubmenu({
         {items.map((item) => (
           <BaseSidebarMenuItem key={item.href}>
             <SidebarMenuButton 
-              asChild
               className={location.pathname === item.href ? 'bg-accent text-accent-foreground' : ''}
             >
-              <Link to={item.href} className="flex items-center gap-2">
+              <Link to={item.href} className="flex items-center gap-2 w-full">
                 {item.icon && <item.icon className="h-4 w-4" />}
                 <span>{item.title}</span>
               </Link>

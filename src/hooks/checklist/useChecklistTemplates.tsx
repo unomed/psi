@@ -8,7 +8,7 @@ import {
   copyTemplateForCompany,
   saveChecklistTemplate 
 } from "@/services/checklist";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export function useChecklistTemplates() {
