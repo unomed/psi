@@ -6,6 +6,7 @@ import { DatePickerWithRange } from "./DatePickerWithRange";
 import { Dispatch, SetStateAction } from "react";
 import { CompanyAccess } from "@/hooks/useUserRole";
 import { DateRange } from "@/types/date";
+import { useReportsData } from "@/hooks/reports/useReportsData";
 
 interface ReportFiltersProps {
   dateRange: DateRange;
@@ -32,23 +33,8 @@ export function ReportFilters({
   userCompanies = [],
   userRole
 }: ReportFiltersProps) {
-  const sectors = [
-    { id: 'all-sectors', name: 'Todos os Setores' },
-    { id: 'production', name: 'Produção' },
-    { id: 'admin', name: 'Administrativo' },
-    { id: 'it', name: 'TI' },
-    { id: 'commercial', name: 'Comercial' },
-    { id: 'logistics', name: 'Logística' },
-  ].filter(sector => sector && sector.id && String(sector.id).trim() !== "" && sector.name && String(sector.name).trim() !== "");
-
-  const roles = [
-    { id: 'all-roles', name: 'Todas as Funções' },
-    { id: 'manager', name: 'Gerente' },
-    { id: 'analyst', name: 'Analista' },
-    { id: 'operator', name: 'Operador' },
-    { id: 'assistant', name: 'Assistente' },
-    { id: 'technician', name: 'Técnico' },
-  ].filter(role => role && role.id && String(role.id).trim() !== "" && role.name && String(role.name).trim() !== "");
+  // Buscar setores e funções reais do banco de dados
+  const { reportsData } = useReportsData(selectedCompany || undefined);
 
   const validCompanies = (userCompanies || []).filter(company =>
     company &&
@@ -64,15 +50,14 @@ export function ReportFilters({
   if (onCompanyChange && !selectedCompany && validCompanies.length > 0) {
     companySelectValue = String(validCompanies[0].companyId);
   } else if (onCompanyChange && !selectedCompany) {
-    companySelectValue = "no-company-filter-selected"; // Fallback if no companies but selector is shown
+    companySelectValue = "no-company-filter-selected";
   }
-
 
   return (
     <Card>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {onCompanyChange && ( // Simplified condition: always show if onCompanyChange is provided
+          {onCompanyChange && (
             <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
               <Select
@@ -118,19 +103,12 @@ export function ReportFilters({
                 <SelectValue placeholder="Todos os Setores" />
               </SelectTrigger>
               <SelectContent>
-                {sectors.map(sector => {
-                  const sectorIdStr = String(sector.id);
-                  // Static list, but good practice if it were dynamic
-                  if (sectorIdStr.trim() === "") {
-                     console.error("[ReportFilters] Attempting to render Sector SelectItem with empty value:", sector);
-                     return null;
-                  }
-                  return (
-                    <SelectItem key={sectorIdStr} value={sectorIdStr}>
-                      {sector.name}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
+                <SelectItem value="all-sectors">Todos os Setores</SelectItem>
+                {reportsData?.sectors?.map(sector => (
+                  <SelectItem key={sector.id} value={sector.id}>
+                    {sector.name}
+                  </SelectItem>
+                )) || []}
               </SelectContent>
             </Select>
           </div>
@@ -142,19 +120,12 @@ export function ReportFilters({
                 <SelectValue placeholder="Todas as Funções" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map(role => {
-                  const roleIdStr = String(role.id);
-                   // Static list, but good practice if it were dynamic
-                  if (roleIdStr.trim() === "") {
-                     console.error("[ReportFilters] Attempting to render Role SelectItem with empty value:", role);
-                     return null;
-                  }
-                  return (
-                    <SelectItem key={roleIdStr} value={roleIdStr}>
-                      {role.name}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
+                <SelectItem value="all-roles">Todas as Funções</SelectItem>
+                {reportsData?.roles?.map(role => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                )) || []}
               </SelectContent>
             </Select>
           </div>
@@ -163,4 +134,3 @@ export function ReportFilters({
     </Card>
   );
 }
-

@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportFilters } from "@/components/reports/ReportFilters";
 import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistribution";
 import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
-import { IndividualReports } from "@/components/reports/IndividualReports";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
-import { FileText, Download, Printer } from "lucide-react";
+import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
+import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
+import { FileText, Download, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "@/types/date";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,8 +21,8 @@ export default function Relatorios() {
     from: undefined, 
     to: undefined 
   });
-  const [selectedSector, setSelectedSector] = useState<string>('all');
-  const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [selectedSector, setSelectedSector] = useState<string>('all-sectors');
+  const [selectedRole, setSelectedRole] = useState<string>('all-roles');
   const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
     const saved = localStorage.getItem('selectedCompany');
     return saved || null;
@@ -64,9 +65,8 @@ export default function Relatorios() {
   };
   
   const handleExportPDF = () => {
-    // Seria implementado com uma biblioteca como jsPDF
-    console.log("Exportando relatório como PDF");
-    alert("Funcionalidade de exportação será implementada em breve");
+    // Implementação futura da exportação PDF
+    toast.info("Funcionalidade de exportação será implementada em breve");
   };
   
   const handlePrint = () => {
@@ -79,9 +79,9 @@ export default function Relatorios() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Relatórios NR-01</h1>
           <p className="text-muted-foreground mt-2">
-            Relatórios individuais e consolidados para comprovação legal do cumprimento da NR 01.
+            Relatórios consolidados para conformidade legal e análise de riscos psicossociais.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -110,22 +110,29 @@ export default function Relatorios() {
       />
       
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="sectors">Por Setor</TabsTrigger>
           <TabsTrigger value="roles">Por Função</TabsTrigger>
-          <TabsTrigger value="individual">Individuais</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6 mt-6">
+          {/* Conformidade NR-01 */}
+          <NR01ComplianceOverview filters={filters} />
+          
+          {/* Gráficos principais */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <RiskLevelDistribution filters={filters} />
-            <SectorRiskFactors filters={filters} />
+            <RiskTrendChart filters={filters} />
           </div>
           
+          {/* Resumo de avaliações */}
           <Card>
             <CardHeader>
-              <CardTitle>Resumo de Avaliações</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Resumo de Avaliações
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -170,18 +177,20 @@ export default function Relatorios() {
             filters={filters} 
             fullWidth 
           />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <RiskLevelDistribution filters={filters} />
+            <RiskTrendChart filters={filters} />
+          </div>
         </TabsContent>
         
         <TabsContent value="roles" className="space-y-6 mt-6">
           <RoleRiskComparison 
             filters={filters} 
           />
-        </TabsContent>
-        
-        <TabsContent value="individual" className="space-y-6 mt-6">
-          <IndividualReports 
-            filters={filters} 
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <RiskLevelDistribution filters={filters} />
+            <RiskTrendChart filters={filters} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

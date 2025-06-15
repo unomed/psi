@@ -46,12 +46,13 @@ export function IndividualReports({ filters }: IndividualReportsProps) {
   });
 
   const filteredAssessments = assessments?.filter(assessment => {
-    const employee = assessment.employees;
-    if (!employee) return false;
+    // Handle employees as either array or single object
+    const employees = Array.isArray(assessment.employees) ? assessment.employees[0] : assessment.employees;
+    if (!employees) return false;
     
-    const employeeName = employee.name?.toLowerCase() || '';
-    const roleName = employee.roles?.name?.toLowerCase() || '';
-    const sectorName = employee.sectors?.name?.toLowerCase() || '';
+    const employeeName = employees.name?.toLowerCase() || '';
+    const roleName = employees.roles?.name?.toLowerCase() || '';
+    const sectorName = employees.sectors?.name?.toLowerCase() || '';
     const searchLower = searchTerm.toLowerCase();
     
     return employeeName.includes(searchLower) ||
@@ -109,7 +110,8 @@ export function IndividualReports({ filters }: IndividualReportsProps) {
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {filteredAssessments.map((assessment) => {
               const risk = getRiskLevel(assessment.percentile);
-              const employee = assessment.employees;
+              // Handle employees as either array or single object
+              const employee = Array.isArray(assessment.employees) ? assessment.employees[0] : assessment.employees;
               
               return (
                 <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">

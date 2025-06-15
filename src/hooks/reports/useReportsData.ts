@@ -26,6 +26,14 @@ export interface ReportData {
     medium: number;
     low: number;
   }>;
+  sectors: Array<{
+    id: string;
+    name: string;
+  }>;
+  roles: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
 export function useReportsData(companyId?: string) {
@@ -35,6 +43,20 @@ export function useReportsData(companyId?: string) {
     queryKey: ['reportsData', companyId],
     queryFn: async (): Promise<ReportData> => {
       try {
+        // Buscar setores reais
+        let sectorsQuery = supabase.from('sectors').select('id, name');
+        if (companyId && userRole !== 'superadmin') {
+          sectorsQuery = sectorsQuery.eq('company_id', companyId);
+        }
+        const { data: sectors } = await sectorsQuery;
+
+        // Buscar funções reais
+        let rolesQuery = supabase.from('roles').select('id, name');
+        if (companyId && userRole !== 'superadmin') {
+          rolesQuery = rolesQuery.eq('company_id', companyId);
+        }
+        const { data: roles } = await rolesQuery;
+
         // Buscar avaliações
         let assessmentsQuery = supabase
           .from('assessment_responses')
@@ -83,6 +105,8 @@ export function useReportsData(companyId?: string) {
           assessmentsByMonth,
           riskByRole,
           riskBySector,
+          sectors: sectors || [],
+          roles: roles || [],
         };
       } catch (error) {
         console.error("Erro ao buscar dados dos relatórios:", error);
@@ -97,6 +121,8 @@ export function useReportsData(companyId?: string) {
           assessmentsByMonth: [],
           riskByRole: [],
           riskBySector: [],
+          sectors: [],
+          roles: [],
         };
       }
     }
@@ -126,8 +152,11 @@ function getRiskByRole(assessments: any[]) {
   const roleRisks: Record<string, { high: number; medium: number; low: number }> = {};
 
   assessments.forEach(assessment => {
-    if (assessment.employees?.roles?.name && assessment.percentile !== null) {
-      const roleName = assessment.employees.roles.name;
+    // Handle employees as either array or single object
+    const employees = Array.isArray(assessment.employees) ? assessment.employees[0] : assessment.employees;
+    
+    if (employees?.roles?.name && assessment.percentile !== null) {
+      const roleName = employees.roles.name;
       if (!roleRisks[roleName]) {
         roleRisks[roleName] = { high: 0, medium: 0, low: 0 };
       }
@@ -152,8 +181,11 @@ function getRiskBySector(assessments: any[]) {
   const sectorRisks: Record<string, { high: number; medium: number; low: number }> = {};
 
   assessments.forEach(assessment => {
-    if (assessment.employees?.sectors?.name && assessment.percentile !== null) {
-      const sectorName = assessment.employees.sectors.name;
+    // Handle employees as either array or single object
+    const employees = Array.isArray(assessment.employees) ? assessment.employees[0] : assessment.employees;
+    
+    if (employees?.sectors?.name && assessment.percentile !== null) {
+      const sectorName = employees.sectors.name;
       if (!sectorRisks[sectorName]) {
         sectorRisks[sectorName] = { high: 0, medium: 0, low: 0 };
       }
