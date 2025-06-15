@@ -45,18 +45,19 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     if (!tags) return [];
     
     if (Array.isArray(tags)) {
-      // Filter to ensure all elements are strings
-      return tags.filter(tag => typeof tag === 'string') as string[];
+      // Filter to ensure all elements are strings and return only valid strings
+      return tags.filter((tag): tag is string => typeof tag === 'string');
     }
     
     if (typeof tags === 'string') {
       try {
         const parsed = JSON.parse(tags);
         if (Array.isArray(parsed)) {
-          return parsed.filter(tag => typeof tag === 'string') as string[];
+          return parsed.filter((tag): tag is string => typeof tag === 'string');
         }
       } catch {
         // If JSON parsing fails, return empty array
+        return [];
       }
     }
     
