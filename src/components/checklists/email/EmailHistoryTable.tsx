@@ -27,7 +27,7 @@ const statusLabels = {
 const statusColors = {
   scheduled: "secondary",
   sent: "default", 
-  completed: "success"
+  completed: "outline"
 } as const;
 
 export function EmailHistoryTable({ 
