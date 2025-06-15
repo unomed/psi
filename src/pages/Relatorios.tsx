@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DateRange } from "@/types/date";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { useReportsData } from "@/hooks/reports/useReportsData";
 import { toast } from "sonner";
 
 export default function Relatorios() {
@@ -28,6 +29,7 @@ export default function Relatorios() {
   
   const { userRole, userCompanies } = useAuth();
   const { verifyCompanyAccess } = useCompanyAccessCheck();
+  const { reportsData, isLoading } = useReportsData(selectedCompany || undefined);
   
   // Verificar se o usuário tem acesso à empresa selecionada
   useEffect(() => {
@@ -70,6 +72,8 @@ export default function Relatorios() {
   const handlePrint = () => {
     window.print();
   };
+
+  const filters = { dateRange, selectedSector, selectedRole, selectedCompany };
   
   return (
     <div className="space-y-6">
@@ -115,51 +119,68 @@ export default function Relatorios() {
         
         <TabsContent value="overview" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={{dateRange, selectedSector, selectedRole, selectedCompany}} />
-            <SectorRiskFactors filters={{dateRange, selectedSector, selectedRole, selectedCompany}} />
+            <RiskLevelDistribution filters={filters} />
+            <SectorRiskFactors filters={filters} />
           </div>
           
           <Card>
             <CardHeader>
-              <CardTitle>Resumo de Severidade</CardTitle>
+              <CardTitle>Resumo de Avaliações</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {['Normal', 'Leve', 'Moderado', 'Severo', 'Crítico'].map((level, index) => (
-                  <Card key={level} className={`bg-opacity-10 ${
-                    index === 0 ? 'bg-green-100 border-green-200' : 
-                    index === 1 ? 'bg-blue-100 border-blue-200' : 
-                    index === 2 ? 'bg-yellow-100 border-yellow-200' : 
-                    index === 3 ? 'bg-orange-100 border-orange-200' : 
-                    'bg-red-100 border-red-200'
-                  }`}>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="bg-blue-50 border-blue-200">
                     <CardContent className="p-4">
-                      <p className="text-lg font-semibold">{level}</p>
-                      <p className="text-2xl font-bold mt-1">{12 - index * 2}%</p>
+                      <p className="text-lg font-semibold text-blue-700">Total de Avaliações</p>
+                      <p className="text-2xl font-bold mt-1 text-blue-900">
+                        {reportsData?.totalAssessments || 0}
+                      </p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="p-4">
+                      <p className="text-lg font-semibold text-green-700">Concluídas</p>
+                      <p className="text-2xl font-bold mt-1 text-green-900">
+                        {reportsData?.completedAssessments || 0}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-yellow-50 border-yellow-200">
+                    <CardContent className="p-4">
+                      <p className="text-lg font-semibold text-yellow-700">Pendentes</p>
+                      <p className="text-2xl font-bold mt-1 text-yellow-900">
+                        {reportsData?.pendingAssessments || 0}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="sectors" className="space-y-6 mt-6">
           <SectorRiskFactors 
-            filters={{dateRange, selectedSector, selectedRole, selectedCompany}} 
+            filters={filters} 
             fullWidth 
           />
         </TabsContent>
         
         <TabsContent value="roles" className="space-y-6 mt-6">
           <RoleRiskComparison 
-            filters={{dateRange, selectedSector, selectedRole, selectedCompany}} 
+            filters={filters} 
           />
         </TabsContent>
         
         <TabsContent value="individual" className="space-y-6 mt-6">
           <IndividualReports 
-            filters={{dateRange, selectedSector, selectedRole, selectedCompany}} 
+            filters={filters} 
           />
         </TabsContent>
       </Tabs>

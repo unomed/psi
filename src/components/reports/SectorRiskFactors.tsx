@@ -1,87 +1,76 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  Legend,
-  CartesianGrid
-} from "recharts";
-import { DateRange } from "@/types/date";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useReportsData } from "@/hooks/reports/useReportsData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SectorRiskFactorsProps {
   filters: {
-    dateRange: DateRange;
+    selectedCompany: string | null;
+    dateRange: any;
     selectedSector: string;
     selectedRole: string;
-    selectedCompany?: string | null;
   };
   fullWidth?: boolean;
 }
 
 export function SectorRiskFactors({ filters, fullWidth = false }: SectorRiskFactorsProps) {
-  // Mock data - em uma aplicação real, isso seria filtrado com base nos filtros
-  const data = [
-    {
-      name: "Produção",
-      estresse: 65,
-      assedio: 20,
-      violencia: 15,
-    },
-    {
-      name: "Administrativo",
-      estresse: 45,
-      assedio: 12,
-      violencia: 5,
-    },
-    {
-      name: "TI",
-      estresse: 55,
-      assedio: 18,
-      violencia: 10,
-    },
-    {
-      name: "Comercial",
-      estresse: 40,
-      assedio: 25,
-      violencia: 12,
-    },
-    {
-      name: "Logística",
-      estresse: 48,
-      assedio: 15,
-      violencia: 25,
-    },
-  ];
+  const { reportsData, isLoading } = useReportsData(filters.selectedCompany || undefined);
+
+  if (isLoading) {
+    return (
+      <Card className={fullWidth ? "col-span-full" : ""}>
+        <CardHeader>
+          <CardTitle>Fatores de Risco por Setor</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-64 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!reportsData || reportsData.riskBySector.length === 0) {
+    return (
+      <Card className={fullWidth ? "col-span-full" : ""}>
+        <CardHeader>
+          <CardTitle>Fatores de Risco por Setor</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            {!reportsData ? 
+              "Erro ao carregar dados dos relatórios" : 
+              "Nenhum dado de setor encontrado para os filtros selecionados"
+            }
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className={`h-full ${fullWidth ? 'col-span-full' : ''}`}>
+    <Card className={fullWidth ? "col-span-full" : ""}>
       <CardHeader>
         <CardTitle>Fatores de Risco por Setor</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className={`${fullWidth ? 'h-[500px]' : 'h-[300px]'}`}>
+        <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
+            <BarChart data={reportsData.riskBySector}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
+              <XAxis 
+                dataKey="sector" 
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                interval={0}
+              />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="estresse" name="Estresse" fill="#3b82f6" />
-              <Bar dataKey="assedio" name="Assédio" fill="#8b5cf6" />
-              <Bar dataKey="violencia" name="Violência" fill="#ef4444" />
+              <Bar dataKey="high" stackId="a" fill="#ef4444" name="Alto Risco" />
+              <Bar dataKey="medium" stackId="a" fill="#f59e0b" name="Médio Risco" />
+              <Bar dataKey="low" stackId="a" fill="#22c55e" name="Baixo Risco" />
             </BarChart>
           </ResponsiveContainer>
         </div>
