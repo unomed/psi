@@ -36,25 +36,33 @@ export function useEmailSending() {
     let errorCount = 0;
 
     try {
-      // Buscar informações da empresa do usuário logado através da tabela user_companies
-      const { data: userCompany, error: userCompanyError } = await supabase
+      // Buscar informações da empresa do usuário logado
+      const { data: userCompanies, error: userCompaniesError } = await supabase
         .from('user_companies')
-        .select(`
-          company_id,
-          companies (
-            name,
-            address,
-            phone
-          )
-        `)
+        .select('company_id')
         .eq('user_id', user.id)
+        .limit(1)
         .single();
 
-      if (userCompanyError || !userCompany?.companies?.name) {
-        console.warn('Erro ao buscar dados da empresa do usuário:', userCompanyError);
+      let companyName = 'Sua Empresa';
+
+      if (userCompanies && !userCompaniesError) {
+        // Buscar nome da empresa
+        const { data: company, error: companyError } = await supabase
+          .from('companies')
+          .select('name')
+          .eq('id', userCompanies.company_id)
+          .single();
+
+        if (company && !companyError) {
+          companyName = company.name;
+        }
       }
 
-      const companyName = userCompany?.companies?.name || 'Sua Empresa';
+      if (userCompaniesError) {
+        console.warn('Erro ao buscar dados da empresa do usuário:', userCompaniesError);
+      }
+
       console.log('Company name retrieved for emails:', companyName);
 
       for (const employee of employees) {
