@@ -2,9 +2,9 @@
 import { toast } from "sonner";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
-import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
 import { saveScheduledAssessment } from "@/services/checklist";
 import { validateAssessmentDate } from "@/utils/dateUtils";
+import { useEmployees } from "@/hooks/employees/useEmployees";
 
 export function useScheduleOperations({
   selectedEmployee,
@@ -13,7 +13,8 @@ export function useScheduleOperations({
   setIsScheduleDialogOpen,
   setIsNewAssessmentDialogOpen,
   setScheduledDate,
-  setActiveTab
+  setActiveTab,
+  companyId
 }: {
   selectedEmployee: string | null;
   selectedTemplate: ChecklistTemplate | null;
@@ -22,7 +23,10 @@ export function useScheduleOperations({
   setIsNewAssessmentDialogOpen: (isOpen: boolean) => void;
   setScheduledDate: (date: Date | undefined) => void;
   setActiveTab: (tab: string) => void;
+  companyId?: string;
 }) {
+  const { employees } = useEmployees({ companyId });
+
   const handleScheduleAssessment = () => {
     if (!selectedEmployee || !selectedTemplate) {
       toast.error("Selecione um funcionário e um modelo de checklist para agendar a avaliação.");
@@ -46,7 +50,7 @@ export function useScheduleOperations({
     }
     
     try {
-      const employee = mockEmployees.find(e => e.id === selectedEmployee);
+      const employee = employees.find(e => e.id === selectedEmployee);
       if (!employee) {
         toast.error("Funcionário não encontrado.");
         return;
@@ -64,7 +68,13 @@ export function useScheduleOperations({
         completedAt: null,
         recurrenceType: recurrenceType,
         nextScheduledDate: nextDate,
-        phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined
+        phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined,
+        company_id: employee.company_id,
+        employees: {
+          name: employee.name,
+          email: employee.email || '',
+          phone: phoneNumber || ''
+        }
       };
       
       await saveScheduledAssessment(newScheduledAssessment);

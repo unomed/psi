@@ -3,15 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AssessmentMetrics() {
+  const { userRole, userCompanies } = useAuth();
+
   const { data: metrics } = useQuery({
-    queryKey: ['assessmentMetrics'],
+    queryKey: ['assessmentMetrics', userCompanies],
     queryFn: async () => {
-      const { data: scheduled } = await supabase
+      let query = supabase
         .from('scheduled_assessments')
-        .select('status, scheduled_date')
-        .order('scheduled_date');
+        .select('status, scheduled_date, company_id');
+
+      // Se não for superadmin, filtrar apenas empresas do usuário
+      if (userRole !== 'superadmin' && userCompanies.length > 0) {
+        const companyIds = userCompanies.map(uc => uc.companyId);
+        query = query.in('company_id', companyIds);
+      }
+
+      const { data: scheduled } = await query.order('scheduled_date');
 
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

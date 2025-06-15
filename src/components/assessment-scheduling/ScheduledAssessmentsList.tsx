@@ -9,6 +9,7 @@ import { Calendar, Search, Mail, Trash2, Link, Copy, Settings } from "lucide-rea
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -28,17 +29,26 @@ export function ScheduledAssessmentsList() {
   const [deleteAssessmentId, setDeleteAssessmentId] = useState<string | null>(null);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  
+  const { userRole, userCompanies } = useAuth();
 
   const { data: assessments, isLoading, refetch } = useQuery({
-    queryKey: ['scheduledAssessments'],
+    queryKey: ['scheduledAssessments', userCompanies],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('scheduled_assessments')
         .select(`
           *,
           checklist_templates(title, type)
-        `)
-        .order('scheduled_date', { ascending: false });
+        `);
+
+      // Se não for superadmin, filtrar apenas empresas do usuário
+      if (userRole !== 'superadmin' && userCompanies.length > 0) {
+        const companyIds = userCompanies.map(uc => uc.companyId);
+        query = query.in('company_id', companyIds);
+      }
+
+      const { data, error } = await query.order('scheduled_date', { ascending: false });
 
       if (error) throw error;
       return data;
@@ -229,7 +239,10 @@ export function ScheduledAssessmentsList() {
         <CardContent>
           {filteredAssessments?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Nenhuma avaliação encontrada
+              {userCompanies.length === 0 ? 
+                "Você não tem acesso a nenhuma empresa" :
+                "Nenhuma avaliação encontrada"
+              }
             </div>
           ) : (
             <div className="space-y-4">

@@ -12,6 +12,7 @@ import { AssessmentSelectionForm } from "@/components/assessments/AssessmentSele
 import { useChecklistTemplates } from "@/hooks/checklist/useChecklistTemplates";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface StartAssessmentDialogProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export function StartAssessmentDialog({
   selectedTemplate
 }: StartAssessmentDialogProps) {
   const navigate = useNavigate();
+  const { userCompanies } = useAuth();
   const { checklists, isLoading } = useChecklistTemplates();
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
   const [currentSelectedTemplate, setCurrentSelectedTemplate] = useState<ChecklistTemplate | null>(selectedTemplate || null);
