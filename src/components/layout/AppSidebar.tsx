@@ -35,9 +35,16 @@ export function AppSidebar() {
 
         <SidebarSection title="Configurações">
           <SidebarMenu>
-            {settingsItems.map((item) => (
-              <SidebarMenuItem key={item.href} item={item} />
-            ))}
+            {settingsItems.map((item) => {
+              // Convert settingsItem (with url) to MenuItem (with href)
+              const menuItem = {
+                title: item.title,
+                href: item.url,
+                icon: item.icon,
+                roles: ["admin", "manager"] // Default roles for settings items
+              };
+              return <SidebarMenuItem key={item.url} item={menuItem} />;
+            })}
           </SidebarMenu>
         </SidebarSection>
       </SidebarContent>
