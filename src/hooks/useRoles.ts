@@ -28,6 +28,7 @@ export function useRoles() {
         sectorId: role.sector_id,
         requiredSkills: role.required_skills,
         riskLevel: role.risk_level,
+        required_tags: role.required_tags || [],
         createdAt: new Date(role.created_at),
         updatedAt: new Date(role.updated_at)
       }));
@@ -44,7 +45,8 @@ export function useRoles() {
           company_id: roleData.companyId,
           sector_id: roleData.sectorId,
           required_skills: roleData.requiredSkills,
-          risk_level: roleData.riskLevel
+          risk_level: roleData.riskLevel,
+          required_tags: roleData.required_tags || []
         })
         .select()
         .single();
@@ -72,7 +74,8 @@ export function useRoles() {
           company_id: roleData.companyId,
           sector_id: roleData.sectorId,
           required_skills: roleData.requiredSkills,
-          risk_level: roleData.riskLevel
+          risk_level: roleData.riskLevel,
+          required_tags: roleData.required_tags || []
         })
         .eq('id', roleData.id)
         .select()

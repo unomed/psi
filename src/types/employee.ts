@@ -15,10 +15,13 @@ export interface Employee {
   company_id: string;
   sector_id: string;
   role_id: string;
+  employee_type: 'funcionario' | 'candidato';
+  employee_tags: string[];
   role?: {
     id: string;
     name: string;
     risk_level?: string;
+    required_tags?: string[];
   };
   created_at: string;
   updated_at: string;
@@ -39,4 +42,19 @@ export interface EmployeeFormData {
   company_id: string;
   sector_id: string;
   role_id: string;
+  employee_type: 'funcionario' | 'candidato';
+  employee_tags: string[];
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  company_id: string;
+  sector_id: string;
+  required_skills?: string[];
+  risk_level?: string;
+  required_tags: string[];
+  created_at: string;
+  updated_at: string;
 }

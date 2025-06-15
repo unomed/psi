@@ -1,102 +1,45 @@
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Employee, EmployeeFormData } from "@/types/employee";
-import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useEmployees() {
-  const queryClient = useQueryClient();
+  const { userRole } = useAuth();
 
-  const { data: employees, isLoading } = useQuery({
+  const { data: employees = [], isLoading, error } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('employees')
         .select(`
-          *,
-          role:roles(
-            id,
-            name,
-            risk_level
-          )
-        `)
-        .order('name');
+          id,
+          name,
+          email,
+          cpf,
+          company_id,
+          role_id,
+          sector_id,
+          status,
+          employee_type,
+          employee_tags,
+          roles(name, required_tags),
+          sectors(name)
+        `);
+
+      const { data, error } = await query.order('name');
       
       if (error) {
-        toast.error('Erro ao carregar funcionários');
+        console.error("Error fetching employees:", error);
         throw error;
       }
       
-      return data as Employee[];
-    }
-  });
-
-  const createEmployee = useMutation({
-    mutationFn: async (newEmployee: EmployeeFormData) => {
-      const { data, error } = await supabase
-        .from('employees')
-        .insert(newEmployee)
-        .select()
-        .single();
-
-      if (error) {
-        if (error.code === '23505') {
-          toast.error('CPF já cadastrado');
-        } else {
-          toast.error('Erro ao criar funcionário');
-        }
-        throw error;
-      }
-
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Funcionário cadastrado com sucesso');
-    }
-  });
-
-  const updateEmployee = useMutation({
-    mutationFn: async ({ id, ...data }: EmployeeFormData & { id: string }) => {
-      const { error } = await supabase
-        .from('employees')
-        .update(data)
-        .eq('id', id);
-
-      if (error) {
-        toast.error('Erro ao atualizar funcionário');
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Funcionário atualizado com sucesso');
-    }
-  });
-
-  const deleteEmployee = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('employees')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        toast.error('Erro ao excluir funcionário');
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Funcionário excluído com sucesso');
+      return data || [];
     }
   });
 
   return {
     employees,
     isLoading,
-    createEmployee,
-    updateEmployee,
-    deleteEmployee
+    error
   };
 }

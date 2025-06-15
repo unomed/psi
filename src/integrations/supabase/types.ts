@@ -940,6 +940,8 @@ export type Database = {
           cpf: string
           created_at: string
           email: string | null
+          employee_tags: Json | null
+          employee_type: string
           gender: string | null
           id: string
           name: string
@@ -959,6 +961,8 @@ export type Database = {
           cpf: string
           created_at?: string
           email?: string | null
+          employee_tags?: Json | null
+          employee_type?: string
           gender?: string | null
           id?: string
           name: string
@@ -978,6 +982,8 @@ export type Database = {
           cpf?: string
           created_at?: string
           email?: string | null
+          employee_tags?: Json | null
+          employee_type?: string
           gender?: string | null
           id?: string
           name?: string
@@ -2081,6 +2087,7 @@ export type Database = {
           id: string
           name: string
           required_skills: string[] | null
+          required_tags: Json | null
           risk_level: string | null
           sector_id: string
           updated_at: string
@@ -2092,6 +2099,7 @@ export type Database = {
           id?: string
           name: string
           required_skills?: string[] | null
+          required_tags?: Json | null
           risk_level?: string | null
           sector_id: string
           updated_at?: string
@@ -2103,6 +2111,7 @@ export type Database = {
           id?: string
           name?: string
           required_skills?: string[] | null
+          required_tags?: Json | null
           risk_level?: string | null
           sector_id?: string
           updated_at?: string

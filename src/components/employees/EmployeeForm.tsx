@@ -9,6 +9,8 @@ import { employeeFormSchema, EmployeeFormSchema } from "./schemas/employeeFormSc
 import { PersonalInfoFields } from "./form-sections/PersonalInfoFields";
 import { EmploymentFields } from "./form-sections/EmploymentFields";
 import { AdditionalFields } from "./form-sections/AdditionalFields";
+import { EmployeeTypeAndTagsFields } from "./form-sections/EmployeeTypeAndTagsFields";
+import { useRoles } from "@/hooks/useRoles";
 import { isValidDate } from "@/utils/dateUtils";
 
 interface EmployeeFormProps {
@@ -24,6 +26,11 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
   const [selectedSector, setSelectedSector] = useState<string | null>(
     initialData?.sector_id || null
   );
+  const [selectedRole, setSelectedRole] = useState<string | null>(
+    initialData?.role_id || null
+  );
+
+  const { roles } = useRoles();
 
   // Helper function to safely parse dates
   const safeParseDate = (dateString?: string): Date | undefined => {
@@ -39,6 +46,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       ...initialData,
       birth_date: safeParseDate(initialData.birth_date),
       start_date: safeParseDate(initialData.start_date) || new Date(),
+      employee_type: initialData.employee_type || "funcionario",
+      employee_tags: initialData.employee_tags || [],
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",
@@ -57,8 +66,14 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       special_conditions: "",
       photo_url: "",
       start_date: new Date(),
+      employee_type: "funcionario",
+      employee_tags: [],
     },
   });
+
+  // Encontrar tags obrigatórias da função selecionada
+  const selectedRoleData = roles?.find(role => role.id === selectedRole);
+  const requiredTags = selectedRoleData?.required_tags || [];
 
   const handleSubmit = (values: EmployeeFormSchema) => {
     const employeeData: EmployeeFormData = {
@@ -80,9 +95,16 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       company_id: values.company_id,
       sector_id: values.sector_id,
       role_id: values.role_id,
+      employee_type: values.employee_type,
+      employee_tags: values.employee_tags,
     };
     
     onSubmit(employeeData);
+  };
+
+  const handleRoleChange = (roleId: string) => {
+    setSelectedRole(roleId);
+    form.setValue("role_id", roleId);
   };
 
   return (
@@ -95,6 +117,12 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
           selectedSector={selectedSector}
           onCompanyChange={setSelectedCompany}
           onSectorChange={setSelectedSector}
+          onRoleChange={handleRoleChange}
+        />
+        <EmployeeTypeAndTagsFields 
+          form={form}
+          selectedRole={selectedRole}
+          requiredTags={requiredTags}
         />
         <AdditionalFields form={form} />
 

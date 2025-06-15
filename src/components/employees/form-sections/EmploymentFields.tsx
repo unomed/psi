@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,7 @@ interface EmploymentFieldsProps {
   selectedSector: string | null;
   onCompanyChange: (value: string) => void;
   onSectorChange: (value: string) => void;
+  onRoleChange?: (value: string) => void;
 }
 
 export function EmploymentFields({ 
@@ -21,7 +23,8 @@ export function EmploymentFields({
   selectedCompany, 
   selectedSector, 
   onCompanyChange, 
-  onSectorChange 
+  onSectorChange,
+  onRoleChange
 }: EmploymentFieldsProps) {
   const { companies } = useCompanies();
   const { sectors } = useSectors();
@@ -45,8 +48,18 @@ export function EmploymentFields({
   const companyItems = accessibleCompanies || [];
   const sectorItems = (sectors || [])
     .filter(s => s && s.id && String(s.id).trim() !== "" && s.name && String(s.name).trim() !== "" && (!selectedCompany || s.companyId === selectedCompany));
+  
+  // Filtrar funções por empresa E setor
   const roleItems = (roles || [])
-    .filter(r => r && r.id && String(r.id).trim() !== "" && r.name && String(r.name).trim() !== "" && (!selectedCompany || r.companyId === selectedCompany));
+    .filter(r => 
+      r && 
+      r.id && 
+      String(r.id).trim() !== "" && 
+      r.name && 
+      String(r.name).trim() !== "" && 
+      (!selectedCompany || r.companyId === selectedCompany) &&
+      (!selectedSector || r.sectorId === selectedSector)
+    );
 
   const statusOptions = [
     { value: "active", label: "Ativo" },
@@ -157,9 +170,10 @@ export function EmploymentFields({
                 onValueChange={(value) => {
                   if (value !== "no-role-selected") {
                     field.onChange(value);
+                    if (onRoleChange) onRoleChange(value);
                   }
                 }}
-                disabled={!selectedCompany}
+                disabled={!selectedSector}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma função" />
@@ -173,7 +187,7 @@ export function EmploymentFields({
                       ))
                   ) : (
                     <SelectItem value="no-roles-available" disabled>
-                      {selectedCompany ? "Nenhuma função encontrada" : "Selecione uma empresa primeiro"}
+                      {selectedSector ? "Nenhuma função encontrada" : "Selecione um setor primeiro"}
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -205,6 +219,24 @@ export function EmploymentFields({
                   ))}
                 </SelectContent>
               </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="start_date"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Data de Início</FormLabel>
+            <FormControl>
+              <DatePicker
+                date={field.value}
+                onDateChange={field.onChange}
+                placeholder="Selecione a data de início"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
