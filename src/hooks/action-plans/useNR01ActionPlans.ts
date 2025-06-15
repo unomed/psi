@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export interface NR01ActionPlan {
   id: string;
+  company_id: string; // Added missing company_id
   title: string;
   description: string;
   status: 'draft' | 'active' | 'completed' | 'cancelled';
@@ -21,7 +22,7 @@ export interface NR01ActionPlan {
   budget_used?: number;
   created_at: string;
   updated_at: string;
-  // Dados da análise de risco relacionada
+  // Dados da análise de risco relacionada (opcional)
   risk_analysis?: {
     id: string;
     category: string;
@@ -50,11 +51,12 @@ export function useNR01ActionPlans(filters: UseNR01ActionPlansProps = {}) {
     queryFn: async (): Promise<NR01ActionPlan[]> => {
       if (!companyId) return [];
 
-      // Buscar planos de ação com join nas análises de risco psicossocial
+      // Buscar planos de ação com join nos setores
       let query = supabase
         .from('action_plans')
         .select(`
           id,
+          company_id,
           title,
           description,
           status,
@@ -70,14 +72,7 @@ export function useNR01ActionPlans(filters: UseNR01ActionPlansProps = {}) {
           budget_allocated,
           budget_used,
           created_at,
-          updated_at,
-          psychosocial_risk_analysis!left(
-            id,
-            category,
-            exposure_level,
-            risk_score,
-            evaluation_date
-          )
+          updated_at
         `)
         .eq('company_id', companyId);
 
@@ -114,6 +109,7 @@ export function useNR01ActionPlans(filters: UseNR01ActionPlansProps = {}) {
       // Transformar dados para o formato esperado
       return (data || []).map(plan => ({
         id: plan.id,
+        company_id: plan.company_id,
         title: plan.title,
         description: plan.description,
         status: plan.status as any,
@@ -130,13 +126,8 @@ export function useNR01ActionPlans(filters: UseNR01ActionPlansProps = {}) {
         budget_used: plan.budget_used,
         created_at: plan.created_at,
         updated_at: plan.updated_at,
-        risk_analysis: plan.psychosocial_risk_analysis ? {
-          id: plan.psychosocial_risk_analysis.id,
-          category: plan.psychosocial_risk_analysis.category,
-          exposure_level: plan.psychosocial_risk_analysis.exposure_level,
-          risk_score: plan.psychosocial_risk_analysis.risk_score,
-          evaluation_date: plan.psychosocial_risk_analysis.evaluation_date
-        } : undefined
+        // Por enquanto, não incluiremos risk_analysis até termos a relação correta no banco
+        risk_analysis: undefined
       }));
     },
     enabled: !!companyId

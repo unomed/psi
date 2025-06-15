@@ -6,16 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Filter, BarChart3, AlertTriangle } from 'lucide-react';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
-import { useNR01ActionPlans } from '@/hooks/action-plans/useNR01ActionPlans';
+import { useNR01ActionPlans, NR01ActionPlan } from '@/hooks/action-plans/useNR01ActionPlans';
 import { usePsychosocialRiskData } from '@/hooks/action-plans/usePsychosocialRiskData';
 import { useSectors } from '@/hooks/sectors/useSectors';
 import { useAuth } from '@/contexts/AuthContext';
-import { ActionPlan } from '@/hooks/useActionPlans';
 import { DateRange } from 'react-day-picker';
 
 interface NR01ActionPlansFilterProps {
-  actionPlans?: ActionPlan[];
-  onPlanSelect?: (plan: ActionPlan) => void;
+  onPlanSelect?: (plan: NR01ActionPlan) => void; // Changed to use NR01ActionPlan
 }
 
 export function NR01ActionPlansFilter({ onPlanSelect }: NR01ActionPlansFilterProps) {

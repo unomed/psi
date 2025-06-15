@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionPlansList } from '@/components/action-plans/ActionPlansList';
 import { ActionPlansTable } from '@/components/action-plans/ActionPlansTable';
 import { NR01ActionPlansFilter } from '@/components/action-plans/NR01ActionPlansFilter';
+import { NR01ActionPlan } from '@/hooks/action-plans/useNR01ActionPlans';
 import { useActionPlans, ActionPlan } from '@/hooks/useActionPlans';
 import { Brain, List, Table } from 'lucide-react';
 import {
@@ -29,8 +31,15 @@ export default function PlanoAcao() {
   const { actionPlans, updateActionPlan, deleteActionPlan } = useActionPlans();
   const { user } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<ActionPlan | null>(null);
+  const [selectedNR01Plan, setSelectedNR01Plan] = useState<NR01ActionPlan | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleNR01PlanSelect = (plan: NR01ActionPlan) => {
+    setSelectedNR01Plan(plan);
+    console.log('Selected NR-01 plan:', plan);
+    // Implementar navegação para detalhes ou abrir modal de visualização
+  };
 
   const handlePlanSelect = (plan: ActionPlan) => {
     setSelectedPlan(plan);
@@ -106,8 +115,7 @@ export default function PlanoAcao() {
 
         <TabsContent value="nr01">
           <NR01ActionPlansFilter 
-            actionPlans={actionPlans} 
-            onPlanSelect={handlePlanSelect}
+            onPlanSelect={handleNR01PlanSelect}
           />
         </TabsContent>
 
