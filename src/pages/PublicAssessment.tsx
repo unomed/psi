@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { fetchAssessmentByToken } from "@/services/assessment/results";
@@ -19,7 +18,8 @@ export default function PublicAssessment() {
         setIsLoading(false);
         return;
       }
-
+      // Log para troubleshooting: qual URL está sendo acessada
+      console.log("[PublicAssessment] Token recebido:", token);
       try {
         // Verificar se o token é válido
         const response = await fetchAssessmentByToken(token);

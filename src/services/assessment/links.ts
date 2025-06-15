@@ -74,8 +74,8 @@ export async function generateAssessmentLink(
     console.log("Existing link check result:", existingLink);
 
     if (existingLink?.token) {
-      // Use window.location.origin for local development and production
-      const link = `${window.location.origin}/assessment/${existingLink.token}`;
+      // Usar /avaliacao/:token para novo padrão de link
+      const link = `${window.location.origin}/avaliacao/${existingLink.token}`;
       console.log("Using existing link:", link);
       return link;
     }
@@ -122,7 +122,7 @@ export async function generateAssessmentLink(
     console.log("Link generated successfully:", data);
 
     // Return the complete URL with the current domain
-    const finalLink = `${window.location.origin}/assessment/${token}`;
+    const finalLink = `${window.location.origin}/avaliacao/${token}`;
     console.log("Final link generated:", finalLink);
     return finalLink;
   } catch (error) {

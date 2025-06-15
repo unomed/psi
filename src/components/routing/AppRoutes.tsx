@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
@@ -23,13 +22,22 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* Rotas públicas - não requerem autenticação */}
+      {/* Suporte para /avaliacao/:token e /assessment/:token */}
       <Route 
         path="/avaliacao/:token" 
         element={
           <EmployeeAuthProvider>
             <PublicAssessment />
           </EmployeeAuthProvider>
-        } 
+        }
+      />
+      <Route 
+        path="/assessment/:token" 
+        element={
+          <EmployeeAuthProvider>
+            <PublicAssessment />
+          </EmployeeAuthProvider>
+        }
       />
       
       {/* Portal do funcionário - autenticação própria */}
