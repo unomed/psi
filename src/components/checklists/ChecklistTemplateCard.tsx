@@ -1,5 +1,5 @@
 
-import { ClipboardCheck, Clock, Pencil, Play } from "lucide-react";
+import { ClipboardCheck, Clock, Pencil, Eye } from "lucide-react";
 import { ChecklistTemplate } from "@/types/checklist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,13 @@ import { isTemplateTypePsicossocial, getTemplateTypeDisplayName } from "@/servic
 interface ChecklistTemplateCardProps {
   template: ChecklistTemplate;
   onEdit: (template: ChecklistTemplate) => void;
-  onTakeAssessment: (template: ChecklistTemplate) => void;
+  onPreview: (template: ChecklistTemplate) => void;
 }
 
 export function ChecklistTemplateCard({ 
   template, 
   onEdit, 
-  onTakeAssessment 
+  onPreview 
 }: ChecklistTemplateCardProps) {
   const questionsCount = template.questions.length;
   
@@ -94,9 +94,9 @@ export function ChecklistTemplateCard({
           <Pencil className="h-4 w-4 mr-2" />
           Editar
         </Button>
-        <Button size="sm" onClick={() => onTakeAssessment(template)}>
-          <Play className="h-4 w-4 mr-2" />
-          Iniciar Avaliação
+        <Button size="sm" onClick={() => onPreview(template)}>
+          <Eye className="h-4 w-4 mr-2" />
+          Visualizar Template
         </Button>
       </CardFooter>
     </Card>

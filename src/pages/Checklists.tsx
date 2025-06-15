@@ -4,7 +4,7 @@ import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
 import { ChecklistDialogs } from "@/components/checklists/ChecklistDialogs";
 import { ChecklistHeader } from "@/components/checklists/ChecklistHeader";
-import { StartAssessmentDialog } from "@/components/checklists/StartAssessmentDialog";
+import { TemplatePreviewDialog } from "@/components/checklists/TemplatePreviewDialog";
 import { useChecklistData } from "@/hooks/useChecklistData";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ export default function Checklists() {
   const [activeTab, setActiveTab] = useState("all");
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
-  const [isStartAssessmentDialogOpen, setIsStartAssessmentDialogOpen] = useState(false);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedResult, setSelectedResult] = useState<ChecklistResult | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -50,9 +50,9 @@ export default function Checklists() {
     setIsResultDialogOpen(true);
   };
 
-  const handleStartAssessment = (template: ChecklistTemplate) => {
+  const handlePreviewTemplate = (template: ChecklistTemplate) => {
     setSelectedTemplate(template);
-    setIsStartAssessmentDialogOpen(true);
+    setIsPreviewDialogOpen(true);
   };
 
   const handleDelete = async (template: ChecklistTemplate) => {
@@ -143,7 +143,7 @@ export default function Checklists() {
           onEditTemplate={handleEditTemplate}
           onDeleteTemplate={handleDelete}
           onCopyTemplate={handleCopyTemplate}
-          onStartAssessment={handleStartAssessment}
+          onStartAssessment={handlePreviewTemplate}
           onViewResult={handleViewResult}
           onCreateTemplate={() => {
             setIsEditing(false);
@@ -173,13 +173,13 @@ export default function Checklists() {
         isEditing={isEditing}
       />
 
-      <StartAssessmentDialog
-        isOpen={isStartAssessmentDialogOpen}
+      <TemplatePreviewDialog
+        isOpen={isPreviewDialogOpen}
         onClose={() => {
-          setIsStartAssessmentDialogOpen(false);
+          setIsPreviewDialogOpen(false);
           setSelectedTemplate(null);
         }}
-        selectedTemplate={selectedTemplate}
+        template={selectedTemplate}
       />
     </div>
   );

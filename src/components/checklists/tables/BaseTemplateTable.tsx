@@ -1,11 +1,10 @@
-
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChecklistTemplate } from "@/types/checklist";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Loader2, Play } from "lucide-react";
+import { Pencil, Trash2, Loader2, Eye } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +23,7 @@ export interface BaseTemplateTableProps {
   onEditTemplate: (template: ChecklistTemplate) => void;
   onDeleteTemplate: (template: ChecklistTemplate) => void;
   onCopyTemplate: (template: ChecklistTemplate) => void;
-  onStartAssessment: (template: ChecklistTemplate) => void;
+  onPreviewTemplate: (template: ChecklistTemplate) => void;
   showCategories?: boolean;
   isDeleting?: boolean;
 }
@@ -34,7 +33,7 @@ export function BaseTemplateTable({
   caption,
   onEditTemplate,
   onDeleteTemplate,
-  onStartAssessment,
+  onPreviewTemplate,
   showCategories = false,
   isDeleting = false,
 }: BaseTemplateTableProps) {
@@ -135,9 +134,9 @@ export function BaseTemplateTable({
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => onStartAssessment(template)}>
-                    <Play className="h-4 w-4 mr-2" />
-                    Iniciar Avaliação
+                  <Button variant="outline" size="sm" onClick={() => onPreviewTemplate(template)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Visualizar
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => onEditTemplate(template)}>
                     <Pencil className="h-4 w-4 mr-2" />
