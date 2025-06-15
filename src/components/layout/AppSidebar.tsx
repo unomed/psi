@@ -1,5 +1,5 @@
 
-import { SidebarContent, SidebarHeader, SidebarMenu } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu } from "@/components/ui/sidebar";
 import { SidebarSection } from "./sidebar/SidebarSection";
 import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SidebarMenuItemWithSubmenu } from "./sidebar/SidebarMenuItemWithSubmenu";
@@ -16,7 +16,7 @@ import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
 
 export function AppSidebar() {
   return (
-    <>
+    <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
       <SidebarHeader className="border-b border-sidebar-border">
         <CustomSidebarHeader />
       </SidebarHeader>
@@ -86,6 +86,6 @@ export function AppSidebar() {
           />
         </div>
       </SidebarContent>
-    </>
+    </Sidebar>
   );
 }

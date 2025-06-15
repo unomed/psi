@@ -35,14 +35,18 @@
 
     --radius: 0.5rem;
 
-    /* Sidebar colors - Fixed for better contrast */
-    --sidebar-background: 0 0% 98%; /* Light gray background */
-    --sidebar-foreground: 222.2 84% 4.9%; /* Dark text */
+    /* Sidebar sizing and positioning */
+    --sidebar-width: 280px;
+    --sidebar-width-icon: 48px;
+
+    /* Sidebar colors - Optimized for contrast */
+    --sidebar-background: 249 250 251; /* Very light gray background */
+    --sidebar-foreground: 31 41 55; /* Dark gray text */
     --sidebar-primary: 195 85% 41%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 195 85% 45%; /* Slightly different blue for hover */
-    --sidebar-accent-foreground: 0 0% 100%; /* White text on blue */
-    --sidebar-border: 214.3 31.8% 85%; /* Slightly darker border */
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 239 246 255; /* Light blue hover background */
+    --sidebar-accent-foreground: 30 64 175; /* Blue text on hover */
+    --sidebar-border: 229 231 235; /* Light gray border */
     --sidebar-ring: 199 89% 48%;
   }
 
@@ -76,13 +80,13 @@
     --ring: 195 85% 41%;
 
     /* Dark mode sidebar */
-    --sidebar-background: 222.2 84% 4.9%; /* Dark background */
-    --sidebar-foreground: 210 40% 98%; /* Light text */
+    --sidebar-background: 31 41 55; /* Dark gray background */
+    --sidebar-foreground: 243 244 246; /* Light gray text */
     --sidebar-primary: 195 85% 41%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 199 89% 20%; /* Darker blue for hover */
-    --sidebar-accent-foreground: 210 40% 98%; /* Light text on dark blue */
-    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 55 65 81; /* Darker gray for hover */
+    --sidebar-accent-foreground: 219 234 254; /* Light blue text on hover */
+    --sidebar-border: 55 65 81;
     --sidebar-ring: 199 89% 48%;
   }
 }
