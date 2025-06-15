@@ -1,4 +1,5 @@
 
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -66,7 +67,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       birth_date: safeParseDate(initialData.birth_date),
       start_date: safeParseDate(initialData.start_date) || new Date(),
       employee_type: initialData.employee_type || "funcionario",
-      employee_tags: safeParseEmployeeTags(initialData.employee_tags) as string[],
+      employee_tags: safeParseEmployeeTags(initialData.employee_tags),
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",
