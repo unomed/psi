@@ -10,10 +10,10 @@ export const AuthRoutes = () => {
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/register" element={<Register />} />
       <Route path="/auth/employee" element={<EmployeeLogin />} />
-      <Route path="/auth" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/auth" element={<Navigate to="/auth/employee" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/" element={<Navigate to="/auth/employee" replace />} />
     </Routes>
   );
 };

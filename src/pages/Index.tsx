@@ -22,8 +22,8 @@ const Index = () => {
     console.log('[Index] Usuário autenticado, redirecionando para dashboard');
     return <Navigate to="/dashboard" replace />;
   } else {
-    console.log('[Index] Usuário não autenticado, redirecionando para login');
-    return <Navigate to="/auth/login" replace />;
+    console.log('[Index] Usuário não autenticado, redirecionando para login do funcionário');
+    return <Navigate to="/auth/employee" replace />;
   }
 };
 
