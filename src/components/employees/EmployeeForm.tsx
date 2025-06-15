@@ -67,6 +67,25 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return [];
   };
 
+  // Type guard robusto para garantir que employee_tags seja string[]
+  const ensureStringArray = (value: any): string[] => {
+    // Se é undefined ou null, retornar array vazio
+    if (value == null) return [];
+    
+    // Se já é array e todos elementos são strings
+    if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+      return value as string[];
+    }
+    
+    // Se é array mas tem elementos não-string, filtrar
+    if (Array.isArray(value)) {
+      return value.filter(item => typeof item === 'string');
+    }
+    
+    // Para qualquer outro tipo, usar o helper existente
+    return safeParseEmployeeTags(value);
+  };
+
   const form = useForm<EmployeeFormSchema>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: initialData ? {
@@ -103,8 +122,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
   const requiredTags = selectedRoleData?.required_tags || [];
 
   const handleSubmit = (values: EmployeeFormSchema) => {
-    // Garantir que employee_tags seja sempre string[] usando a função helper
-    const employeeTags = safeParseEmployeeTags(values.employee_tags);
+    // Usar type guard robusto para garantir string[]
+    const employeeTagsProcessed = ensureStringArray(values.employee_tags);
     
     const employeeData: EmployeeFormData = {
       name: values.name,
@@ -126,8 +145,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      // Usar a variável employeeTags que já foi processada e tipada corretamente
-      employee_tags: employeeTags,
+      // Usar o resultado do type guard que garante string[]
+      employee_tags: employeeTagsProcessed,
     };
     
     onSubmit(employeeData);
