@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/companies/columns";
 
 export default function Empresas() {
-  const { companies, isLoading, error } = useCompanies();
+  const { companies, isLoading, error, createCompany, updateCompany } = useCompanies();
   const { userRole } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isNewCompanyDialogOpen, setIsNewCompanyDialogOpen] = useState(false);
@@ -57,6 +56,27 @@ export default function Empresas() {
   const handleNewCompany = useCallback(() => {
     setIsNewCompanyDialogOpen(true);
   }, []);
+
+  // Função para criar empresa
+  const handleCreateCompany = useCallback((data) => {
+    createCompany.mutate(data, {
+      onSuccess: () => {
+        setIsNewCompanyDialogOpen(false);
+      }
+    });
+  }, [createCompany]);
+
+  // Função para editar empresa
+  const handleUpdateCompany = useCallback((data) => {
+    if (selectedCompany) {
+      updateCompany.mutate({ ...data, id: selectedCompany.id }, {
+        onSuccess: () => {
+          setIsEditDialogOpen(false);
+          setSelectedCompany(null);
+        }
+      });
+    }
+  }, [updateCompany, selectedCompany]);
 
   const canCreateCompany = userRole === 'superadmin';
 
@@ -144,6 +164,8 @@ export default function Empresas() {
         onViewDialogChange={setIsViewDialogOpen}
         selectedCompany={selectedCompany}
         onCompanySelect={setSelectedCompany}
+        handleCreate={handleCreateCompany}
+        handleEdit={handleUpdateCompany}
       />
     </div>
   );
