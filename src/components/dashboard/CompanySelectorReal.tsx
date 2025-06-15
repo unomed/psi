@@ -8,6 +8,8 @@ interface CompanySelectorRealProps {
   onCompanyChange: (companyId: string) => void;
 }
 
+const ALL_COMPANIES_VALUE = "all-companies";
+
 export function CompanySelectorReal({ selectedCompanyId, onCompanyChange }: CompanySelectorRealProps) {
   const { userRole, userCompanies } = useAuth();
 
@@ -31,16 +33,25 @@ export function CompanySelectorReal({ selectedCompanyId, onCompanyChange }: Comp
     return null;
   }
 
+  // Handle value conversion for Select component
+  const selectValue = selectedCompanyId || ALL_COMPANIES_VALUE;
+
+  // Handle change and convert back to null for "all companies"
+  const handleValueChange = (value: string) => {
+    const companyId = value === ALL_COMPANIES_VALUE ? "" : value;
+    onCompanyChange(companyId);
+  };
+
   return (
     <div className="flex items-center gap-2 mb-6">
       <Building2 className="h-4 w-4" />
-      <Select value={selectedCompanyId || ""} onValueChange={onCompanyChange}>
+      <Select value={selectValue} onValueChange={handleValueChange}>
         <SelectTrigger className="w-64">
           <SelectValue placeholder="Selecione uma empresa" />
         </SelectTrigger>
         <SelectContent>
           {userRole === 'superadmin' && (
-            <SelectItem value="">Todas as empresas</SelectItem>
+            <SelectItem value={ALL_COMPANIES_VALUE}>Todas as empresas</SelectItem>
           )}
           {validCompanies.map((company) => {
             const companyIdStr = String(company.companyId);

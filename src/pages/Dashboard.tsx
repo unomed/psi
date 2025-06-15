@@ -18,6 +18,7 @@ export default function Dashboard() {
   });
 
   const handleCompanyChange = (companyId: string) => {
+    // Convert empty string back to null for "all companies"
     setSelectedCompanyId(companyId || null);
   };
 
