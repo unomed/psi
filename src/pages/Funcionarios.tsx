@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeHeader } from "@/components/employees/EmployeeHeader";
 import { EmployeeDialogs } from "@/components/employees/dialogs/EmployeeDialogs";
+import { TagManagementDialog } from "@/components/employees/dialogs/TagManagementDialog";
 import { EmployeeCompanySelector } from "@/components/employees/EmployeeCompanySelector";
 import { EmployeeListSection } from "@/components/employees/EmployeeListSection";
 import { useEmployeeCompanyFilter } from "@/hooks/employees/useEmployeeCompanyFilter";
@@ -10,6 +11,7 @@ import { useEmployeeOperations } from "@/hooks/employees/useEmployeeOperations";
 
 export default function Funcionarios() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isTagManagementOpen, setIsTagManagementOpen] = useState(false);
   
   const { selectedCompany, handleCompanyChange, userCompanies } = useEmployeeCompanyFilter();
   const { employees, isLoading } = useEmployees();
@@ -49,7 +51,10 @@ export default function Funcionarios() {
 
   return (
     <div className="space-y-8">
-      <EmployeeHeader onCreateClick={handleCreateClick} />
+      <EmployeeHeader 
+        onCreateClick={handleCreateClick}
+        onManageTagsClick={() => setIsTagManagementOpen(true)}
+      />
       
       <EmployeeCompanySelector
         selectedCompany={selectedCompany}
@@ -88,6 +93,11 @@ export default function Funcionarios() {
         handleEdit={handleEdit}
         handleDelete={handleDelete}
         companyId={selectedCompany}
+      />
+
+      <TagManagementDialog
+        open={isTagManagementOpen}
+        onOpenChange={setIsTagManagementOpen}
       />
     </div>
   );

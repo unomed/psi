@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { RoleRequiredTag } from "@/types/tags";
 
-export function useRoleRequiredTags(roleId?: string) {
+export function useRoleRequiredTags(roleId?: string | null) {
   const { data: requiredTags = [], isLoading } = useQuery({
     queryKey: ['role-required-tags', roleId],
     queryFn: async (): Promise<RoleRequiredTag[]> => {
