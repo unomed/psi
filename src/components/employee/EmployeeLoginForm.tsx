@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,6 @@ export function EmployeeLoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { login } = useEmployeeAuth();
-  const navigate = useNavigate();
 
   const formatCPF = (value: string) => {
     // Remove tudo que não é dígito
@@ -191,16 +189,6 @@ export function EmployeeLoginForm({
             {isLoading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
-        
-        <div className="mt-6 text-center">
-          <Button 
-            variant="link" 
-            onClick={() => navigate("/")}
-            className="text-sm"
-          >
-            Voltar ao início
-          </Button>
-        </div>
 
         {/* Exemplo de como usar */}
         <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
