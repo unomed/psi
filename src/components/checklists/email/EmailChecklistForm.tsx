@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,15 +11,7 @@ import { ChecklistTemplate } from "@/types/checklist";
 import { EmployeeMultiSelector } from "./EmployeeMultiSelector";
 import { EmailPreview } from "./EmailPreview";
 import { toast } from "sonner";
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  cpf: string;
-  roles?: { name: string };
-  sectors?: { name: string };
-}
+import type { Employee } from "@/types/employee";
 
 interface EmailChecklistFormProps {
   templates: ChecklistTemplate[];
@@ -230,7 +221,7 @@ export function EmailChecklistForm({ templates, onSendEmails, companyId }: Email
           subject={subject}
           body={body}
           employeeName={selectedEmployees[0].name}
-          employeeEmail={selectedEmployees[0].email}
+          employeeEmail={selectedEmployees[0].email || ""}
           templateName={selectedTemplateData?.title || ""}
           linkUrl="[Link será gerado automaticamente]"
           companyName="[Nome da Empresa]"
