@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,7 @@ import {
   DialogFooter 
 } from "@/components/ui/dialog";
 import { ChecklistTemplate, ScheduledAssessment } from "@/types";
-import { useEmployees } from "@/hooks/employees/useEmployees";
+import { useEmployees } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ShareAssessmentDialogProps {

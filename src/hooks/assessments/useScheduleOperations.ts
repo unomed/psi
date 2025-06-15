@@ -1,10 +1,9 @@
-
 import { toast } from "sonner";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
 import { saveScheduledAssessment } from "@/services/checklist";
 import { validateAssessmentDate } from "@/utils/dateUtils";
-import { useEmployees } from "@/hooks/employees/useEmployees";
+import { useEmployees } from "@/hooks/useEmployees";
 
 export function useScheduleOperations({
   selectedEmployee,

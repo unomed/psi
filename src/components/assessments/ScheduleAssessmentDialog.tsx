@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -11,7 +10,7 @@ import {
   DialogFooter 
 } from "@/components/ui/dialog";
 import { ChecklistTemplate } from "@/types";
-import { useEmployees } from "@/hooks/employees/useEmployees";
+import { useEmployees } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ScheduleAssessmentDialogProps {
