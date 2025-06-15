@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { toast } from "sonner";
 import { ScheduledAssessment } from "@/types";
 import { sendAssessmentEmail } from "@/services/assessment";
-import { toast } from "sonner";
-import { mockEmployees } from "@/components/assessments/AssessmentSelectionForm";
 
-export function useAssessmentEmailOperations(scheduledAssessments: ScheduledAssessment[], setScheduledAssessments: (assessments: ScheduledAssessment[]) => void) {
+export function useAssessmentEmailOperations(
+  scheduledAssessments: ScheduledAssessment[], 
+  setScheduledAssessments: (assessments: ScheduledAssessment[]) => void
+) {
   const handleSendEmail = async (scheduledAssessmentId: string) => {
     try {
       await sendAssessmentEmail(scheduledAssessmentId);
@@ -24,13 +25,12 @@ export function useAssessmentEmailOperations(scheduledAssessments: ScheduledAsse
       
       setScheduledAssessments(updatedAssessments);
       
-      // Find the employee to display in the toast
+      // Find the assessment to display in the toast
       const assessment = scheduledAssessments.find(a => a.id === scheduledAssessmentId);
-      if (assessment) {
-        const employee = mockEmployees.find(e => e.id === assessment.employeeId);
-        if (employee) {
-          toast.success(`Email enviado para ${employee.name} (${employee.email})`);
-        }
+      if (assessment && assessment.employees?.name) {
+        toast.success(`Email enviado para ${assessment.employees.name} (${assessment.employees.email})`);
+      } else {
+        toast.success("Email enviado com sucesso!");
       }
     } catch (error) {
       console.error("Erro ao enviar email:", error);

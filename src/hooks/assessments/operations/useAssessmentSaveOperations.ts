@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { ScheduledAssessment, RecurrenceType } from "@/types";
 import { toast } from "sonner";
-import { mockEmployees } from "@/components/assessments/mock/assessmentMockData";
-import { saveScheduledAssessment } from "@/services/assessment";
+import { saveScheduledAssessment } from "@/services/checklist";
 import { useAssessmentCalculations } from "./useAssessmentCalculations";
 import { isValidDate, validateAssessmentDate } from "@/utils/dateUtils";
 import { supabase } from "@/integrations/supabase/client";

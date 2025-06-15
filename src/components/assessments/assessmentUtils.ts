@@ -1,6 +1,5 @@
 
 import { ScheduledAssessment, AssessmentStatus, RecurrenceType } from "@/types";
-import { mockEmployees } from "./AssessmentSelectionForm";
 
 // Helper function to update a scheduled assessment
 export const updateScheduledAssessment = (
@@ -23,20 +22,6 @@ export const generateAssessmentLink = (templateId: string, employeeId: string | 
   // For now, just return a mock link
   const token = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
   return `${window.location.origin}/avaliacao/${token}`;
-};
-
-// Helper function to get employee information
-export const getEmployeeInfo = (employeeId: string | null) => {
-  if (!employeeId) {
-    return { name: "", email: "" };
-  }
-  
-  const employee = mockEmployees.find(emp => emp.id === employeeId);
-  
-  return {
-    name: employee?.name || "",
-    email: employee?.email || ""
-  };
 };
 
 // Function to calculate the next scheduled date based on recurrence type
@@ -93,7 +78,6 @@ export const sendAssessmentEmail = async (
   }
 };
 
-// Types for email templates (using the imported type instead of redefining)
 // Apply template variables
 export const applyTemplateVariables = (
   template: string, 

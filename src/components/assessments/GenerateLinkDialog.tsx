@@ -13,7 +13,8 @@ import {
   DialogFooter 
 } from "@/components/ui/dialog";
 import { ChecklistTemplate } from "@/types";
-import { mockEmployees } from "./AssessmentSelectionForm";
+import { useEmployees } from "@/hooks/employees/useEmployees";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface GenerateLinkDialogProps {
   isOpen: boolean;
@@ -30,10 +31,13 @@ export function GenerateLinkDialog({
   selectedTemplate,
   generatedLink
 }: GenerateLinkDialogProps) {
+  const { userCompanies } = useAuth();
+  const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
+  const { employees } = useEmployees({ companyId });
   
   const getSelectedEmployeeName = () => {
     if (!selectedEmployeeId) return "";
-    const employee = mockEmployees.find(emp => emp.id === selectedEmployeeId);
+    const employee = employees.find(emp => emp.id === selectedEmployeeId);
     return employee?.name || "";
   };
 
