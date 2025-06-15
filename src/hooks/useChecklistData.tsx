@@ -4,6 +4,7 @@ import { useChecklistResults } from "./checklist/useChecklistResults";
 import { useScheduledAssessments } from "./checklist/useScheduledAssessments";
 import { ChecklistResult } from "@/types/checklist";
 import { saveAssessmentResult } from "@/services/checklist";
+import { sendAssessmentEmail } from "@/services/assessment";
 import { toast } from "sonner";
 
 interface UseChecklistDataProps {
@@ -31,11 +32,24 @@ export function useChecklistData({ companyId }: UseChecklistDataProps = {}) {
     scheduledAssessments,
     isLoading: isLoadingScheduled,
     handleScheduleAssessment,
-    handleSendEmail,
-    handleShareAssessment
+    handleSendEmail: originalHandleSendEmail,
+    handleShareAssessment,
+    refetch: refetchScheduled
   } = useScheduledAssessments({ companyId });
 
-  // Novo método para salvar resultados de avaliação (incluindo psicossocial)
+  // Método melhorado para envio de email
+  const handleSendEmail = async (assessmentId: string) => {
+    try {
+      await sendAssessmentEmail(assessmentId);
+      toast.success("Email reenviado com sucesso!");
+      refetchScheduled();
+    } catch (error) {
+      console.error("Erro ao reenviar email:", error);
+      toast.error("Erro ao reenviar email");
+    }
+  };
+
+  // Método para salvar resultados de avaliação
   const handleSaveAssessmentResult = async (result: Omit<ChecklistResult, "id" | "completedAt"> | any) => {
     try {
       await saveAssessmentResult(result);
@@ -63,6 +77,7 @@ export function useChecklistData({ companyId }: UseChecklistDataProps = {}) {
     handleShareAssessment,
     handleSaveAssessmentResult,
     refetchChecklists,
-    refetchResults
+    refetchResults,
+    refetch: refetchScheduled
   };
 }

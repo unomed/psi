@@ -24,13 +24,16 @@ export default function Checklists() {
   const {
     checklists = [],
     results = [],
+    scheduledAssessments = [],
     isLoading,
     handleCreateTemplate,
     handleUpdateTemplate,
     handleDeleteTemplate,
     handleCopyTemplate,
     handleSaveAssessmentResult,
-    refetchChecklists
+    handleSendEmail,
+    refetchChecklists,
+    refetch: refetchScheduled
   } = useChecklistData();
 
   const handleCloseFormDialog = () => {
@@ -140,6 +143,7 @@ export default function Checklists() {
           setActiveTab={setActiveTab}
           checklists={checklists}
           results={results}
+          scheduledAssessments={scheduledAssessments}
           onEditTemplate={handleEditTemplate}
           onDeleteTemplate={handleDelete}
           onCopyTemplate={handleCopyTemplate}
@@ -150,6 +154,8 @@ export default function Checklists() {
             setSelectedTemplate(null);
             setIsFormDialogOpen(true);
           }}
+          onSendEmail={handleSendEmail}
+          onRefreshScheduled={refetchScheduled}
           isDeleting={isDeleting}
         />
       )}
