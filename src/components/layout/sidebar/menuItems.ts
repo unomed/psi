@@ -5,13 +5,15 @@ import {
   Briefcase, 
   Factory, 
   ClipboardList, 
-  BarChart3, 
+  TrendingUp, 
   Shield, 
   FileText, 
   Calendar,
   CreditCard,
   UserCheck,
-  GitCompare
+  GitCompare,
+  BarChart3,
+  FileBarChart
 } from "lucide-react";
 import type { MenuItem } from "./types";
 
@@ -55,7 +57,7 @@ export const menuItems: MenuItem[] = [
   {
     title: "Resultados",
     href: "/resultados",
-    icon: BarChart3,
+    icon: TrendingUp,
     roles: ["admin", "manager", "user"]
   },
   {
@@ -99,7 +101,7 @@ export const menuItems: MenuItem[] = [
   {
     title: "Relatórios",
     href: "/relatorios",
-    icon: FileText,
+    icon: FileBarChart,
     roles: ["admin", "manager", "user"]
   },
   {

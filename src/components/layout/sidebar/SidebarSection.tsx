@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { SidebarGroup, SidebarGroupLabel, SidebarGroupContent } from '@/components/ui/sidebar';
 
 interface SidebarSectionProps {
   title: string;
@@ -8,17 +9,15 @@ interface SidebarSectionProps {
 
 export function SidebarSection({ title, children }: SidebarSectionProps) {
   return (
-    <div className="mb-2">
+    <SidebarGroup className="px-3 py-2">
       {title && (
-        <div className="px-3 mb-1 mt-1">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-            {title}
-          </h3>
-        </div>
+        <SidebarGroupLabel className="px-2 py-2 text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
+          {title}
+        </SidebarGroupLabel>
       )}
-      <div className="space-y-0">
+      <SidebarGroupContent className="space-y-1">
         {children}
-      </div>
-    </div>
+      </SidebarGroupContent>
+    </SidebarGroup>
   );
 }

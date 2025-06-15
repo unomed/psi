@@ -10,13 +10,13 @@ import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
 export function AppSidebar() {
   return (
     <>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border">
         <CustomSidebarHeader />
       </SidebarHeader>
       
-      <SidebarContent>
+      <SidebarContent className="overflow-y-auto">
         <SidebarSection title="">
-          <SidebarMenu>
+          <SidebarMenu className="space-y-1">
             {menuItems.map((item) => {
               if (item.subItems) {
                 return (
@@ -33,20 +33,22 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarSection>
 
-        <SidebarSection title="Configurações">
-          <SidebarMenu>
-            {settingsItems.map((item) => {
-              // Convert settingsItem (with url) to MenuItem (with href)
-              const menuItem = {
-                title: item.title,
-                href: item.url,
-                icon: item.icon,
-                roles: ["admin", "manager"] // Default roles for settings items
-              };
-              return <SidebarMenuItem key={item.url} item={menuItem} />;
-            })}
-          </SidebarMenu>
-        </SidebarSection>
+        <div className="mt-6 pt-6 border-t border-sidebar-border">
+          <SidebarSection title="Configurações">
+            <SidebarMenu className="space-y-1">
+              {settingsItems.map((item) => {
+                // Convert settingsItem (with url) to MenuItem (with href)
+                const menuItem = {
+                  title: item.title,
+                  href: item.url,
+                  icon: item.icon,
+                  roles: ["admin", "manager"] // Default roles for settings items
+                };
+                return <SidebarMenuItem key={item.url} item={menuItem} />;
+              })}
+            </SidebarMenu>
+          </SidebarSection>
+        </div>
       </SidebarContent>
     </>
   );

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { SidebarMenuButton, SidebarMenuItem as BaseSidebarMenuItem } from '@/components/ui/sidebar';
@@ -23,36 +23,54 @@ export function SidebarMenuItemWithSubmenu({
     return items.some(item => location.pathname === item.href);
   });
 
+  // Manter aberto se navegar para um subitem
+  useEffect(() => {
+    const hasActiveSubItem = items.some(item => location.pathname === item.href);
+    if (hasActiveSubItem && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [location.pathname, items, isOpen]);
+
   const hasActiveSubItem = items.some(item => location.pathname === item.href);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
         <BaseSidebarMenuItem className="list-none">
-          <SidebarMenuButton className={`w-full justify-between ${hasActiveSubItem ? 'bg-accent text-accent-foreground' : ''}`}>
-            <div className="flex items-center gap-2">
-              {Icon && <Icon className="h-4 w-4" />}
-              <span>{title}</span>
+          <SidebarMenuButton 
+            className={`w-full justify-between transition-all duration-200 hover:bg-sidebar-accent ${
+              hasActiveSubItem ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              {Icon && <Icon className="h-5 w-5" />}
+              <span className="font-medium">{title}</span>
             </div>
-            {isOpen ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
+            <div className="transition-transform duration-200">
+              {isOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </div>
           </SidebarMenuButton>
         </BaseSidebarMenuItem>
       </CollapsibleTrigger>
       
-      <CollapsibleContent className="ml-6">
-        <div className="space-y-0">
+      <CollapsibleContent className="transition-all duration-200 ease-in-out">
+        <div className="ml-6 mt-1 space-y-1 border-l-2 border-sidebar-border pl-4">
           {items.map((item) => (
             <BaseSidebarMenuItem key={item.href} className="list-none">
               <SidebarMenuButton 
-                className={location.pathname === item.href ? 'bg-accent text-accent-foreground' : ''}
+                className={`w-full transition-all duration-200 hover:bg-sidebar-accent/50 ${
+                  location.pathname === item.href 
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm' 
+                    : 'text-sidebar-foreground/80'
+                }`}
               >
-                <Link to={item.href} className="flex items-center gap-2 w-full">
+                <Link to={item.href} className="flex items-center gap-3 w-full">
                   {item.icon && <item.icon className="h-4 w-4" />}
-                  <span>{item.title}</span>
+                  <span className="text-sm">{item.title}</span>
                 </Link>
               </SidebarMenuButton>
             </BaseSidebarMenuItem>
