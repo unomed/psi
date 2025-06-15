@@ -14,8 +14,6 @@ import NR01Page from "@/pages/relatorios/NR01Page";
 import Faturamento from "@/pages/Faturamento";
 import AssessmentPage from "@/pages/AssessmentPage";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
-import EmployeePortal from "@/pages/EmployeePortal";
-import PublicAssessment from "@/pages/PublicAssessment";
 
 export function MainRoutes() {
   return (
@@ -37,13 +35,6 @@ export function MainRoutes() {
       <Route path="/faturamento" element={<Faturamento />} />
       <Route path="/assessments/:id" element={<AssessmentPage />} />
       <Route path="/agendamentos" element={<AssessmentScheduling />} />
-      
-      {/* Rotas do Portal do Funcionário */}
-      <Route path="/employee-portal" element={<EmployeePortal />} />
-      <Route path="/employee-portal/:templateId" element={<EmployeePortal />} />
-      
-      {/* Rota para avaliações públicas */}
-      <Route path="/avaliacao/:token" element={<PublicAssessment />} />
     </Routes>
   );
 }
