@@ -190,7 +190,7 @@ export function EmployeeDashboard({ assessmentToken, templateId }: EmployeeDashb
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Avaliações Pendentes */}
           <div className="lg:col-span-2">
-            <PendingAssessmentsList />
+            <PendingAssessmentsList employeeId={session?.employee?.employeeId || ""} />
           </div>
 
           {/* Humor do Dia */}
@@ -203,11 +203,11 @@ export function EmployeeDashboard({ assessmentToken, templateId }: EmployeeDashb
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <MoodSelector />
+                <MoodSelector employeeId={session?.employee?.employeeId || ""} />
               </CardContent>
             </Card>
 
-            <MoodStatsCard />
+            <MoodStatsCard employeeId={session?.employee?.employeeId || ""} />
           </div>
         </div>
 

@@ -31,7 +31,7 @@ export default function PublicAssessment() {
         }
 
         // Redirecionar para o portal do funcionário com o token
-        navigate(`/employee-portal/${response.template?.id}?token=${token}&employee=${response.employee?.id || ''}`);
+        navigate(`/employee-portal/${response.template?.id}?token=${token}`);
       } catch (err) {
         console.error("Erro ao verificar avaliação:", err);
         setError("Erro ao carregar avaliação");
