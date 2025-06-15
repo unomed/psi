@@ -173,11 +173,16 @@ export function useDashboardData(companyId: string | null) {
           else if (avgScore >= 0.4) riskLevel = 'Médio';
         }
 
+        // Handle employee data properly
+        const employee = assessment.employees;
+        const employeeName = assessment.employee_name || (employee ? employee.name : 'Anônimo');
+        const sector = employee?.sectors?.name || 'N/A';
+
         return {
           id: assessment.id,
-          employeeName: assessment.employee_name || assessment.employees?.name || 'Anônimo',
+          employeeName,
           employeeId: assessment.employee_id || '',
-          sector: assessment.employees?.sectors?.name || 'N/A',
+          sector,
           completedAt: assessment.completed_at,
           riskLevel,
           dominantFactor: assessment.dominant_factor

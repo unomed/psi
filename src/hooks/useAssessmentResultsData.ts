@@ -95,9 +95,15 @@ export function useAssessmentResultsData(companyId?: string | null) {
           else if (avgScore >= 0.4) riskLevel = 'Médio';
         }
 
+        // Handle employee data - it can be null or an object
+        const employee = result.employees;
+        const employeeName = result.employee_name || (employee ? employee.name : 'Anônimo');
+        const sector = employee?.sectors?.name;
+        const role = employee?.roles?.name;
+
         return {
           id: result.id,
-          employeeName: result.employee_name || result.employees?.name || 'Anônimo',
+          employeeName,
           employeeId: result.employee_id || '',
           templateTitle: result.checklist_templates?.title || 'Avaliação',
           templateType: result.checklist_templates?.type || 'custom',
@@ -105,8 +111,8 @@ export function useAssessmentResultsData(companyId?: string | null) {
           dominantFactor: result.dominant_factor,
           riskLevel,
           factorsScores: result.factors_scores as Record<string, number>,
-          sector: result.employees?.sectors?.name,
-          role: result.employees?.roles?.name,
+          sector,
+          role,
           classification: result.classification,
           notes: result.notes
         };

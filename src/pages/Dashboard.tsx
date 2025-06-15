@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardMetricsReal } from "@/components/dashboard/DashboardMetricsReal";
 import { DashboardQuickActions } from "@/components/dashboard/DashboardQuickActions";
