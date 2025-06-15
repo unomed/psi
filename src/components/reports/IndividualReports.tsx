@@ -45,11 +45,19 @@ export function IndividualReports({ filters }: IndividualReportsProps) {
     }
   });
 
-  const filteredAssessments = assessments?.filter(assessment => 
-    assessment.employees?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    assessment.employees?.roles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    assessment.employees?.sectors?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredAssessments = assessments?.filter(assessment => {
+    const employee = assessment.employees;
+    if (!employee) return false;
+    
+    const employeeName = employee.name?.toLowerCase() || '';
+    const roleName = employee.roles?.name?.toLowerCase() || '';
+    const sectorName = employee.sectors?.name?.toLowerCase() || '';
+    const searchLower = searchTerm.toLowerCase();
+    
+    return employeeName.includes(searchLower) ||
+           roleName.includes(searchLower) ||
+           sectorName.includes(searchLower);
+  }) || [];
 
   const getRiskLevel = (percentile: number | null) => {
     if (!percentile) return { level: "N/A", color: "secondary" };
@@ -101,12 +109,14 @@ export function IndividualReports({ filters }: IndividualReportsProps) {
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {filteredAssessments.map((assessment) => {
               const risk = getRiskLevel(assessment.percentile);
+              const employee = assessment.employees;
+              
               return (
                 <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
-                    <div className="font-medium">{assessment.employees?.name || 'Nome não disponível'}</div>
+                    <div className="font-medium">{employee?.name || 'Nome não disponível'}</div>
                     <div className="text-sm text-muted-foreground">
-                      {assessment.employees?.roles?.name || 'Função não disponível'} • {assessment.employees?.sectors?.name || 'Setor não disponível'}
+                      {employee?.roles?.name || 'Função não disponível'} • {employee?.sectors?.name || 'Setor não disponível'}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       Avaliado em: {assessment.completed_at ? new Date(assessment.completed_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
