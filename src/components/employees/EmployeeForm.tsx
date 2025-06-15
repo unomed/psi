@@ -40,6 +40,20 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return isValidDate(date) ? date : undefined;
   };
 
+  // Helper function to safely parse employee_tags
+  const safeParseEmployeeTags = (tags?: any): string[] => {
+    if (Array.isArray(tags)) return tags;
+    if (typeof tags === 'string') {
+      try {
+        const parsed = JSON.parse(tags);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   const form = useForm<EmployeeFormSchema>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: initialData ? {
@@ -47,7 +61,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       birth_date: safeParseDate(initialData.birth_date),
       start_date: safeParseDate(initialData.start_date) || new Date(),
       employee_type: initialData.employee_type || "funcionario",
-      employee_tags: initialData.employee_tags || [],
+      employee_tags: safeParseEmployeeTags(initialData.employee_tags),
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",

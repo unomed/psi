@@ -234,7 +234,7 @@ export function EmploymentFields({
             <FormControl>
               <DatePicker
                 date={field.value}
-                onDateChange={field.onChange}
+                onSelect={field.onChange}
                 placeholder="Selecione a data de início"
               />
             </FormControl>
