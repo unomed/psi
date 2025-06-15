@@ -47,16 +47,6 @@ const PSICOSSOCIAL_CATEGORIES = [
   "Impactos na Saúde"
 ];
 
-const PSICOSSOCIAL_TEMPLATE: PsicossocialQuestion[] = [
-  // Demandas de Trabalho
-  { category: "Demandas de Trabalho", id: "1", text: "Tenho tempo suficiente para realizar minhas tarefas diárias" },
-  { category: "Demandas de Trabalho", id: "2", text: "O volume de trabalho é adequado para o tempo disponível" },
-  { category: "Demandas de Trabalho", id: "3", text: "Preciso trabalhar muito rapidamente para cumprir meus prazos" },
-  { category: "Demandas de Trabalho", id: "4", text: "Consigo fazer pausas quando necessário" },
-  { category: "Demandas de Trabalho", id: "5", text: "Sinto-me pressionado pelas metas e indicadores de desempenho" },
-  // ... outras perguntas
-];
-
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
@@ -90,24 +80,51 @@ export function ChecklistTemplateForm({
 }: ChecklistTemplateFormProps) {
   const { hasRole } = useAuth();
   const [canEditStandard, setCanEditStandard] = useState(false);
-  const [method, setMethod] = useState<string>(
-    defaultValues?.type || existingTemplate?.type || 'disc'
-  );
-  const [selectedScale, setSelectedScale] = useState<ScaleType>(
-    defaultValues?.scaleType || existingTemplate?.scaleType || ScaleType.YesNo
-  );
+  const [method, setMethod] = useState<string>("disc");
+  const [selectedScale, setSelectedScale] = useState<ScaleType>(ScaleType.YesNo);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>("basic");
 
+  // Preparar dados iniciais baseado no template existente ou valores padrão
+  const prepareInitialData = () => {
+    const template = existingTemplate || defaultValues;
+    
+    if (!template) {
+      return {
+        title: '',
+        description: '',
+        type: 'disc' as const,
+        scaleType: ScaleType.YesNo,
+        questions: [],
+      };
+    }
+
+    // Preparar questões conforme o tipo
+    let preparedQuestions = [];
+    if (template.questions && Array.isArray(template.questions)) {
+      preparedQuestions = template.questions.map((q: any) => ({
+        id: q.id || uuidv4(),
+        text: q.text || '',
+        category: q.category || undefined,
+        targetFactor: q.targetFactor || undefined,
+        weight: q.weight || 1
+      }));
+    }
+
+    return {
+      title: template.title || '',
+      description: template.description || '',
+      type: template.type || 'disc',
+      scaleType: template.scaleType || ScaleType.YesNo,
+      questions: preparedQuestions,
+    };
+  };
+
+  const initialData = prepareInitialData();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: defaultValues?.title || existingTemplate?.title || '',
-      description: defaultValues?.description || existingTemplate?.description || '',
-      type: defaultValues?.type || existingTemplate?.type || 'disc',
-      scaleType: defaultValues?.scaleType || existingTemplate?.scaleType || ScaleType.YesNo,
-      questions: defaultValues?.questions || existingTemplate?.questions || [],
-    }
+    defaultValues: initialData
   });
 
   useEffect(() => {
@@ -118,52 +135,66 @@ export function ChecklistTemplateForm({
     
     checkPermissions();
   }, [hasRole]);
+
+  // Inicializar estado baseado no template existente
+  useEffect(() => {
+    if (existingTemplate || defaultValues) {
+      const template = existingTemplate || defaultValues;
+      
+      // Definir tipo e escala
+      const templateType = template.type || 'disc';
+      const templateScale = template.scaleType || ScaleType.YesNo;
+      
+      setMethod(templateType);
+      setSelectedScale(templateScale);
+      
+      // Extrair categorias das perguntas existentes (para templates psicossociais/custom)
+      if (template.questions && Array.isArray(template.questions)) {
+        const existingCategories = new Set<string>();
+        template.questions.forEach((q: any) => {
+          if (q.category) {
+            existingCategories.add(q.category);
+          }
+        });
+        
+        if (existingCategories.size > 0) {
+          setCategories(Array.from(existingCategories));
+        } else if (templateType === "psicossocial") {
+          setCategories(PSICOSSOCIAL_CATEGORIES);
+        }
+      } else if (templateType === "psicossocial") {
+        setCategories(PSICOSSOCIAL_CATEGORIES);
+      }
+
+      // Atualizar formulário com dados do template
+      form.reset({
+        title: template.title || '',
+        description: template.description || '',
+        type: templateType,
+        scaleType: templateScale,
+        questions: template.questions || [],
+      });
+    }
+  }, [existingTemplate, defaultValues, form]);
   
   useEffect(() => {
     if (method === "psicossocial") {
       setSelectedScale(ScaleType.Psicossocial);
       form.setValue("scaleType", ScaleType.Psicossocial);
       
-      // Inicializar com categorias do modelo psicossocial
-      setCategories(PSICOSSOCIAL_CATEGORIES);
-      
-      // Decidir se queremos inicializar com o template completo ou deixar vazio para o usuário preencher
-      const shouldPopulateTemplate = false; // Modificar para true se quisermos preencher automaticamente
-      
-      if (shouldPopulateTemplate) {
-        form.setValue("questions", PSICOSSOCIAL_TEMPLATE);
-      } else {
-        form.setValue("questions", []);
+      // Se não há categorias definidas, usar o modelo padrão
+      if (categories.length === 0) {
+        setCategories(PSICOSSOCIAL_CATEGORIES);
       }
     } else if (method === "custom") {
       setSelectedScale(ScaleType.Likert);
       form.setValue("scaleType", ScaleType.Likert);
-      setCategories([]);
-      form.setValue("questions", []);
     } else {
       setSelectedScale(ScaleType.YesNo);
       form.setValue("scaleType", ScaleType.YesNo);
       setCategories([]);
-      form.setValue("questions", []);
     }
   }, [method, form]);
-
-  // Inicializar categorias a partir das perguntas existentes
-  useEffect(() => {
-    if (existingTemplate?.questions && existingTemplate.questions.length > 0) {
-      const existingCategories = new Set<string>();
-      
-      existingTemplate.questions.forEach((q: any) => {
-        if (q.category) {
-          existingCategories.add(q.category);
-        }
-      });
-      
-      if (existingCategories.size > 0) {
-        setCategories(Array.from(existingCategories));
-      }
-    }
-  }, [existingTemplate]);
 
   const handleAddCategory = (category: string) => {
     setCategories([...categories, category]);
@@ -461,7 +492,7 @@ export function ChecklistTemplateForm({
                   Cancelar
                 </Button>
                 <Button type="submit">
-                  Salvar Checklist
+                  {isEditing ? "Atualizar" : "Salvar"} Checklist
                 </Button>
               </div>
             </div>
