@@ -44,7 +44,7 @@ export function useEmployeeAuthProvider() {
   const configureEmployeeSession = async (employeeId: string) => {
     try {
       // Configurar o setting para a sessão atual do funcionário
-      await supabase.rpc('set_config', {
+      await (supabase.rpc as any)('set_config', {
         setting_name: 'app.current_employee_id',
         setting_value: employeeId,
         is_local: false
@@ -106,7 +106,7 @@ export function useEmployeeAuthProvider() {
   const logout = async () => {
     try {
       // Limpar o setting da sessão
-      await supabase.rpc('set_config', {
+      await (supabase.rpc as any)('set_config', {
         setting_name: 'app.current_employee_id',
         setting_value: '',
         is_local: false
