@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export async function submitAssessmentResult(resultData: Omit<any, "id" | "completedAt">) {
@@ -64,7 +65,18 @@ export async function fetchAssessmentByToken(token: string) {
           type,
           scale_type,
           instructions,
-          company_id
+          company_id,
+          created_at,
+          updated_at,
+          estimated_time_minutes,
+          max_score,
+          cutoff_scores,
+          interpretation_guide,
+          is_standard,
+          is_active,
+          version,
+          created_by,
+          derived_from_id
         )
       `)
       .eq('token', token)
@@ -91,8 +103,39 @@ export async function fetchAssessmentByToken(token: string) {
 
     console.log("Link válido encontrado:", linkData);
 
+    // Buscar as questões do template
+    const { data: questionsData, error: questionsError } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('template_id', linkData.checklist_templates.id)
+      .order('order_number');
+
+    if (questionsError) {
+      console.error("Erro ao buscar questões:", questionsError);
+    }
+
+    // Montar o template completo com as propriedades obrigatórias
+    const template = {
+      ...linkData.checklist_templates,
+      questions: questionsData || [],
+      createdAt: new Date(linkData.checklist_templates.created_at),
+      updatedAt: linkData.checklist_templates.updated_at ? new Date(linkData.checklist_templates.updated_at) : undefined,
+      // Mapear propriedades do banco para interface
+      scaleType: linkData.checklist_templates.scale_type,
+      isStandard: linkData.checklist_templates.is_standard,
+      companyId: linkData.checklist_templates.company_id,
+      derivedFromId: linkData.checklist_templates.derived_from_id,
+      estimatedTimeMinutes: linkData.checklist_templates.estimated_time_minutes,
+      maxScore: linkData.checklist_templates.max_score,
+      cutoffScores: linkData.checklist_templates.cutoff_scores,
+      interpretationGuide: linkData.checklist_templates.interpretation_guide,
+      isActive: linkData.checklist_templates.is_active,
+      version: linkData.checklist_templates.version,
+      createdBy: linkData.checklist_templates.created_by
+    };
+
     return {
-      template: linkData.checklist_templates,
+      template,
       assessmentId: linkData.id,
       linkId: linkData.id,
       error: null

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { AssessmentError } from "@/components/assessments/AssessmentError";
 import { AssessmentLoading } from "@/components/assessments/AssessmentLoading";
 import { AssessmentComplete } from "@/components/assessments/AssessmentComplete";
 import { checkLinkValidity, markLinkAsUsed } from "@/services/assessment/links";
-import { fetchAssessmentByToken, submitAssessmentResult } from "@/services/assessment";
+import { fetchAssessmentByToken, submitAssessmentResult } from "@/services/assessment/results";
 
 export default function AssessmentPage() {
   const { token } = useParams<{ token: string }>();
@@ -32,30 +31,23 @@ export default function AssessmentPage() {
           return;
         }
         
-        // Check if token is valid
-        const isValid = await checkLinkValidity(token);
-        if (!isValid) {
-          setError("Link de avaliação expirado ou inválido");
-          return;
-        }
-        
-        const { template, error, assessmentId, linkId } = await fetchAssessmentByToken(token);
+        const { template: fetchedTemplate, error, assessmentId, linkId } = await fetchAssessmentByToken(token);
         
         if (error) {
           setError(error);
           return;
         }
         
-        if (!template) {
+        if (!fetchedTemplate) {
           setError("Modelo de avaliação não encontrado");
           return;
         }
         
-        setTemplate(template);
+        setTemplate(fetchedTemplate);
         setAssessmentId(assessmentId);
         setLinkId(linkId);
         
-        console.log("Assessment loaded successfully:", { template, assessmentId, linkId });
+        console.log("Assessment loaded successfully:", { template: fetchedTemplate, assessmentId, linkId });
       } catch (err) {
         console.error("Error loading assessment:", err);
         setError("Erro ao carregar avaliação. Por favor, tente novamente.");

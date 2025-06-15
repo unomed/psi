@@ -49,7 +49,7 @@ export function AppRoutes() {
       {/* Rotas de autenticação */}
       {!user && (
         <Route path="/*" element={
-          <AuthLayout>
+          <AuthLayout title="Login" description="Entre com suas credenciais">
             <AuthRoutes />
           </AuthLayout>
         } />
