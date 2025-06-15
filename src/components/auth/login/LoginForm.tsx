@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +13,8 @@ import { LoginButton } from './components/LoginButton';
 import { loginSchema, type LoginFormValues } from './schemas/loginSchema';
 
 export function LoginForm() {
-  const { signIn, loading } = useAuth();
+  const { signIn, loading, user } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginInfo, setLoginInfo] = useState<string | null>(null);
@@ -25,6 +27,14 @@ export function LoginForm() {
     },
   });
 
+  // Fallback de redirecionamento se o usuário já estiver logado
+  useEffect(() => {
+    if (user && !loading) {
+      console.log('[LoginForm] Usuário já logado, redirecionando...');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     setLoginError(null);
@@ -33,7 +43,14 @@ export function LoginForm() {
     try {
       await signIn(data.email, data.password);
       toast.success("Login realizado com sucesso!");
-      // Não fazer navigate aqui - deixar o AppRoutes gerenciar
+      
+      // Fallback de redirecionamento caso o AuthContext não redirecione
+      setTimeout(() => {
+        if (window.location.pathname === '/auth/login') {
+          console.log('[LoginForm] Executando fallback de redirecionamento');
+          navigate('/dashboard', { replace: true });
+        }
+      }, 500);
     } catch (error) {
       console.error("Erro no login:", error);
       let errorMessage = "Erro ao realizar login. Verifique suas credenciais.";

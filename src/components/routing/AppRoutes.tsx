@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
@@ -39,7 +38,7 @@ export function AppRoutes() {
     [currentPath]
   );
 
-  // Loading melhorado com timeout implícito no useAuthSession
+  // Loading melhorado
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -47,7 +46,6 @@ export function AppRoutes() {
           <LoadingSpinner size="lg" />
           <div className="text-muted-foreground">
             <p>Verificando autenticação...</p>
-            <p className="text-sm">Aguarde um momento</p>
           </div>
         </div>
       </div>
@@ -62,12 +60,12 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas de autenticação para administradores - PRIORIDADE MÁXIMA */}
+      {/* Rotas de autenticação - PRIORIDADE MÁXIMA */}
       <Route path="/auth/*" element={<AuthRoutes />} />
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
 
-      {/* Rotas administrativas protegidas - APENAS PARA USUÁRIOS AUTENTICADOS */}
+      {/* Rotas administrativas protegidas */}
       {user && (
         <>
           <Route 
@@ -94,14 +92,15 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento padrão baseado no estado de auth */}
+      {/* Redirecionamento padrão melhorado */}
       <Route 
         path="*" 
         element={
-          <Navigate 
-            to={user ? "/dashboard" : "/auth/login"} 
-            replace 
-          />
+          user ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/auth/login" replace />
+          )
         } 
       />
     </Routes>

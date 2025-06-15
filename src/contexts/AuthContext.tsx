@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -93,8 +92,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (data.user) {
-        console.log("[AuthProvider] Login bem-sucedido");
-        // NÃO fazer navigate aqui - deixar o AppRoutes gerenciar
+        console.log("[AuthProvider] Login bem-sucedido, redirecionando...");
+        
+        // Aguardar um momento para o estado ser atualizado
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 100);
       }
       
       return;

@@ -24,13 +24,13 @@ export function useAuthSession() {
     let mounted = true;
     initialized.current = true;
 
-    // Timeout para evitar loading infinito
+    // Timeout reduzido para melhor UX
     timeoutRef.current = setTimeout(() => {
       if (mounted && loading) {
         console.warn('[useAuthSession] Timeout atingido, definindo loading como false');
         setLoading(false);
       }
-    }, 10000); // 10 segundos
+    }, 3000); // Reduzido de 10s para 3s
 
     // Primeiro verificar sessão existente
     const checkInitialSession = async () => {
@@ -94,6 +94,8 @@ export function useAuthSession() {
           if (!mounted) return;
           
           try {
+            console.log('[useAuthSession] Auth state change:', event);
+            
             // Validar sessão antes de usar
             if (currentSession && currentSession.expires_at) {
               const now = Math.floor(Date.now() / 1000);
@@ -104,25 +106,25 @@ export function useAuthSession() {
             
             setSession(currentSession);
             setUser(currentSession?.user ?? null);
+            setLoading(false);
             
-            // Mostrar toasts apenas para eventos específicos e quando não está no loading inicial
-            if (mounted && !loading) {
-              if (event === 'SIGNED_IN' && currentSession) {
-                toast({
-                  title: "Login realizado com sucesso",
-                  description: "Bem-vindo de volta!"
-                });
-              } else if (event === 'SIGNED_OUT') {
-                toast({
-                  title: "Logout realizado com sucesso", 
-                  description: "Até breve!"
-                });
-              }
+            // Toasts otimizados - apenas para eventos relevantes
+            if (mounted && event === 'SIGNED_IN' && currentSession) {
+              toast({
+                title: "Login realizado com sucesso",
+                description: "Bem-vindo de volta!"
+              });
+            } else if (event === 'SIGNED_OUT') {
+              toast({
+                title: "Logout realizado com sucesso", 
+                description: "Até breve!"
+              });
             }
           } catch (error) {
             console.error("Erro ao processar mudança de autenticação:", error);
             setSession(null);
             setUser(null);
+            setLoading(false);
           }
         }
       );
