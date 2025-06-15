@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, User, Calendar, Link as LinkIcon } from "lucide-react";
+import { Mail, User, Calendar, Link as LinkIcon, Building } from "lucide-react";
 
 interface EmailPreviewProps {
   subject: string;
@@ -10,6 +10,7 @@ interface EmailPreviewProps {
   employeeEmail: string;
   templateName: string;
   linkUrl?: string;
+  companyName?: string;
 }
 
 export function EmailPreview({
@@ -18,7 +19,8 @@ export function EmailPreview({
   employeeName,
   employeeEmail,
   templateName,
-  linkUrl
+  linkUrl,
+  companyName = "[Nome da Empresa]"
 }: EmailPreviewProps) {
   return (
     <Card className="w-full">
@@ -39,8 +41,15 @@ export function EmailPreview({
             </Badge>
           </div>
           <div className="flex items-center gap-2">
+            <strong>Empresa:</strong>
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Building className="h-3 w-3" />
+              {companyName}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
             <strong>Assunto:</strong>
-            <span className="text-sm">{subject}</span>
+            <span className="text-sm">{subject.replace(/\{\{companyName\}\}/g, companyName)}</span>
           </div>
           <div className="flex items-center gap-2">
             <strong>Template:</strong>
@@ -70,6 +79,7 @@ export function EmailPreview({
                   .replace(/\{\{employeeName\}\}/g, employeeName)
                   .replace(/\{\{templateName\}\}/g, templateName)
                   .replace(/\{\{linkUrl\}\}/g, linkUrl || '[Link será gerado automaticamente]')
+                  .replace(/\{\{companyName\}\}/g, companyName)
               }}
             />
           </div>
@@ -82,9 +92,10 @@ export function EmailPreview({
             Este email será enviado imediatamente após confirmação
           </div>
           <div>
+            • O nome da empresa será inserido automaticamente nos templates<br/>
             • Links únicos serão gerados automaticamente para cada funcionário<br/>
             • O progresso de entrega será monitorado na aba "Histórico"<br/>
-            • Funcionários receberão notificação por email
+            • Funcionários receberão notificação personalizada da empresa
           </div>
         </div>
       </CardContent>

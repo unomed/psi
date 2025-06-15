@@ -16,6 +16,7 @@ interface EmailRequest {
   templateId?: string;
   templateName: string;
   linkUrl: string;
+  companyName?: string;
   customSubject?: string;
   customBody?: string;
 }
@@ -55,6 +56,7 @@ serve(async (req) => {
       employeeName: requestData.employeeName,
       employeeEmail: requestData.employeeEmail,
       templateName: requestData.templateName,
+      companyName: requestData.companyName,
       hasLinkUrl: !!requestData.linkUrl
     });
     
@@ -64,22 +66,42 @@ serve(async (req) => {
     
     console.log('Step 3: Preparing email content...');
     
+    // Se não foi fornecido nome da empresa, tentar buscar do funcionário
+    let companyName = requestData.companyName || 'Sua Empresa';
+    
+    if (!requestData.companyName) {
+      try {
+        const { data: employeeData } = await supabase
+          .from('employees')
+          .select('companies(name)')
+          .eq('id', requestData.employeeId)
+          .single();
+        
+        if (employeeData?.companies?.name) {
+          companyName = employeeData.companies.name;
+        }
+      } catch (error) {
+        console.warn('Não foi possível buscar nome da empresa:', error);
+      }
+    }
+    
     // Gerar QR Code para o portal do funcionário
     const employeePortalUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/funcionario`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(employeePortalUrl)}`;
     
-    let emailSubject = requestData.customSubject || `Convite para Avaliação Psicossocial - ${requestData.employeeName}`;
+    let emailSubject = requestData.customSubject || `${companyName} - Convite para Avaliação Psicossocial`;
     let emailBody = requestData.customBody || `
 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; border-radius: 10px 10px 0 0;">
     <h1 style="margin: 0; font-size: 28px;">🏢 Convite para Avaliação</h1>
-    <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Programa de Saúde e Bem-estar</p>
+    <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.9;"><strong>${companyName}</strong></p>
+    <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">Programa de Saúde e Bem-estar</p>
   </div>
   
   <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     <p style="font-size: 18px; margin-bottom: 20px;">Prezado(a) <strong>${requestData.employeeName}</strong>,</p>
     
-    <p style="margin-bottom: 20px;">Você foi convidado(a) a participar de uma avaliação psicossocial como parte do programa de saúde e bem-estar da empresa.</p>
+    <p style="margin-bottom: 20px;">Você foi convidado(a) pela <strong>${companyName}</strong> a participar de uma avaliação psicossocial como parte do programa de saúde e bem-estar da empresa.</p>
     
     <div style="background-color: #f8fafc; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #667eea;">
       <h3 style="margin-top: 0; color: #2563eb; font-size: 18px;">🔗 Duas maneiras de acessar:</h3>
@@ -114,29 +136,29 @@ serve(async (req) => {
         <li>A avaliação é confidencial e os dados são protegidos pela LGPD</li>
         <li>Tempo estimado: 15-20 minutos</li>
         <li>Prazo para conclusão: 7 dias</li>
-        <li>Em caso de dúvidas, entre em contato com o RH</li>
+        <li>Em caso de dúvidas, entre em contato com o RH da ${companyName}</li>
       </ul>
     </div>
     
-    <p style="margin: 30px 0 20px 0;">Sua participação é fundamental para promovermos um ambiente de trabalho mais saudável e produtivo.</p>
+    <p style="margin: 30px 0 20px 0;">Sua participação é fundamental para promovermos um ambiente de trabalho mais saudável e produtivo na <strong>${companyName}</strong>.</p>
     
     <div style="text-align: center; margin: 30px 0;">
       <p style="margin: 0; color: #6b7280; font-size: 16px;">
         Atenciosamente,<br>
-        <strong style="color: #374151;">Equipe de Recursos Humanos</strong>
+        <strong style="color: #374151;">Equipe de Recursos Humanos - ${companyName}</strong>
       </p>
     </div>
   </div>
   
   <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p style="margin: 0;">Este é um email automático. Por favor, não responda a este email.</p>
+    <p style="margin: 0;">Este é um email automático da ${companyName}. Por favor, não responda a este email.</p>
   </div>
 </div>
     `.trim();
 
     console.log('Step 4: Sending email via Resend...');
     const emailResult = await resend.emails.send({
-      from: 'Sistema de Avaliações <noreply@avaliacao.unomed.med.br>',
+      from: `${companyName} - Avaliações <noreply@avaliacao.unomed.med.br>`,
       to: [requestData.employeeEmail],
       subject: emailSubject,
       html: emailBody,
@@ -190,11 +212,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Email enviado com sucesso para ${requestData.employeeEmail}`,
+        message: `Email enviado com sucesso para ${requestData.employeeEmail} em nome da ${companyName}`,
         emailSent: true,
         emailId: emailResult.data?.id,
         qrCodeGenerated: true,
-        employeePortalUrl: employeePortalUrl
+        employeePortalUrl: employeePortalUrl,
+        companyName: companyName
       }),
       { headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );

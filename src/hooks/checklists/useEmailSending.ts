@@ -36,6 +36,19 @@ export function useEmailSending() {
     let errorCount = 0;
 
     try {
+      // Buscar informações da empresa do usuário
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('name, address, phone')
+        .eq('id', user.user_metadata?.company_id)
+        .single();
+
+      if (companyError) {
+        console.warn('Erro ao buscar dados da empresa:', companyError);
+      }
+
+      const companyName = companyData?.name || 'Sua Empresa';
+
       for (const employee of employees) {
         try {
           console.log(`[EmailSending] Processando funcionário: ${employee.name}`);
@@ -81,7 +94,7 @@ export function useEmailSending() {
             throw new Error(`Erro ao atualizar agendamento: ${updateError.message}`);
           }
 
-          // 4. Enviar email via edge function
+          // 4. Enviar email via edge function com informações da empresa
           const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email-resend', {
             body: {
               employeeId: employee.id,
@@ -91,11 +104,13 @@ export function useEmailSending() {
               templateId: templateId,
               templateName: subject,
               linkUrl: linkUrl,
-              customSubject: subject,
+              companyName: companyName,
+              customSubject: subject.replace(/\{\{companyName\}\}/g, companyName),
               customBody: body
                 .replace(/\{\{employeeName\}\}/g, employee.name)
                 .replace(/\{\{templateName\}\}/g, subject)
                 .replace(/\{\{linkUrl\}\}/g, linkUrl)
+                .replace(/\{\{companyName\}\}/g, companyName)
             }
           });
 
@@ -130,7 +145,7 @@ export function useEmailSending() {
 
       // Mostrar resultado final
       if (successCount > 0) {
-        toast.success(`${successCount} email(s) enviado(s) com sucesso!`);
+        toast.success(`${successCount} email(s) enviado(s) com sucesso para funcionários da ${companyName}!`);
       }
       
       if (errorCount > 0) {
