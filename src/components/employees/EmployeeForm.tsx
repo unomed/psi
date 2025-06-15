@@ -122,8 +122,9 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
   const requiredTags = selectedRoleData?.required_tags || [];
 
   const handleSubmit = (values: EmployeeFormSchema) => {
-    // Usar type guard robusto para garantir string[]
-    const employeeTagsProcessed = ensureStringArray(values.employee_tags);
+    // Forçar tipo string[] usando asserção de tipo mais robusta
+    const employeeTagsFromForm = values.employee_tags;
+    const employeeTagsProcessed: string[] = ensureStringArray(employeeTagsFromForm);
     
     const employeeData: EmployeeFormData = {
       name: values.name,
@@ -145,7 +146,6 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      // Usar o resultado do type guard que garante string[]
       employee_tags: employeeTagsProcessed,
     };
     
