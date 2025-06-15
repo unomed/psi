@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { AppRole } from '@/types';
+import { useAuditLogger } from '@/hooks/useAuditLogger';
 
 // Função para limpar completamente o estado de autenticação
 const cleanupAuthState = () => {
@@ -25,6 +26,7 @@ const cleanupAuthState = () => {
 
 export function useAuthActions() {
   const navigate = useNavigate();
+  const { logLogin, logLogout } = useAuditLogger();
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -52,9 +54,10 @@ export function useAuthActions() {
       }
       
       if (data.user) {
-        console.log("[useAuthActions] Login bem-sucedido, redirecionando");
-        // Usar replace para evitar histórico de navegação problemático
-        navigate('/dashboard', { replace: true });
+        console.log("[useAuthActions] Login bem-sucedido");
+        // Registrar log de auditoria
+        await logLogin('email');
+        // NÃO fazer navigate aqui - deixar o AppRoutes gerenciar
       }
       
       return;
@@ -127,6 +130,9 @@ export function useAuthActions() {
   const signOut = async () => {
     try {
       console.log("[useAuthActions] Iniciando processo de logout");
+      
+      // Registrar log de auditoria antes do logout
+      await logLogout();
       
       // Limpar estado primeiro
       cleanupAuthState();

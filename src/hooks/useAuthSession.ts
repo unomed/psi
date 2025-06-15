@@ -13,6 +13,7 @@ export function useAuthSession() {
   const initialized = useRef(false);
   const subscriptionRef = useRef<any>(null);
   const initialCheckDone = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     // Evitar múltiplas inicializações
@@ -22,6 +23,14 @@ export function useAuthSession() {
     
     let mounted = true;
     initialized.current = true;
+
+    // Timeout para evitar loading infinito
+    timeoutRef.current = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn('[useAuthSession] Timeout atingido, definindo loading como false');
+        setLoading(false);
+      }
+    }, 10000); // 10 segundos
 
     // Primeiro verificar sessão existente
     const checkInitialSession = async () => {
@@ -62,11 +71,19 @@ export function useAuthSession() {
         setSession(validSession);
         setUser(validSession?.user ?? null);
         setLoading(false);
+        
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
       } catch (error) {
         console.error("Erro na verificação de autenticação:", error);
         setSession(null);
         setUser(null);
         setLoading(false);
+        
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
       }
     };
 
@@ -125,6 +142,11 @@ export function useAuthSession() {
       mounted = false;
       initialized.current = false;
       initialCheckDone.current = false;
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;

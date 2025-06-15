@@ -1,5 +1,4 @@
 
-# A string used to distinguish different Supabase projects on the same host. Defaults to the project ID.
 project_id = "ngpenivrpznqycgkibrs"
 
 # The port to use for the API URL.
@@ -29,3 +28,6 @@ verify_jwt = true
 
 [functions.send-email-resend]
 verify_jwt = true
+
+[functions.asaas-webhook]
+verify_jwt = false

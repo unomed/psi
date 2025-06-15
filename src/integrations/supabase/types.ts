@@ -493,6 +493,109 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action_type: Database["public"]["Enums"]["audit_action_type"]
+          company_id: string | null
+          created_at: string | null
+          description: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          module: Database["public"]["Enums"]["audit_module"]
+          new_values: Json | null
+          old_values: Json | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["audit_action_type"]
+          company_id?: string | null
+          created_at?: string | null
+          description: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          module: Database["public"]["Enums"]["audit_module"]
+          new_values?: Json | null
+          old_values?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["audit_action_type"]
+          company_id?: string | null
+          created_at?: string | null
+          description?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          module?: Database["public"]["Enums"]["audit_module"]
+          new_values?: Json | null
+          old_values?: Json | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_events: {
+        Row: {
+          asaas_event_id: string | null
+          company_id: string
+          created_at: string | null
+          error_message: string | null
+          event_data: Json
+          event_type: string
+          id: string
+          processed: boolean | null
+          processed_at: string | null
+        }
+        Insert: {
+          asaas_event_id?: string | null
+          company_id: string
+          created_at?: string | null
+          error_message?: string | null
+          event_data: Json
+          event_type: string
+          id?: string
+          processed?: boolean | null
+          processed_at?: string | null
+        }
+        Update: {
+          asaas_event_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          event_data?: Json
+          event_type?: string
+          id?: string
+          processed?: boolean | null
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_plans: {
         Row: {
           assessment_price: number
@@ -1319,6 +1422,57 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_logs: {
+        Row: {
+          amount: number
+          asaas_payment_id: string | null
+          company_id: string
+          created_at: string | null
+          id: string
+          invoice_id: string | null
+          payment_date: string | null
+          payment_status: string
+          webhook_data: Json | null
+        }
+        Insert: {
+          amount: number
+          asaas_payment_id?: string | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          payment_date?: string | null
+          payment_status: string
+          webhook_data?: Json | null
+        }
+        Update: {
+          amount?: number
+          asaas_payment_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          payment_date?: string | null
+          payment_status?: string
+          webhook_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_logs_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -2771,6 +2925,20 @@ export type Database = {
         Args: { item_data: Json }
         Returns: string
       }
+      create_audit_log: {
+        Args: {
+          p_action_type: Database["public"]["Enums"]["audit_action_type"]
+          p_module: Database["public"]["Enums"]["audit_module"]
+          p_resource_type?: string
+          p_resource_id?: string
+          p_description?: string
+          p_old_values?: Json
+          p_new_values?: Json
+          p_company_id?: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
       delete_action_plan: {
         Args: { plan_id: string }
         Returns: undefined
@@ -2981,6 +3149,30 @@ export type Database = {
     }
     Enums: {
       app_role: "superadmin" | "admin" | "evaluator" | "profissionais"
+      audit_action_type:
+        | "create"
+        | "read"
+        | "update"
+        | "delete"
+        | "login"
+        | "logout"
+        | "export"
+        | "import"
+        | "email_send"
+        | "permission_change"
+        | "assessment_complete"
+        | "report_generate"
+      audit_module:
+        | "auth"
+        | "companies"
+        | "employees"
+        | "roles"
+        | "sectors"
+        | "assessments"
+        | "reports"
+        | "billing"
+        | "settings"
+        | "risks"
       checklist_type:
         | "srq20"
         | "phq9"
@@ -3132,6 +3324,32 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["superadmin", "admin", "evaluator", "profissionais"],
+      audit_action_type: [
+        "create",
+        "read",
+        "update",
+        "delete",
+        "login",
+        "logout",
+        "export",
+        "import",
+        "email_send",
+        "permission_change",
+        "assessment_complete",
+        "report_generate",
+      ],
+      audit_module: [
+        "auth",
+        "companies",
+        "employees",
+        "roles",
+        "sectors",
+        "assessments",
+        "reports",
+        "billing",
+        "settings",
+        "risks",
+      ],
       checklist_type: [
         "srq20",
         "phq9",

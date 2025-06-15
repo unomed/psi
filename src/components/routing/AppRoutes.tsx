@@ -9,14 +9,22 @@ import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
 import EmployeeLogin from "@/pages/auth/EmployeeLogin";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
 
+  // Loading melhorado com timeout implícito no useAuthSession
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-4">
+          <LoadingSpinner size="lg" />
+          <div className="text-muted-foreground">
+            <p>Verificando autenticação...</p>
+            <p className="text-sm">Aguarde um momento</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -100,8 +108,16 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento padrão */}
-      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/auth/login"} replace />} />
+      {/* Redirecionamento padrão baseado no estado de auth */}
+      <Route 
+        path="*" 
+        element={
+          <Navigate 
+            to={user ? "/dashboard" : "/auth/login"} 
+            replace 
+          />
+        } 
+      />
     </Routes>
   );
 }

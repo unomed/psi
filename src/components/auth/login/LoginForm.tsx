@@ -10,14 +10,12 @@ import { LoginError } from './components/LoginError';
 import { LoginInfo } from './components/LoginInfo';
 import { LoginButton } from './components/LoginButton';
 import { loginSchema, type LoginFormValues } from './schemas/loginSchema';
-import { useNavigate } from 'react-router-dom';
 
 export function LoginForm() {
   const { signIn, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginInfo, setLoginInfo] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -35,8 +33,7 @@ export function LoginForm() {
     try {
       await signIn(data.email, data.password);
       toast.success("Login realizado com sucesso!");
-      // Redirect to dashboard after successful login
-      navigate('/dashboard');
+      // Não fazer navigate aqui - deixar o AppRoutes gerenciar
     } catch (error) {
       console.error("Erro no login:", error);
       let errorMessage = "Erro ao realizar login. Verifique suas credenciais.";
