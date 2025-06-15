@@ -63,10 +63,17 @@ export function useUserRole() {
             console.log("[useUserRole] Dados de empresas do usuário:", userCompanyData);
             
             // Fetch company names for the associated companies
-            const companyIds = userCompanyData.map(item => item.company_id);
+            // Converter company_id para UUID se necessário
+            const companyIds = userCompanyData.map(item => {
+              // Se company_id é string, converter para UUID
+              if (typeof item.company_id === 'string') {
+                return item.company_id;
+              }
+              return item.company_id;
+            });
             
             // Garantir que os IDs são válidos
-            const validCompanyIds = companyIds.filter(id => typeof id === 'string' && id.trim() !== '');
+            const validCompanyIds = companyIds.filter(id => id && id.trim() !== '');
             
             if (validCompanyIds.length > 0) {
               const { data: companiesData, error: companiesError } = await supabase

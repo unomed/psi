@@ -51,7 +51,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader />
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-2 space-y-4">
         {/* Dashboard */}
         <SidebarSection title="">
           {dashboardItems.filter(shouldShowMenuItem).map((item) => (
@@ -62,58 +62,70 @@ export function AppSidebar() {
         {/* Cadastros com submenu */}
         {cadastroItems.some(shouldShowMenuItem) && (
           <SidebarSection title="">
-            <SidebarMenuItemWithSubmenu
-              title="Cadastros"
-              items={cadastroItems.filter(shouldShowMenuItem)}
-              icon={cadastroItems[0]?.icon}
-            />
+            <div className="mb-2">
+              <SidebarMenuItemWithSubmenu
+                title="Cadastros"
+                items={cadastroItems.filter(shouldShowMenuItem)}
+                icon={cadastroItems[0]?.icon}
+              />
+            </div>
           </SidebarSection>
         )}
 
         {/* Avaliações com submenu */}
         {avaliacaoItems.some(shouldShowMenuItem) && (
           <SidebarSection title="">
-            <SidebarMenuItemWithSubmenu
-              title="Avaliações"
-              items={avaliacaoItems.filter(shouldShowMenuItem)}
-              icon={avaliacaoItems[0]?.icon}
-            />
+            <div className="mb-2">
+              <SidebarMenuItemWithSubmenu
+                title="Avaliações"
+                items={avaliacaoItems.filter(shouldShowMenuItem)}
+                icon={avaliacaoItems[0]?.icon}
+              />
+            </div>
           </SidebarSection>
         )}
 
         {/* Gestão com submenu */}
         {gestaoItems.some(shouldShowMenuItem) && (
           <SidebarSection title="">
-            <SidebarMenuItemWithSubmenu
-              title="Gestão"
-              items={gestaoItems.filter(shouldShowMenuItem)}
-              icon={gestaoItems[0]?.icon}
-            />
+            <div className="mb-2">
+              <SidebarMenuItemWithSubmenu
+                title="Gestão"
+                items={gestaoItems.filter(shouldShowMenuItem)}
+                icon={gestaoItems[0]?.icon}
+              />
+            </div>
           </SidebarSection>
         )}
 
         {/* Portais */}
         {portalItems.some(shouldShowMenuItem) && (
           <SidebarSection title="Portais">
-            {portalItems.filter(shouldShowMenuItem).map((item) => (
-              <CustomSidebarMenuItem key={item.href} item={item} />
-            ))}
-            <EmployeePortalAccess />
+            <div className="space-y-2">
+              {portalItems.filter(shouldShowMenuItem).map((item) => (
+                <CustomSidebarMenuItem key={item.href} item={item} />
+              ))}
+              <EmployeePortalAccess />
+            </div>
           </SidebarSection>
         )}
 
         {/* Faturamento */}
         {faturamentoItems.some(shouldShowMenuItem) && (
           <SidebarSection title="Faturamento">
-            {faturamentoItems.filter(shouldShowMenuItem).map((item) => (
-              <CustomSidebarMenuItem key={item.href} item={item} />
-            ))}
+            <div className="space-y-2">
+              {faturamentoItems.filter(shouldShowMenuItem).map((item) => (
+                <CustomSidebarMenuItem key={item.href} item={item} />
+              ))}
+            </div>
           </SidebarSection>
         )}
 
         {/* Configurações */}
         <SidebarSection title="Configurações">
-          <SettingsSubmenu />
+          <div className="mt-2">
+            <SettingsSubmenu />
+          </div>
         </SidebarSection>
       </SidebarContent>
       <SidebarFooter>

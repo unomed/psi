@@ -1,18 +1,21 @@
 
-import { cn } from "@/lib/utils";
+import React from 'react';
 
 interface SidebarSectionProps {
   title: string;
   children: React.ReactNode;
-  className?: string;
 }
 
-export function SidebarSection({ title, children, className }: SidebarSectionProps) {
+export function SidebarSection({ title, children }: SidebarSectionProps) {
   return (
-    <div className={cn("mb-6", className)}>
-      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        {title}
-      </div>
+    <div className="mb-6">
+      {title && (
+        <div className="px-3 mb-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            {title}
+          </h3>
+        </div>
+      )}
       <div className="space-y-1">
         {children}
       </div>

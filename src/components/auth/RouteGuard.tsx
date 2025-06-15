@@ -31,7 +31,8 @@ export function RouteGuard({
     userRole,
     loading,
     loadingPermission,
-    checkingAccess
+    checkingAccess,
+    isEmployeeRoute: location.pathname.startsWith('/employee-') || location.pathname.startsWith('/auth/employee')
   });
 
   // Se estiver carregando, mostrar loading
@@ -40,7 +41,18 @@ export function RouteGuard({
     return <LoadingSpinner />;
   }
 
-  // Verificar autenticação
+  // Verificar se é uma rota de funcionário - permitir acesso direto
+  const isEmployeeRoute = location.pathname.startsWith('/employee-') || 
+                         location.pathname.startsWith('/auth/employee') ||
+                         location.pathname.startsWith('/avaliacao/') ||
+                         location.pathname.startsWith('/assessment/');
+
+  if (isEmployeeRoute) {
+    console.log('[RouteGuard] Rota de funcionário detectada, permitindo acesso direto');
+    return <>{children}</>;
+  }
+
+  // Verificar autenticação para rotas administrativas
   if (!user) {
     // Se já estamos numa rota de auth, permitir acesso
     if (location.pathname.startsWith('/auth')) {
@@ -52,7 +64,7 @@ export function RouteGuard({
   }
 
   // Se usuário autenticado está tentando acessar rota de auth
-  if (user && location.pathname.startsWith('/auth')) {
+  if (user && location.pathname.startsWith('/auth') && !location.pathname.startsWith('/auth/employee')) {
     console.log('[RouteGuard] Usuário já autenticado, redirecionando para dashboard');
     return <Navigate to="/dashboard" replace />;
   }

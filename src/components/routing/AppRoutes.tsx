@@ -14,6 +14,12 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export function AppRoutes() {
   const { user, loading } = useAuth();
 
+  console.log('[AppRoutes] Estado atual:', {
+    hasUser: !!user,
+    loading,
+    currentPath: window.location.pathname
+  });
+
   // Loading melhorado com timeout implícito no useAuthSession
   if (loading) {
     return (
@@ -31,7 +37,37 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas públicas de avaliação */}
+      {/* Rotas de autenticação para administradores - deve vir ANTES das rotas genéricas */}
+      {!user && (
+        <Route 
+          path="/auth/*" 
+          element={<AuthRoutes />} 
+        />
+      )}
+
+      {/* Rotas específicas de funcionários - com prefixos claros */}
+      <Route
+        path="/auth/employee"
+        element={
+          <EmployeeAuthProvider>
+            <EmployeeLogin />
+          </EmployeeAuthProvider>
+        }
+      />
+
+      <Route 
+        path="/employee-portal/*" 
+        element={
+          <EmployeeAuthProvider>
+            <Routes>
+              <Route path="/" element={<EmployeePortal />} />
+              <Route path="/:templateId" element={<EmployeePortal />} />
+            </Routes>
+          </EmployeeAuthProvider>
+        } 
+      />
+
+      {/* Rotas públicas de avaliação com tokens específicos */}
       <Route 
         path="/avaliacao/:token" 
         element={
@@ -49,48 +85,7 @@ export function AppRoutes() {
         }
       />
 
-      {/* Rotas diretas para avaliações por nome */}
-      <Route 
-        path="/:assessmentName" 
-        element={
-          <EmployeeAuthProvider>
-            <EmployeePortal />
-          </EmployeeAuthProvider>
-        }
-      />
-
-      {/* Login do funcionário */}
-      <Route
-        path="/auth/employee"
-        element={
-          <EmployeeAuthProvider>
-            <EmployeeLogin />
-          </EmployeeAuthProvider>
-        }
-      />
-
-      {/* Portal do funcionário */}
-      <Route 
-        path="/employee-portal/*" 
-        element={
-          <EmployeeAuthProvider>
-            <Routes>
-              <Route path="/" element={<EmployeePortal />} />
-              <Route path="/:templateId" element={<EmployeePortal />} />
-            </Routes>
-          </EmployeeAuthProvider>
-        } 
-      />
-
-      {/* Rotas de autenticação para administradores */}
-      {!user && (
-        <Route 
-          path="/auth/*" 
-          element={<AuthRoutes />} 
-        />
-      )}
-
-      {/* Rotas principais protegidas */}
+      {/* Rotas principais protegidas para usuários administrativos */}
       {user && (
         <>
           <Route path="/configuracoes/*" element={
@@ -107,6 +102,16 @@ export function AppRoutes() {
           } />
         </>
       )}
+
+      {/* Rotas dinâmicas por nome de avaliação - DEVE SER A ÚLTIMA */}
+      <Route 
+        path="/:assessmentName" 
+        element={
+          <EmployeeAuthProvider>
+            <EmployeePortal />
+          </EmployeeAuthProvider>
+        }
+      />
 
       {/* Redirecionamento padrão baseado no estado de auth */}
       <Route 
