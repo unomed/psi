@@ -34,11 +34,11 @@ export function useAuditLogs(filters: AuditLogFilters = {}) {
       }
       
       if (filters.module) {
-        query = query.eq('module', filters.module);
+        query = query.eq('module', filters.module as any);
       }
       
       if (filters.action) {
-        query = query.eq('action_type', filters.action);
+        query = query.eq('action_type', filters.action as any);
       }
       
       if (filters.companyId) {
