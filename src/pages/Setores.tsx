@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,9 @@ import { SectorCompanySelect } from "@/components/sectors/SectorCompanySelect";
 import { SectorTable } from "@/components/sectors/SectorTable";
 import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
 import { useAuth } from "@/contexts/AuthContext";
+import { FadeIn } from "@/components/ui/fade-in";
+import { PageTransition } from "@/components/ui/page-transition";
+import { StaggerContainer } from "@/components/ui/stagger-container";
 
 export default function Setores() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -113,84 +117,100 @@ export default function Setores() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Setores</h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie os setores da empresa e seus níveis de risco psicossocial.
-          </p>
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Setor
-        </Button>
-      </div>
-      
-      <SectorCompanySelect 
-        companies={accessibleCompanies}
-        selectedCompany={selectedCompany}
-        onCompanyChange={handleCompanyChange}
-      />
-      
-      {selectedCompany && filteredSectors.length === 0 ? (
-        <EmptySectorState 
-          noCompanySelected={!selectedCompany} 
-          onAddClick={() => setIsDialogOpen(true)}
-        />
-      ) : !selectedCompany ? (
-        <EmptySectorState 
-          noCompanySelected={true} 
-          onAddClick={() => setIsDialogOpen(true)}
-        />
-      ) : (
-        <SectorTable 
-          sectors={filteredSectors}
-          isLoading={isLoading}
-          onEdit={(sector) => {
-            setSectorToEdit(sector);
-            setIsDialogOpen(true);
-          }}
-          onDelete={handleDeleteClick}
-          onView={(sector) => toast.info(`Visualização do setor ${sector.name} será implementada em breve!`)}
-        />
-      )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{sectorToEdit ? "Editar Setor" : "Cadastro de Setor"}</DialogTitle>
-            <DialogDescription>
-              {sectorToEdit 
-                ? "Atualize as informações do setor conforme necessário."
-                : "Preencha os dados do setor para cadastrá-lo na empresa selecionada."
-              }
-            </DialogDescription>
-          </DialogHeader>
-          <SectorForm 
-            onSubmit={sectorToEdit ? handleEditSector : handleAddSector}
-            defaultValues={sectorToEdit || undefined}
+    <PageTransition>
+      <div className="space-y-6 sm:space-y-8">
+        <FadeIn>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Setores</h1>
+              <p className="text-muted-foreground">
+                Gerencie os setores da empresa e seus níveis de risco psicossocial.
+              </p>
+            </div>
+            <Button 
+              onClick={() => setIsDialogOpen(true)}
+              className="w-full sm:w-auto transition-all duration-200 hover:scale-105"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Novo Setor
+            </Button>
+          </div>
+        </FadeIn>
+        
+        <FadeIn delay={100}>
+          <SectorCompanySelect 
+            companies={accessibleCompanies}
+            selectedCompany={selectedCompany}
+            onCompanyChange={handleCompanyChange}
           />
-        </DialogContent>
-      </Dialog>
+        </FadeIn>
+        
+        <FadeIn delay={200}>
+          {selectedCompany && filteredSectors.length === 0 ? (
+            <EmptySectorState 
+              noCompanySelected={!selectedCompany} 
+              onAddClick={() => setIsDialogOpen(true)}
+            />
+          ) : !selectedCompany ? (
+            <EmptySectorState 
+              noCompanySelected={true} 
+              onAddClick={() => setIsDialogOpen(true)}
+            />
+          ) : (
+            <div className="bg-card rounded-lg border transition-all duration-300 hover:shadow-lg">
+              <SectorTable 
+                sectors={filteredSectors}
+                isLoading={isLoading}
+                onEdit={(sector) => {
+                  setSectorToEdit(sector);
+                  setIsDialogOpen(true);
+                }}
+                onDelete={handleDeleteClick}
+                onView={(sector) => toast.info(`Visualização do setor ${sector.name} será implementada em breve!`)}
+              />
+            </div>
+          )}
+        </FadeIn>
 
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o setor "{sectorToDelete?.name}"?
-              Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>
-              Confirmar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
+            <DialogHeader>
+              <DialogTitle>{sectorToEdit ? "Editar Setor" : "Cadastro de Setor"}</DialogTitle>
+              <DialogDescription>
+                {sectorToEdit 
+                  ? "Atualize as informações do setor conforme necessário."
+                  : "Preencha os dados do setor para cadastrá-lo na empresa selecionada."
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <SectorForm 
+              onSubmit={sectorToEdit ? handleEditSector : handleAddSector}
+              defaultValues={sectorToEdit || undefined}
+            />
+          </DialogContent>
+        </Dialog>
+
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent className="animate-in slide-in-from-bottom-4 duration-300">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir o setor "{sectorToDelete?.name}"?
+                Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteConfirm}
+                className="transition-all duration-200 hover:scale-105"
+              >
+                Confirmar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </PageTransition>
   );
 }
