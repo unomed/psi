@@ -26,7 +26,7 @@ export function AllTemplatesTable({
       onEditTemplate={onEditTemplate}
       onDeleteTemplate={onDeleteTemplate}
       onCopyTemplate={onCopyTemplate}
-      onStartAssessment={onStartAssessment}
+      onPreviewTemplate={onStartAssessment}
       showCategories={true}
       isDeleting={isDeleting}
     />

@@ -28,7 +28,7 @@ export function TemplatesTable({
       onEditTemplate={onEditTemplate}
       onDeleteTemplate={onDeleteTemplate}
       onCopyTemplate={onCopyTemplate}
-      onStartAssessment={onStartAssessment}
+      onPreviewTemplate={onStartAssessment}
       showCategories={false}
       isDeleting={isDeleting}
     />
