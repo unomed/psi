@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCallback } from 'react';
 
 export type AuditAction = 'create' | 'read' | 'update' | 'delete' | 'login' | 'logout' | 'export' | 'import' | 'email_send' | 'permission_change' | 'assessment_complete' | 'report_generate';
 
@@ -18,11 +19,22 @@ interface AuditLogData {
   metadata?: any;
 }
 
+// Safe hook that doesn't crash if used outside AuthProvider
 export function useAuditLogger() {
-  const { user, userCompanies } = useAuth();
+  // Try to get auth context, but don't crash if it's not available
+  let user, userCompanies;
+  try {
+    const authContext = useAuth();
+    user = authContext.user;
+    userCompanies = authContext.userCompanies;
+  } catch (error) {
+    // AuthProvider not ready yet, use null values
+    user = null;
+    userCompanies = [];
+  }
 
-  const logAction = async (data: AuditLogData) => {
-    if (!user) return;
+  const logAction = useCallback(async (data: AuditLogData) => {
+    if (!user) return; // Don't log if no user
 
     try {
       // Capturar IP e User Agent
@@ -52,26 +64,26 @@ export function useAuditLogger() {
     } catch (error) {
       console.error('Erro ao registrar log de auditoria:', error);
     }
-  };
+  }, [user, userCompanies]);
 
-  const logLogin = (method: string = 'email') => {
+  const logLogin = useCallback((method: string = 'email') => {
     logAction({
       action: 'login',
       module: 'auth',
       description: `Usuário fez login via ${method}`,
       metadata: { login_method: method }
     });
-  };
+  }, [logAction]);
 
-  const logLogout = () => {
+  const logLogout = useCallback(() => {
     logAction({
       action: 'logout',
       module: 'auth',
       description: 'Usuário fez logout'
     });
-  };
+  }, [logAction]);
 
-  const logCreate = (module: AuditModule, resourceType: string, resourceId: string, data: any, companyId?: string) => {
+  const logCreate = useCallback((module: AuditModule, resourceType: string, resourceId: string, data: any, companyId?: string) => {
     logAction({
       action: 'create',
       module,
@@ -81,9 +93,9 @@ export function useAuditLogger() {
       newValues: data,
       companyId
     });
-  };
+  }, [logAction]);
 
-  const logUpdate = (module: AuditModule, resourceType: string, resourceId: string, oldData: any, newData: any, companyId?: string) => {
+  const logUpdate = useCallback((module: AuditModule, resourceType: string, resourceId: string, oldData: any, newData: any, companyId?: string) => {
     logAction({
       action: 'update',
       module,
@@ -94,9 +106,9 @@ export function useAuditLogger() {
       newValues: newData,
       companyId
     });
-  };
+  }, [logAction]);
 
-  const logDelete = (module: AuditModule, resourceType: string, resourceId: string, data: any, companyId?: string) => {
+  const logDelete = useCallback((module: AuditModule, resourceType: string, resourceId: string, data: any, companyId?: string) => {
     logAction({
       action: 'delete',
       module,
@@ -106,9 +118,9 @@ export function useAuditLogger() {
       oldValues: data,
       companyId
     });
-  };
+  }, [logAction]);
 
-  const logView = (module: AuditModule, resourceType: string, resourceId?: string, companyId?: string) => {
+  const logView = useCallback((module: AuditModule, resourceType: string, resourceId?: string, companyId?: string) => {
     logAction({
       action: 'read',
       module,
@@ -117,9 +129,9 @@ export function useAuditLogger() {
       description: `Visualizou ${resourceType}${resourceId ? ` ${resourceId}` : ''}`,
       companyId
     });
-  };
+  }, [logAction]);
 
-  const logExport = (module: AuditModule, exportType: string, filters?: any, companyId?: string) => {
+  const logExport = useCallback((module: AuditModule, exportType: string, filters?: any, companyId?: string) => {
     logAction({
       action: 'export',
       module,
@@ -128,7 +140,7 @@ export function useAuditLogger() {
       metadata: { filters },
       companyId
     });
-  };
+  }, [logAction]);
 
   return {
     logAction,
