@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActionPlansList } from '@/components/action-plans/ActionPlansList';
@@ -36,7 +35,7 @@ export default function PlanoAcao() {
   const handlePlanSelect = (plan: ActionPlan) => {
     setSelectedPlan(plan);
     console.log('Selected plan:', plan);
-    // Aqui pode implementar navegação para detalhes ou abrir modal de visualização
+    // Implementar navegação para detalhes ou abrir modal de visualização
   };
 
   const handleView = (plan: ActionPlan) => {
