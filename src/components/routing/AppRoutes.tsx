@@ -8,15 +8,36 @@ import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminGuard } from "@/components/auth/AdminGuard";
+import { useMemo } from "react";
+
+// Função para determinar se a rota é de funcionário
+const isEmployeeRoute = (pathname: string): boolean => {
+  const employeePatterns = [
+    '/employee-portal',
+    '/auth/employee',
+    '/avaliacao/',
+    '/assessment/'
+  ];
+  
+  return employeePatterns.some(pattern => pathname.startsWith(pattern));
+};
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
+  const currentPath = window.location.pathname;
 
   console.log('[AppRoutes] Estado atual:', {
     hasUser: !!user,
     loading,
-    currentPath: window.location.pathname
+    currentPath,
+    isEmployeeRoute: isEmployeeRoute(currentPath)
   });
+
+  // Memoizar verificação de rota de funcionário
+  const isCurrentRouteEmployee = useMemo(() => 
+    isEmployeeRoute(currentPath), 
+    [currentPath]
+  );
 
   // Loading melhorado com timeout implícito no useAuthSession
   if (loading) {
@@ -33,18 +54,18 @@ export function AppRoutes() {
     );
   }
 
+  // Se é rota de funcionário, usar apenas EmployeeRoutes
+  if (isCurrentRouteEmployee) {
+    console.log('[AppRoutes] Rota de funcionário detectada, usando EmployeeRoutes');
+    return <EmployeeRoutes />;
+  }
+
   return (
     <Routes>
       {/* Rotas de autenticação para administradores - PRIORIDADE MÁXIMA */}
       <Route path="/auth/*" element={<AuthRoutes />} />
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
-
-      {/* Rotas específicas de funcionários - ISOLADAS E PRIORITÁRIAS */}
-      <Route path="/auth/employee" element={<EmployeeRoutes />} />
-      <Route path="/employee-portal/*" element={<EmployeeRoutes />} />
-      <Route path="/avaliacao/:token" element={<EmployeeRoutes />} />
-      <Route path="/assessment/:token" element={<EmployeeRoutes />} />
 
       {/* Rotas administrativas protegidas - APENAS PARA USUÁRIOS AUTENTICADOS */}
       {user && (

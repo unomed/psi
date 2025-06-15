@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -23,21 +23,30 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { session, user, loading } = useAuthSession();
-  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies } = useUserRole();
+  const { session, user, loading: authLoading } = useAuthSession();
+  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
   const { signIn, signUp, signOut } = useAuthActions();
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
-  // Fetch user role when session changes
+  // Fetch user role when session changes - com debounce
   useEffect(() => {
-    if (user) {
-      fetchUserRoleAndCompanies(user.id);
+    if (user?.id) {
+      // Debounce para evitar chamadas múltiplas
+      const timeoutId = setTimeout(() => {
+        fetchUserRoleAndCompanies(user.id);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Limpar cache quando usuário sai
+      clearCache();
     }
-  }, [user]);
+  }, [user?.id, fetchUserRoleAndCompanies, clearCache]);
 
-  const isLoading = loading || roleLoading;
+  const isLoading = authLoading || roleLoading;
 
-  const value = {
+  // Memoizar o valor do contexto para evitar re-renders desnecessários
+  const contextValue = useMemo(() => ({
     session,
     user,
     signIn,
@@ -48,10 +57,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userCompanies,
     hasRole,
     hasCompanyAccess,
-  };
+  }), [
+    session,
+    user,
+    signIn,
+    signUp,
+    signOut,
+    isLoading,
+    userRole,
+    userCompanies,
+    hasRole,
+    hasCompanyAccess,
+  ]);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

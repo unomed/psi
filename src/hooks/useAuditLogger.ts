@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCallback } from 'react';
 
 export type AuditAction = 'create' | 'read' | 'update' | 'delete' | 'login' | 'logout' | 'export' | 'import' | 'email_send' | 'permission_change' | 'assessment_complete' | 'report_generate';
 
@@ -19,22 +19,29 @@ interface AuditLogData {
   metadata?: any;
 }
 
-// Safe hook that doesn't crash if used outside AuthProvider
+// Hook seguro que não quebra se usado fora do AuthProvider
 export function useAuditLogger() {
-  // Try to get auth context, but don't crash if it's not available
-  let user, userCompanies;
-  try {
-    const authContext = useAuth();
-    user = authContext.user;
-    userCompanies = authContext.userCompanies;
-  } catch (error) {
-    // AuthProvider not ready yet, use null values
-    user = null;
-    userCompanies = [];
-  }
+  // SEMPRE usar os hooks - nunca condicionalmente
+  const authContext = useAuth();
+  
+  // Extrair valores de forma segura usando useMemo
+  const { user, userCompanies } = useMemo(() => {
+    // Se o contexto não estiver disponível, usar valores nulos
+    if (!authContext) {
+      return { user: null, userCompanies: [] };
+    }
+    return {
+      user: authContext.user,
+      userCompanies: authContext.userCompanies || []
+    };
+  }, [authContext]);
 
   const logAction = useCallback(async (data: AuditLogData) => {
-    if (!user) return; // Don't log if no user
+    // Se não há usuário, não registrar log
+    if (!user) {
+      console.log('[useAuditLogger] Sem usuário autenticado, pulando log de auditoria');
+      return;
+    }
 
     try {
       // Capturar IP e User Agent
