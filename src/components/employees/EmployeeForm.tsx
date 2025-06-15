@@ -103,6 +103,9 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
   const requiredTags = selectedRoleData?.required_tags || [];
 
   const handleSubmit = (values: EmployeeFormSchema) => {
+    // Garantir que employee_tags seja sempre string[] usando a função helper
+    const employeeTags = safeParseEmployeeTags(values.employee_tags);
+    
     const employeeData: EmployeeFormData = {
       name: values.name,
       cpf: values.cpf,
@@ -123,7 +126,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      employee_tags: values.employee_tags, // Agora sempre é string[]
+      employee_tags: employeeTags, // Agora sempre é string[] garantido
     };
     
     onSubmit(employeeData);
