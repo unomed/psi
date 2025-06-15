@@ -2,27 +2,25 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, FileText, TrendingUp } from "lucide-react";
-import { AssessmentResultsTable } from "@/components/assessments/assessment-results/AssessmentResultsTable";
+import { BarChart3, FileText } from "lucide-react";
+import { AssessmentResultsTableReal } from "@/components/assessments/assessment-results/AssessmentResultsTableReal";
 import { AssessmentAnalytics } from "@/components/assessments/assessment-analytics/AssessmentAnalytics";
+import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AssessmentResults() {
-  const { userRole } = useAuth();
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
-    const saved = localStorage.getItem('selectedCompany');
-    return saved || null;
+  const { userRole, userCompanies } = useAuth();
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
+    // Auto-select first company for non-superadmin users
+    if (userRole !== 'superadmin' && userCompanies.length > 0) {
+      return userCompanies[0].companyId;
+    }
+    return null;
   });
 
   const handleCompanyChange = (companyId: string) => {
-    setSelectedCompany(companyId);
-    localStorage.setItem('selectedCompany', companyId);
+    setSelectedCompanyId(companyId || null);
   };
-
-  // Mock userCompanies - in a real app this would come from a hook
-  const userCompanies = [
-    { companyId: selectedCompany || '1', companyName: 'Empresa Principal' }
-  ];
 
   return (
     <div className="space-y-6">
@@ -34,23 +32,10 @@ export default function AssessmentResults() {
         </p>
       </div>
 
-      {/* Company Selector - only show for superadmin */}
-      {userRole === 'superadmin' && (
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Selecionar empresa:</label>
-          <select
-            className="border rounded p-2 w-full max-w-md"
-            value={selectedCompany || ""}
-            onChange={(e) => handleCompanyChange(e.target.value)}
-          >
-            {userCompanies.map((company) => (
-              <option key={company.companyId} value={company.companyId}>
-                {company.companyName}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <CompanySelectorReal
+        selectedCompanyId={selectedCompanyId}
+        onCompanyChange={handleCompanyChange}
+      />
 
       {/* Tabs */}
       <Tabs defaultValue="results" className="space-y-6">
@@ -66,11 +51,11 @@ export default function AssessmentResults() {
         </TabsList>
 
         <TabsContent value="results">
-          <AssessmentResultsTable companyId={selectedCompany} />
+          <AssessmentResultsTableReal companyId={selectedCompanyId} />
         </TabsContent>
 
         <TabsContent value="analytics">
-          <AssessmentAnalytics companyId={selectedCompany} />
+          <AssessmentAnalytics companyId={selectedCompanyId} />
         </TabsContent>
       </Tabs>
     </div>
