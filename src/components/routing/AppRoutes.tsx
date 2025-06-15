@@ -5,7 +5,6 @@ import { AuthRoutes } from "./AuthRoutes";
 import { MainRoutes } from "./MainRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
-import AuthLayout from "@/components/layout/AuthLayout";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
@@ -46,13 +45,12 @@ export function AppRoutes() {
         } 
       />
 
-      {/* Rotas de autenticação */}
+      {/* Rotas de autenticação - quando não há usuário logado */}
       {!user && (
-        <Route path="/*" element={
-          <AuthLayout title="Login" description="Entre com suas credenciais">
-            <AuthRoutes />
-          </AuthLayout>
-        } />
+        <Route 
+          path="/*" 
+          element={<AuthRoutes />} 
+        />
       )}
 
       {/* Rotas principais protegidas */}
@@ -73,7 +71,7 @@ export function AppRoutes() {
       )}
 
       {/* Redirecionamento padrão */}
-      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/auth/login"} replace />} />
     </Routes>
   );
 }
