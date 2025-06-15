@@ -2,14 +2,12 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BarChart3, FileText, Settings, Brain, Users, Bot, Activity, TrendingUp } from "lucide-react";
+import { AlertTriangle, BarChart3, FileText, Settings, Brain, Bot } from "lucide-react";
 import RiskAnalysisFormIntegrated from "@/components/risks/RiskAnalysisFormIntegrated";
 import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
-import { AutomationDashboard } from "@/components/dashboard/automation";
-import { AdvancedAnalyticsDashboard } from "@/components/analytics/AdvancedAnalyticsDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function GestaoRiscos() {
@@ -27,19 +25,11 @@ export default function GestaoRiscos() {
         </div>
       </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Analytics
-          </TabsTrigger>
+      <Tabs defaultValue="psychosocial" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="psychosocial" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
-            Análise
+            Análise NR-01
           </TabsTrigger>
           <TabsTrigger value="automation" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
@@ -53,23 +43,11 @@ export default function GestaoRiscos() {
             <AlertTriangle className="h-4 w-4" />
             Avaliações
           </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Relatórios
-          </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Config
+            Configurações
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="dashboard">
-          <AutomationDashboard companyId={companyId} />
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <AdvancedAnalyticsDashboard companyId={companyId} />
-        </TabsContent>
 
         <TabsContent value="psychosocial">
           <Card>
@@ -89,28 +67,26 @@ export default function GestaoRiscos() {
         </TabsContent>
 
         <TabsContent value="automation">
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  Processamento Automático
-                </CardTitle>
-                <CardDescription>
-                  Monitor e controle do processamento automático das avaliações psicossociais
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PsychosocialProcessingMonitor companyId={companyId} />
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5" />
+                Processamento Automático
+              </CardTitle>
+              <CardDescription>
+                Monitor e controle do processamento automático das avaliações psicossociais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PsychosocialProcessingMonitor companyId={companyId} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="analysis">
           <Card>
             <CardHeader>
-              <CardTitle>Análise de Risco</CardTitle>
+              <CardTitle>Cálculo de Risco Manual</CardTitle>
               <CardDescription>
                 Calcule o nível de risco baseado na matriz configurada
               </CardDescription>
@@ -124,7 +100,7 @@ export default function GestaoRiscos() {
         <TabsContent value="assessments">
           <Card>
             <CardHeader>
-              <CardTitle>Avaliações de Risco</CardTitle>
+              <CardTitle>Histórico de Avaliações</CardTitle>
               <CardDescription>
                 Lista de todas as avaliações de risco realizadas
               </CardDescription>
@@ -135,24 +111,18 @@ export default function GestaoRiscos() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="reports">
+        <TabsContent value="settings">
           <Card>
             <CardHeader>
-              <CardTitle>Relatórios de Risco</CardTitle>
+              <CardTitle>Configurações da Matriz de Risco</CardTitle>
               <CardDescription>
-                Visualize estatísticas e tendências de risco
+                Configure os parâmetros e critérios de avaliação de risco
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                Relatórios de risco em desenvolvimento...
-              </div>
+              <RiskMatrixSettingsFormIntegrated />
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="settings">
-          <RiskMatrixSettingsFormIntegrated />
         </TabsContent>
       </Tabs>
     </div>
