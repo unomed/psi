@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
-import { ChecklistTemplateForm } from "@/components/checklists/ChecklistTemplateForm";
+import { ChecklistTemplateWorkflow } from "./ChecklistTemplateWorkflow";
 import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
 import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
 
@@ -38,24 +38,14 @@ export function ChecklistDialogs({
 }: ChecklistDialogsProps) {
   return (
     <>
-      {/* Template Form Dialog */}
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar Modelo de Checklist" : "Novo Modelo de Checklist"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <ChecklistTemplateForm 
-              onSubmit={onSubmitTemplate} 
-              existingTemplate={selectedTemplate}
-              isEditing={isEditing}
-              onCancel={() => setIsFormDialogOpen(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Template Form Workflow */}
+      <ChecklistTemplateWorkflow
+        isOpen={isFormDialogOpen}
+        onClose={() => setIsFormDialogOpen(false)}
+        onSubmit={onSubmitTemplate}
+        existingTemplate={selectedTemplate}
+        isEditing={isEditing}
+      />
 
       {/* Assessment Dialog */}
       <Dialog open={isAssessmentDialogOpen} onOpenChange={setIsAssessmentDialogOpen}>
