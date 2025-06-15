@@ -21,12 +21,15 @@ export function MainRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/funcionarios" element={<Funcionarios />} />
       <Route path="/funcoes" element={<Funcoes />} />
       <Route path="/setores" element={<Setores />} />
       <Route path="/checklists" element={<Checklists />} />
+      <Route path="/templates" element={<Checklists />} />
       <Route path="/assessment-results" element={<AssessmentResults />} />
+      <Route path="/resultados" element={<AssessmentResults />} />
       <Route path="/gestao-riscos" element={<GestaoRiscos />} />
       <Route path="/plano-acao" element={<PlanoAcao />} />
       <Route path="/relatorios" element={<Relatorios />} />

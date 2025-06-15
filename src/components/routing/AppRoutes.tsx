@@ -73,7 +73,7 @@ export function AppRoutes() {
       )}
 
       {/* Redirecionamento padrão */}
-      <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
     </Routes>
   );
 }
