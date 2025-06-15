@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -235,7 +234,6 @@ export function EmploymentFields({
               <DatePicker
                 date={field.value}
                 onSelect={field.onChange}
-                placeholder="Selecione a data de início"
               />
             </FormControl>
             <FormMessage />
