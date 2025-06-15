@@ -95,9 +95,10 @@ export function useAssessmentResultsData(companyId?: string | null) {
           else if (avgScore >= 0.4) riskLevel = 'Médio';
         }
 
-        // Handle employee data - it can be null or an object
-        const employee = result.employees;
-        const employeeName = result.employee_name || (employee ? employee.name : 'Anônimo');
+        // Handle employee data - it can be an array or single object from Supabase
+        const employeesArray = Array.isArray(result.employees) ? result.employees : (result.employees ? [result.employees] : []);
+        const employee = employeesArray[0]; // Get first employee from array
+        const employeeName = result.employee_name || (employee?.name) || 'Anônimo';
         const sector = employee?.sectors?.name;
         const role = employee?.roles?.name;
 

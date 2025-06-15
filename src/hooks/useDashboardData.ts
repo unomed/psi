@@ -173,9 +173,10 @@ export function useDashboardData(companyId: string | null) {
           else if (avgScore >= 0.4) riskLevel = 'Médio';
         }
 
-        // Handle employee data properly
-        const employee = assessment.employees;
-        const employeeName = assessment.employee_name || (employee ? employee.name : 'Anônimo');
+        // Handle employee data properly - it can be an array from Supabase
+        const employeesArray = Array.isArray(assessment.employees) ? assessment.employees : (assessment.employees ? [assessment.employees] : []);
+        const employee = employeesArray[0]; // Get first employee from array
+        const employeeName = assessment.employee_name || (employee?.name) || 'Anônimo';
         const sector = employee?.sectors?.name || 'N/A';
 
         return {
