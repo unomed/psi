@@ -126,8 +126,8 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       sector_id: values.sector_id,
       role_id: values.role_id,
       employee_type: values.employee_type,
-      // Type assertion segura: banco de dados garante que employee_tags é sempre string[] após migração
-      employee_tags: values.employee_tags as string[],
+      // Usar a variável employeeTags que já foi processada e tipada corretamente
+      employee_tags: employeeTags,
     };
     
     onSubmit(employeeData);
