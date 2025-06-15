@@ -10,15 +10,11 @@ import {
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarMenuItem as CustomSidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SidebarSection } from "./sidebar/SidebarSection";
-import { CollapsibleMenuItem } from "./sidebar/CollapsibleMenuItem";
 import { EmployeePortalAccess } from "./sidebar/EmployeePortalAccess";
 import { SettingsSubmenu } from "./sidebar/SettingsSubmenu";
 import { menuItems } from "./sidebar/menuItems";
-import { settingsItems } from "./sidebar/settingsItems";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCheckPermission } from "@/hooks/useCheckPermission";
-import { Building2, Users, Briefcase, MapPin, FileText, ClipboardList, AlertTriangle, Target, FileBarChart, Calendar, UserCheck, CreditCard } from "lucide-react";
-import { BarChart3 } from "lucide-react";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
@@ -110,16 +106,15 @@ export function AppSidebar() {
 
         {/* Configurações */}
         <SidebarSection title="Configurações">
-          <CollapsibleMenuItem 
-            items={settingsItems.filter(shouldShowMenuItem)}
-            defaultOpen={false}
-          />
+          <SettingsSubmenu />
         </SidebarSection>
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SettingsSubmenu />
+            <SidebarMenuButton>
+              Sistema v2.0
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

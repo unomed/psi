@@ -59,11 +59,6 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
     return [];
   };
 
-  // Parse employee tags safely outside of the form initialization
-  const parsedEmployeeTags: string[] = initialData 
-    ? safeParseEmployeeTags(initialData.employee_tags)
-    : [];
-
   const form = useForm<EmployeeFormSchema>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: initialData ? {
@@ -71,7 +66,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       birth_date: safeParseDate(initialData.birth_date),
       start_date: safeParseDate(initialData.start_date) || new Date(),
       employee_type: initialData.employee_type || "funcionario",
-      employee_tags: parsedEmployeeTags,
+      employee_tags: safeParseEmployeeTags(initialData.employee_tags),
       // Garantir que campos opcionais nunca sejam null
       email: initialData.email || "",
       phone: initialData.phone || "",
@@ -91,7 +86,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       photo_url: "",
       start_date: new Date(),
       employee_type: "funcionario",
-      employee_tags: [] as string[],
+      employee_tags: [],
     },
   });
 
