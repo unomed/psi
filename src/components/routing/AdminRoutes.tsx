@@ -15,10 +15,8 @@ import Faturamento from "@/pages/Faturamento";
 import AssessmentPage from "@/pages/AssessmentPage";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
 
-// DEPRECATED: Use AdminRoutes instead
-// Esta função é mantida apenas para compatibilidade, mas deve usar AdminRoutes
-export function MainRoutes() {
-  console.log('[MainRoutes] DEPRECATED - Use AdminRoutes instead');
+export function AdminRoutes() {
+  console.log('[AdminRoutes] Renderizando rotas administrativas');
   
   return (
     <Routes>

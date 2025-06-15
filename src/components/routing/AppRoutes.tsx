@@ -2,13 +2,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
-import { MainRoutes } from "./MainRoutes";
+import { AdminRoutes } from "./AdminRoutes";
+import { EmployeeRoutes } from "./EmployeeRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
-import EmployeePortal from "@/pages/EmployeePortal";
-import PublicAssessment from "@/pages/PublicAssessment";
-import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
-import EmployeeLogin from "@/pages/auth/EmployeeLogin";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function AppRoutes() {
@@ -37,7 +34,7 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas de autenticação para administradores - deve vir ANTES das rotas genéricas */}
+      {/* Rotas de autenticação para administradores */}
       {!user && (
         <Route 
           path="/auth/*" 
@@ -45,44 +42,25 @@ export function AppRoutes() {
         />
       )}
 
-      {/* Rotas específicas de funcionários - com prefixos claros */}
+      {/* Rotas específicas de funcionários - ISOLADAS */}
       <Route
         path="/auth/employee"
-        element={
-          <EmployeeAuthProvider>
-            <EmployeeLogin />
-          </EmployeeAuthProvider>
-        }
+        element={<EmployeeRoutes />}
       />
-
+      
       <Route 
         path="/employee-portal/*" 
-        element={
-          <EmployeeAuthProvider>
-            <Routes>
-              <Route path="/" element={<EmployeePortal />} />
-              <Route path="/:templateId" element={<EmployeePortal />} />
-            </Routes>
-          </EmployeeAuthProvider>
-        } 
+        element={<EmployeeRoutes />}
       />
 
-      {/* Rotas públicas de avaliação com tokens específicos */}
       <Route 
         path="/avaliacao/:token" 
-        element={
-          <EmployeeAuthProvider>
-            <PublicAssessment />
-          </EmployeeAuthProvider>
-        }
+        element={<EmployeeRoutes />}
       />
+      
       <Route 
         path="/assessment/:token" 
-        element={
-          <EmployeeAuthProvider>
-            <PublicAssessment />
-          </EmployeeAuthProvider>
-        }
+        element={<EmployeeRoutes />}
       />
 
       {/* Rotas principais protegidas para usuários administrativos */}
@@ -94,10 +72,10 @@ export function AppRoutes() {
             </MainLayout>
           } />
           
-          {/* Todas as rotas protegidas usando MainLayout */}
+          {/* Todas as rotas administrativas usando AdminRoutes */}
           <Route path="/*" element={
             <MainLayout>
-              <MainRoutes />
+              <AdminRoutes />
             </MainLayout>
           } />
         </>
@@ -106,11 +84,7 @@ export function AppRoutes() {
       {/* Rotas dinâmicas por nome de avaliação - DEVE SER A ÚLTIMA */}
       <Route 
         path="/:assessmentName" 
-        element={
-          <EmployeeAuthProvider>
-            <EmployeePortal />
-          </EmployeeAuthProvider>
-        }
+        element={<EmployeeRoutes />}
       />
 
       {/* Redirecionamento padrão baseado no estado de auth */}

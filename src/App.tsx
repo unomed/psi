@@ -12,6 +12,8 @@ import { AppRoutes } from "@/components/routing/AppRoutes";
 const queryClient = new QueryClient();
 
 function App() {
+  console.log('[App] Inicializando aplicação com arquitetura isolada');
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -20,6 +22,7 @@ function App() {
           <Sonner />
           <BrowserRouter>
             <ErrorBoundary>
+              {/* Contexto administrativo isolado */}
               <AuthProvider>
                 <AppRoutes />
               </AuthProvider>
