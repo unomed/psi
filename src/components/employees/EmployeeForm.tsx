@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -85,7 +86,7 @@ export function EmployeeForm({ initialData, onSubmit, onCancel }: EmployeeFormPr
       photo_url: "",
       start_date: new Date(),
       employee_type: "funcionario",
-      employee_tags: [],
+      employee_tags: [] as string[],
     },
   });
 
