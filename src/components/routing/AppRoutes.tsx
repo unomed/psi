@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
@@ -7,6 +8,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
+import EmployeeLogin from "@/pages/auth/EmployeeLogin";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -21,8 +23,7 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas públicas - não requerem autenticação */}
-      {/* Suporte para /avaliacao/:token e /assessment/:token */}
+      {/* Rotas públicas de avaliação */}
       <Route 
         path="/avaliacao/:token" 
         element={
@@ -39,7 +40,17 @@ export function AppRoutes() {
           </EmployeeAuthProvider>
         }
       />
-      
+
+      {/* Login do funcionário envolvido por EmployeeAuthProvider para evitar erro de contexto */}
+      <Route
+        path="/auth/employee"
+        element={
+          <EmployeeAuthProvider>
+            <EmployeeLogin />
+          </EmployeeAuthProvider>
+        }
+      />
+
       {/* Portal do funcionário - autenticação própria */}
       <Route 
         path="/employee-portal/*" 
@@ -53,7 +64,7 @@ export function AppRoutes() {
         } 
       />
 
-      {/* Rotas de autenticação - quando não há usuário logado */}
+      {/* Rotas de autenticação para administradores, etc */}
       {!user && (
         <Route 
           path="/*" 
@@ -69,7 +80,6 @@ export function AppRoutes() {
               <SettingsRoutes />
             </MainLayout>
           } />
-          
           <Route path="/*" element={
             <MainLayout>
               <MainRoutes />
@@ -78,7 +88,7 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento padrão - sempre para login principal */}
+      {/* Redirecionamento padrão */}
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/auth/login"} replace />} />
     </Routes>
   );
