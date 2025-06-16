@@ -1,4 +1,3 @@
-
 // Define basic types
 export type RoleType = "admin" | "employee" | "superadmin";
 
@@ -33,3 +32,12 @@ export * from './disc';
 export * from './scale';
 export * from './settings';
 
+// Add automation types
+export type {
+  AutomationRule,
+  AutomationCondition,
+  AutomationAction,
+  EscalationLevel,
+  ManagerNotification,
+  AutomationLog
+} from "./automation";
