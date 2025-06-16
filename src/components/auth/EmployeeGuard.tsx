@@ -1,6 +1,6 @@
 
 import { Navigate } from 'react-router-dom';
-import { useEmployeeAuth } from '@/contexts/EmployeeAuthContext';
+import { useEmployeeAuth } from '@/hooks/useEmployeeAuth';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface EmployeeGuardProps {

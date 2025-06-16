@@ -3,42 +3,24 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
 import { AdminRoutes } from "./AdminRoutes";
-import { EmployeeRoutes } from "./EmployeeRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminGuard } from "@/components/auth/AdminGuard";
-import { useMemo } from "react";
-
-// Função para determinar se a rota é de funcionário
-const isEmployeeRoute = (pathname: string): boolean => {
-  const employeePatterns = [
-    '/employee-portal',
-    '/portal-funcionario',
-    '/auth/employee',
-    '/avaliacao/',
-    '/assessment/'
-  ];
-  
-  return employeePatterns.some(pattern => pathname.startsWith(pattern));
-};
+import { EmployeeGuard } from "@/components/auth/EmployeeGuard";
+import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
+import EmployeePortal from "@/pages/EmployeePortal";
+import PublicAssessment from "@/pages/PublicAssessment";
+import EmployeeLogin from "@/pages/auth/EmployeeLogin";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
-  const currentPath = window.location.pathname;
 
   console.log('[AppRoutes] Estado atual:', {
     hasUser: !!user,
     loading,
-    currentPath,
-    isEmployeeRoute: isEmployeeRoute(currentPath)
+    currentPath: window.location.pathname
   });
-
-  // Memoizar verificação de rota de funcionário
-  const isCurrentRouteEmployee = useMemo(() => 
-    isEmployeeRoute(currentPath), 
-    [currentPath]
-  );
 
   // Loading melhorado
   if (loading) {
@@ -54,18 +36,48 @@ export function AppRoutes() {
     );
   }
 
-  // Se é rota de funcionário, usar apenas EmployeeRoutes
-  if (isCurrentRouteEmployee) {
-    console.log('[AppRoutes] Rota de funcionário detectada, usando EmployeeRoutes');
-    return <EmployeeRoutes />;
-  }
-
   return (
     <Routes>
       {/* Rotas de autenticação - PRIORIDADE MÁXIMA */}
       <Route path="/auth/*" element={<AuthRoutes />} />
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+
+      {/* Rotas do portal do funcionário - isoladas */}
+      <Route path="/auth/employee" element={
+        <EmployeeAuthProvider>
+          <EmployeeLogin />
+        </EmployeeAuthProvider>
+      } />
+      
+      <Route path="/employee-portal" element={
+        <EmployeeAuthProvider>
+          <EmployeeGuard>
+            <EmployeePortal />
+          </EmployeeGuard>
+        </EmployeeAuthProvider>
+      } />
+      
+      <Route path="/employee-portal/:templateId" element={
+        <EmployeeAuthProvider>
+          <EmployeeGuard>
+            <EmployeePortal />
+          </EmployeeGuard>
+        </EmployeeAuthProvider>
+      } />
+
+      {/* Avaliações públicas com tokens */}
+      <Route path="/avaliacao/:token" element={
+        <EmployeeAuthProvider>
+          <PublicAssessment />
+        </EmployeeAuthProvider>
+      } />
+      
+      <Route path="/assessment/:token" element={
+        <EmployeeAuthProvider>
+          <PublicAssessment />
+        </EmployeeAuthProvider>
+      } />
 
       {/* Redirecionamento do portal do funcionário */}
       <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />

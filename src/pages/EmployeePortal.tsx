@@ -12,7 +12,7 @@ export default function EmployeePortal() {
   const [searchParams] = useSearchParams();
   const employeeIdFromUrl = searchParams.get("employee");
   const tokenFromUrl = searchParams.get("token");
-  const { session, login, loading } = useEmployeeAuth();
+  const { session, loading } = useEmployeeAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   console.log("[EmployeePortal] Parâmetros recebidos:", {
