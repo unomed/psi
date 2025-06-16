@@ -66,7 +66,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
                   {session?.employee?.companyName}
                 </p>
               </div>
-              <Button variant="outline" onClick={handleLogout} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+              <Button variant="outline" onClick={handleLogout} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 md:hidden">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </Button>
@@ -77,7 +77,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
               {/* Coluna Principal - Humor e Mensagens */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Mensagem Diária de Saúde */}
-                <DailyHealthMessage />
+                <DailyHealthMessage employeeId={session?.employee?.employeeId || ""} />
 
                 {/* Seletor de Humor Moderno */}
                 <ModernMoodSelector employeeId={session?.employee?.employeeId || ""} />

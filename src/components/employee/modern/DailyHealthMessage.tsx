@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { RefreshCw, Heart, Brain, Sun } from 'lucide-react';
+import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';
+import { useEmployeeData } from '@/hooks/useEmployeeData';
 
 const healthMessages = [
   {
@@ -42,24 +43,58 @@ const healthMessages = [
   }
 ];
 
-export function DailyHealthMessage() {
+interface DailyHealthMessageProps {
+  employeeId: string;
+}
+
+export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
   const [currentMessage, setCurrentMessage] = useState(0);
+  const { data: employeeData } = useEmployeeData(employeeId);
 
-  useEffect(() => {
-    // Rotaciona a mensagem a cada carregamento baseado no dia
-    const today = new Date().getDate();
-    setCurrentMessage(today % healthMessages.length);
-  }, []);
-
-  const handleRefresh = () => {
-    setCurrentMessage((prev) => (prev + 1) % healthMessages.length);
+  const isBirthday = () => {
+    if (!employeeData?.birth_date) return false;
+    
+    const today = new Date();
+    const birthDate = new Date(employeeData.birth_date);
+    
+    return today.getDate() === birthDate.getDate() && 
+           today.getMonth() === birthDate.getMonth();
   };
 
-  const message = healthMessages[currentMessage];
+  const getBirthdayMessage = () => {
+    if (!employeeData) return null;
+    
+    return {
+      icon: Gift,
+      title: "🎉 Feliz Aniversário!",
+      message: `Parabéns, ${employeeData.name.split(' ')[0]}! A Unomed deseja um dia repleto de alegria e realizações. Que este novo ano de vida seja cheio de saúde, felicidade e conquistas!`,
+      color: "from-purple-500 via-pink-500 to-red-500"
+    };
+  };
+
+  useEffect(() => {
+    if (!isBirthday()) {
+      // Rotaciona a mensagem a cada carregamento baseado no dia
+      const today = new Date().getDate();
+      setCurrentMessage(today % healthMessages.length);
+    }
+  }, [employeeData]);
+
+  const handleRefresh = () => {
+    if (!isBirthday()) {
+      setCurrentMessage((prev) => (prev + 1) % healthMessages.length);
+    }
+  };
+
+  // Priorizar mensagem de aniversário se for o caso
+  const message = isBirthday() ? getBirthdayMessage() : healthMessages[currentMessage];
+  
+  if (!message) return null;
+  
   const IconComponent = message.icon;
 
   return (
-    <Card className={`bg-gradient-to-r ${message.color} text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}>
+    <Card className={`bg-gradient-to-r ${message.color} text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${isBirthday() ? 'animate-pulse' : ''}`}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
@@ -68,15 +103,24 @@ export function DailyHealthMessage() {
             </div>
             <h3 className="text-lg font-semibold">{message.title}</h3>
           </div>
-          <button
-            onClick={handleRefresh}
-            className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-            title="Nova mensagem"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
+          {!isBirthday() && (
+            <button
+              onClick={handleRefresh}
+              className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+              title="Nova mensagem"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+          )}
         </div>
         <p className="text-white/90 leading-relaxed">{message.message}</p>
+        {isBirthday() && (
+          <div className="mt-4 text-center">
+            <div className="inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
+              🎂 Mensagem especial da Unomed
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
