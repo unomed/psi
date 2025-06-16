@@ -13,9 +13,18 @@ interface TechnicalTagsSectionProps {
 }
 
 export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }: TechnicalTagsSectionProps) {
-  const { employeeTags } = useEmployeeTags(employeeId);
-  const { tagTypes } = useTagTypes();
-  const { requiredTags } = useRoleRequiredTags(selectedRole);
+  const { employeeTags, isLoading: isLoadingEmployeeTags } = useEmployeeTags(employeeId);
+  const { tagTypes, isLoading: isLoadingTagTypes } = useTagTypes();
+  const { requiredTags, isLoading: isLoadingRequiredTags } = useRoleRequiredTags(selectedRole);
+
+  console.log("[TechnicalTagsSection] Estado atual:", {
+    employeeId,
+    selectedRole,
+    employeeTagsCount: employeeTags.length,
+    tagTypesCount: tagTypes.length,
+    requiredTagsCount: requiredTags.length,
+    isLoading: { employeeTags: isLoadingEmployeeTags, tagTypes: isLoadingTagTypes, requiredTags: isLoadingRequiredTags }
+  });
 
   const currentTagIds = employeeTags.map(t => t.tag_type_id);
   const availableTagTypes = tagTypes.filter(t => !currentTagIds.includes(t.id));
@@ -25,11 +34,21 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
   );
 
   const handleTagsChanged = () => {
+    console.log("[TechnicalTagsSection] Tags alteradas, atualizando...");
     if (onTagsChange) {
       const newTags = employeeTags.map(t => t.tag_type?.name || '');
       onTagsChange(newTags);
     }
   };
+
+  if (isLoadingEmployeeTags || isLoadingTagTypes || isLoadingRequiredTags) {
+    return (
+      <div className="space-y-4 border p-4 rounded-md">
+        <FormLabel>Competências/Tags Técnicas</FormLabel>
+        <div className="text-sm text-muted-foreground">Carregando tags...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 border p-4 rounded-md">
@@ -42,7 +61,9 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
         />
       </div>
 
-      <MissingRequiredTags missingRequiredTags={missingRequiredTags} />
+      {missingRequiredTags.length > 0 && (
+        <MissingRequiredTags missingRequiredTags={missingRequiredTags} />
+      )}
       
       <CurrentTagsList 
         employeeId={employeeId}
@@ -50,6 +71,12 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
         requiredTags={requiredTags}
         onTagRemoved={handleTagsChanged}
       />
+
+      {employeeId && (
+        <div className="text-xs text-muted-foreground">
+          ID do funcionário: {employeeId}
+        </div>
+      )}
     </div>
   );
 }

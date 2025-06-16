@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
-import { useEmployeeTags, useTagTypes } from "@/hooks/useEmployeeTags";
+import { useEmployeeTags } from "@/hooks/useEmployeeTags";
 import type { EmployeeTagType } from "@/types/tags";
 
 interface AddTagDialogProps {
@@ -24,7 +24,17 @@ export function AddTagDialog({ employeeId, availableTagTypes, onTagAdded }: AddT
   const { addEmployeeTag } = useEmployeeTags(employeeId);
 
   const handleAddTag = async () => {
-    if (!employeeId || !selectedTagType) return;
+    if (!employeeId || !selectedTagType) {
+      console.warn("[AddTagDialog] Dados insuficientes:", { employeeId, selectedTagType });
+      return;
+    }
+
+    console.log("[AddTagDialog] Adicionando tag:", {
+      employeeId,
+      tagTypeId: selectedTagType,
+      acquiredDate: acquiredDate || undefined,
+      notes: notes || undefined
+    });
 
     try {
       await addEmployeeTag.mutateAsync({
@@ -45,7 +55,18 @@ export function AddTagDialog({ employeeId, availableTagTypes, onTagAdded }: AddT
     }
   };
 
-  if (!employeeId) return null;
+  if (!employeeId) {
+    console.warn("[AddTagDialog] Sem employeeId, componente desabilitado");
+    return null;
+  }
+
+  if (availableTagTypes.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        Todas as tags disponíveis já foram adicionadas
+      </div>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -110,7 +131,7 @@ export function AddTagDialog({ employeeId, availableTagTypes, onTagAdded }: AddT
               onClick={handleAddTag}
               disabled={!selectedTagType || addEmployeeTag.isPending}
             >
-              Adicionar
+              {addEmployeeTag.isPending ? "Adicionando..." : "Adicionar"}
             </Button>
           </div>
         </div>

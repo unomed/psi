@@ -9,6 +9,8 @@ export function useRoleRequiredTags(roleId?: string | null) {
     queryFn: async (): Promise<RoleRequiredTag[]> => {
       if (!roleId) return [];
       
+      console.log("[useRoleRequiredTags] Buscando tags obrigatórias para função:", roleId);
+      
       const { data, error } = await supabase
         .from('role_required_tags')
         .select(`
@@ -22,6 +24,7 @@ export function useRoleRequiredTags(roleId?: string | null) {
         throw error;
       }
 
+      console.log("[useRoleRequiredTags] Tags obrigatórias encontradas:", data);
       return data || [];
     },
     enabled: !!roleId

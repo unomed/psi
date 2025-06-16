@@ -12,6 +12,8 @@ export function useEmployeeTags(employeeId?: string) {
     queryFn: async (): Promise<EmployeeTag[]> => {
       if (!employeeId) return [];
       
+      console.log("[useEmployeeTags] Buscando tags para funcionário:", employeeId);
+      
       const { data, error } = await supabase
         .from('employee_tags')
         .select(`
@@ -22,9 +24,11 @@ export function useEmployeeTags(employeeId?: string) {
 
       if (error) {
         console.error("Error fetching employee tags:", error);
+        toast.error(`Erro ao carregar tags: ${error.message}`);
         throw error;
       }
 
+      console.log("[useEmployeeTags] Tags encontradas:", data);
       return data || [];
     },
     enabled: !!employeeId
@@ -37,6 +41,8 @@ export function useEmployeeTags(employeeId?: string) {
       acquiredDate?: string;
       notes?: string;
     }) => {
+      console.log("[useEmployeeTags] Tentando adicionar tag:", { employeeId, tagTypeId });
+      
       const { data, error } = await supabase
         .from('employee_tags')
         .insert({
@@ -45,38 +51,54 @@ export function useEmployeeTags(employeeId?: string) {
           acquired_date: acquiredDate,
           notes
         })
-        .select()
+        .select(`
+          *,
+          tag_type:employee_tag_types(*)
+        `)
         .single();
 
       if (error) {
-        toast.error('Erro ao adicionar tag ao funcionário');
+        console.error("Error adding employee tag:", error);
+        toast.error(`Erro ao adicionar tag: ${error.message}`);
         throw error;
       }
 
+      console.log("[useEmployeeTags] Tag adicionada com sucesso:", data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employee-tags'] });
       toast.success('Tag adicionada com sucesso');
     },
+    onError: (error: any) => {
+      console.error("Mutation error:", error);
+    }
   });
 
   const removeEmployeeTag = useMutation({
     mutationFn: async (tagId: string) => {
+      console.log("[useEmployeeTags] Tentando remover tag:", tagId);
+      
       const { error } = await supabase
         .from('employee_tags')
         .delete()
         .eq('id', tagId);
 
       if (error) {
-        toast.error('Erro ao remover tag do funcionário');
+        console.error("Error removing employee tag:", error);
+        toast.error(`Erro ao remover tag: ${error.message}`);
         throw error;
       }
+
+      console.log("[useEmployeeTags] Tag removida com sucesso");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employee-tags'] });
       toast.success('Tag removida com sucesso');
     },
+    onError: (error: any) => {
+      console.error("Remove mutation error:", error);
+    }
   });
 
   return {
@@ -91,6 +113,8 @@ export function useTagTypes() {
   const { data: tagTypes = [], isLoading } = useQuery({
     queryKey: ['tag-types'],
     queryFn: async (): Promise<EmployeeTagType[]> => {
+      console.log("[useTagTypes] Buscando tipos de tags...");
+      
       const { data, error } = await supabase
         .from('employee_tag_types')
         .select('*')
@@ -99,9 +123,11 @@ export function useTagTypes() {
 
       if (error) {
         console.error("Error fetching tag types:", error);
+        toast.error(`Erro ao carregar tipos de tags: ${error.message}`);
         throw error;
       }
 
+      console.log("[useTagTypes] Tipos encontrados:", data);
       return data || [];
     }
   });
