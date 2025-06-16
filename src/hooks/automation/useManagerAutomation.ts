@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AutomationRule, ManagerNotification, EscalationLevel } from "@/types/automation";
@@ -102,10 +101,10 @@ export function useManagerAutomation(companyId?: string) {
     isLoading: escalationLoading 
   } = useQuery({
     queryKey: ['escalationLevels', companyId],
-    queryFn: async () => {
+    queryFn: async (): Promise<EscalationLevel[]> => {
       if (!companyId) return [];
       
-      // Return mock data with proper types
+      // Return mock data with proper types - removed as const to allow mutable arrays
       return [
         {
           id: '1',
@@ -113,7 +112,7 @@ export function useManagerAutomation(companyId?: string) {
           level: 1,
           roleIds: [],
           userIds: [],
-          notificationMethods: ['email', 'in_app'] as const,
+          notificationMethods: ['email', 'in_app'],
           escalationDelayMinutes: 60
         },
         {
@@ -122,7 +121,7 @@ export function useManagerAutomation(companyId?: string) {
           level: 2,
           roleIds: [],
           userIds: [],
-          notificationMethods: ['email', 'sms', 'in_app'] as const,
+          notificationMethods: ['email', 'sms', 'in_app'],
           escalationDelayMinutes: 120
         }
       ];
