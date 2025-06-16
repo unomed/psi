@@ -6,11 +6,13 @@ import { LogOut } from "lucide-react";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { EmployeeModernSidebar } from "./EmployeeModernSidebar";
 import { PendingAssessmentsList } from "../PendingAssessmentsList";
-import { MoodSelector } from "../MoodSelector";
 import { MoodStatsCard } from "../MoodStatsCard";
 import { QuestionnaireStatsCard } from "./QuestionnaireStatsCard";
 import { SymptomsGuidanceSection } from "./SymptomsGuidanceSection";
 import { WhatsAppButton } from "./WhatsAppButton";
+import { DailyHealthMessage } from "./DailyHealthMessage";
+import { WellnessCard } from "./WellnessCard";
+import { ModernMoodSelector } from "./ModernMoodSelector";
 
 interface EmployeeModernDashboardProps {
   assessmentToken?: string | null;
@@ -54,12 +56,13 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
       default:
         return (
           <div className="space-y-6">
+            {/* Header */}
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Olá, {session?.employee?.employeeName}
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Olá, {session?.employee?.employeeName}! 👋
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-lg text-gray-600">
                   {session?.employee?.companyName}
                 </p>
               </div>
@@ -69,29 +72,24 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
               </Button>
             </div>
 
+            {/* Main Content Grid */}
             <div className="grid gap-6 lg:grid-cols-3">
-              {/* Coluna Principal - Avaliações */}
+              {/* Coluna Principal - Humor e Mensagens */}
               <div className="lg:col-span-2 space-y-6">
-                <PendingAssessmentsList employeeId={session?.employee?.employeeId || ""} />
+                {/* Mensagem Diária de Saúde */}
+                <DailyHealthMessage />
+
+                {/* Seletor de Humor Moderno */}
+                <ModernMoodSelector employeeId={session?.employee?.employeeId || ""} />
               </div>
 
-              {/* Coluna Lateral - Humor e Estatísticas */}
+              {/* Coluna Lateral - Estatísticas e Bem-estar */}
               <div className="space-y-6">
-                {/* Seletor de Humor - Carro Chefe */}
-                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-gray-900 flex items-center">
-                      <span className="text-2xl mr-2">😊</span>
-                      Como você está hoje?
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <MoodSelector employeeId={session?.employee?.employeeId || ""} />
-                  </CardContent>
-                </Card>
-
                 {/* Estatísticas de Humor */}
                 <MoodStatsCard employeeId={session?.employee?.employeeId || ""} />
+
+                {/* Card de Bem-estar */}
+                <WellnessCard />
 
                 {/* Estatísticas dos Questionários */}
                 <QuestionnaireStatsCard employeeId={session?.employee?.employeeId || ""} />
@@ -103,7 +101,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex">
       <EmployeeModernSidebar 
         currentView={currentView} 
         onViewChange={setCurrentView}
@@ -111,7 +109,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
       />
       
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 bg-gray-50">
+        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
           {renderCurrentView()}
         </main>
         
