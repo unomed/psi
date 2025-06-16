@@ -18,3 +18,6 @@ export interface SubMenuItem {
   roles: string[];
   permission?: string;
 }
+
+// Alias for backward compatibility
+export type MenuItemType = MenuItem;
