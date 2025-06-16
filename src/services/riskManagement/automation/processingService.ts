@@ -6,11 +6,16 @@ export class AutomationProcessingService {
   // Processar avaliação automaticamente
   static async triggerAutomaticProcessing(assessmentResponseId: string): Promise<AutomationTriggerResult> {
     try {
+      console.log('Iniciando processamento automático para avaliação:', assessmentResponseId);
+      
       const { data, error } = await supabase.rpc('process_psychosocial_assessment_auto', {
         p_assessment_response_id: assessmentResponseId
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na função de processamento:', error);
+        throw error;
+      }
 
       // Properly handle the response with type validation
       if (data && typeof data === 'object') {
@@ -19,6 +24,7 @@ export class AutomationProcessingService {
         
         // Validate required properties exist
         if ('success' in result && 'message' in result) {
+          console.log('Processamento concluído:', result);
           return result;
         }
       }
@@ -30,6 +36,24 @@ export class AutomationProcessingService {
       };
     } catch (error) {
       console.error('Error triggering automatic processing:', error);
+      
+      // Melhor tratamento de erros específicos
+      if (error instanceof Error) {
+        if (error.message.includes('not found') || error.message.includes('not associated')) {
+          return {
+            success: false,
+            message: 'Avaliação não encontrada ou funcionário não associado'
+          };
+        }
+        
+        if (error.message.includes('foreign key')) {
+          return {
+            success: false,
+            message: 'Erro de integridade de dados. Verifique se o funcionário existe na empresa.'
+          };
+        }
+      }
+      
       throw error;
     }
   }

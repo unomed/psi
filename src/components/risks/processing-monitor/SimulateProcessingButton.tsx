@@ -21,6 +21,7 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
     setIsSimulating(true);
     
     try {
+      console.log('Iniciando simulação de processamento para empresa:', companyId);
       const result = await AutomationProcessingService.simulateProcessing(companyId);
       
       if (result.success) {
@@ -54,6 +55,10 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
         });
       } else if (error?.message?.includes('foreign key')) {
         toast.error('❌ Erro de integridade de dados. Verifique a consistência dos dados.', {
+          duration: 7000,
+        });
+      } else if (error?.message?.includes('not found')) {
+        toast.error('❌ Dados não encontrados. Verifique se há funcionários e templates na empresa.', {
           duration: 7000,
         });
       } else {

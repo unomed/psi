@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistResult } from "@/types/checklist";
 import { DiscFactorType } from "@/types/disc";
@@ -6,25 +7,33 @@ import { stringToDiscFactorType } from "./utils";
 export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | "completedAt">): Promise<string> {
   const dominantFactorString = result.dominantFactor.toString();
   
-  // Get a default employee to satisfy the required constraint
-  const { data: employees, error: empError } = await supabase
+  // Verificar se o employee_id é válido
+  if (!result.employeeName) {
+    throw new Error('Employee name is required to save assessment');
+  }
+  
+  // Buscar funcionário por nome para obter o ID correto
+  const { data: employee, error: empError } = await supabase
     .from('employees')
     .select('id')
-    .limit(1);
+    .eq('name', result.employeeName)
+    .eq('status', 'active')
+    .single();
   
-  if (empError || !employees || employees.length === 0) {
-    throw new Error('No employees found to create assessment');
+  if (empError || !employee) {
+    throw new Error(`Employee "${result.employeeName}" not found or is inactive`);
   }
   
   const { data, error } = await supabase
     .from('assessment_responses')
     .insert({
       template_id: result.templateId,
-      employee_id: employees[0].id, // Use first available employee
+      employee_id: employee.id, // Usar o ID correto do funcionário
       employee_name: result.employeeName,
       dominant_factor: dominantFactorString,
       factors_scores: result.results,
-      response_data: {}
+      response_data: {},
+      completed_at: new Date().toISOString()
     })
     .select()
     .single();
@@ -40,7 +49,10 @@ export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | 
 export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
   const { data, error } = await supabase
     .from('assessment_responses')
-    .select('*');
+    .select(`
+      *,
+      employee:employees!inner(id, name)
+    `);
   
   if (error) {
     console.error("Error fetching assessment results:", error);
@@ -65,7 +77,7 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
     return {
       id: result.id,
       templateId: result.template_id,
-      employeeName: result.employee_name || "Anônimo",
+      employeeName: result.employee?.name || result.employee_name || "Anônimo",
       results: factorScores,
       dominantFactor: dominantFactor,
       completedAt: new Date(result.completed_at)
