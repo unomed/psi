@@ -109,9 +109,9 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento padrão melhorado */}
+      {/* Redirecionamento padrão corrigido para não interferir com rotas de funcionário */}
       <Route 
-        path="*" 
+        path="/" 
         element={
           user ? (
             <Navigate to="/dashboard" replace />
