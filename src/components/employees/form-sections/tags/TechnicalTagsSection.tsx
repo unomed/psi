@@ -9,9 +9,11 @@ import { TagSystemDebug } from "./TagSystemDebug";
 import { TagMigrationStatus } from "./TagMigrationStatus";
 import { TagSystemErrorBoundary } from "./TagSystemErrorBoundary";
 import { AdvancedTagsManager } from "./AdvancedTagsManager";
+import { TagSystemStatusIndicators } from "./TagSystemStatusIndicators";
+import { TagModeToggle } from "./TagModeToggle";
+import { TagDebugSection } from "./TagDebugSection";
+import { TagSystemWarnings } from "./TagSystemWarnings";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, Database, Zap, Settings } from "lucide-react";
 
 interface TechnicalTagsSectionProps {
   employeeId?: string;
@@ -77,17 +79,14 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <FormLabel className="text-lg font-semibold">Sistema Avançado de Tags</FormLabel>
-            <div className="flex gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={() => setUseAdvancedMode(false)}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Modo Simples
-              </Button>
-            </div>
+            <TagModeToggle
+              useAdvancedMode={useAdvancedMode}
+              showMigration={showMigration}
+              showDebug={showDebug}
+              onAdvancedModeToggle={() => setUseAdvancedMode(false)}
+              onMigrationToggle={() => setShowMigration(!showMigration)}
+              onDebugToggle={() => setShowDebug(!showDebug)}
+            />
           </div>
           
           <AdvancedTagsManager
@@ -107,39 +106,21 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FormLabel>Competências/Tags Técnicas</FormLabel>
-            {systemHealthy ? (
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-yellow-600" />
-            )}
+            <TagSystemStatusIndicators
+              hasLoadingIssues={hasLoadingIssues}
+              hasDataIssues={hasDataIssues}
+              systemHealthy={systemHealthy}
+            />
           </div>
           <div className="flex gap-2">
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setUseAdvancedMode(true)}
-            >
-              <Zap className="h-4 w-4 mr-2" />
-              Modo Avançado
-            </Button>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowMigration(!showMigration)}
-            >
-              <Database className="h-4 w-4 mr-2" />
-              Migração
-            </Button>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowDebug(!showDebug)}
-            >
-              🔧 Debug
-            </Button>
+            <TagModeToggle
+              useAdvancedMode={useAdvancedMode}
+              showMigration={showMigration}
+              showDebug={showDebug}
+              onAdvancedModeToggle={() => setUseAdvancedMode(true)}
+              onMigrationToggle={() => setShowMigration(!showMigration)}
+              onDebugToggle={() => setShowDebug(!showDebug)}
+            />
             <AddTagDialog 
               employeeId={employeeId}
               availableTagTypes={availableTagTypes}
@@ -163,17 +144,7 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
         )}
 
         {/* Aviso sobre problemas no sistema */}
-        {hasDataIssues && (
-          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-            <div className="flex items-center gap-2 text-yellow-800">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm font-medium">Sistema de Tags não inicializado</span>
-            </div>
-            <p className="text-xs text-yellow-700 mt-1">
-              Nenhum tipo de tag foi encontrado. Isso pode indicar que a migração não foi executada ou houve um problema na inicialização.
-            </p>
-          </div>
-        )}
+        <TagSystemWarnings hasDataIssues={hasDataIssues} />
 
         {/* Tags obrigatórias em falta */}
         {missingRequiredTags.length > 0 && (
@@ -188,29 +159,20 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
           onTagRemoved={handleTagsChanged}
         />
 
-        {/* Informações técnicas */}
-        {employeeId && (
-          <div className="text-xs text-muted-foreground space-y-1">
-            <div>ID do funcionário: {employeeId}</div>
-            <div>Função selecionada: {selectedRole || 'Nenhuma'}</div>
-            <div>Modo avançado: {useAdvancedMode ? 'Ativo' : 'Disponível'}</div>
-          </div>
-        )}
-
-        {/* Status detalhado em modo debug */}
+        {/* Debug detalhado */}
         {showDebug && (
-          <div className="mt-4 p-3 bg-muted rounded text-xs space-y-1">
-            <div>🏷️ Tipos disponíveis: {availableTagTypes.length}</div>
-            <div>👤 Tags do funcionário: {employeeTags.length}</div>
-            <div>⚠️ Tags obrigatórias em falta: {missingRequiredTags.length}</div>
-            <div>🔄 Estados de carregamento: 
-              Tags={isLoadingEmployeeTags ? "⏳" : "✅"}, 
-              Tipos={isLoadingTagTypes ? "⏳" : "✅"}, 
-              Obrigatórias={isLoadingRequiredTags ? "⏳" : "✅"}
-            </div>
-            <div>💚 Sistema saudável: {systemHealthy ? "✅" : "❌"}</div>
-            <div>🚀 Modo avançado disponível: ✅</div>
-          </div>
+          <TagDebugSection
+            employeeId={employeeId}
+            selectedRole={selectedRole}
+            useAdvancedMode={useAdvancedMode}
+            availableTagTypesCount={availableTagTypes.length}
+            employeeTagsCount={employeeTags.length}
+            missingRequiredTagsCount={missingRequiredTags.length}
+            isLoadingEmployeeTags={isLoadingEmployeeTags}
+            isLoadingTagTypes={isLoadingTagTypes}
+            isLoadingRequiredTags={isLoadingRequiredTags}
+            systemHealthy={systemHealthy}
+          />
         )}
       </div>
     </TagSystemErrorBoundary>
