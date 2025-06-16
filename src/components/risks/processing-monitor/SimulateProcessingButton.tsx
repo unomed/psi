@@ -28,15 +28,27 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
           duration: 5000,
         });
       } else {
-        toast.warning(`⚠️ Simulação: ${result.message}`, {
-          duration: 6000,
-        });
+        // Verificar se é erro de dados ou configuração
+        if (result.message.includes('funcionário') || result.message.includes('template')) {
+          toast.warning(`⚠️ ${result.message}`, {
+            duration: 8000,
+            description: 'Certifique-se de que há funcionários ativos e templates de avaliação na empresa.'
+          });
+        } else {
+          toast.warning(`⚠️ Simulação: ${result.message}`, {
+            duration: 6000,
+          });
+        }
       }
     } catch (error: any) {
       console.error('Error simulating processing:', error);
       
       // Tratamento específico para diferentes tipos de erro
-      if (error?.code === 'PGRST200') {
+      if (error?.code === '23503') {
+        toast.error('❌ Erro de relacionamento no banco. Verifique se há funcionários ativos na empresa.', {
+          duration: 7000,
+        });
+      } else if (error?.code === 'PGRST200') {
         toast.error('❌ Erro de relacionamento no banco. Problema foi corrigido, tente novamente.', {
           duration: 7000,
         });

@@ -74,7 +74,7 @@ export class AutomationProcessingService {
         // Buscar um funcionário da empresa para criar avaliação de exemplo
         const { data: employees, error: empError } = await supabase
           .from('employees')
-          .select('*')
+          .select('id, name, company_id, sector_id, role_id')
           .eq('company_id', companyId)
           .eq('status', 'active')
           .limit(1);
@@ -86,11 +86,12 @@ export class AutomationProcessingService {
 
         if (employees && employees.length > 0) {
           const employee = employees[0];
+          console.log('Funcionário encontrado:', employee.name, 'ID:', employee.id);
           
-          // Buscar um template de avaliação psicossocial - use 'custom' as fallback
+          // Buscar um template de avaliação - use 'custom' as fallback
           const { data: templates, error: templateError } = await supabase
             .from('checklist_templates')
-            .select('*')
+            .select('id, title, type')
             .in('type', ['custom'])
             .eq('is_active', true)
             .limit(1);
@@ -102,6 +103,7 @@ export class AutomationProcessingService {
 
           if (templates && templates.length > 0) {
             const template = templates[0];
+            console.log('Template encontrado:', template.title, 'ID:', template.id);
             
             // Criar uma avaliação de exemplo
             const { data: newAssessment, error: createError } = await supabase
@@ -111,6 +113,7 @@ export class AutomationProcessingService {
                 template_id: template.id,
                 employee_name: employee.name,
                 raw_score: Math.floor(Math.random() * 100), // Score aleatório para demonstração
+                completed_at: new Date().toISOString(),
                 response_data: {
                   responses: [],
                   metadata: {
@@ -129,13 +132,18 @@ export class AutomationProcessingService {
 
             console.log('Avaliação de demonstração criada:', newAssessment.id);
             return await this.triggerAutomaticProcessing(newAssessment.id);
+          } else {
+            return {
+              success: false,
+              message: 'Nenhum template de avaliação encontrado. Certifique-se de que há templates ativos na empresa.'
+            };
           }
+        } else {
+          return {
+            success: false,
+            message: 'Nenhum funcionário ativo encontrado na empresa. Adicione funcionários antes de simular o processamento.'
+          };
         }
-        
-        return {
-          success: false,
-          message: 'Nenhuma avaliação completada ou funcionário encontrado para simulação. Verifique se há dados na empresa.'
-        };
       }
     } catch (error: any) {
       console.error('Error simulating processing:', error);
@@ -145,6 +153,13 @@ export class AutomationProcessingService {
         return {
           success: false,
           message: 'Erro de relacionamento no banco de dados. O problema foi corrigido, tente novamente.'
+        };
+      }
+      
+      if (error?.code === '23503') {
+        return {
+          success: false,
+          message: 'Erro de integridade referencial. Verifique se há funcionários ativos na empresa.'
         };
       }
       
