@@ -1,0 +1,132 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { 
+  Home, 
+  ClipboardList, 
+  History, 
+  Heart, 
+  Menu, 
+  X,
+  Activity
+} from "lucide-react";
+
+interface EmployeeModernSidebarProps {
+  currentView: string;
+  onViewChange: (view: 'dashboard' | 'assessments' | 'history' | 'symptoms') => void;
+  employeeName: string;
+}
+
+export function EmployeeModernSidebar({ currentView, onViewChange, employeeName }: EmployeeModernSidebarProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const menuItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: Home,
+      description: 'Visão geral'
+    },
+    {
+      id: 'assessments',
+      label: 'Avaliações',
+      icon: ClipboardList,
+      description: 'Agendadas'
+    },
+    {
+      id: 'history',
+      label: 'Histórico',
+      icon: History,
+      description: 'Respondidas'
+    },
+    {
+      id: 'symptoms',
+      label: 'Saúde e Sintomas',
+      icon: Activity,
+      description: 'Orientações'
+    }
+  ];
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  return (
+    <>
+      {/* Mobile menu button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="fixed top-4 left-4 z-50 md:hidden"
+        onClick={toggleSidebar}
+      >
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={cn(
+        "fixed md:relative left-0 top-0 z-40 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <Heart className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">Portal Funcionário</h2>
+                <p className="text-sm text-gray-500 truncate">{employeeName}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              
+              return (
+                <Button
+                  key={item.id}
+                  variant={isActive ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start h-auto p-3",
+                    isActive && "bg-primary text-white"
+                  )}
+                  onClick={() => {
+                    onViewChange(item.id as any);
+                    setIsOpen(false);
+                  }}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-medium">{item.label}</div>
+                    <div className="text-xs opacity-70">{item.description}</div>
+                  </div>
+                </Button>
+              );
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="text-center text-xs text-gray-500">
+              <p>Unomed - Cuidando da sua saúde</p>
+              <p className="mt-1">Versão 1.0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { EmployeeLoginForm } from "@/components/employee/EmployeeLoginForm";
-import { EmployeeDashboard } from "@/components/employee/EmployeeDashboard";
+import { EmployeeModernDashboard } from "@/components/employee/modern/EmployeeModernDashboard";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
@@ -58,11 +58,11 @@ export default function EmployeePortal() {
     );
   }
 
-  // Se está autenticado, mostrar dashboard
-  console.log("[EmployeePortal] Mostrando dashboard do funcionário");
+  // Se está autenticado, mostrar dashboard moderno
+  console.log("[EmployeePortal] Mostrando dashboard moderno do funcionário");
   return (
     <>
-      <EmployeeDashboard 
+      <EmployeeModernDashboard 
         assessmentToken={tokenFromUrl}
         templateId={templateId}
       />
