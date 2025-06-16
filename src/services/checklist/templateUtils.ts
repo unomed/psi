@@ -1,7 +1,6 @@
-
 import { ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
-import { DiscQuestion, PsicossocialQuestion } from "@/types";
+import { DiscQuestion, PsicossocialQuestion, DiscFactorType } from "@/types";
 import { scaleTypeToDbScaleType } from "@/types/scale";
 
 export function mapDbTemplateTypeToApp(dbType: string): ChecklistTemplateType {
@@ -139,49 +138,49 @@ export function getDefaultDiscQuestions(): DiscQuestion[] {
     {
       id: "disc_1",
       text: "Eu gosto de liderar e tomar decisões rapidamente",
-      targetFactor: "D",
+      targetFactor: DiscFactorType.D,
       weight: 1
     },
     {
       id: "disc_2", 
       text: "Eu prefiro trabalhar com pessoas e influenciá-las",
-      targetFactor: "I",
+      targetFactor: DiscFactorType.I,
       weight: 1
     },
     {
       id: "disc_3",
       text: "Eu valorizo estabilidade e consistência no trabalho",
-      targetFactor: "S", 
+      targetFactor: DiscFactorType.S, 
       weight: 1
     },
     {
       id: "disc_4",
       text: "Eu presto atenção aos detalhes e sigo procedimentos",
-      targetFactor: "C",
+      targetFactor: DiscFactorType.C,
       weight: 1
     },
     {
       id: "disc_5",
       text: "Eu me sinto confortável assumindo riscos",
-      targetFactor: "D",
+      targetFactor: DiscFactorType.D,
       weight: 1
     },
     {
       id: "disc_6",
       text: "Eu gosto de interagir socialmente no ambiente de trabalho",
-      targetFactor: "I",
+      targetFactor: DiscFactorType.I,
       weight: 1
     },
     {
       id: "disc_7",
       text: "Eu prefiro trabalhar em um ambiente previsível",
-      targetFactor: "S",
+      targetFactor: DiscFactorType.S,
       weight: 1
     },
     {
       id: "disc_8",
       text: "Eu gosto de analisar dados antes de tomar decisões",
-      targetFactor: "C",
+      targetFactor: DiscFactorType.C,
       weight: 1
     }
   ];
