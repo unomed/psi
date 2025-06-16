@@ -124,15 +124,8 @@ export const gestaoItems: MenuItem[] = [
   }
 ];
 
-// Portais items
+// Portais items - REMOVIDO Portal Funcionário
 export const portaisItems: MenuItem[] = [
-  {
-    title: "Portal Funcionário",
-    icon: Users,
-    href: "/employee-portal",
-    roles: ["admin", "manager"],
-    permission: "employees:read"
-  },
   {
     title: "Automação",
     icon: Zap,

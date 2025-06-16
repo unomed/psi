@@ -3,6 +3,7 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu } from "@/component
 import { SidebarSection } from "./sidebar/SidebarSection";
 import { SidebarMenuItem } from "./sidebar/SidebarMenuItem";
 import { SidebarMenuItemWithSubmenu } from "./sidebar/SidebarMenuItemWithSubmenu";
+import { MenuItemGuard } from "./sidebar/MenuItemGuard";
 import { 
   dashboardItem, 
   cadastrosItems, 
@@ -13,8 +14,13 @@ import {
 } from "./sidebar/menuItems";
 import { settingsItems } from "./sidebar/settingsItems";
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AppSidebar() {
+  const { userRole } = useAuth();
+
+  console.log('[AppSidebar] Current user role:', userRole);
+
   return (
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
       <SidebarHeader className="border-b border-sidebar-border">
@@ -25,7 +31,9 @@ export function AppSidebar() {
         {/* Dashboard */}
         <SidebarSection title="">
           <SidebarMenu className="space-y-1">
-            <SidebarMenuItem key={dashboardItem.href} item={dashboardItem} />
+            <MenuItemGuard allowedRoles={dashboardItem.roles} requiredPermission={dashboardItem.permission}>
+              <SidebarMenuItem key={dashboardItem.href} item={dashboardItem} />
+            </MenuItemGuard>
           </SidebarMenu>
         </SidebarSection>
 
@@ -33,7 +41,13 @@ export function AppSidebar() {
         <SidebarSection title="CADASTROS">
           <SidebarMenu className="space-y-1">
             {cadastrosItems.map((item) => (
-              <SidebarMenuItem key={item.href} item={item} />
+              <MenuItemGuard 
+                key={item.href} 
+                allowedRoles={item.roles} 
+                requiredPermission={item.permission}
+              >
+                <SidebarMenuItem item={item} />
+              </MenuItemGuard>
             ))}
           </SidebarMenu>
         </SidebarSection>
@@ -42,7 +56,13 @@ export function AppSidebar() {
         <SidebarSection title="AVALIAÇÕES">
           <SidebarMenu className="space-y-1">
             {avaliacoesItems.map((item) => (
-              <SidebarMenuItem key={item.href} item={item} />
+              <MenuItemGuard 
+                key={item.href} 
+                allowedRoles={item.roles} 
+                requiredPermission={item.permission}
+              >
+                <SidebarMenuItem item={item} />
+              </MenuItemGuard>
             ))}
           </SidebarMenu>
         </SidebarSection>
@@ -51,24 +71,40 @@ export function AppSidebar() {
         <SidebarSection title="GESTÃO">
           <SidebarMenu className="space-y-1">
             {gestaoItems.map((item) => (
-              <SidebarMenuItem key={item.href} item={item} />
+              <MenuItemGuard 
+                key={item.href} 
+                allowedRoles={item.roles} 
+                requiredPermission={item.permission}
+              >
+                <SidebarMenuItem item={item} />
+              </MenuItemGuard>
             ))}
           </SidebarMenu>
         </SidebarSection>
 
-        {/* PORTAIS */}
-        <SidebarSection title="PORTAIS">
-          <SidebarMenu className="space-y-1">
-            {portaisItems.map((item) => (
-              <SidebarMenuItem key={item.href} item={item} />
-            ))}
-          </SidebarMenu>
-        </SidebarSection>
+        {/* PORTAIS - Agora sem Portal Funcionário */}
+        {portaisItems.length > 0 && (
+          <SidebarSection title="PORTAIS">
+            <SidebarMenu className="space-y-1">
+              {portaisItems.map((item) => (
+                <MenuItemGuard 
+                  key={item.href} 
+                  allowedRoles={item.roles} 
+                  requiredPermission={item.permission}
+                >
+                  <SidebarMenuItem item={item} />
+                </MenuItemGuard>
+              ))}
+            </SidebarMenu>
+          </SidebarSection>
+        )}
 
         {/* FATURAMENTO */}
         <SidebarSection title="">
           <SidebarMenu className="space-y-1">
-            <SidebarMenuItem key={faturamentoItem.href} item={faturamentoItem} />
+            <MenuItemGuard allowedRoles={faturamentoItem.roles} requiredPermission={faturamentoItem.permission}>
+              <SidebarMenuItem key={faturamentoItem.href} item={faturamentoItem} />
+            </MenuItemGuard>
           </SidebarMenu>
         </SidebarSection>
 
@@ -80,7 +116,7 @@ export function AppSidebar() {
               title: item.title,
               href: item.url,
               icon: item.icon,
-              roles: ["admin", "manager"]
+              roles: ["admin", "superadmin"]
             }))}
             icon={undefined}
           />
