@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthRoutes } from "./AuthRoutes";
@@ -13,6 +14,7 @@ import { useMemo } from "react";
 const isEmployeeRoute = (pathname: string): boolean => {
   const employeePatterns = [
     '/employee-portal',
+    '/portal-funcionario',
     '/auth/employee',
     '/avaliacao/',
     '/assessment/'
@@ -64,6 +66,9 @@ export function AppRoutes() {
       <Route path="/auth/*" element={<AuthRoutes />} />
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+
+      {/* Redirecionamento do portal do funcionário */}
+      <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />
 
       {/* Rotas administrativas protegidas */}
       {user && (

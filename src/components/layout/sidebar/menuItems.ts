@@ -1,129 +1,112 @@
 
 import { 
+  LayoutDashboard, 
   Building2, 
   Users, 
-  Briefcase, 
-  Factory, 
+  FileCheck, 
   ClipboardList, 
-  TrendingUp, 
-  Shield, 
-  FileText, 
+  BarChart3, 
+  AlertTriangle,
+  BookOpen,
+  UserCircle,
   Calendar,
-  CreditCard,
-  UserCheck,
-  GitCompare,
-  BarChart3,
-  FileBarChart,
-  User
+  ShieldCheck,
+  Settings,
+  FileText,
+  TrendingUp,
+  Zap
 } from "lucide-react";
-import type { MenuItem } from "./types";
+import { MenuItemType } from "./types";
 
-// Dashboard (standalone)
-export const dashboardItem: MenuItem = {
-  title: "Dashboard",
-  href: "/dashboard",
-  icon: BarChart3,
-  roles: ["admin", "manager", "user"]
-};
-
-// Seção CADASTROS
-export const cadastrosItems: MenuItem[] = [
+export const menuItems: MenuItemType[] = [
+  {
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    href: "/dashboard",
+    permission: "dashboard:read"
+  },
   {
     title: "Empresas",
-    href: "/empresas",
     icon: Building2,
-    roles: ["admin", "manager"]
+    href: "/companies",
+    permission: "companies:read"
   },
   {
     title: "Funcionários",
-    href: "/funcionarios",
     icon: Users,
-    roles: ["admin", "manager", "user"]
+    href: "/employees",
+    permission: "employees:read"
   },
   {
-    title: "Funções",
-    href: "/funcoes",
-    icon: Briefcase,
-    roles: ["admin", "manager"]
+    title: "Cargos",
+    icon: UserCircle,
+    href: "/roles",
+    permission: "roles:read"
   },
   {
     title: "Setores",
-    href: "/setores",
-    icon: Factory,
-    roles: ["admin", "manager"]
-  }
-];
-
-// Seção AVALIAÇÕES
-export const avaliacoesItems: MenuItem[] = [
+    icon: Building2,
+    href: "/sectors",
+    permission: "sectors:read"
+  },
   {
-    title: "Templates",
-    href: "/checklists",
+    title: "Checklists",
     icon: ClipboardList,
-    roles: ["admin", "manager", "user"]
-  },
-  {
-    title: "Resultados",
-    href: "/resultados",
-    icon: TrendingUp,
-    roles: ["admin", "manager", "user"]
-  },
-  {
-    title: "Comparação",
-    href: "/candidatos/comparacao",
-    icon: GitCompare,
-    roles: ["admin", "manager"]
+    href: "/checklists",
+    permission: "checklists:read"
   },
   {
     title: "Avaliações",
-    href: "/candidatos/avaliacoes",
-    icon: UserCheck,
-    roles: ["admin", "manager"]
-  }
-];
-
-// Seção GESTÃO
-export const gestaoItems: MenuItem[] = [
-  {
-    title: "Gestão de Riscos",
-    href: "/gestao-riscos", 
-    icon: Shield,
-    roles: ["admin", "manager"]
-  },
-  {
-    title: "Plano de Ação",
-    href: "/plano-acao",
-    icon: FileText,
-    roles: ["admin", "manager"]
+    icon: FileCheck,
+    href: "/assessments",
+    permission: "assessments:read"
   },
   {
     title: "Agendamentos",
-    href: "/agendamentos",
     icon: Calendar,
-    roles: ["admin", "manager"]
+    href: "/assessment-scheduling",
+    permission: "assessments:schedule"
+  },
+  {
+    title: "Resultados",
+    icon: BarChart3,
+    href: "/assessment-results",
+    permission: "assessment_results:read"
+  },
+  {
+    title: "Riscos Psicossociais",
+    icon: AlertTriangle,
+    href: "/psychosocial-risks",
+    permission: "psychosocial_risks:read"
+  },
+  {
+    title: "Planos de Ação",
+    icon: FileText,
+    href: "/action-plans",
+    permission: "action_plans:read"
   },
   {
     title: "Relatórios",
-    href: "/relatorios",
-    icon: FileBarChart,
-    roles: ["admin", "manager", "user"]
-  }
-];
-
-// Seção PORTAIS
-export const portaisItems: MenuItem[] = [
+    icon: TrendingUp,
+    href: "/reports",
+    permission: "reports:read"
+  },
   {
-    title: "Portal do Funcionário",
-    href: "/portal-funcionario",
-    icon: User,
-    roles: ["admin", "manager"]
+    title: "Auditoria",
+    icon: ShieldCheck,
+    href: "/audit",
+    permission: "audit:read"
+  },
+  {
+    title: "Portal Funcionário",
+    icon: Users,
+    href: "/employee-portal",
+    permission: "employees:read"
+  },
+  {
+    title: "Automação",
+    icon: Zap,
+    href: "/automation",
+    permission: "automation:read"
   }
 ];
-
-// FATURAMENTO (standalone)
-export const faturamentoItem: MenuItem = {
-  title: "Faturamento",
-  href: "/faturamento",
-  icon: CreditCard,
-  roles: ["admin"]
-};
