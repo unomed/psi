@@ -1,14 +1,15 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { EmployeeSelectionStep } from "./steps/EmployeeSelectionStep";
-import { TemplateSelectionStep } from "./steps/TemplateSelectionStep";
-import { SchedulingDetailsStep } from "./steps/SchedulingDetailsStep";
-import { ConfirmationStep } from "./steps/ConfirmationStep";
-import { toast } from "sonner";
+import { ChecklistSelectionStep } from "./ChecklistSelectionStep";
+import { EmployeeSelectionStep } from "../assessments/scheduling/EmployeeSelectionStep";
+import { SchedulingDetailsStep } from "../assessments/scheduling/SchedulingDetailsStep";
 import { useAssessmentScheduling } from "@/hooks/assessment-scheduling/useAssessmentScheduling";
+import { ChecklistTemplate, RecurrenceType } from "@/types";
+import { toast } from "sonner";
 
 interface SchedulingWorkflowProps {
   isOpen: boolean;
@@ -16,157 +17,139 @@ interface SchedulingWorkflowProps {
 }
 
 export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const {
-    selectedEmployee,
-    setSelectedEmployee,
-    selectedTemplate,
-    setSelectedTemplate,
-    schedulingDetails,
-    setSchedulingDetails,
-    scheduleAssessment,
-    isLoading
-  } = useAssessmentScheduling();
+  const [currentStep, setCurrentStep] = useState<'checklist' | 'employee' | 'scheduling'>('checklist');
+  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistTemplate | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [schedulingDetails, setSchedulingDetails] = useState({
+    scheduledDate: new Date(),
+    recurrenceType: "none" as RecurrenceType,
+    phoneNumber: "",
+    sendEmail: true,
+    sendWhatsApp: false
+  });
 
-  const steps = [
-    { number: 1, title: "Funcionário", description: "Selecionar funcionário" },
-    { number: 2, title: "Template", description: "Escolher modelo de avaliação" },
-    { number: 3, title: "Detalhes", description: "Configurar agendamento" },
-    { number: 4, title: "Confirmação", description: "Revisar e confirmar" }
-  ];
+  const { scheduleAssessment, isLoading } = useAssessmentScheduling();
 
   const handleNext = () => {
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
+    if (currentStep === 'checklist' && selectedChecklist) {
+      setCurrentStep('employee');
+    } else if (currentStep === 'employee' && selectedEmployee) {
+      setCurrentStep('scheduling');
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    if (currentStep === 'scheduling') {
+      setCurrentStep('employee');
+    } else if (currentStep === 'employee') {
+      setCurrentStep('checklist');
     }
   };
 
-  const handleConfirm = async () => {
+  const handleSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
+    if (!selectedEmployee || !selectedChecklist || !schedulingDetails.scheduledDate) {
+      toast.error("Dados incompletos para agendamento");
+      return;
+    }
+
     try {
+      // Simulate scheduling with the complete data
       await scheduleAssessment();
       toast.success("Avaliação agendada com sucesso!");
-      onClose();
-      resetForm();
+      handleClose();
     } catch (error) {
+      console.error("Erro ao agendar:", error);
       toast.error("Erro ao agendar avaliação");
     }
   };
 
-  const resetForm = () => {
-    setCurrentStep(1);
+  const handleClose = () => {
+    setCurrentStep('checklist');
+    setSelectedChecklist(null);
     setSelectedEmployee(null);
-    setSelectedTemplate(null);
     setSchedulingDetails({
-      scheduledDate: undefined,
+      scheduledDate: new Date(),
       recurrenceType: "none",
       phoneNumber: "",
       sendEmail: true,
       sendWhatsApp: false
     });
+    onClose();
   };
 
-  const canProceed = () => {
-    switch (currentStep) {
-      case 1: return !!selectedEmployee;
-      case 2: return !!selectedTemplate;
-      case 3: return !!schedulingDetails.scheduledDate;
-      case 4: return true;
-      default: return false;
-    }
+  const isNextDisabled = () => {
+    if (currentStep === 'checklist') return !selectedChecklist;
+    if (currentStep === 'employee') return !selectedEmployee;
+    return false;
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Agendar Nova Avaliação</DialogTitle>
         </DialogHeader>
 
-        {/* Progress Steps */}
-        <div className="flex justify-between mb-8">
-          {steps.map((step, index) => (
-            <div key={step.number} className="flex items-center">
-              <div 
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  currentStep >= step.number 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-muted-foreground'
-                }`}
+        <div className="space-y-6">
+          <Tabs value={currentStep} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="checklist" disabled={currentStep !== 'checklist'}>
+                1. Checklist
+              </TabsTrigger>
+              <TabsTrigger value="employee" disabled={currentStep !== 'employee'}>
+                2. Funcionário
+              </TabsTrigger>
+              <TabsTrigger value="scheduling" disabled={currentStep !== 'scheduling'}>
+                3. Agendamento
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="checklist" className="mt-6">
+              <ChecklistSelectionStep
+                selectedChecklist={selectedChecklist}
+                onChecklistSelect={setSelectedChecklist}
+              />
+            </TabsContent>
+
+            <TabsContent value="employee" className="mt-6">
+              <EmployeeSelectionStep
+                selectedEmployee={selectedEmployee}
+                onEmployeeSelect={setSelectedEmployee}
+              />
+            </TabsContent>
+
+            <TabsContent value="scheduling" className="mt-6">
+              <SchedulingDetailsStep
+                employeeName={selectedEmployee?.name || ""}
+                employeeEmail={selectedEmployee?.email}
+                templateTitle={selectedChecklist?.title}
+                scheduledDate={schedulingDetails.scheduledDate}
+                onDateSelect={(date) => setSchedulingDetails(prev => ({ ...prev, scheduledDate: date || new Date() }))}
+                onBack={handleBack}
+                onSchedule={handleSchedule}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {currentStep !== 'scheduling' && (
+            <div className="flex justify-between pt-4">
+              <Button 
+                variant="outline" 
+                onClick={handleBack}
+                disabled={currentStep === 'checklist'}
               >
-                {step.number}
-              </div>
-              <div className="ml-2 hidden sm:block">
-                <p className="text-sm font-medium">{step.title}</p>
-                <p className="text-xs text-muted-foreground">{step.description}</p>
-              </div>
-              {index < steps.length - 1 && (
-                <div className="w-8 h-px bg-muted mx-4 hidden sm:block" />
-              )}
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+              </Button>
+              
+              <Button 
+                onClick={handleNext}
+                disabled={isNextDisabled()}
+              >
+                Próximo
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
-          ))}
-        </div>
-
-        {/* Step Content */}
-        <div className="min-h-[400px]">
-          {currentStep === 1 && (
-            <EmployeeSelectionStep 
-              selectedEmployee={selectedEmployee}
-              onEmployeeSelect={setSelectedEmployee}
-            />
-          )}
-          {currentStep === 2 && (
-            <TemplateSelectionStep 
-              selectedTemplate={selectedTemplate}
-              onTemplateSelect={setSelectedTemplate}
-            />
-          )}
-          {currentStep === 3 && (
-            <SchedulingDetailsStep 
-              details={schedulingDetails}
-              onDetailsChange={setSchedulingDetails}
-            />
-          )}
-          {currentStep === 4 && (
-            <ConfirmationStep 
-              employee={selectedEmployee}
-              template={selectedTemplate}
-              details={schedulingDetails}
-            />
-          )}
-        </div>
-
-        {/* Navigation */}
-        <div className="flex justify-between pt-6 border-t">
-          <Button 
-            variant="outline" 
-            onClick={handleBack}
-            disabled={currentStep === 1}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
-          
-          {currentStep < 4 ? (
-            <Button 
-              onClick={handleNext}
-              disabled={!canProceed()}
-            >
-              Próximo
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleConfirm}
-              disabled={isLoading}
-            >
-              {isLoading ? "Agendando..." : "Confirmar Agendamento"}
-            </Button>
           )}
         </div>
       </DialogContent>
