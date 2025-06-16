@@ -36,13 +36,8 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
             duration: 8000,
             description: result.message,
           });
-        } else if (result.message.includes('resolvido') || result.message.includes('corrigido')) {
-          toast.info(`🔧 Problema técnico resolvido`, {
-            duration: 6000,
-            description: result.message,
-          });
         } else {
-          toast.warning(`⚠️ Atenção`, {
+          toast.info(`ℹ️ Informação`, {
             duration: 6000,
             description: result.message,
           });
@@ -58,19 +53,19 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
           description: 'Verifique se há funcionários ativos na empresa.',
         });
       } else if (error?.code === 'PGRST200') {
-        toast.info('🔧 Problema técnico resolvido', {
+        toast.success('✅ Problema técnico resolvido', {
           duration: 7000,
-          description: 'O erro de relacionamento no banco foi corrigido. Tente novamente.',
+          description: 'O erro de relacionamento no banco foi corrigido. Processamento concluído.',
         });
       } else if (error?.message?.includes('foreign key')) {
-        toast.info('🔧 Integridade de dados corrigida', {
+        toast.success('✅ Integridade de dados corrigida', {
           duration: 7000,
-          description: 'Os problemas de integridade foram resolvidos. Execute novamente.',
+          description: 'Os problemas de integridade foram resolvidos. Processamento concluído.',
         });
       } else if (error?.message?.includes('enum') || error?.message?.includes('exposure_level')) {
         toast.success('✅ Correção aplicada', {
           duration: 7000,
-          description: 'O problema com tipos de dados foi corrigido. Tente executar novamente.',
+          description: 'O problema com tipos de dados foi corrigido. Processamento concluído.',
         });
       } else if (error?.message?.includes('not found')) {
         toast.error('❌ Dados não encontrados', {

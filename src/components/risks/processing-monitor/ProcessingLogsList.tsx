@@ -61,6 +61,36 @@ export function ProcessingLogsList({ logs }: ProcessingLogsListProps) {
     return log.details?.exposure_level || null;
   };
 
+  const getExposureLevelColor = (level: string) => {
+    switch (level) {
+      case 'critico':
+        return 'text-red-600';
+      case 'alto':
+        return 'text-orange-600';
+      case 'medio':
+        return 'text-yellow-600';
+      case 'baixo':
+        return 'text-green-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const getExposureLevelLabel = (level: string) => {
+    switch (level) {
+      case 'critico':
+        return 'Crítico';
+      case 'alto':
+        return 'Alto';
+      case 'medio':
+        return 'Médio';
+      case 'baixo':
+        return 'Baixo';
+      default:
+        return level;
+    }
+  };
+
   if (logs.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -87,13 +117,16 @@ export function ProcessingLogsList({ logs }: ProcessingLogsListProps) {
                     variant={getStatusBadgeVariant(log.status)}
                     className="text-xs"
                   >
-                    {log.status}
+                    {log.status === 'completed' ? 'Concluído' : 
+                     log.status === 'error' ? 'Erro' : 
+                     log.status === 'processing' ? 'Processando' : log.status}
                   </Badge>
                 </div>
                 
                 <div className="text-xs text-muted-foreground space-y-1">
                   <div className="capitalize">
-                    Estágio: {log.processing_stage}
+                    Estágio: {log.processing_stage === 'started' ? 'Iniciado' : 
+                             log.processing_stage === 'finished' ? 'Finalizado' : log.processing_stage}
                   </div>
                   <div>
                     Iniciado: {formatTimestamp(log.created_at)}
@@ -109,7 +142,7 @@ export function ProcessingLogsList({ logs }: ProcessingLogsListProps) {
                 <div className="mt-2 space-y-1">
                   {log.details?.employee_name && (
                     <div className="text-xs text-muted-foreground">
-                      Funcionário: {log.details.employee_name}
+                      Funcionário: <span className="font-medium">{log.details.employee_name}</span>
                     </div>
                   )}
                   
@@ -117,14 +150,16 @@ export function ProcessingLogsList({ logs }: ProcessingLogsListProps) {
                     <div className="flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" />
                       <span className="text-xs">
-                        Nível de exposição: <span className="font-medium capitalize">{getExposureLevel(log)}</span>
+                        Nível de exposição: <span className={`font-medium ${getExposureLevelColor(getExposureLevel(log))}`}>
+                          {getExposureLevelLabel(getExposureLevel(log))}
+                        </span>
                       </span>
                     </div>
                   )}
 
                   {getProcessingTime(log) && (
                     <div className="text-xs text-muted-foreground">
-                      Tempo de processamento: {getProcessingTime(log)}
+                      Tempo de processamento: <span className="font-medium">{getProcessingTime(log)}</span>
                     </div>
                   )}
                 </div>
