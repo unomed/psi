@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Lock, AlertCircle, Info } from "lucide-react";
+import { User, Lock, AlertCircle } from "lucide-react";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { toast } from "sonner";
 
@@ -103,8 +103,6 @@ export function EmployeeLoginForm({
     }
   };
 
-  const lastFourDigits = getLastFourDigits(cpf);
-
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
@@ -152,17 +150,6 @@ export function EmployeeLoginForm({
                 maxLength={4}
               />
             </div>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>Digite os 4 últimos dígitos do seu CPF (sem pontuação)</p>
-              {lastFourDigits && (
-                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md border">
-                  <Info className="h-4 w-4 text-blue-600" />
-                  <span className="text-blue-800 font-medium">
-                    Sua senha deve ser: <strong>{lastFourDigits}</strong>
-                  </span>
-                </div>
-              )}
-            </div>
           </div>
 
           {error && (
@@ -189,13 +176,6 @@ export function EmployeeLoginForm({
             {isLoading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
-
-        {/* Exemplo de como usar */}
-        <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
-          <strong>Exemplo:</strong><br />
-          CPF: 123.456.789-12<br />
-          Senha: 9712 (últimos 4 dígitos)
-        </div>
       </CardContent>
     </Card>
   );
