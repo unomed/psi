@@ -5,6 +5,9 @@ import { useRoleRequiredTags } from "@/hooks/useRoleRequiredTags";
 import { AddTagDialog } from "./AddTagDialog";
 import { MissingRequiredTags } from "./MissingRequiredTags";
 import { CurrentTagsList } from "./CurrentTagsList";
+import { TagSystemDebug } from "./TagSystemDebug";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface TechnicalTagsSectionProps {
   employeeId?: string;
@@ -13,6 +16,7 @@ interface TechnicalTagsSectionProps {
 }
 
 export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }: TechnicalTagsSectionProps) {
+  const [showDebug, setShowDebug] = useState(false);
   const { employeeTags, isLoading: isLoadingEmployeeTags } = useEmployeeTags(employeeId);
   const { tagTypes, isLoading: isLoadingTagTypes } = useTagTypes();
   const { requiredTags, isLoading: isLoadingRequiredTags } = useRoleRequiredTags(selectedRole);
@@ -54,12 +58,28 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
     <div className="space-y-4 border p-4 rounded-md">
       <div className="flex items-center justify-between">
         <FormLabel>Competências/Tags Técnicas</FormLabel>
-        <AddTagDialog 
-          employeeId={employeeId}
-          availableTagTypes={availableTagTypes}
-          onTagAdded={handleTagsChanged}
-        />
+        <div className="flex gap-2">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setShowDebug(!showDebug)}
+          >
+            🔧 Debug
+          </Button>
+          <AddTagDialog 
+            employeeId={employeeId}
+            availableTagTypes={availableTagTypes}
+            onTagAdded={handleTagsChanged}
+          />
+        </div>
       </div>
+
+      {showDebug && (
+        <div className="mb-4">
+          <TagSystemDebug />
+        </div>
+      )}
 
       {missingRequiredTags.length > 0 && (
         <MissingRequiredTags missingRequiredTags={missingRequiredTags} />
@@ -75,6 +95,20 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
       {employeeId && (
         <div className="text-xs text-muted-foreground">
           ID do funcionário: {employeeId}
+        </div>
+      )}
+
+      {/* Status de carregamento detalhado em modo debug */}
+      {showDebug && (
+        <div className="mt-4 p-3 bg-muted rounded text-xs space-y-1">
+          <div>🏷️ Tipos disponíveis: {availableTagTypes.length}</div>
+          <div>👤 Tags do funcionário: {employeeTags.length}</div>
+          <div>⚠️ Tags obrigatórias em falta: {missingRequiredTags.length}</div>
+          <div>🔄 Estados de carregamento: 
+            Tags={isLoadingEmployeeTags ? "⏳" : "✅"}, 
+            Tipos={isLoadingTagTypes ? "⏳" : "✅"}, 
+            Obrigatórias={isLoadingRequiredTags ? "⏳" : "✅"}
+          </div>
         </div>
       )}
     </div>

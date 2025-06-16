@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useEmployeeTags } from "@/hooks/useEmployeeTags";
 import type { EmployeeTagType } from "@/types/tags";
+import { toast } from "sonner";
 
 interface AddTagDialogProps {
   employeeId?: string;
@@ -26,6 +27,7 @@ export function AddTagDialog({ employeeId, availableTagTypes, onTagAdded }: AddT
   const handleAddTag = async () => {
     if (!employeeId || !selectedTagType) {
       console.warn("[AddTagDialog] Dados insuficientes:", { employeeId, selectedTagType });
+      toast.warning("Selecione um funcionário e uma tag");
       return;
     }
 
@@ -49,15 +51,21 @@ export function AddTagDialog({ employeeId, availableTagTypes, onTagAdded }: AddT
       setAcquiredDate("");
       setNotes("");
       
+      toast.success("Tag adicionada com sucesso!");
       onTagAdded?.();
-    } catch (error) {
-      console.error("Error adding tag:", error);
+    } catch (error: any) {
+      console.error("[AddTagDialog] Erro ao adicionar tag:", error);
+      toast.error(`Erro ao adicionar tag: ${error.message}`);
     }
   };
 
   if (!employeeId) {
     console.warn("[AddTagDialog] Sem employeeId, componente desabilitado");
-    return null;
+    return (
+      <div className="text-sm text-muted-foreground">
+        Selecione um funcionário para gerenciar tags
+      </div>
+    );
   }
 
   if (availableTagTypes.length === 0) {
@@ -82,7 +90,7 @@ export function AddTagDialog({ employeeId, availableTagTypes, onTagAdded }: AddT
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="tag-type">Tipo de Tag</Label>
+            <Label htmlFor="tag-type">Tipo de Tag *</Label>
             <Select value={selectedTagType} onValueChange={setSelectedTagType}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma tag" />
