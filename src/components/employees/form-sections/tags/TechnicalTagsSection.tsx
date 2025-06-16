@@ -13,6 +13,7 @@ import { TagSystemStatusIndicators } from "./TagSystemStatusIndicators";
 import { TagModeToggle } from "./TagModeToggle";
 import { TagDebugSection } from "./TagDebugSection";
 import { TagSystemWarnings } from "./TagSystemWarnings";
+import { AssessmentIntegration } from "./AssessmentIntegration";
 import { useState } from "react";
 
 interface TechnicalTagsSectionProps {
@@ -25,6 +26,7 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
   const [showDebug, setShowDebug] = useState(false);
   const [showMigration, setShowMigration] = useState(false);
   const [useAdvancedMode, setUseAdvancedMode] = useState(false);
+  const [showAssessmentIntegration, setShowAssessmentIntegration] = useState(false);
   
   const { employeeTags, isLoading: isLoadingEmployeeTags } = useEmployeeTags(employeeId);
   const { tagTypes, isLoading: isLoadingTagTypes } = useTagTypes();
@@ -72,21 +74,23 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
     );
   }
 
-  // Modo Avançado
+  // Modo Avançado com IA
   if (useAdvancedMode) {
     return (
       <TagSystemErrorBoundary>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <FormLabel className="text-lg font-semibold">Sistema Avançado de Tags</FormLabel>
-            <TagModeToggle
-              useAdvancedMode={useAdvancedMode}
-              showMigration={showMigration}
-              showDebug={showDebug}
-              onAdvancedModeToggle={() => setUseAdvancedMode(false)}
-              onMigrationToggle={() => setShowMigration(!showMigration)}
-              onDebugToggle={() => setShowDebug(!showDebug)}
-            />
+            <FormLabel className="text-lg font-semibold">Sistema Avançado de Tags com IA</FormLabel>
+            <div className="flex gap-2">
+              <TagModeToggle
+                useAdvancedMode={useAdvancedMode}
+                showMigration={showMigration}
+                showDebug={showDebug}
+                onAdvancedModeToggle={() => setUseAdvancedMode(false)}
+                onMigrationToggle={() => setShowMigration(!showMigration)}
+                onDebugToggle={() => setShowDebug(!showDebug)}
+              />
+            </div>
           </div>
           
           <AdvancedTagsManager
@@ -94,6 +98,29 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
             selectedRole={selectedRole}
             onTagsChange={onTagsChange}
           />
+
+          {/* Integração com Avaliações */}
+          {employeeId && (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Integração com Avaliações</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowAssessmentIntegration(!showAssessmentIntegration)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  {showAssessmentIntegration ? 'Ocultar' : 'Mostrar'} Integração
+                </button>
+              </div>
+              
+              {showAssessmentIntegration && (
+                <AssessmentIntegration
+                  employeeId={employeeId}
+                  roleId={selectedRole}
+                />
+              )}
+            </div>
+          )}
         </div>
       </TagSystemErrorBoundary>
     );
@@ -173,6 +200,28 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
             isLoadingRequiredTags={isLoadingRequiredTags}
             systemHealthy={systemHealthy}
           />
+        )}
+
+        {/* Botão para mostrar integração com avaliações no modo simples */}
+        {employeeId && (
+          <div className="mt-4 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => setShowAssessmentIntegration(!showAssessmentIntegration)}
+              className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              🤖 {showAssessmentIntegration ? 'Ocultar' : 'Ver'} Recomendações de IA baseadas em Avaliações
+            </button>
+            
+            {showAssessmentIntegration && (
+              <div className="mt-4">
+                <AssessmentIntegration
+                  employeeId={employeeId}
+                  roleId={selectedRole}
+                />
+              </div>
+            )}
+          </div>
         )}
       </div>
     </TagSystemErrorBoundary>

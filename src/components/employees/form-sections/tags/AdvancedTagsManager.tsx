@@ -11,6 +11,7 @@ import { TagsOverviewTab } from "./TagsOverviewTab";
 import { TagsManagementTab } from "./TagsManagementTab";
 import { TagsAnalyticsTab } from "./TagsAnalyticsTab";
 import { TagsMonitoringTab } from "./TagsMonitoringTab";
+import { AIEnhancedTagsManager } from "./AIEnhancedTagsManager";
 
 interface AdvancedTagsManagerProps {
   employeeId?: string;
@@ -145,9 +146,10 @@ export function AdvancedTagsManager({
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="management">Gestão</TabsTrigger>
+            <TabsTrigger value="ai">IA & Automação</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
           </TabsList>
@@ -173,6 +175,15 @@ export function AdvancedTagsManager({
               handleRemoveTag={handleRemoveTag}
               addEmployeeTagMutation={addEmployeeTag}
               removeEmployeeTagMutation={removeEmployeeTag}
+            />
+          </TabsContent>
+
+          <TabsContent value="ai" className="space-y-4">
+            <AIEnhancedTagsManager
+              employeeId={employeeId}
+              roleId={selectedRole}
+              companyId={companyId}
+              onTagsChange={onTagsChange}
             />
           </TabsContent>
 
