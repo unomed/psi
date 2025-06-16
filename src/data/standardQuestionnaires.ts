@@ -6,7 +6,10 @@ import {
   getDefaultPsicossocialQuestions, 
   getSRQ20Questions, 
   getPHQ9Questions, 
-  getGAD7Questions, 
+  getGAD7Questions,
+  getMBIQuestions,
+  getAUDITQuestions,
+  getPSSQuestions,
   getPersonalLifeQuestions,
   getEvaluation360ColleagueQuestions,
   getEvaluation360ManagerQuestions
@@ -25,12 +28,12 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
   },
   {
     id: "psicossocial_mte",
-    name: "Avaliação Psicossocial - MTE",
-    description: "Avaliação baseada no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego",
+    name: "Avaliação Psicossocial - MTE Completa",
+    description: "Avaliação completa baseada no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego",
     type: "psicossocial" as const,
     scaleType: ScaleType.Psicossocial,
     questions: getDefaultPsicossocialQuestions(),
-    estimatedTimeMinutes: 15,
+    estimatedTimeMinutes: 25,
     instructions: "Avalie cada afirmação considerando sua experiência no trabalho nos últimos 6 meses."
   },
   {
@@ -64,13 +67,43 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
     instructions: "Indique com que frequência você foi incomodado pelos seguintes problemas nas últimas 2 semanas."
   },
   {
+    id: "mbi_standard",
+    name: "MBI - Inventário de Burnout de Maslach",
+    description: "Avaliação de síndrome de burnout em três dimensões: exaustão emocional, despersonalização e realização pessoal",
+    type: "mbi" as const,
+    scaleType: ScaleType.Frequency,
+    questions: getMBIQuestions(),
+    estimatedTimeMinutes: 15,
+    instructions: "Indique com que frequência você experiencia cada situação descrita."
+  },
+  {
+    id: "audit_standard",
+    name: "AUDIT - Transtornos por Uso de Álcool",
+    description: "Alcohol Use Disorders Identification Test para identificação de problemas relacionados ao álcool",
+    type: "audit" as const,
+    scaleType: ScaleType.Frequency,
+    questions: getAUDITQuestions(),
+    estimatedTimeMinutes: 5,
+    instructions: "Responda honestamente sobre seus hábitos relacionados ao consumo de álcool."
+  },
+  {
+    id: "pss_standard",
+    name: "PSS - Escala de Estresse Percebido",
+    description: "Perceived Stress Scale para avaliação do nível de estresse percebido",
+    type: "pss" as const,
+    scaleType: ScaleType.Frequency,
+    questions: getPSSQuestions(),
+    estimatedTimeMinutes: 8,
+    instructions: "Pense em como você se sentiu e pensou durante o último mês."
+  },
+  {
     id: "personal_life_standard",
     name: "Questionário de Vida Pessoal e Familiar",
     description: "Avaliação de fatores pessoais e familiares que podem influenciar o bem-estar no trabalho",
     type: "personal_life" as const,
     scaleType: ScaleType.Likert,
     questions: getPersonalLifeQuestions(),
-    estimatedTimeMinutes: 10,
+    estimatedTimeMinutes: 12,
     instructions: "Este questionário é confidencial. Responda honestamente sobre sua situação pessoal."
   },
   {
@@ -80,7 +113,7 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
     type: "evaluation_360" as const,
     scaleType: ScaleType.Likert,
     questions: getEvaluation360ColleagueQuestions(),
-    estimatedTimeMinutes: 8,
+    estimatedTimeMinutes: 10,
     instructions: "Avalie seu colega de trabalho de forma honesta e construtiva. Suas respostas são anônimas.",
     isAnonymous: true,
     restrictToSector: true
@@ -92,7 +125,7 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
     type: "evaluation_360" as const,
     scaleType: ScaleType.Likert,
     questions: getEvaluation360ManagerQuestions(),
-    estimatedTimeMinutes: 12,
+    estimatedTimeMinutes: 15,
     instructions: "Avalie seu gestor de forma honesta e construtiva. Suas respostas são anônimas.",
     isAnonymous: true,
     restrictToSector: true

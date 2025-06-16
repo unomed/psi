@@ -191,9 +191,10 @@ export function getDefaultDiscQuestions(): DiscQuestion[] {
   ];
 }
 
-// Perguntas padrão para Psicossocial (baseado no MTE)
+// Perguntas padrão para Psicossocial (baseado no MTE) - COMPLETO
 export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
   return [
+    // Demandas de Trabalho
     {
       id: "psico_1",
       text: "Tenho que trabalhar muito rapidamente",
@@ -214,50 +215,246 @@ export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
     },
     {
       id: "psico_4",
+      text: "Frequentemente tenho que trabalhar com muito esforço",
+      category: "Demandas de Trabalho",
+      weight: 1
+    },
+    {
+      id: "psico_5",
+      text: "Meu trabalho me deixa mentalmente exausto",
+      category: "Demandas de Trabalho",
+      weight: 1
+    },
+    
+    // Controle e Autonomia
+    {
+      id: "psico_6",
       text: "Posso decidir como fazer meu trabalho",
       category: "Controle e Autonomia",
       weight: 1
     },
     {
-      id: "psico_5",
+      id: "psico_7",
       text: "Tenho influência sobre o que acontece no meu trabalho",
       category: "Controle e Autonomia",
       weight: 1
     },
     {
-      id: "psico_6",
+      id: "psico_8",
+      text: "Posso decidir o ritmo do meu trabalho",
+      category: "Controle e Autonomia",
+      weight: 1
+    },
+    {
+      id: "psico_9",
+      text: "Tenho liberdade para decidir como fazer meu trabalho",
+      category: "Controle e Autonomia",
+      weight: 1
+    },
+    
+    // Suporte Social
+    {
+      id: "psico_10",
       text: "Recebo ajuda de meus colegas quando necessário",
       category: "Suporte Social",
       weight: 1
     },
     {
-      id: "psico_7",
+      id: "psico_11",
       text: "Meu supervisor me dá apoio quando preciso",
       category: "Suporte Social",
       weight: 1
     },
     {
-      id: "psico_8",
+      id: "psico_12",
+      text: "Sinto-me isolado dos meus colegas de trabalho",
+      category: "Suporte Social",
+      weight: 1
+    },
+    {
+      id: "psico_13",
+      text: "Tenho bom relacionamento com meus colegas",
+      category: "Suporte Social",
+      weight: 1
+    },
+    
+    // Relacionamentos Interpessoais
+    {
+      id: "psico_14",
+      text: "Existe conflito entre as pessoas no meu local de trabalho",
+      category: "Relacionamentos Interpessoais",
+      weight: 1
+    },
+    {
+      id: "psico_15",
+      text: "As pessoas no meu trabalho são hostis umas com as outras",
+      category: "Relacionamentos Interpessoais",
+      weight: 1
+    },
+    {
+      id: "psico_16",
+      text: "Sou tratado de forma justa no trabalho",
+      category: "Relacionamentos Interpessoais",
+      weight: 1
+    },
+    {
+      id: "psico_17",
+      text: "Existe boa comunicação entre os colegas",
+      category: "Relacionamentos Interpessoais",
+      weight: 1
+    },
+    
+    // Clareza de Papel
+    {
+      id: "psico_18",
       text: "Sei exatamente o que é esperado de mim no trabalho",
       category: "Clareza de Papel",
       weight: 1
     },
     {
-      id: "psico_9",
+      id: "psico_19",
       text: "Tenho objetivos claros para meu trabalho",
       category: "Clareza de Papel",
       weight: 1
     },
     {
-      id: "psico_10",
-      text: "Sou tratado de forma justa no trabalho",
-      category: "Relacionamentos Interpessoais",
+      id: "psico_20",
+      text: "Sei quais são minhas responsabilidades",
+      category: "Clareza de Papel",
+      weight: 1
+    },
+    {
+      id: "psico_21",
+      text: "Recebo informações contraditórias sobre meu trabalho",
+      category: "Clareza de Papel",
+      weight: 1
+    },
+    
+    // Reconhecimento e Recompensas
+    {
+      id: "psico_22",
+      text: "Recebo reconhecimento adequado pelo meu trabalho",
+      category: "Reconhecimento e Recompensas",
+      weight: 1
+    },
+    {
+      id: "psico_23",
+      text: "Sou recompensado de acordo com meus esforços",
+      category: "Reconhecimento e Recompensas",
+      weight: 1
+    },
+    {
+      id: "psico_24",
+      text: "Meu salário é adequado para o trabalho que realizo",
+      category: "Reconhecimento e Recompensas",
+      weight: 1
+    },
+    {
+      id: "psico_25",
+      text: "Tenho oportunidades de crescimento profissional",
+      category: "Reconhecimento e Recompensas",
+      weight: 1
+    },
+    
+    // Gestão de Mudanças
+    {
+      id: "psico_26",
+      text: "Sou informado sobre mudanças que afetam meu trabalho",
+      category: "Gestão de Mudanças",
+      weight: 1
+    },
+    {
+      id: "psico_27",
+      text: "Tenho tempo adequado para me adaptar às mudanças",
+      category: "Gestão de Mudanças",
+      weight: 1
+    },
+    {
+      id: "psico_28",
+      text: "Recebo treinamento quando há mudanças no processo",
+      category: "Gestão de Mudanças",
+      weight: 1
+    },
+    {
+      id: "psico_29",
+      text: "Posso expressar minhas opiniões sobre as mudanças",
+      category: "Gestão de Mudanças",
+      weight: 1
+    },
+    {
+      id: "psico_30",
+      text: "As mudanças organizacionais são bem planejadas",
+      category: "Gestão de Mudanças",
+      weight: 1
+    },
+    
+    // Equilíbrio Trabalho-Vida
+    {
+      id: "psico_31",
+      text: "Consigo equilibrar trabalho e vida pessoal",
+      category: "Equilíbrio Trabalho-Vida",
+      weight: 1
+    },
+    {
+      id: "psico_32",
+      text: "Tenho tempo suficiente para minha família",
+      category: "Equilíbrio Trabalho-Vida",
+      weight: 1
+    },
+    {
+      id: "psico_33",
+      text: "O trabalho interfere na minha vida pessoal",
+      category: "Equilíbrio Trabalho-Vida",
+      weight: 1
+    },
+    {
+      id: "psico_34",
+      text: "Tenho flexibilidade de horários quando necessário",
+      category: "Equilíbrio Trabalho-Vida",
+      weight: 1
+    },
+    {
+      id: "psico_35",
+      text: "Posso tirar férias quando preciso",
+      category: "Equilíbrio Trabalho-Vida",
+      weight: 1
+    },
+    
+    // Impactos na Saúde
+    {
+      id: "psico_36",
+      text: "O trabalho tem afetado minha saúde física",
+      category: "Impactos na Saúde",
+      weight: 1
+    },
+    {
+      id: "psico_37",
+      text: "O trabalho tem afetado minha saúde mental",
+      category: "Impactos na Saúde",
+      weight: 1
+    },
+    {
+      id: "psico_38",
+      text: "Tenho dificuldade para dormir devido ao trabalho",
+      category: "Impactos na Saúde",
+      weight: 1
+    },
+    {
+      id: "psico_39",
+      text: "Sinto-me exausto após o trabalho",
+      category: "Impactos na Saúde",
+      weight: 1
+    },
+    {
+      id: "psico_40",
+      text: "O ambiente de trabalho é seguro e saudável",
+      category: "Impactos na Saúde",
       weight: 1
     }
   ];
 }
 
-// Perguntas SRQ-20 (Self-Reporting Questionnaire)
+// Perguntas SRQ-20 (Self-Reporting Questionnaire) - COMPLETO
 export function getSRQ20Questions(): PsicossocialQuestion[] {
   return [
     { id: "srq_1", text: "Tem dores de cabeça frequentemente?", category: "Sintomas Físicos", weight: 1 },
@@ -283,7 +480,7 @@ export function getSRQ20Questions(): PsicossocialQuestion[] {
   ];
 }
 
-// Perguntas PHQ-9 (Patient Health Questionnaire)
+// Perguntas PHQ-9 (Patient Health Questionnaire) - COMPLETO
 export function getPHQ9Questions(): PsicossocialQuestion[] {
   return [
     { id: "phq_1", text: "Pouco interesse ou prazer em fazer as coisas", category: "Humor Deprimido", weight: 1 },
@@ -298,7 +495,7 @@ export function getPHQ9Questions(): PsicossocialQuestion[] {
   ];
 }
 
-// Perguntas GAD-7 (Generalized Anxiety Disorder)
+// Perguntas GAD-7 (Generalized Anxiety Disorder) - COMPLETO
 export function getGAD7Questions(): PsicossocialQuestion[] {
   return [
     { id: "gad_1", text: "Sentindo-se nervoso(a), ansioso(a) ou muito tenso(a)", category: "Ansiedade", weight: 1 },
@@ -311,23 +508,97 @@ export function getGAD7Questions(): PsicossocialQuestion[] {
   ];
 }
 
-// Perguntas de Vida Pessoal/Familiar
+// Perguntas MBI (Maslach Burnout Inventory) - NOVO COMPLETO
+export function getMBIQuestions(): PsicossocialQuestion[] {
+  return [
+    // Exaustão Emocional
+    { id: "mbi_1", text: "Sinto-me emocionalmente esgotado pelo meu trabalho", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_2", text: "Estou exausto no final do dia de trabalho", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_3", text: "Sinto-me fatigado quando me levanto e tenho que enfrentar outro dia de trabalho", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_4", text: "Trabalhar com pessoas todo dia é realmente um estresse para mim", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_5", text: "Sinto-me esgotado pelo meu trabalho", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_6", text: "Sinto-me frustrado em meu trabalho", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_7", text: "Sinto que estou trabalhando demais em meu emprego", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_8", text: "Trabalhar diretamente com pessoas me causa estresse", category: "Exaustão Emocional", weight: 1 },
+    { id: "mbi_9", text: "Sinto-me como se estivesse no limite", category: "Exaustão Emocional", weight: 1 },
+    
+    // Despersonalização
+    { id: "mbi_10", text: "Trato alguns clientes/colegas como se fossem objetos impessoais", category: "Despersonalização", weight: 1 },
+    { id: "mbi_11", text: "Tornei-me mais insensível com as pessoas desde que comecei este trabalho", category: "Despersonalização", weight: 1 },
+    { id: "mbi_12", text: "Preocupa-me o fato de que este trabalho esteja me endurecendo emocionalmente", category: "Despersonalização", weight: 1 },
+    { id: "mbi_13", text: "Não me preocupo realmente com o que acontece com algumas pessoas", category: "Despersonalização", weight: 1 },
+    { id: "mbi_14", text: "Sinto que os clientes/colegas me culpam por alguns de seus problemas", category: "Despersonalização", weight: 1 },
+    
+    // Realização Pessoal
+    { id: "mbi_15", text: "Posso entender facilmente como meus clientes/colegas se sentem", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_16", text: "Lido eficazmente com os problemas das pessoas", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_17", text: "Sinto que influencio positivamente a vida das pessoas através do meu trabalho", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_18", text: "Sinto-me estimulado depois de trabalhar próximo aos meus clientes/colegas", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_19", text: "Tenho conseguido muitas coisas valiosas neste trabalho", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_20", text: "No meu trabalho, lido com problemas emocionais de forma calma", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_21", text: "Sinto-me muito energético", category: "Realização Pessoal", weight: 1 },
+    { id: "mbi_22", text: "Crio facilmente uma atmosfera relaxada com meus clientes/colegas", category: "Realização Pessoal", weight: 1 }
+  ];
+}
+
+// Perguntas AUDIT (Alcohol Use Disorders Identification Test) - NOVO COMPLETO
+export function getAUDITQuestions(): PsicossocialQuestion[] {
+  return [
+    { id: "audit_1", text: "Com que frequência você consome bebidas alcoólicas?", category: "Frequência de Uso", weight: 1 },
+    { id: "audit_2", text: "Quantas doses de álcool você consome tipicamente ao beber?", category: "Quantidade", weight: 1 },
+    { id: "audit_3", text: "Com que frequência você bebe seis ou mais doses de uma vez?", category: "Binge Drinking", weight: 1 },
+    { id: "audit_4", text: "Durante o último ano, com que frequência você achou que não conseguiria parar de beber uma vez tendo começado?", category: "Controle", weight: 1 },
+    { id: "audit_5", text: "Durante o último ano, com que frequência você não conseguiu fazer o que era esperado de você por causa do álcool?", category: "Funcionamento", weight: 1 },
+    { id: "audit_6", text: "Durante o último ano, com que frequência você precisou beber pela manhã para se recuperar depois de ter bebido muito no dia anterior?", category: "Dependência", weight: 1 },
+    { id: "audit_7", text: "Durante o último ano, com que frequência você se sentiu culpado ou com remorso depois de ter bebido?", category: "Sentimentos", weight: 1 },
+    { id: "audit_8", text: "Durante o último ano, com que frequência você foi incapaz de lembrar o que aconteceu na noite anterior por causa do álcool?", category: "Memória", weight: 1 },
+    { id: "audit_9", text: "Você ou alguém já se machucou como resultado do seu beber?", category: "Consequências", weight: 1 },
+    { id: "audit_10", text: "Algum parente, amigo, médico ou outro profissional da saúde já demonstrou preocupação com o seu beber ou sugeriu que você parasse?", category: "Preocupação Externa", weight: 1 }
+  ];
+}
+
+// Perguntas PSS (Perceived Stress Scale) - NOVO COMPLETO
+export function getPSSQuestions(): PsicossocialQuestion[] {
+  return [
+    { id: "pss_1", text: "Com que frequência você tem ficado aborrecido por causa de algo que aconteceu inesperadamente?", category: "Estresse Percebido", weight: 1 },
+    { id: "pss_2", text: "Com que frequência você tem se sentido incapaz de controlar as coisas importantes em sua vida?", category: "Controle", weight: 1 },
+    { id: "pss_3", text: "Com que frequência você tem se sentido nervoso e estressado?", category: "Estresse Percebido", weight: 1 },
+    { id: "pss_4", text: "Com que frequência você tem tratado com sucesso dos problemas difíceis da vida?", category: "Enfrentamento", weight: 1 },
+    { id: "pss_5", text: "Com que frequência você tem sentido que está enfrentando efetivamente as mudanças importantes que estão ocorrendo em sua vida?", category: "Adaptação", weight: 1 },
+    { id: "pss_6", text: "Com que frequência você tem se sentido confiante na sua habilidade de resolver problemas pessoais?", category: "Autoeficácia", weight: 1 },
+    { id: "pss_7", text: "Com que frequência você tem sentido que as coisas estão acontecendo de acordo com a sua vontade?", category: "Controle", weight: 1 },
+    { id: "pss_8", text: "Com que frequência você tem achado que não conseguiria lidar com todas as coisas que você tem que fazer?", category: "Sobrecarga", weight: 1 },
+    { id: "pss_9", text: "Com que frequência você tem conseguido controlar as irritações em sua vida?", category: "Controle Emocional", weight: 1 },
+    { id: "pss_10", text: "Com que frequência você tem se sentido que as coisas estão sob o seu controle?", category: "Controle", weight: 1 },
+    { id: "pss_11", text: "Com que frequência você tem ficado irritado porque as coisas que acontecem estão fora do seu controle?", category: "Frustração", weight: 1 },
+    { id: "pss_12", text: "Com que frequência você tem se encontrado pensando sobre as coisas que deve fazer?", category: "Preocupação", weight: 1 },
+    { id: "pss_13", text: "Com que frequência você tem conseguido controlar a maneira como gasta seu tempo?", category: "Gestão do Tempo", weight: 1 },
+    { id: "pss_14", text: "Com que frequência você tem sentido que as dificuldades se acumulam a ponto de você acreditar que não pode superá-las?", category: "Sobrecarga", weight: 1 }
+  ];
+}
+
+// Perguntas de Vida Pessoal/Familiar - EXPANDIDO
 export function getPersonalLifeQuestions(): PersonalLifeQuestion[] {
   return [
     { id: "personal_1", text: "Como você avalia sua situação financeira atual?", category: "Situação Financeira", weight: 1, isPrivate: true },
     { id: "personal_2", text: "Tem dificuldades financeiras que o preocupam?", category: "Situação Financeira", weight: 1, isPrivate: true },
-    { id: "personal_3", text: "Como está o relacionamento com sua família?", category: "Relacionamentos Familiares", weight: 1, isPrivate: true },
-    { id: "personal_4", text: "Tem conflitos familiares frequentes?", category: "Relacionamentos Familiares", weight: 1, isPrivate: true },
-    { id: "personal_5", text: "Como avalia sua saúde física geral?", category: "Saúde Física", weight: 1, isPrivate: true },
-    { id: "personal_6", text: "Tem problemas de saúde que o preocupam?", category: "Saúde Física", weight: 1, isPrivate: true },
-    { id: "personal_7", text: "Consegue equilibrar trabalho e vida pessoal?", category: "Equilíbrio Vida-Trabalho", weight: 1, isPrivate: true },
-    { id: "personal_8", text: "Sente que tem tempo suficiente para sua família?", category: "Equilíbrio Vida-Trabalho", weight: 1, isPrivate: true },
-    { id: "personal_9", text: "Como está sua vida social fora do trabalho?", category: "Vida Social", weight: 1, isPrivate: true },
-    { id: "personal_10", text: "Tem apoio emocional de amigos/família?", category: "Suporte Social", weight: 1, isPrivate: true }
+    { id: "personal_3", text: "Consegue arcar com todas as despesas básicas da família?", category: "Situação Financeira", weight: 1, isPrivate: true },
+    { id: "personal_4", text: "Como está o relacionamento com sua família?", category: "Relacionamentos Familiares", weight: 1, isPrivate: true },
+    { id: "personal_5", text: "Tem conflitos familiares frequentes?", category: "Relacionamentos Familiares", weight: 1, isPrivate: true },
+    { id: "personal_6", text: "Sente apoio emocional da sua família?", category: "Relacionamentos Familiares", weight: 1, isPrivate: true },
+    { id: "personal_7", text: "Como avalia sua saúde física geral?", category: "Saúde Física", weight: 1, isPrivate: true },
+    { id: "personal_8", text: "Tem problemas de saúde que o preocupam?", category: "Saúde Física", weight: 1, isPrivate: true },
+    { id: "personal_9", text: "Faz acompanhamento médico regular?", category: "Saúde Física", weight: 1, isPrivate: true },
+    { id: "personal_10", text: "Consegue equilibrar trabalho e vida pessoal?", category: "Equilíbrio Vida-Trabalho", weight: 1, isPrivate: true },
+    { id: "personal_11", text: "Sente que tem tempo suficiente para sua família?", category: "Equilíbrio Vida-Trabalho", weight: 1, isPrivate: true },
+    { id: "personal_12", text: "Consegue descansar adequadamente nos fins de semana?", category: "Equilíbrio Vida-Trabalho", weight: 1, isPrivate: true },
+    { id: "personal_13", text: "Como está sua vida social fora do trabalho?", category: "Vida Social", weight: 1, isPrivate: true },
+    { id: "personal_14", text: "Tem apoio emocional de amigos/família?", category: "Suporte Social", weight: 1, isPrivate: true },
+    { id: "personal_15", text: "Sente-se isolado socialmente?", category: "Vida Social", weight: 1, isPrivate: true }
   ];
 }
 
-// Perguntas para Avaliação 360° - Colegas
+// Perguntas para Avaliação 360° - Colegas - EXPANDIDO
 export function getEvaluation360ColleagueQuestions(): Evaluation360Question[] {
   return [
     { id: "360_col_1", text: "Demonstra colaboração no trabalho em equipe", category: "Trabalho em Equipe", evaluationType: "colleague", weight: 1 },
@@ -337,11 +608,13 @@ export function getEvaluation360ColleagueQuestions(): Evaluation360Question[] {
     { id: "360_col_5", text: "Mantém relacionamento profissional respeitoso", category: "Relacionamento", evaluationType: "colleague", weight: 1 },
     { id: "360_col_6", text: "Contribui positivamente para o ambiente de trabalho", category: "Ambiente", evaluationType: "colleague", weight: 1 },
     { id: "360_col_7", text: "Demonstra iniciativa em suas atividades", category: "Proatividade", evaluationType: "colleague", weight: 1 },
-    { id: "360_col_8", text: "É receptivo a feedback e sugestões", category: "Feedback", evaluationType: "colleague", weight: 1 }
+    { id: "360_col_8", text: "É receptivo a feedback e sugestões", category: "Feedback", evaluationType: "colleague", weight: 1 },
+    { id: "360_col_9", text: "Compartilha conhecimentos e experiências", category: "Compartilhamento", evaluationType: "colleague", weight: 1 },
+    { id: "360_col_10", text: "Resolve conflitos de forma construtiva", category: "Resolução de Conflitos", evaluationType: "colleague", weight: 1 }
   ];
 }
 
-// Perguntas para Avaliação 360° - Gestores
+// Perguntas para Avaliação 360° - Gestores - EXPANDIDO
 export function getEvaluation360ManagerQuestions(): Evaluation360Question[] {
   return [
     { id: "360_mgr_1", text: "Fornece direcionamento claro sobre as tarefas", category: "Liderança", evaluationType: "manager", weight: 1 },
@@ -353,11 +626,13 @@ export function getEvaluation360ManagerQuestions(): Evaluation360Question[] {
     { id: "360_mgr_7", text: "Comunica mudanças e decisões de forma clara", category: "Comunicação", evaluationType: "manager", weight: 1 },
     { id: "360_mgr_8", text: "Demonstra confiança na capacidade da equipe", category: "Confiança", evaluationType: "manager", weight: 1 },
     { id: "360_mgr_9", text: "Mantém um ambiente de trabalho positivo", category: "Ambiente", evaluationType: "manager", weight: 1 },
-    { id: "360_mgr_10", text: "É acessível para discutir problemas e preocupações", category: "Acessibilidade", evaluationType: "manager", weight: 1 }
+    { id: "360_mgr_10", text: "É acessível para discutir problemas e preocupações", category: "Acessibilidade", evaluationType: "manager", weight: 1 },
+    { id: "360_mgr_11", text: "Delega responsabilidades adequadamente", category: "Delegação", evaluationType: "manager", weight: 1 },
+    { id: "360_mgr_12", text: "Toma decisões de forma oportuna", category: "Tomada de Decisão", evaluationType: "manager", weight: 1 }
   ];
 }
 
-// Função para carregar perguntas padrão baseado no tipo
+// Função para carregar perguntas padrão baseado no tipo - EXPANDIDA
 export function getDefaultQuestions(templateType: ChecklistTemplateType): (DiscQuestion | PsicossocialQuestion | PersonalLifeQuestion | Evaluation360Question)[] {
   switch (templateType) {
     case "disc":
@@ -370,6 +645,12 @@ export function getDefaultQuestions(templateType: ChecklistTemplateType): (DiscQ
       return getPHQ9Questions();
     case "gad7":
       return getGAD7Questions();
+    case "mbi":
+      return getMBIQuestions();
+    case "audit":
+      return getAUDITQuestions();
+    case "pss":
+      return getPSSQuestions();
     case "personal_life":
       return getPersonalLifeQuestions();
     case "evaluation_360":

@@ -50,7 +50,7 @@ const PSICOSSOCIAL_CATEGORIES = [
 const formSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
-  type: z.enum(["disc", "custom", "psicossocial"]),
+  type: z.enum(["disc", "custom", "psicossocial", "srq20", "phq9", "gad7", "mbi", "audit", "pss", "personal_life", "evaluation_360"]),
   scaleType: z.string(),
   questions: z.array(z.object({
     id: z.string(),
@@ -177,12 +177,49 @@ export function ChecklistTemplateForm({
     }
   }, [existingTemplate, defaultValues, form]);
   
+  // Função para obter templates e categorias específicos
+  const getTemplateSpecificData = (templateType: string) => {
+    switch (templateType) {
+      case "mbi":
+        return {
+          scale: ScaleType.Frequency,
+          categories: ["Exaustão Emocional", "Despersonalização", "Realização Pessoal"]
+        };
+      case "audit":
+        return {
+          scale: ScaleType.Frequency,
+          categories: ["Frequência de Uso", "Quantidade", "Controle", "Dependência", "Consequências"]
+        };
+      case "pss":
+        return {
+          scale: ScaleType.Frequency,
+          categories: ["Estresse Percebido", "Controle", "Enfrentamento", "Sobrecarga"]
+        };
+      case "copsoq":
+        return {
+          scale: ScaleType.Frequency,
+          categories: ["Demandas Quantitativas", "Influência no Trabalho", "Possibilidades de Desenvolvimento", "Significado do Trabalho"]
+        };
+      case "jcq":
+        return {
+          scale: ScaleType.Frequency,
+          categories: ["Demandas de Trabalho", "Controle de Decisão", "Uso de Habilidades", "Apoio Social"]
+        };
+      case "eri":
+        return {
+          scale: ScaleType.Frequency,
+          categories: ["Esforço Extrínseco", "Recompensas", "Comprometimento Excessivo"]
+        };
+      default:
+        return null;
+    }
+  };
+
   useEffect(() => {
     if (method === "psicossocial") {
       setSelectedScale(ScaleType.Psicossocial);
       form.setValue("scaleType", ScaleType.Psicossocial);
       
-      // Se não há categorias definidas, usar o modelo padrão
       if (categories.length === 0) {
         setCategories(PSICOSSOCIAL_CATEGORIES);
       }
@@ -202,9 +239,17 @@ export function ChecklistTemplateForm({
       form.setValue("scaleType", ScaleType.Frequency);
       setCategories([]);
     } else {
-      setSelectedScale(ScaleType.YesNo);
-      form.setValue("scaleType", ScaleType.YesNo);
-      setCategories([]);
+      // Para templates específicos (MBI, AUDIT, PSS, etc.)
+      const templateData = getTemplateSpecificData(method);
+      if (templateData) {
+        setSelectedScale(templateData.scale);
+        form.setValue("scaleType", templateData.scale);
+        setCategories(templateData.categories);
+      } else {
+        setSelectedScale(ScaleType.YesNo);
+        form.setValue("scaleType", ScaleType.YesNo);
+        setCategories([]);
+      }
     }
   }, [method, form]);
 
@@ -340,10 +385,13 @@ export function ChecklistTemplateForm({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="disc">DISC</SelectItem>
-                    <SelectItem value="psicossocial">Psicossocial</SelectItem>
-                    <SelectItem value="srq20">SRQ-20</SelectItem>
-                    <SelectItem value="phq9">PHQ-9</SelectItem>
-                    <SelectItem value="gad7">GAD-7</SelectItem>
+                    <SelectItem value="psicossocial">Psicossocial Completo</SelectItem>
+                    <SelectItem value="srq20">SRQ-20 (Transtornos Mentais)</SelectItem>
+                    <SelectItem value="phq9">PHQ-9 (Depressão)</SelectItem>
+                    <SelectItem value="gad7">GAD-7 (Ansiedade)</SelectItem>
+                    <SelectItem value="mbi">MBI (Burnout)</SelectItem>
+                    <SelectItem value="audit">AUDIT (Álcool)</SelectItem>
+                    <SelectItem value="pss">PSS (Estresse Percebido)</SelectItem>
                     <SelectItem value="personal_life">Vida Pessoal/Familiar</SelectItem>
                     <SelectItem value="evaluation_360">Avaliação 360°</SelectItem>
                     <SelectItem value="custom">Personalizado</SelectItem>
@@ -358,7 +406,7 @@ export function ChecklistTemplateForm({
               />
             </div>
             
-            {/* Informações específicas para avaliação 360° */}
+            {/* Template-specific information boxes */}
             {method === "evaluation_360" && (
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h4 className="font-medium mb-2">Configurações de Avaliação 360°</h4>
@@ -375,7 +423,6 @@ export function ChecklistTemplateForm({
               </div>
             )}
 
-            {/* Informações específicas para vida pessoal */}
             {method === "personal_life" && (
               <div className="bg-pink-50 p-4 rounded-lg">
                 <h4 className="font-medium mb-2">Confidencialidade</h4>
@@ -383,6 +430,16 @@ export function ChecklistTemplateForm({
                   Este questionário coleta informações pessoais sensíveis. 
                   Os dados serão usados exclusivamente para análise de correlação 
                   com fatores psicossociais e não serão compartilhados.
+                </p>
+              </div>
+            )}
+
+            {(method === "mbi" || method === "audit" || method === "pss") && (
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Questionário Validado</h4>
+                <p className="text-sm text-muted-foreground">
+                  Este é um questionário cientificamente validado. 
+                  Recomenda-se manter as perguntas originais para garantir a validade dos resultados.
                 </p>
               </div>
             )}
