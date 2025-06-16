@@ -1,9 +1,7 @@
 
-import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { EmployeeLoginForm } from "@/components/employee/EmployeeLoginForm";
-import { ArrowLeft, Shield, Users } from "lucide-react";
+import { Shield, Users } from "lucide-react";
 
 export default function EmployeeLogin() {
   const handleLoginSuccess = (employeeData: any) => {
@@ -16,7 +14,7 @@ export default function EmployeeLogin() {
       {/* Header */}
       <div className="bg-white border-b shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <Shield className="w-6 h-6 text-white" />
@@ -26,12 +24,6 @@ export default function EmployeeLogin() {
                 <p className="text-sm text-muted-foreground">Unomed - Avaliação Psicossocial</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/auth/login" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Área Administrativa
-              </Link>
-            </Button>
           </div>
         </div>
       </div>

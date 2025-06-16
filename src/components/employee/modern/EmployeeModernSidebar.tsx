@@ -10,8 +10,7 @@ import {
   Menu, 
   X,
   Activity,
-  LogOut,
-  Settings
+  LogOut
 } from "lucide-react";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 
@@ -57,10 +56,6 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
   const handleLogout = () => {
     logout();
     window.location.href = "/auth/employee";
-  };
-
-  const handleAdminAccess = () => {
-    window.location.href = "/auth/login";
   };
 
   return (
@@ -133,21 +128,8 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
           })}
         </nav>
 
-        {/* Footer com botões de ação */}
+        {/* Footer com botão de logout */}
         <div className="p-4 border-t border-gray-200 space-y-2">
-          {/* Botão Área Administrativa */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start h-auto p-3 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-            onClick={handleAdminAccess}
-          >
-            <Settings className="mr-3 h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Área Administrativa</div>
-              <div className="text-xs text-blue-400">Acesso admin</div>
-            </div>
-          </Button>
-
           {/* Botão Logout */}
           <Button
             variant="ghost"
