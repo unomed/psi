@@ -15,7 +15,18 @@ export default function EmployeePortal() {
   const { session, login, loading } = useEmployeeAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  console.log("[EmployeePortal] Parâmetros recebidos:", {
+    templateId,
+    employeeIdFromUrl,
+    tokenFromUrl: tokenFromUrl ? `${tokenFromUrl.substring(0, 10)}...` : null,
+    hasSession: !!session,
+    sessionAuthenticated: session?.isAuthenticated,
+    isAuthenticated,
+    loading
+  });
+
   const handleLoginSuccess = (employeeData: any) => {
+    console.log("[EmployeePortal] Login bem-sucedido:", employeeData);
     setIsAuthenticated(true);
   };
 
@@ -31,7 +42,9 @@ export default function EmployeePortal() {
     );
   }
 
+  // Se não está autenticado, mostrar formulário de login
   if (!isAuthenticated && !session?.isAuthenticated) {
+    console.log("[EmployeePortal] Mostrando formulário de login");
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
         <EmployeeLoginForm 
@@ -45,6 +58,8 @@ export default function EmployeePortal() {
     );
   }
 
+  // Se está autenticado, mostrar dashboard
+  console.log("[EmployeePortal] Mostrando dashboard do funcionário");
   return (
     <>
       <EmployeeDashboard 

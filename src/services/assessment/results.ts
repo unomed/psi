@@ -49,40 +49,16 @@ export async function submitAssessmentResult(resultData: Omit<any, "id" | "compl
 
 export async function fetchAssessmentByToken(token: string) {
   try {
-    console.log("Buscando avaliação com token:", token);
+    console.log("=== FETCH ASSESSMENT BY TOKEN - INÍCIO ===");
+    console.log("Token recebido:", token);
     
-    // Buscar link de avaliação pelo token
+    // PASSO 1: Buscar link de avaliação pelo token (query simplificada)
+    console.log("Passo 1: Buscando link de avaliação...");
     const { data: linkData, error: linkError } = await supabase
       .from('assessment_links')
-      .select(`
-        id,
-        employee_id,
-        template_id,
-        expires_at,
-        used_at,
-        checklist_templates (
-          id,
-          title,
-          description,
-          type,
-          scale_type,
-          instructions,
-          company_id,
-          created_at,
-          updated_at,
-          estimated_time_minutes,
-          max_score,
-          cutoff_scores,
-          interpretation_guide,
-          is_standard,
-          is_active,
-          version,
-          created_by,
-          derived_from_id
-        )
-      `)
+      .select('id, employee_id, template_id, expires_at, used_at')
       .eq('token', token)
-      .single();
+      .maybeSingle();
 
     if (linkError) {
       console.error("Erro ao buscar link:", linkError);
@@ -90,36 +66,82 @@ export async function fetchAssessmentByToken(token: string) {
     }
 
     if (!linkData) {
+      console.log("Link não encontrado para token:", token);
       return { error: "Link de avaliação não encontrado" };
     }
 
-    // Verificar se o link expirou
+    console.log("Link encontrado:", linkData);
+
+    // PASSO 2: Verificar validade do link
+    console.log("Passo 2: Verificando validade do link...");
+    
     if (linkData.expires_at && new Date(linkData.expires_at) < new Date()) {
+      console.log("Link expirado:", linkData.expires_at);
       return { error: "Link de avaliação expirado" };
     }
 
-    // Verificar se já foi usado
     if (linkData.used_at) {
+      console.log("Link já foi usado:", linkData.used_at);
       return { error: "Este link de avaliação já foi utilizado" };
     }
 
-    console.log("Link válido encontrado:", linkData);
+    console.log("Link válido! Prosseguindo...");
 
-    // Buscar as questões do template
+    // PASSO 3: Buscar template (query separada)
+    console.log("Passo 3: Buscando template...");
+    const { data: templateData, error: templateError } = await supabase
+      .from('checklist_templates')
+      .select(`
+        id,
+        title,
+        description,
+        type,
+        scale_type,
+        instructions,
+        company_id,
+        created_at,
+        updated_at,
+        estimated_time_minutes,
+        max_score,
+        cutoff_scores,
+        interpretation_guide,
+        is_standard,
+        is_active,
+        version,
+        created_by,
+        derived_from_id
+      `)
+      .eq('id', linkData.template_id)
+      .maybeSingle();
+
+    if (templateError || !templateData) {
+      console.error("Erro ao buscar template:", templateError);
+      return { error: "Template de avaliação não encontrado" };
+    }
+
+    console.log("Template encontrado:", templateData);
+
+    // PASSO 4: Buscar questões do template (query separada)
+    console.log("Passo 4: Buscando questões...");
     const { data: questionsData, error: questionsError } = await supabase
       .from('questions')
       .select('*')
-      .eq('template_id', linkData.checklist_templates.id)
+      .eq('template_id', linkData.template_id)
       .order('order_number');
 
     if (questionsError) {
       console.error("Erro ao buscar questões:", questionsError);
     }
 
-    // Mapear tipo do template
-    const templateType = mapDbTemplateTypeToApp(linkData.checklist_templates.type);
+    console.log("Questões encontradas:", questionsData?.length || 0);
 
-    // Transformar questões do banco para o formato esperado
+    // PASSO 5: Mapear tipo do template
+    console.log("Passo 5: Mapeando tipo do template...");
+    const templateType = mapDbTemplateTypeToApp(templateData.type);
+    console.log("Tipo mapeado:", templateType);
+
+    // PASSO 6: Transformar questões do banco para o formato esperado
+    console.log("Passo 6: Transformando questões...");
     let questions: (DiscQuestion | PsicossocialQuestion)[] = [];
     
     if (templateType === "disc") {
@@ -145,37 +167,47 @@ export async function fetchAssessmentByToken(token: string) {
       })) as DiscQuestion[];
     }
 
-    // Montar o template completo com as propriedades obrigatórias
+    console.log("Questões transformadas:", questions.length);
+
+    // PASSO 7: Montar o template completo
+    console.log("Passo 7: Montando template completo...");
     const template: ChecklistTemplate = {
-      id: linkData.checklist_templates.id,
-      title: linkData.checklist_templates.title,
-      description: linkData.checklist_templates.description || "",
+      id: templateData.id,
+      title: templateData.title,
+      description: templateData.description || "",
       type: templateType,
       questions,
-      createdAt: new Date(linkData.checklist_templates.created_at),
-      updatedAt: linkData.checklist_templates.updated_at ? new Date(linkData.checklist_templates.updated_at) : undefined,
-      // Mapear propriedades do banco para interface
-      scaleType: linkData.checklist_templates.scale_type as any,
-      isStandard: linkData.checklist_templates.is_standard,
-      companyId: linkData.checklist_templates.company_id,
-      derivedFromId: linkData.checklist_templates.derived_from_id,
-      estimatedTimeMinutes: linkData.checklist_templates.estimated_time_minutes,
-      maxScore: linkData.checklist_templates.max_score,
-      cutoffScores: linkData.checklist_templates.cutoff_scores,
-      interpretationGuide: linkData.checklist_templates.interpretation_guide,
-      isActive: linkData.checklist_templates.is_active,
-      version: linkData.checklist_templates.version,
-      createdBy: linkData.checklist_templates.created_by,
-      instructions: linkData.checklist_templates.instructions
+      createdAt: new Date(templateData.created_at),
+      updatedAt: templateData.updated_at ? new Date(templateData.updated_at) : undefined,
+      scaleType: templateData.scale_type as any,
+      isStandard: templateData.is_standard,
+      companyId: templateData.company_id,
+      derivedFromId: templateData.derived_from_id,
+      estimatedTimeMinutes: templateData.estimated_time_minutes,
+      maxScore: templateData.max_score,
+      cutoffScores: templateData.cutoff_scores,
+      interpretationGuide: templateData.interpretation_guide,
+      isActive: templateData.is_active,
+      version: templateData.version,
+      createdBy: templateData.created_by,
+      instructions: templateData.instructions
     };
 
-    return {
+    console.log("Template completo montado:", template.title);
+
+    const result = {
       template,
       assessmentId: linkData.id,
       linkId: linkData.id,
+      employeeId: linkData.employee_id,
       error: null
     };
+
+    console.log("=== FETCH ASSESSMENT BY TOKEN - SUCESSO ===");
+    return result;
+
   } catch (error) {
+    console.error("=== FETCH ASSESSMENT BY TOKEN - ERRO ===");
     console.error("Erro ao buscar avaliação:", error);
     return { error: "Erro interno ao buscar avaliação" };
   }

@@ -18,7 +18,7 @@ export function EmployeeRoutes() {
         <Route path="/employee-portal" element={<EmployeePortal />} />
         <Route path="/employee-portal/:templateId" element={<EmployeePortal />} />
         
-        {/* Avaliações públicas com tokens */}
+        {/* Avaliações públicas com tokens - rotas melhoradas */}
         <Route path="/avaliacao/:token" element={<PublicAssessment />} />
         <Route path="/assessment/:token" element={<PublicAssessment />} />
       </Routes>

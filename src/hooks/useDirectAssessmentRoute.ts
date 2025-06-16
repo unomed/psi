@@ -28,20 +28,31 @@ export function useDirectAssessmentRoute() {
 
   const loadAssessmentByName = async (name: string) => {
     try {
+      console.log('[useDirectAssessmentRoute] Carregando avaliação por nome:', name);
+      
       // Buscar template pelo nome/slug
       const { data: template, error } = await supabase
         .from('checklist_templates')
         .select('id, title')
         .ilike('title', `%${name.replace('-', ' ')}%`)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (error || !template) {
-        console.error('Template não encontrado:', error);
+      if (error) {
+        console.error('[useDirectAssessmentRoute] Erro na busca:', error);
+        toast.error('Erro ao buscar avaliação');
+        navigate('/employee-portal');
+        return;
+      }
+
+      if (!template) {
+        console.log('[useDirectAssessmentRoute] Template não encontrado para:', name);
         toast.error('Avaliação não encontrada');
         navigate('/employee-portal');
         return;
       }
+
+      console.log('[useDirectAssessmentRoute] Template encontrado:', template);
 
       setAssessmentData({
         templateId: template.id,
@@ -50,7 +61,7 @@ export function useDirectAssessmentRoute() {
       });
 
     } catch (error) {
-      console.error('Erro ao carregar avaliação:', error);
+      console.error('[useDirectAssessmentRoute] Erro ao carregar avaliação:', error);
       toast.error('Erro ao carregar avaliação');
       navigate('/employee-portal');
     } finally {
