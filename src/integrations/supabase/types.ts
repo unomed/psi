@@ -3016,6 +3016,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_current_employee_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_dashboard_analytics: {
         Args: { p_company_id: string; p_period_days?: number }
         Returns: Json
@@ -3132,6 +3136,14 @@ export type Database = {
       process_psychosocial_assessment_auto: {
         Args: { p_assessment_response_id: string }
         Returns: Json
+      }
+      set_config: {
+        Args: {
+          setting_name: string
+          setting_value: string
+          is_local?: boolean
+        }
+        Returns: undefined
       }
       update_action_plan: {
         Args: { plan_id: string; plan_data: Json }

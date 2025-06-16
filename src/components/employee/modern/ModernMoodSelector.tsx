@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MOOD_OPTIONS } from '@/types/employee-auth';
 import { useEmployeeMood } from '@/hooks/useEmployeeMood';
 import { formatDate } from '@/utils/dateFormat';
-import { Sparkles, CheckCircle } from 'lucide-react';
+import { Sparkles, CheckCircle, Info } from 'lucide-react';
 
 interface ModernMoodSelectorProps {
   employeeId: string;
@@ -17,10 +17,15 @@ export function ModernMoodSelector({ employeeId }: ModernMoodSelectorProps) {
   const [saving, setSaving] = useState(false);
 
   const handleMoodSelect = async (mood: typeof MOOD_OPTIONS[number]) => {
+    // Se já tem humor registrado, mostrar informação
+    if (todayMood) {
+      return;
+    }
+
     setSaving(true);
     setSelectedMood(mood.score);
     
-    await saveMood(mood.score, mood.emoji, mood.description);
+    const result = await saveMood(mood.score, mood.emoji, mood.description);
     
     setSaving(false);
     setSelectedMood(null);
@@ -42,12 +47,20 @@ export function ModernMoodSelector({ employeeId }: ModernMoodSelectorProps) {
           <div className="bg-white/60 rounded-2xl p-6 backdrop-blur-sm">
             <div className="text-7xl mb-3">{todayMood.moodEmoji}</div>
             <p className="text-xl font-semibold text-gray-800 mb-2">{todayMood.moodDescription}</p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 mb-3">
               Registrado às {new Date(todayMood.createdAt).toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
               })}
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+              <div className="flex items-center justify-center text-blue-700">
+                <Info className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">
+                  Você pode registrar seu humor uma vez por dia
+                </span>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -97,6 +110,15 @@ export function ModernMoodSelector({ employeeId }: ModernMoodSelectorProps) {
             </div>
           </div>
         )}
+
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-4">
+          <div className="flex items-center justify-center text-gray-600">
+            <Info className="h-4 w-4 mr-2" />
+            <span className="text-sm">
+              Você pode registrar seu humor apenas uma vez por dia
+            </span>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

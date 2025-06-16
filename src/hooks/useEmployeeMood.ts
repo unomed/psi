@@ -100,6 +100,16 @@ export function useEmployeeMood(employeeId: string) {
         moodDescription
       });
 
+      // Verificar se já foi registrado humor hoje
+      if (todayMood) {
+        toast({
+          title: "Humor já registrado hoje",
+          description: "Você já registrou seu humor hoje. Você pode registrar apenas uma vez por dia.",
+          variant: "default"
+        });
+        return { success: false, error: 'Humor já registrado hoje' };
+      }
+
       const { error } = await supabase
         .from('employee_mood_logs')
         .upsert({
@@ -130,9 +140,15 @@ export function useEmployeeMood(employeeId: string) {
       return { success: true };
     } catch (error: any) {
       console.error('Erro ao salvar humor:', error);
+      
+      let errorMessage = "Tente novamente mais tarde.";
+      if (error.code === '42501') {
+        errorMessage = "Erro de autenticação. Faça login novamente.";
+      }
+      
       toast({
         title: "Erro ao registrar humor",
-        description: "Tente novamente mais tarde.",
+        description: errorMessage,
         variant: "destructive"
       });
       return { success: false, error: error.message };
