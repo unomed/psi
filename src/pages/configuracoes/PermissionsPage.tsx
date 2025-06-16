@@ -1,14 +1,14 @@
-
 import React, { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions, Permission } from "@/hooks/usePermissions";
 import { NewRoleDialog } from "@/components/permissions/NewRoleDialog";
 import { EditRoleDialog } from "@/components/permissions/EditRoleDialog";
 import { DeleteRoleDialog } from "@/components/permissions/DeleteRoleDialog";
-import { PermissionSection } from "@/components/permissions/PermissionSection";
+import { PermissionCard } from "@/components/permissions/PermissionCard";
+import { PermissionsHeader } from "@/components/permissions/PermissionsHeader";
+import { PermissionLegend } from "@/components/permissions/PermissionLegend";
 import { toast } from "sonner";
 import { PermissionSetting } from "@/types/permissions";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export default function PermissionsPage() {
   const { permissions, isLoading, updatePermission, createRole, deleteRole } = usePermissions();
@@ -188,19 +188,12 @@ export default function PermissionsPage() {
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-4 w-96 mt-2" />
         </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-7 w-56" />
-            <Skeleton className="h-4 w-80" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-4">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -209,26 +202,15 @@ export default function PermissionsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gerenciar Permissões</h1>
-        <p className="text-muted-foreground mt-2">
-          Configure as permissões de acesso para cada perfil de usuário.
-        </p>
-      </div>
+      <PermissionsHeader 
+        permissions={uniquePermissions}
+        onCreateRole={() => setDialogOpen(true)}
+      />
       
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Perfis de Usuários</h2>
-        <NewRoleDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          newRoleName={newRoleName}
-          setNewRoleName={setNewRoleName}
-          handleCreateRole={handleCreateRole}
-        />
-      </div>
+      <PermissionLegend />
 
       {sections.map((section) => (
-        <PermissionSection
+        <PermissionCard
           key={section}
           section={section}
           permissions={uniquePermissions}
@@ -258,6 +240,14 @@ export default function PermissionsPage() {
           />
         </>
       )}
+
+      <NewRoleDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        newRoleName={newRoleName}
+        setNewRoleName={setNewRoleName}
+        handleCreateRole={handleCreateRole}
+      />
     </div>
   );
 }
