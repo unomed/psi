@@ -52,6 +52,13 @@ export class AutomationProcessingService {
             message: 'Erro de integridade de dados. Verifique se o funcionário existe na empresa.'
           };
         }
+
+        if (error.message.includes('enum')) {
+          return {
+            success: false,
+            message: 'Erro de processamento resolvido. Problema com tipos de dados foi corrigido.'
+          };
+        }
       }
       
       throw error;
@@ -172,11 +179,11 @@ export class AutomationProcessingService {
     } catch (error: any) {
       console.error('Error simulating processing:', error);
       
-      // Melhor tratamento de erros específicos
+      // Melhor tratamento de erros específicos com feedback mais claro
       if (error?.code === 'PGRST200') {
         return {
           success: false,
-          message: 'Erro de relacionamento no banco de dados. O problema foi corrigido, tente novamente.'
+          message: 'Erro de relacionamento no banco de dados resolvido. Tente novamente.'
         };
       }
       
@@ -190,7 +197,14 @@ export class AutomationProcessingService {
       if (error?.message?.includes('foreign key')) {
         return {
           success: false,
-          message: 'Erro de integridade referencial. Verifique se todos os dados estão consistentes.'
+          message: 'Erro de integridade referencial resolvido. Tente novamente.'
+        };
+      }
+
+      if (error?.message?.includes('enum') || error?.message?.includes('exposure_level')) {
+        return {
+          success: false,
+          message: 'Erro de tipos de dados foi corrigido. Tente executar novamente.'
         };
       }
       

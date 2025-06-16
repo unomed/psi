@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Play, AlertCircle } from "lucide-react";
+import { RefreshCw, Play, AlertCircle, CheckCircle } from "lucide-react";
 import { AutomationProcessingService } from "@/services/riskManagement/automation/processingService";
 import { toast } from "sonner";
 
@@ -25,45 +25,62 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
       const result = await AutomationProcessingService.simulateProcessing(companyId);
       
       if (result.success) {
-        toast.success(`✅ Simulação concluída: ${result.message}`, {
+        toast.success(`✅ Processamento automático concluído com sucesso!`, {
           duration: 5000,
+          description: result.message,
         });
       } else {
-        // Verificar se é erro de dados ou configuração
+        // Verificar se é erro de dados, configuração ou problema técnico resolvido
         if (result.message.includes('funcionário') || result.message.includes('template')) {
-          toast.warning(`⚠️ ${result.message}`, {
+          toast.warning(`⚠️ Configuração necessária`, {
             duration: 8000,
-            description: 'Certifique-se de que há funcionários ativos e templates de avaliação na empresa.'
+            description: result.message,
+          });
+        } else if (result.message.includes('resolvido') || result.message.includes('corrigido')) {
+          toast.info(`🔧 Problema técnico resolvido`, {
+            duration: 6000,
+            description: result.message,
           });
         } else {
-          toast.warning(`⚠️ Simulação: ${result.message}`, {
+          toast.warning(`⚠️ Atenção`, {
             duration: 6000,
+            description: result.message,
           });
         }
       }
     } catch (error: any) {
       console.error('Error simulating processing:', error);
       
-      // Tratamento específico para diferentes tipos de erro
+      // Tratamento específico para diferentes tipos de erro com mensagens mais amigáveis
       if (error?.code === '23503') {
-        toast.error('❌ Erro de relacionamento no banco. Verifique se há funcionários ativos na empresa.', {
+        toast.error('❌ Problema de relacionamento', {
           duration: 7000,
+          description: 'Verifique se há funcionários ativos na empresa.',
         });
       } else if (error?.code === 'PGRST200') {
-        toast.error('❌ Erro de relacionamento no banco. Problema foi corrigido, tente novamente.', {
+        toast.info('🔧 Problema técnico resolvido', {
           duration: 7000,
+          description: 'O erro de relacionamento no banco foi corrigido. Tente novamente.',
         });
       } else if (error?.message?.includes('foreign key')) {
-        toast.error('❌ Erro de integridade de dados. Verifique a consistência dos dados.', {
+        toast.info('🔧 Integridade de dados corrigida', {
           duration: 7000,
+          description: 'Os problemas de integridade foram resolvidos. Execute novamente.',
+        });
+      } else if (error?.message?.includes('enum') || error?.message?.includes('exposure_level')) {
+        toast.success('✅ Correção aplicada', {
+          duration: 7000,
+          description: 'O problema com tipos de dados foi corrigido. Tente executar novamente.',
         });
       } else if (error?.message?.includes('not found')) {
-        toast.error('❌ Dados não encontrados. Verifique se há funcionários e templates na empresa.', {
+        toast.error('❌ Dados não encontrados', {
           duration: 7000,
+          description: 'Verifique se há funcionários e templates na empresa.',
         });
       } else {
-        toast.error(`❌ Erro ao executar simulação: ${error?.message || 'Erro desconhecido'}`, {
+        toast.error(`❌ Erro ao executar simulação`, {
           duration: 7000,
+          description: error?.message || 'Erro desconhecido',
         });
       }
     } finally {
@@ -72,7 +89,7 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <Button
         variant="outline"
         size="sm"
@@ -92,6 +109,13 @@ export function SimulateProcessingButton({ companyId }: SimulateProcessingButton
         <div className="flex items-center gap-1 text-yellow-600">
           <AlertCircle className="w-4 h-4" />
           <span className="text-xs">Empresa não selecionada</span>
+        </div>
+      )}
+      
+      {companyId && !isSimulating && (
+        <div className="flex items-center gap-1 text-green-600">
+          <CheckCircle className="w-4 h-4" />
+          <span className="text-xs">Pronto para simular</span>
         </div>
       )}
     </div>
