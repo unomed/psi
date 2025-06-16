@@ -1,5 +1,3 @@
-
-
 import { ChecklistTemplate } from "./checklist";
 
 export type AssessmentStatus = "scheduled" | "sent" | "completed";
@@ -36,5 +34,5 @@ export interface EmailTemplate {
   subject: string;
   body: string;
   description?: string;
+  type?: string; // initial_invite, reminder_3_days, reminder_1_day, final_reminder, completion_confirmation, high_risk_alert, manager_notification, action_plan_created
 }
-
