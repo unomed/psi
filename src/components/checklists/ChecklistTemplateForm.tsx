@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -190,6 +189,18 @@ export function ChecklistTemplateForm({
     } else if (method === "custom") {
       setSelectedScale(ScaleType.Likert);
       form.setValue("scaleType", ScaleType.Likert);
+    } else if (method === "personal_life") {
+      setSelectedScale(ScaleType.Likert);
+      form.setValue("scaleType", ScaleType.Likert);
+      setCategories(["Situação Financeira", "Relacionamentos Familiares", "Saúde Física", "Equilíbrio Vida-Trabalho", "Vida Social", "Suporte Social"]);
+    } else if (method === "evaluation_360") {
+      setSelectedScale(ScaleType.Likert);
+      form.setValue("scaleType", ScaleType.Likert);
+      setCategories(["Trabalho em Equipe", "Comunicação", "Liderança", "Colaboração", "Relacionamento", "Feedback"]);
+    } else if (method.startsWith("srq20") || method.startsWith("phq9") || method.startsWith("gad7")) {
+      setSelectedScale(ScaleType.Frequency);
+      form.setValue("scaleType", ScaleType.Frequency);
+      setCategories([]);
     } else {
       setSelectedScale(ScaleType.YesNo);
       form.setValue("scaleType", ScaleType.YesNo);
@@ -329,8 +340,13 @@ export function ChecklistTemplateForm({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="disc">DISC</SelectItem>
-                    <SelectItem value="custom">Personalizado</SelectItem>
                     <SelectItem value="psicossocial">Psicossocial</SelectItem>
+                    <SelectItem value="srq20">SRQ-20</SelectItem>
+                    <SelectItem value="phq9">PHQ-9</SelectItem>
+                    <SelectItem value="gad7">GAD-7</SelectItem>
+                    <SelectItem value="personal_life">Vida Pessoal/Familiar</SelectItem>
+                    <SelectItem value="evaluation_360">Avaliação 360°</SelectItem>
+                    <SelectItem value="custom">Personalizado</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -341,6 +357,35 @@ export function ChecklistTemplateForm({
                 onChange={handleScaleChange}
               />
             </div>
+            
+            {/* Informações específicas para avaliação 360° */}
+            {method === "evaluation_360" && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Configurações de Avaliação 360°</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="anonymous" defaultChecked disabled />
+                    <label htmlFor="anonymous">Avaliação anônima</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" id="sector" defaultChecked disabled />
+                    <label htmlFor="sector">Restrito ao setor</label>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Informações específicas para vida pessoal */}
+            {method === "personal_life" && (
+              <div className="bg-pink-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Confidencialidade</h4>
+                <p className="text-sm text-muted-foreground">
+                  Este questionário coleta informações pessoais sensíveis. 
+                  Os dados serão usados exclusivamente para análise de correlação 
+                  com fatores psicossociais e não serão compartilhados.
+                </p>
+              </div>
+            )}
             
             <div className="flex justify-end">
               <Button 

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, FileText, Users, Briefcase, Target } from "lucide-react";
+import { CheckCircle, FileText, Users, Briefcase, Target, Heart, RefreshCw, Brain, Activity } from "lucide-react";
 import { PREDEFINED_PSYCHOSOCIAL_TEMPLATES, createPsychosocialTemplate } from "@/data/psychosocialQuestionnaires";
+import { STANDARD_QUESTIONNAIRE_TEMPLATES, createStandardTemplate } from "@/data/standardQuestionnaires";
 import { getDefaultQuestions } from "@/services/checklist/templateUtils";
 import { ScaleType } from "@/types";
 
@@ -17,69 +18,63 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const getTemplateIcon = (templateId: string) => {
-    switch (templateId) {
-      case "avaliacao_completa":
-        return <FileText className="h-5 w-5" />;
-      case "estresse_ocupacional":
-        return <Target className="h-5 w-5" />;
-      case "ambiente_social":
-        return <Users className="h-5 w-5" />;
-      case "organizacao_trabalho":
-        return <Briefcase className="h-5 w-5" />;
-      case "disc_template":
-        return <Target className="h-5 w-5" />;
-      default:
-        return <CheckCircle className="h-5 w-5" />;
-    }
+    if (templateId.includes("disc")) return <Target className="h-5 w-5" />;
+    if (templateId.includes("srq20") || templateId.includes("phq9") || templateId.includes("gad7")) return <Brain className="h-5 w-5" />;
+    if (templateId.includes("personal")) return <Heart className="h-5 w-5" />;
+    if (templateId.includes("360")) return <RefreshCw className="h-5 w-5" />;
+    if (templateId.includes("psicossocial")) return <Activity className="h-5 w-5" />;
+    if (templateId.includes("ambiente_social")) return <Users className="h-5 w-5" />;
+    if (templateId.includes("organizacao")) return <Briefcase className="h-5 w-5" />;
+    return <FileText className="h-5 w-5" />;
   };
 
   const getTemplateColor = (templateId: string) => {
-    switch (templateId) {
-      case "avaliacao_completa":
-        return "bg-blue-50 border-blue-200 hover:bg-blue-100";
-      case "estresse_ocupacional":
-        return "bg-red-50 border-red-200 hover:bg-red-100";
-      case "ambiente_social":
-        return "bg-green-50 border-green-200 hover:bg-green-100";
-      case "organizacao_trabalho":
-        return "bg-purple-50 border-purple-200 hover:bg-purple-100";
-      case "disc_template":
-        return "bg-orange-50 border-orange-200 hover:bg-orange-100";
-      default:
-        return "bg-gray-50 border-gray-200 hover:bg-gray-100";
-    }
+    if (templateId.includes("disc")) return "bg-orange-50 border-orange-200 hover:bg-orange-100";
+    if (templateId.includes("srq20") || templateId.includes("phq9") || templateId.includes("gad7")) return "bg-purple-50 border-purple-200 hover:bg-purple-100";
+    if (templateId.includes("personal")) return "bg-pink-50 border-pink-200 hover:bg-pink-100";
+    if (templateId.includes("360")) return "bg-indigo-50 border-indigo-200 hover:bg-indigo-100";
+    if (templateId.includes("psicossocial")) return "bg-blue-50 border-blue-200 hover:bg-blue-100";
+    if (templateId.includes("estresse")) return "bg-red-50 border-red-200 hover:bg-red-100";
+    if (templateId.includes("ambiente_social")) return "bg-green-50 border-green-200 hover:bg-green-100";
+    return "bg-gray-50 border-gray-200 hover:bg-gray-100";
   };
 
-  // Adicionar template DISC aos templates disponíveis
+  // Combinar todos os templates disponíveis
   const allTemplates = [
-    {
-      id: "disc_template",
-      name: "Avaliação DISC Padrão",
-      description: "Template com perguntas padrão para avaliação de perfil comportamental DISC",
-      categories: ["D - Dominância", "I - Influência", "S - Estabilidade", "C - Conformidade"]
-    },
-    ...PREDEFINED_PSYCHOSOCIAL_TEMPLATES
+    // Templates padrão de questionários
+    ...STANDARD_QUESTIONNAIRE_TEMPLATES.map(template => ({
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      categories: template.questions.map(q => 'category' in q ? q.category : 'Geral').filter((v, i, a) => a.indexOf(v) === i),
+      type: 'standard'
+    })),
+    // Templates psicossociais existentes
+    ...PREDEFINED_PSYCHOSOCIAL_TEMPLATES.map(template => ({
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      categories: template.categories,
+      type: 'psychosocial'
+    }))
   ];
 
   const handleSelectTemplate = (templateId: string) => {
-    if (templateId === "disc_template") {
-      // Criar template DISC com perguntas padrão
-      const discQuestions = getDefaultQuestions("disc");
-      const discTemplate = {
-        title: "Avaliação DISC Padrão",
-        description: "Avaliação de perfil comportamental baseada na metodologia DISC",
-        type: "disc",
-        scaleType: ScaleType.YesNo,
-        questions: discQuestions
-      };
-      onSelectTemplate(discTemplate);
+    const standardTemplate = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
+    
+    if (standardTemplate) {
+      // Template padrão
+      const template = createStandardTemplate(templateId);
+      if (template) {
+        onSelectTemplate(template);
+      }
     } else {
       // Template psicossocial existente
-      const template = PREDEFINED_PSYCHOSOCIAL_TEMPLATES.find(t => t.id === templateId);
-      if (template) {
+      const psychosocialTemplate = PREDEFINED_PSYCHOSOCIAL_TEMPLATES.find(t => t.id === templateId);
+      if (psychosocialTemplate) {
         const questionnaireTemplate = createPsychosocialTemplate(
-          template.name,
-          template.categories
+          psychosocialTemplate.name,
+          psychosocialTemplate.categories
         );
         onSelectTemplate(questionnaireTemplate);
       }
@@ -95,7 +90,7 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
         {allTemplates.map((template) => (
           <Card 
             key={template.id}
@@ -105,24 +100,29 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
             onClick={() => setSelectedTemplate(template.id)}
           >
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2 text-sm">
                 {getTemplateIcon(template.id)}
                 {template.name}
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-xs">
                 {template.description}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm font-medium mb-2">Categorias incluídas:</p>
+                  <p className="text-xs font-medium mb-2">Categorias/Fatores:</p>
                   <div className="flex flex-wrap gap-1">
-                    {template.categories.map((categoryId) => (
+                    {template.categories.slice(0, 3).map((categoryId) => (
                       <Badge key={categoryId} variant="secondary" className="text-xs">
                         {categoryId.replace('_', ' ')}
                       </Badge>
                     ))}
+                    {template.categories.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{template.categories.length - 3} mais
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 

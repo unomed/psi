@@ -10,10 +10,28 @@ export interface PsicossocialQuestion {
   weight?: number;
 }
 
-export type ChecklistTemplateType = "disc" | "custom" | "psicossocial" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri";
+// Personal/Family Life Question
+export interface PersonalLifeQuestion {
+  id: string;
+  text: string;
+  category: string;
+  weight?: number;
+  isPrivate?: boolean;
+}
+
+// 360-degree evaluation question
+export interface Evaluation360Question {
+  id: string;
+  text: string;
+  category: string;
+  evaluationType: "colleague" | "manager" | "subordinate";
+  weight?: number;
+}
+
+export type ChecklistTemplateType = "disc" | "custom" | "psicossocial" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri" | "personal_life" | "evaluation_360";
 
 // Define ChecklistQuestion as a union type
-export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion;
+export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion | PersonalLifeQuestion | Evaluation360Question;
 
 // Updated ChecklistTemplate interface to match database schema
 export interface ChecklistTemplate {
@@ -27,6 +45,10 @@ export interface ChecklistTemplate {
   isStandard?: boolean;
   companyId?: string | null;
   derivedFromId?: string | null;
+  // Additional properties for 360 evaluations
+  targetRole?: string; // Para avaliações 360°
+  isAnonymous?: boolean; // Para avaliações 360°
+  restrictToSector?: boolean; // Para limitar avaliações por setor
   // Additional properties from database
   estimatedTimeMinutes?: number;
   instructions?: string;
@@ -66,6 +88,13 @@ export interface ChecklistResult {
   dominantFactor: DiscFactorType | string; // Pode ser um fator DISC ou categoria psicossocial
   categorizedResults?: Record<string, number>; // Resultados agrupados por categoria
   completedAt: Date;
+  // Para avaliações 360°
+  evaluatedEmployeeId?: string;
+  evaluatorEmployeeId?: string;
+  isAnonymous?: boolean;
+  // Para cruzamento de dados pessoais
+  personalFactors?: Record<string, any>;
+  riskCorrelation?: "work" | "personal" | "mixed" | "unknown";
 }
 
 // Re-export types from disc and scale that are used with checklist
