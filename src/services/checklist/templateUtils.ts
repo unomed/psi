@@ -2,6 +2,7 @@
 import { ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
 import { DiscQuestion, PsicossocialQuestion } from "@/types";
+import { scaleTypeToDbScaleType } from "@/types/scale";
 
 export function mapDbTemplateTypeToApp(dbType: string): ChecklistTemplateType {
   // Mapeamento direto dos tipos do banco para os tipos da aplicação
@@ -63,18 +64,9 @@ export function getTemplateTypeDisplayName(template: { type: ChecklistTemplateTy
   return "Personalizado";
 }
 
-// Funções adicionais necessárias para o templateCreate e templateUpdate
+// Usar a função correta do scale.ts para mapeamento
 export function getSafeDbScaleType(scaleType: ScaleType): string {
-  switch (scaleType) {
-    case ScaleType.Likert:
-      return "likert";
-    case ScaleType.Numeric:
-      return "numeric";
-    case ScaleType.YesNo:
-      return "binary";
-    default:
-      return "likert";
-  }
+  return scaleTypeToDbScaleType(scaleType);
 }
 
 export function getSafeDbTemplateType(templateType: ChecklistTemplateType): string {
@@ -139,4 +131,136 @@ export function formatQuestionsForDb(
 
     return baseQuestion;
   });
+}
+
+// Perguntas padrão para DISC
+export function getDefaultDiscQuestions(): DiscQuestion[] {
+  return [
+    {
+      id: "disc_1",
+      text: "Eu gosto de liderar e tomar decisões rapidamente",
+      targetFactor: "D",
+      weight: 1
+    },
+    {
+      id: "disc_2", 
+      text: "Eu prefiro trabalhar com pessoas e influenciá-las",
+      targetFactor: "I",
+      weight: 1
+    },
+    {
+      id: "disc_3",
+      text: "Eu valorizo estabilidade e consistência no trabalho",
+      targetFactor: "S", 
+      weight: 1
+    },
+    {
+      id: "disc_4",
+      text: "Eu presto atenção aos detalhes e sigo procedimentos",
+      targetFactor: "C",
+      weight: 1
+    },
+    {
+      id: "disc_5",
+      text: "Eu me sinto confortável assumindo riscos",
+      targetFactor: "D",
+      weight: 1
+    },
+    {
+      id: "disc_6",
+      text: "Eu gosto de interagir socialmente no ambiente de trabalho",
+      targetFactor: "I",
+      weight: 1
+    },
+    {
+      id: "disc_7",
+      text: "Eu prefiro trabalhar em um ambiente previsível",
+      targetFactor: "S",
+      weight: 1
+    },
+    {
+      id: "disc_8",
+      text: "Eu gosto de analisar dados antes de tomar decisões",
+      targetFactor: "C",
+      weight: 1
+    }
+  ];
+}
+
+// Perguntas padrão para Psicossocial (baseado no MTE)
+export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
+  return [
+    {
+      id: "psico_1",
+      text: "Tenho que trabalhar muito rapidamente",
+      category: "Demandas de Trabalho",
+      weight: 1
+    },
+    {
+      id: "psico_2",
+      text: "Meu trabalho exige muito de mim",
+      category: "Demandas de Trabalho", 
+      weight: 1
+    },
+    {
+      id: "psico_3",
+      text: "Tenho tempo suficiente para fazer meu trabalho",
+      category: "Demandas de Trabalho",
+      weight: 1
+    },
+    {
+      id: "psico_4",
+      text: "Posso decidir como fazer meu trabalho",
+      category: "Controle e Autonomia",
+      weight: 1
+    },
+    {
+      id: "psico_5",
+      text: "Tenho influência sobre o que acontece no meu trabalho",
+      category: "Controle e Autonomia",
+      weight: 1
+    },
+    {
+      id: "psico_6",
+      text: "Recebo ajuda de meus colegas quando necessário",
+      category: "Suporte Social",
+      weight: 1
+    },
+    {
+      id: "psico_7",
+      text: "Meu supervisor me dá apoio quando preciso",
+      category: "Suporte Social",
+      weight: 1
+    },
+    {
+      id: "psico_8",
+      text: "Sei exatamente o que é esperado de mim no trabalho",
+      category: "Clareza de Papel",
+      weight: 1
+    },
+    {
+      id: "psico_9",
+      text: "Tenho objetivos claros para meu trabalho",
+      category: "Clareza de Papel",
+      weight: 1
+    },
+    {
+      id: "psico_10",
+      text: "Sou tratado de forma justa no trabalho",
+      category: "Relacionamentos Interpessoais",
+      weight: 1
+    }
+  ];
+}
+
+// Função para carregar perguntas padrão baseado no tipo
+export function getDefaultQuestions(templateType: ChecklistTemplateType): (DiscQuestion | PsicossocialQuestion)[] {
+  switch (templateType) {
+    case "disc":
+      return getDefaultDiscQuestions();
+    case "psicossocial":
+      return getDefaultPsicossocialQuestions();
+    default:
+      return [];
+  }
 }

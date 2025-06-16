@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -25,13 +26,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 import { ScaleType } from "@/types";
 import { PsicossocialQuestion } from '@/types/checklist';
 import { ScaleTypeSelector } from './ScaleTypeSelector';
 import { CategoryQuestionGroup, CategoryQuestion } from './form/CategoryQuestionGroup';
+import { getDefaultQuestions } from '@/services/checklist/templateUtils';
 
 // Modelo de perguntas psicossociais para referência
 const PSICOSSOCIAL_CATEGORIES = [
@@ -195,6 +197,16 @@ export function ChecklistTemplateForm({
     }
   }, [method, form]);
 
+  const handleLoadDefaultQuestions = () => {
+    const defaultQuestions = getDefaultQuestions(method as any);
+    if (defaultQuestions.length > 0) {
+      form.setValue("questions", defaultQuestions);
+      toast.success(`${defaultQuestions.length} perguntas padrão carregadas!`);
+    } else {
+      toast.info("Nenhuma pergunta padrão disponível para este tipo.");
+    }
+  };
+
   const handleAddCategory = (category: string) => {
     setCategories([...categories, category]);
   };
@@ -342,6 +354,19 @@ export function ChecklistTemplateForm({
           </TabsContent>
           
           <TabsContent value="questions" className="space-y-6 pt-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Perguntas do Checklist</h3>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLoadDefaultQuestions}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Carregar Perguntas Padrão
+              </Button>
+            </div>
+            
             <FormField
               control={form.control}
               name="questions"
@@ -351,7 +376,6 @@ export function ChecklistTemplateForm({
                     <>
                       {method === "disc" ? (
                         <div className="space-y-4">
-                          <h3 className="text-lg font-medium">Perguntas DISC</h3>
                           <FormDescription>
                             Adicione perguntas para o checklist DISC e especifique o fator alvo.
                           </FormDescription>
