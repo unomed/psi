@@ -430,7 +430,7 @@ export type Database = {
           completed_at: string
           created_by: string | null
           dominant_factor: string | null
-          employee_id: string | null
+          employee_id: string
           employee_name: string | null
           factors_scores: Json | null
           id: string
@@ -450,7 +450,7 @@ export type Database = {
           completed_at?: string
           created_by?: string | null
           dominant_factor?: string | null
-          employee_id?: string | null
+          employee_id: string
           employee_name?: string | null
           factors_scores?: Json | null
           id?: string
@@ -470,7 +470,7 @@ export type Database = {
           completed_at?: string
           created_by?: string | null
           dominant_factor?: string | null
-          employee_id?: string | null
+          employee_id?: string
           employee_name?: string | null
           factors_scores?: Json | null
           id?: string
@@ -489,6 +489,13 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "checklist_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_assessment_responses_employee_id"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
