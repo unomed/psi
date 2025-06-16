@@ -18,13 +18,16 @@ interface AutomationRuleFormProps {
   onCancel: () => void;
 }
 
+type TriggerType = "assessment_completed" | "risk_detected" | "deadline_approaching" | "plan_overdue";
+type Priority = "low" | "medium" | "high" | "critical";
+
 export function AutomationRuleForm({ rule, onSave, onCancel }: AutomationRuleFormProps) {
   const [formData, setFormData] = useState({
     name: rule?.name || "",
     description: rule?.description || "",
     isActive: rule?.isActive ?? true,
-    triggerType: rule?.triggerType || "assessment_completed",
-    priority: rule?.priority || "medium",
+    triggerType: rule?.triggerType || "assessment_completed" as TriggerType,
+    priority: rule?.priority || "medium" as Priority,
     conditions: rule?.conditions || [],
     actions: rule?.actions || []
   });
@@ -41,9 +44,9 @@ export function AutomationRuleForm({ rule, onSave, onCancel }: AutomationRuleFor
         ...prev.conditions,
         {
           field: "",
-          operator: "equals",
+          operator: "equals" as const,
           value: "",
-          logicalOperator: "AND"
+          logicalOperator: "AND" as const
         }
       ]
     }));
@@ -71,7 +74,7 @@ export function AutomationRuleForm({ rule, onSave, onCancel }: AutomationRuleFor
       actions: [
         ...prev.actions,
         {
-          type: "send_email",
+          type: "send_email" as const,
           config: {}
         }
       ]
@@ -95,10 +98,10 @@ export function AutomationRuleForm({ rule, onSave, onCancel }: AutomationRuleFor
   };
 
   const triggerTypeOptions = [
-    { value: "assessment_completed", label: "Avaliação Concluída" },
-    { value: "risk_detected", label: "Risco Detectado" },
-    { value: "deadline_approaching", label: "Prazo Próximo" },
-    { value: "plan_overdue", label: "Plano em Atraso" }
+    { value: "assessment_completed" as TriggerType, label: "Avaliação Concluída" },
+    { value: "risk_detected" as TriggerType, label: "Risco Detectado" },
+    { value: "deadline_approaching" as TriggerType, label: "Prazo Próximo" },
+    { value: "plan_overdue" as TriggerType, label: "Plano em Atraso" }
   ];
 
   const operatorOptions = [
@@ -161,7 +164,7 @@ export function AutomationRuleForm({ rule, onSave, onCancel }: AutomationRuleFor
                   <Label htmlFor="priority">Prioridade</Label>
                   <Select
                     value={formData.priority}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
+                    onValueChange={(value: Priority) => setFormData(prev => ({ ...prev, priority: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -192,7 +195,7 @@ export function AutomationRuleForm({ rule, onSave, onCancel }: AutomationRuleFor
                   <Label htmlFor="triggerType">Evento Trigger</Label>
                   <Select
                     value={formData.triggerType}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, triggerType: value }))}
+                    onValueChange={(value: TriggerType) => setFormData(prev => ({ ...prev, triggerType: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
