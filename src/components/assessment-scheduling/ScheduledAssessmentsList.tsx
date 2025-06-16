@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Search, Mail, Copy, Link, Settings } from "lucide-react";
+import { Calendar, Search, Mail, Copy, Link, Settings, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -322,18 +322,17 @@ export function ScheduledAssessmentsList() {
                         </Button>
                       )}
 
+                      {/* Botão de editar */}
+                      <EditAssessmentButton
+                        onEdit={() => handleEditAssessment(assessment)}
+                        assessmentStatus={assessment.status}
+                      />
+
                       {/* Botão de excluir */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setDeleteAssessmentId(assessment.id)}
-                        disabled={assessment.status === 'completed'}
-                        title="Excluir agendamento"
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Excluir
-                      </Button>
+                      <DeleteAssessmentButton
+                        onDelete={() => setDeleteAssessmentId(assessment.id)}
+                        assessmentStatus={assessment.status}
+                      />
                     </div>
                   </div>
                 );
