@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Search, Mail, Trash2, Link, Copy, Settings } from "lucide-react";
+import { Calendar, Search, Mail, Copy, Link, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,6 +21,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment/links";
 import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
+import { EditScheduledAssessmentDialog } from "./EditScheduledAssessmentDialog";
+import { EditAssessmentButton } from "./EditAssessmentButton";
+import { DeleteAssessmentButton } from "./DeleteAssessmentButton";
 
 export function ScheduledAssessmentsList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +31,8 @@ export function ScheduledAssessmentsList() {
   const [deleteAssessmentId, setDeleteAssessmentId] = useState<string | null>(null);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [editingAssessment, setEditingAssessment] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const { userRole, userCompanies } = useAuth();
 
@@ -190,6 +194,16 @@ export function ScheduledAssessmentsList() {
     }
   };
 
+  const handleEditAssessment = (assessment: any) => {
+    setEditingAssessment(assessment);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditingAssessment(null);
+  };
+
   if (isLoading) {
     return <div className="text-center py-8">Carregando agendamentos...</div>;
   }
@@ -346,6 +360,13 @@ export function ScheduledAssessmentsList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add edit dialog */}
+      <EditScheduledAssessmentDialog
+        isOpen={isEditDialogOpen}
+        onClose={handleCloseEditDialog}
+        assessment={editingAssessment}
+      />
     </>
   );
 }
