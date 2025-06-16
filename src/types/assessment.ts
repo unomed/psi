@@ -1,8 +1,9 @@
 
+
 import { ChecklistTemplate } from "./checklist";
 
 export type AssessmentStatus = "scheduled" | "sent" | "completed";
-export type RecurrenceType = "none" | "monthly" | "semiannual" | "annual";
+export type RecurrenceType = "none" | "monthly" | "quarterly" | "semiannual" | "annual";
 
 export interface ScheduledAssessment {
   id: string;
@@ -36,3 +37,4 @@ export interface EmailTemplate {
   body: string;
   description?: string;
 }
+
