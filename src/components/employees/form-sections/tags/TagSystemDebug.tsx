@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface PermissionResult {
+  can_see_employee_tags: boolean;
+  can_insert_employee_tags: boolean;
+  accessible_companies: string[];
+  is_superadmin: boolean;
+}
+
 export function TagSystemDebug() {
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,13 +22,29 @@ export function TagSystemDebug() {
     try {
       console.log("[TagSystemDebug] Iniciando diagnóstico...");
       
-      // 1. Verificar permissões do usuário
+      // 1. Verificar permissões do usuário usando query direta
       const { data: permissions, error: permError } = await supabase
-        .rpc('debug_user_tag_permissions');
+        .rpc('is_superadmin')
+        .single();
       
+      let permissionsData: PermissionResult = {
+        can_see_employee_tags: false,
+        can_insert_employee_tags: false,
+        accessible_companies: [],
+        is_superadmin: permissions || false
+      };
+
+      // Buscar empresas acessíveis
+      if (!permissions) {
+        const { data: userCompanies } = await supabase
+          .from('user_companies')
+          .select('company_id');
+        
+        permissionsData.accessible_companies = userCompanies?.map(uc => uc.company_id) || [];
+      }
+
       if (permError) {
         console.error("[TagSystemDebug] Erro ao verificar permissões:", permError);
-        throw permError;
       }
 
       // 2. Verificar tipos de tags disponíveis
@@ -61,7 +84,7 @@ export function TagSystemDebug() {
       }
 
       const diagnosticResult = {
-        permissions: permissions?.[0] || null,
+        permissions: permissionsData,
         tagTypes: tagTypes || [],
         employeeTags: employeeTags || [],
         requiredTags: requiredTags || [],
@@ -218,7 +241,7 @@ export function TagSystemDebug() {
               <div className="space-y-1">
                 {debugInfo.employeeTags.map((tag: any) => (
                   <div key={tag.id} className="text-sm">
-                    Tag: {tag.tag_type?.name} - Funcionário: {tag.employee_id}
+                    Tag: {tag.tag_type?.name || 'N/A'} - Funcionário: {tag.employee_id}
                   </div>
                 ))}
                 {debugInfo.employeeTags.length === 0 && (
@@ -233,7 +256,7 @@ export function TagSystemDebug() {
               <div className="space-y-1">
                 {debugInfo.requiredTags.map((tag: any) => (
                   <div key={tag.id} className="text-sm">
-                    Tag: {tag.tag_type?.name} - Função: {tag.role_id}
+                    Tag: {tag.tag_type?.name || 'N/A'} - Função: {tag.role_id}
                   </div>
                 ))}
                 {debugInfo.requiredTags.length === 0 && (
@@ -250,7 +273,7 @@ export function TagSystemDebug() {
                   {Object.entries(debugInfo.errors).map(([key, error]) => 
                     error && (
                       <div key={key} className="text-sm text-red-600">
-                        {key}: {error}
+                        {key}: {String(error)}
                       </div>
                     )
                   )}
