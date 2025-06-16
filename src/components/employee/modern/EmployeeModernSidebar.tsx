@@ -56,7 +56,7 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
       <Button
         variant="ghost"
         size="sm"
-        className="fixed top-4 left-4 z-50 md:hidden"
+        className="fixed top-4 left-4 z-50 md:hidden bg-white text-gray-900 border border-gray-200 hover:bg-gray-100"
         onClick={toggleSidebar}
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -79,7 +79,7 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                 <Heart className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -98,10 +98,10 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
               return (
                 <Button
                   key={item.id}
-                  variant={isActive ? "default" : "ghost"}
+                  variant="ghost"
                   className={cn(
-                    "w-full justify-start h-auto p-3",
-                    isActive && "bg-primary text-white"
+                    "w-full justify-start h-auto p-3 text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                    isActive && "bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
                   )}
                   onClick={() => {
                     onViewChange(item.id as any);
@@ -111,7 +111,10 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
                   <Icon className="mr-3 h-5 w-5" />
                   <div className="text-left">
                     <div className="font-medium">{item.label}</div>
-                    <div className="text-xs opacity-70">{item.description}</div>
+                    <div className={cn(
+                      "text-xs",
+                      isActive ? "text-blue-100" : "text-gray-500"
+                    )}>{item.description}</div>
                   </div>
                 </Button>
               );

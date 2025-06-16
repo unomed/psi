@@ -1,52 +1,36 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'light'; // Forçando apenas tema claro
 
 interface ThemeContextType {
   theme: Theme;
-  effectiveTheme: 'dark' | 'light';
+  effectiveTheme: 'light';
   setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    return savedTheme || 'system';
-  });
-
-  const [effectiveTheme, setEffectiveTheme] = useState<'dark' | 'light'>('light');
+  // Sempre inicializar com tema claro
+  const [theme] = useState<Theme>('light');
+  const [effectiveTheme] = useState<'light'>('light');
 
   useEffect(() => {
-    const updateEffectiveTheme = () => {
-      if (theme === 'system') {
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        setEffectiveTheme(systemTheme);
-      } else {
-        setEffectiveTheme(theme);
-      }
-    };
-
-    updateEffectiveTheme();
-
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', updateEffectiveTheme);
-      return () => mediaQuery.removeEventListener('change', updateEffectiveTheme);
-    }
-  }, [theme]);
-
-  useEffect(() => {
+    // Forçar sempre o tema claro
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(effectiveTheme);
-  }, [effectiveTheme]);
+    root.classList.remove('dark', 'system');
+    root.classList.add('light');
+    
+    // Remover qualquer configuração anterior de tema escuro
+    localStorage.removeItem('theme');
+    localStorage.setItem('theme', 'light');
+  }, []);
 
+  // Função que não permite mudança de tema, mas mantém a interface
   const handleSetTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    // Sempre manter tema claro, ignorar tentativas de mudança
+    console.log('Tema claro é forçado no portal do funcionário');
   };
 
   return (

@@ -30,17 +30,17 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
       case 'assessments':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Avaliações Agendadas</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Avaliações Agendadas</h2>
             <PendingAssessmentsList employeeId={session?.employee?.employeeId || ""} />
           </div>
         );
       case 'history':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Histórico de Avaliações</h2>
-            <Card>
+            <h2 className="text-2xl font-bold text-gray-900">Histórico de Avaliações</h2>
+            <Card className="bg-white border-gray-200">
               <CardContent className="p-6">
-                <p className="text-muted-foreground">Histórico de avaliações será implementado aqui.</p>
+                <p className="text-gray-600">Histórico de avaliações será implementado aqui.</p>
               </CardContent>
             </Card>
           </div>
@@ -52,14 +52,14 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Olá, {session?.employee?.employeeName}
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-gray-600">
                   {session?.employee?.companyName}
                 </p>
               </div>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button variant="outline" onClick={handleLogout} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </Button>
@@ -71,9 +71,9 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
               </div>
 
               <div className="space-y-6">
-                <Card>
+                <Card className="bg-white border-gray-200">
                   <CardHeader>
-                    <CardTitle>Como você está hoje?</CardTitle>
+                    <CardTitle className="text-gray-900">Como você está hoje?</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <MoodSelector employeeId={session?.employee?.employeeId || ""} />
@@ -97,7 +97,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
       />
       
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 bg-gray-50">
           {renderCurrentView()}
         </main>
         
