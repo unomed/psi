@@ -1,29 +1,27 @@
 
-import { useCheckPermission } from '@/hooks/useCheckPermission';
-import { useAuth } from '@/contexts/AuthContext';
+import { usePermissionValidation } from './usePermissionValidation';
 
 export function usePermissionGuard() {
-  const { userRole } = useAuth();
-  const { hasPermission } = useCheckPermission();
+  const { validatePermission, validateRole } = usePermissionValidation();
 
   const canAccessPermissionsPage = () => {
-    return userRole === 'superadmin';
+    return validateRole(['superadmin']);
   };
 
   const canAccessUsersPage = () => {
-    return userRole === 'superadmin' || hasPermission('manage_users');
+    return validateRole(['superadmin']) || validatePermission('manage_users');
   };
 
   const canAccessCompaniesPage = () => {
-    return userRole === 'superadmin' || hasPermission('view_companies');
+    return validateRole(['superadmin']) || validatePermission('view_companies');
   };
 
   const canAccessBillingPage = () => {
-    return userRole === 'superadmin' || hasPermission('view_billing');
+    return validateRole(['superadmin']) || validatePermission('view_billing');
   };
 
   const canAccessSettingsPage = () => {
-    return userRole === 'superadmin' || hasPermission('view_settings');
+    return validateRole(['superadmin', 'admin']) || validatePermission('view_settings');
   };
 
   return {
@@ -32,6 +30,7 @@ export function usePermissionGuard() {
     canAccessCompaniesPage,
     canAccessBillingPage,
     canAccessSettingsPage,
-    hasPermission,
+    validatePermission,
+    validateRole
   };
 }

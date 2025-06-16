@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -11,7 +12,7 @@ import AssessmentCriteriaPage from "@/pages/configuracoes/AssessmentCriteriaPage
 import AutomacaoPsicossocialPage from "@/pages/configuracoes/AutomacaoPsicossocialPage";
 import AutomacaoAvancadaPage from "@/pages/configuracoes/AutomacaoAvancadaPage";
 import AuditoriaPage from "@/pages/configuracoes/AuditoriaPage";
-import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import UsuariosPage from "@/pages/configuracoes/UsuariosPage";
 
 export function SettingsRoutes() {
@@ -25,17 +26,17 @@ export function SettingsRoutes() {
         <Route 
           path="/permissoes" 
           element={
-            <PermissionGuard requiredPermission="manage_permissions">
+            <ProtectedRoute routeKey="permissions">
               <PermissionsPage />
-            </PermissionGuard>
+            </ProtectedRoute>
           } 
         />
         <Route 
           path="/usuarios" 
           element={
-            <PermissionGuard requiredPermission="manage_users">
+            <ProtectedRoute routeKey="users">
               <UsuariosPage />
-            </PermissionGuard>
+            </ProtectedRoute>
           } 
         />
         <Route path="/criterios-avaliacao" element={<AssessmentCriteriaPage />} />
