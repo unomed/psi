@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions } from "@/hooks/usePermissions";
 import { usePermissionOperations } from "@/hooks/permissions/usePermissionOperations";
 import { PermissionsContainer } from "@/components/permissions/PermissionsContainer";
+import { PermissionSystemStatus } from "@/components/permissions/PermissionSystemStatus";
 import { permissionSettings } from "@/constants/permissionSettings";
 
 export default function PermissionsPage() {
@@ -36,11 +37,15 @@ export default function PermissionsPage() {
   const sections = [...new Set(permissionSettings.map(p => p.section))];
 
   return (
-    <PermissionsContainer
-      uniquePermissions={uniquePermissions}
-      permissionSettings={permissionSettings}
-      sections={sections}
-      permissionOperations={permissionOperations}
-    />
+    <div className="space-y-6">
+      <PermissionSystemStatus />
+      
+      <PermissionsContainer
+        uniquePermissions={uniquePermissions}
+        permissionSettings={permissionSettings}
+        sections={sections}
+        permissionOperations={permissionOperations}
+      />
+    </div>
   );
 }
