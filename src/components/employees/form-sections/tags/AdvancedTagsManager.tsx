@@ -2,14 +2,15 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, TrendingUp, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { TrendingUp, Clock } from "lucide-react";
 import { useOptimizedEmployeeTags, useOptimizedTagTypes } from "@/hooks/useOptimizedEmployeeTags";
 import { useRealTimeTagMonitoring } from "@/hooks/useRealTimeTagMonitoring";
 import { useRoleRequiredTags } from "@/hooks/useRoleRequiredTags";
+import { TagsOverviewTab } from "./TagsOverviewTab";
+import { TagsManagementTab } from "./TagsManagementTab";
+import { TagsAnalyticsTab } from "./TagsAnalyticsTab";
+import { TagsMonitoringTab } from "./TagsMonitoringTab";
 
 interface AdvancedTagsManagerProps {
   employeeId?: string;
@@ -151,229 +152,44 @@ export function AdvancedTagsManager({
             <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
           </TabsList>
 
-          {/* Visão Geral */}
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <div>
-                      <p className="text-sm font-medium">Conformidade</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {tagAnalysis.compliance.toFixed(0)}%
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    <div>
-                      <p className="text-sm font-medium">Tags em Falta</p>
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {tagAnalysis.missingRequired}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-blue-600" />
-                    <div>
-                      <p className="text-sm font-medium">Total de Tags</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        {tagStatistics.totalTags}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-red-600" />
-                    <div>
-                      <p className="text-sm font-medium">Expiradas</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {tagAnalysis.expiredTags}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Tags atuais */}
-            <div className="space-y-2">
-              <h4 className="font-medium">Tags Atuais</h4>
-              <div className="flex flex-wrap gap-2">
-                {employeeTags.map(tag => (
-                  <Badge 
-                    key={tag.id} 
-                    variant="outline"
-                    className="flex items-center gap-1"
-                  >
-                    {tag.tag_type?.name}
-                    {tag.expiry_date && new Date(tag.expiry_date) < new Date() && (
-                      <AlertTriangle className="h-3 w-3 text-red-500" />
-                    )}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+            <TagsOverviewTab 
+              tagAnalysis={tagAnalysis}
+              tagStatistics={tagStatistics}
+              employeeTags={employeeTags}
+            />
           </TabsContent>
 
-          {/* Gestão de Tags */}
           <TabsContent value="management" className="space-y-4">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Buscar tipos de tags..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Filtrar por categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  <SelectItem value="skill">Habilidades</SelectItem>
-                  <SelectItem value="certification">Certificações</SelectItem>
-                  <SelectItem value="requirement">Obrigatórias</SelectItem>
-                  <SelectItem value="behavioral">Comportamental</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-4">
-              {filteredTagTypes.map(tagType => {
-                const hasTag = employeeTags.some(et => et.tag_type_id === tagType.id);
-                const isRequired = requiredTags.some(rt => rt.tag_type_id === tagType.id);
-                
-                return (
-                  <Card key={tagType.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h5 className="font-medium">{tagType.name}</h5>
-                          {isRequired && (
-                            <Badge variant="destructive">Obrigatória</Badge>
-                          )}
-                          {tagType.category && (
-                            <Badge variant="outline">{tagType.category}</Badge>
-                          )}
-                        </div>
-                        {tagType.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {tagType.description}
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant={hasTag ? "destructive" : "default"}
-                        onClick={() => {
-                          if (hasTag) {
-                            const tag = employeeTags.find(et => et.tag_type_id === tagType.id);
-                            if (tag) handleRemoveTag(tag.id);
-                          } else {
-                            handleAddTag(tagType.id);
-                          }
-                        }}
-                        disabled={addEmployeeTag.isPending || removeEmployeeTag.isPending}
-                      >
-                        {hasTag ? "Remover" : "Adicionar"}
-                      </Button>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+            <TagsManagementTab
+              employeeTags={employeeTags}
+              requiredTags={requiredTags}
+              filteredTagTypes={filteredTagTypes}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              categoryFilter={categoryFilter}
+              setCategoryFilter={setCategoryFilter}
+              handleAddTag={handleAddTag}
+              handleRemoveTag={handleRemoveTag}
+              addEmployeeTagMutation={addEmployeeTag}
+              removeEmployeeTagMutation={removeEmployeeTag}
+            />
           </TabsContent>
 
-          {/* Analytics */}
           <TabsContent value="analytics" className="space-y-4">
-            <div className="grid gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Distribuição por Categoria</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {Object.entries(tagStatistics.categoryDistribution).map(([category, count]) => (
-                      <div key={category} className="flex justify-between items-center">
-                        <span className="capitalize">{category}</span>
-                        <Badge variant="outline">{count}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Métricas de Performance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Cache Status:</span>
-                      <Badge variant="outline">{performanceMetrics.cacheStatus}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Otimização:</span>
-                      <Badge variant={performanceMetrics.isOptimized ? "default" : "secondary"}>
-                        {performanceMetrics.isOptimized ? "Ativa" : "Desabilitada"}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Tempo Real:</span>
-                      <Badge variant={performanceMetrics.hasRealTime ? "default" : "secondary"}>
-                        {performanceMetrics.hasRealTime ? "Ativo" : "Desabilitado"}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <TagsAnalyticsTab
+              tagStatistics={tagStatistics}
+              performanceMetrics={performanceMetrics}
+            />
           </TabsContent>
 
-          {/* Monitoramento */}
           <TabsContent value="monitoring" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Status da Conexão</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Status:</span>
-                    <Badge variant={isConnected ? "default" : "secondary"}>
-                      {connectionStatus}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Eventos Recebidos:</span>
-                    <Badge variant="outline">{eventsCount}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Funcionário Monitorado:</span>
-                    <Badge variant="outline">{employeeId || 'Nenhum'}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <TagsMonitoringTab
+              connectionStatus={connectionStatus}
+              eventsCount={eventsCount}
+              isConnected={isConnected}
+              employeeId={employeeId}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
