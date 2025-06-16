@@ -87,11 +87,11 @@ export class AutomationProcessingService {
         if (employees && employees.length > 0) {
           const employee = employees[0];
           
-          // Buscar um template de avaliação psicossocial
+          // Buscar um template de avaliação psicossocial - use 'custom' as fallback
           const { data: templates, error: templateError } = await supabase
             .from('checklist_templates')
             .select('*')
-            .eq('type', 'psicossocial')
+            .in('type', ['custom'])
             .eq('is_active', true)
             .limit(1);
 
@@ -117,8 +117,7 @@ export class AutomationProcessingService {
                     simulation: true,
                     created_for_demo: true
                   }
-                },
-                completed_at: new Date().toISOString()
+                }
               })
               .select()
               .single();

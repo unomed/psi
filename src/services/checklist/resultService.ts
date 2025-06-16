@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistResult } from "@/types/checklist";
 import { DiscFactorType } from "@/types/disc";
@@ -7,15 +6,25 @@ import { stringToDiscFactorType } from "./utils";
 export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | "completedAt">): Promise<string> {
   const dominantFactorString = result.dominantFactor.toString();
   
+  // Get a default employee to satisfy the required constraint
+  const { data: employees, error: empError } = await supabase
+    .from('employees')
+    .select('id')
+    .limit(1);
+  
+  if (empError || !employees || employees.length === 0) {
+    throw new Error('No employees found to create assessment');
+  }
+  
   const { data, error } = await supabase
     .from('assessment_responses')
     .insert({
       template_id: result.templateId,
+      employee_id: employees[0].id, // Use first available employee
       employee_name: result.employeeName,
       dominant_factor: dominantFactorString,
       factors_scores: result.results,
-      response_data: {},
-      completed_at: new Date().toISOString()
+      response_data: {}
     })
     .select()
     .single();

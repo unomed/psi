@@ -9,6 +9,8 @@ interface ProcessingLog {
   status: 'processing' | 'completed' | 'error';
   processing_stage: string;
   error_message?: string;
+  created_at: string;
+  completed_at?: string;
 }
 
 interface ProcessingLogsListProps {
