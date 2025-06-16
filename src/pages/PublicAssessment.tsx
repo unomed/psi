@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { fetchAssessmentByToken } from "@/services/assessment/results";
 
 export default function PublicAssessment() {
@@ -11,23 +12,34 @@ export default function PublicAssessment() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationComplete, setValidationComplete] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const validateAndRedirect = async () => {
       if (!token) {
-        console.error("[PublicAssessment] Token não fornecido");
-        setError("Token de avaliação não fornecido");
+        console.error("[PublicAssessment] Token não fornecido na URL");
+        setError("Token de avaliação não fornecido na URL");
         setIsLoading(false);
         return;
       }
 
       console.log("[PublicAssessment] Iniciando validação do token:", token);
+      console.log("[PublicAssessment] URL atual:", window.location.href);
+      console.log("[PublicAssessment] Tentativa número:", retryCount + 1);
       
       try {
         setValidationComplete(false);
+        setError(null);
         
         // Verificar se o token é válido
+        console.log("[PublicAssessment] Chamando fetchAssessmentByToken...");
         const response = await fetchAssessmentByToken(token);
+        
+        console.log("[PublicAssessment] Resposta recebida:", {
+          hasError: !!response.error,
+          hasTemplate: !!(response as any).template,
+          hasEmployeeId: !!(response as any).employeeId
+        });
         
         if (response.error) {
           console.error("[PublicAssessment] Erro na validação:", response.error);
@@ -38,7 +50,11 @@ export default function PublicAssessment() {
 
         // Type guard para verificar se a resposta tem template
         if (!('template' in response) || !response.template || !response.employeeId) {
-          console.error("[PublicAssessment] Dados incompletos:", response);
+          console.error("[PublicAssessment] Dados incompletos:", {
+            hasTemplate: !!(response as any).template,
+            hasEmployeeId: !!(response as any).employeeId,
+            responseKeys: Object.keys(response)
+          });
           setError("Dados da avaliação incompletos");
           setIsLoading(false);
           return;
@@ -47,7 +63,8 @@ export default function PublicAssessment() {
         console.log("[PublicAssessment] Validação bem-sucedida:", {
           templateId: response.template.id,
           templateTitle: response.template.title,
-          employeeId: response.employeeId
+          employeeId: response.employeeId,
+          questionsCount: response.template.questions?.length || 0
         });
 
         setValidationComplete(true);
@@ -62,14 +79,31 @@ export default function PublicAssessment() {
         }, 1500);
 
       } catch (err) {
-        console.error("[PublicAssessment] Erro na validação:", err);
-        setError("Erro ao validar avaliação");
+        console.error("[PublicAssessment] Erro crítico na validação:", {
+          error: err,
+          message: err?.message || 'Unknown error',
+          stack: err?.stack || 'No stack trace'
+        });
+        setError("Erro crítico ao validar avaliação: " + (err?.message || 'Erro desconhecido'));
         setIsLoading(false);
       }
     };
 
     validateAndRedirect();
-  }, [token, navigate]);
+  }, [token, navigate, retryCount]);
+
+  const handleRetry = () => {
+    console.log("[PublicAssessment] Tentando novamente...");
+    setRetryCount(prev => prev + 1);
+    setIsLoading(true);
+    setError(null);
+    setValidationComplete(false);
+  };
+
+  const handleGoHome = () => {
+    console.log("[PublicAssessment] Redirecionando para home...");
+    navigate("/");
+  };
 
   if (isLoading || validationComplete) {
     return (
@@ -93,6 +127,7 @@ export default function PublicAssessment() {
                   <div className="font-medium">Validando link de avaliação...</div>
                   <div className="text-sm text-muted-foreground">
                     Verificando permissões e dados...
+                    {retryCount > 0 && ` (Tentativa ${retryCount + 1})`}
                   </div>
                 </div>
               </div>
@@ -113,19 +148,32 @@ export default function PublicAssessment() {
               <span className="font-medium">Erro na Validação</span>
             </div>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            
+            {/* Informações de debug para desenvolvimento */}
+            {process.env.NODE_ENV === 'development' && token && (
+              <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs">
+                <strong>Debug Info:</strong><br />
+                Token: {token}<br />
+                Tentativas: {retryCount + 1}<br />
+                URL: {window.location.href}
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Button 
                 className="w-full" 
-                onClick={() => navigate("/")}
+                onClick={handleGoHome}
               >
                 Voltar ao início
               </Button>
               <Button 
                 variant="outline"
                 className="w-full"
-                onClick={() => window.location.reload()}
+                onClick={handleRetry}
+                disabled={retryCount >= 3}
               >
-                Tentar novamente
+                <RefreshCw className="w-4 h-4 mr-2" />
+                {retryCount >= 3 ? 'Muitas tentativas' : 'Tentar novamente'}
               </Button>
             </div>
           </CardContent>

@@ -50,45 +50,115 @@ export async function submitAssessmentResult(resultData: Omit<any, "id" | "compl
 export async function fetchAssessmentByToken(token: string) {
   try {
     console.log("=== FETCH ASSESSMENT BY TOKEN - INÍCIO ===");
-    console.log("Token recebido:", token);
+    console.log("Token recebido (original):", token);
     
-    // PASSO 1: Buscar link de avaliação pelo token (query simplificada)
+    // PASSO 0: Tratamento robusto do token
+    let cleanToken = token;
+    
+    // Decodificar URL se necessário
+    if (token.includes('%')) {
+      cleanToken = decodeURIComponent(token);
+      console.log("Token após decodificação URL:", cleanToken);
+    }
+    
+    // Remover espaços em branco
+    cleanToken = cleanToken.trim();
+    console.log("Token limpo final:", cleanToken);
+    
+    // Validar formato básico do token
+    if (!cleanToken || cleanToken.length < 10) {
+      console.error("Token inválido - muito curto:", cleanToken);
+      return { error: "Token de avaliação inválido" };
+    }
+    
+    // PASSO 1: Buscar link de avaliação com debug melhorado
     console.log("Passo 1: Buscando link de avaliação...");
+    console.log("Query SQL equivalente: SELECT * FROM assessment_links WHERE token = '" + cleanToken + "'");
+    
     const { data: linkData, error: linkError } = await supabase
       .from('assessment_links')
-      .select('id, employee_id, template_id, expires_at, used_at')
-      .eq('token', token)
+      .select('id, employee_id, template_id, expires_at, used_at, created_at, token')
+      .eq('token', cleanToken)
       .maybeSingle();
 
+    console.log("Resultado da query assessment_links:");
+    console.log("- linkData:", linkData);
+    console.log("- linkError:", linkError);
+
     if (linkError) {
-      console.error("Erro ao buscar link:", linkError);
-      return { error: "Link de avaliação não encontrado ou inválido" };
+      console.error("Erro ao buscar link (SQL):", linkError);
+      return { error: "Erro na consulta do link de avaliação: " + linkError.message };
     }
 
     if (!linkData) {
-      console.log("Link não encontrado para token:", token);
-      return { error: "Link de avaliação não encontrado" };
+      console.log("Link não encontrado. Tentando busca alternativa...");
+      
+      // Busca alternativa - todos os tokens para debug
+      const { data: allTokens, error: allTokensError } = await supabase
+        .from('assessment_links')
+        .select('token, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+        
+      console.log("Últimos 10 tokens no banco:", allTokens);
+      console.log("Erro na busca de tokens:", allTokensError);
+      
+      // Busca com LIKE para tokens similares
+      const { data: similarTokens, error: similarError } = await supabase
+        .from('assessment_links')
+        .select('token, id, created_at')
+        .ilike('token', `%${cleanToken.substring(0, 10)}%`)
+        .limit(5);
+        
+      console.log("Tokens similares encontrados:", similarTokens);
+      
+      return { error: "Link de avaliação não encontrado no banco de dados" };
     }
 
-    console.log("Link encontrado:", linkData);
+    console.log("Link encontrado com sucesso:", {
+      id: linkData.id,
+      employee_id: linkData.employee_id,
+      template_id: linkData.template_id,
+      token_match: linkData.token === cleanToken
+    });
 
-    // PASSO 2: Verificar validade do link
+    // PASSO 2: Verificar validade do link com melhor diagnóstico
     console.log("Passo 2: Verificando validade do link...");
     
-    if (linkData.expires_at && new Date(linkData.expires_at) < new Date()) {
-      console.log("Link expirado:", linkData.expires_at);
+    const now = new Date();
+    const expiresAt = linkData.expires_at ? new Date(linkData.expires_at) : null;
+    const usedAt = linkData.used_at ? new Date(linkData.used_at) : null;
+    
+    console.log("Verificação de validade:", {
+      now: now.toISOString(),
+      expires_at: linkData.expires_at,
+      used_at: linkData.used_at,
+      is_expired: expiresAt ? expiresAt < now : false,
+      is_used: !!usedAt
+    });
+    
+    if (expiresAt && expiresAt < now) {
+      console.log("Link expirado:", {
+        expires_at: linkData.expires_at,
+        expired_hours_ago: Math.round((now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60))
+      });
       return { error: "Link de avaliação expirado" };
     }
 
-    if (linkData.used_at) {
-      console.log("Link já foi usado:", linkData.used_at);
+    if (usedAt) {
+      console.log("Link já foi usado:", {
+        used_at: linkData.used_at,
+        used_hours_ago: Math.round((now.getTime() - usedAt.getTime()) / (1000 * 60 * 60))
+      });
       return { error: "Este link de avaliação já foi utilizado" };
     }
 
     console.log("Link válido! Prosseguindo...");
 
-    // PASSO 3: Buscar template (query separada)
+    // PASSO 3: Buscar template com error handling melhorado
     console.log("Passo 3: Buscando template...");
+    console.log("Template ID a buscar:", linkData.template_id);
+    
     const { data: templateData, error: templateError } = await supabase
       .from('checklist_templates')
       .select(`
@@ -114,14 +184,28 @@ export async function fetchAssessmentByToken(token: string) {
       .eq('id', linkData.template_id)
       .maybeSingle();
 
-    if (templateError || !templateData) {
+    console.log("Resultado da busca do template:");
+    console.log("- templateData:", templateData ? { id: templateData.id, title: templateData.title } : null);
+    console.log("- templateError:", templateError);
+
+    if (templateError) {
       console.error("Erro ao buscar template:", templateError);
+      return { error: "Erro na consulta do template: " + templateError.message };
+    }
+    
+    if (!templateData) {
+      console.error("Template não encontrado:", linkData.template_id);
       return { error: "Template de avaliação não encontrado" };
     }
 
-    console.log("Template encontrado:", templateData);
+    console.log("Template encontrado:", {
+      id: templateData.id,
+      title: templateData.title,
+      type: templateData.type,
+      is_active: templateData.is_active
+    });
 
-    // PASSO 4: Buscar questões do template (query separada)
+    // PASSO 4: Buscar questões com debug
     console.log("Passo 4: Buscando questões...");
     const { data: questionsData, error: questionsError } = await supabase
       .from('questions')
@@ -129,18 +213,21 @@ export async function fetchAssessmentByToken(token: string) {
       .eq('template_id', linkData.template_id)
       .order('order_number');
 
+    console.log("Resultado da busca de questões:");
+    console.log("- questionsData length:", questionsData?.length || 0);
+    console.log("- questionsError:", questionsError);
+
     if (questionsError) {
       console.error("Erro ao buscar questões:", questionsError);
+      return { error: "Erro na consulta das questões: " + questionsError.message };
     }
-
-    console.log("Questões encontradas:", questionsData?.length || 0);
 
     // PASSO 5: Mapear tipo do template
     console.log("Passo 5: Mapeando tipo do template...");
     const templateType = mapDbTemplateTypeToApp(templateData.type);
     console.log("Tipo mapeado:", templateType);
 
-    // PASSO 6: Transformar questões do banco para o formato esperado
+    // PASSO 6: Transformar questões
     console.log("Passo 6: Transformando questões...");
     let questions: (DiscQuestion | PsicossocialQuestion)[] = [];
     
@@ -158,7 +245,6 @@ export async function fetchAssessmentByToken(token: string) {
         category: q.target_factor || "Geral"
       }));
     } else {
-      // Para outros tipos, usar formato genérico como DiscQuestion
       questions = (questionsData || []).map(q => ({
         id: q.id,
         text: q.question_text,
@@ -169,7 +255,7 @@ export async function fetchAssessmentByToken(token: string) {
 
     console.log("Questões transformadas:", questions.length);
 
-    // PASSO 7: Montar o template completo
+    // PASSO 7: Montar template completo
     console.log("Passo 7: Montando template completo...");
     const template: ChecklistTemplate = {
       id: templateData.id,
@@ -193,7 +279,11 @@ export async function fetchAssessmentByToken(token: string) {
       instructions: templateData.instructions
     };
 
-    console.log("Template completo montado:", template.title);
+    console.log("Template completo montado:", {
+      id: template.id,
+      title: template.title,
+      questionsCount: template.questions.length
+    });
 
     const result = {
       template,
@@ -204,11 +294,21 @@ export async function fetchAssessmentByToken(token: string) {
     };
 
     console.log("=== FETCH ASSESSMENT BY TOKEN - SUCESSO ===");
+    console.log("Resultado final:", {
+      template_id: result.template.id,
+      employee_id: result.employeeId,
+      questions_count: result.template.questions.length
+    });
+    
     return result;
 
   } catch (error) {
-    console.error("=== FETCH ASSESSMENT BY TOKEN - ERRO ===");
-    console.error("Erro ao buscar avaliação:", error);
-    return { error: "Erro interno ao buscar avaliação" };
+    console.error("=== FETCH ASSESSMENT BY TOKEN - ERRO CRÍTICO ===");
+    console.error("Erro detalhado:", {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack || 'No stack trace',
+      token: token
+    });
+    return { error: "Erro interno ao buscar avaliação: " + (error?.message || 'Erro desconhecido') };
   }
 }
