@@ -1,6 +1,7 @@
 
 import { ChecklistTemplate } from "@/types/checklist";
 import { ScaleType } from "@/types";
+import { DiscFactorType } from "@/types/disc";
 import { 
   getDefaultDiscQuestions, 
   getDefaultPsicossocialQuestions, 
@@ -22,7 +23,32 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
     description: "Avaliação de perfil comportamental baseada na metodologia DISC",
     type: "disc" as const,
     scaleType: ScaleType.YesNo,
-    questions: getDefaultDiscQuestions(),
+    questions: [
+      {
+        id: crypto.randomUUID(),
+        text: "Sou uma pessoa que gosta de liderar projetos e tomar decisões importantes",
+        targetFactor: DiscFactorType.D,
+        weight: 2
+      },
+      {
+        id: crypto.randomUUID(),
+        text: "Prefiro trabalhar em equipe e colaborar com outras pessoas",
+        targetFactor: DiscFactorType.I,
+        weight: 2
+      },
+      {
+        id: crypto.randomUUID(),
+        text: "Valorizo a estabilidade e a consistência no trabalho",
+        targetFactor: DiscFactorType.S,
+        weight: 2
+      },
+      {
+        id: crypto.randomUUID(),
+        text: "Sou detalhista e gosto de seguir procedimentos estabelecidos",
+        targetFactor: DiscFactorType.C,
+        weight: 2
+      }
+    ],
     estimatedTimeMinutes: 10,
     instructions: "Responda de acordo com como você geralmente se comporta no ambiente de trabalho."
   },

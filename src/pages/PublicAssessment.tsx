@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,7 +36,8 @@ export default function PublicAssessment() {
           return;
         }
 
-        if (!response.template || !response.employeeId) {
+        // Type guard para verificar se a resposta tem template
+        if (!('template' in response) || !response.template || !response.employeeId) {
           console.error("[PublicAssessment] Dados incompletos:", response);
           setError("Dados da avaliação incompletos");
           setIsLoading(false);

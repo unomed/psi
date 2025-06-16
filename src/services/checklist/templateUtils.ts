@@ -1,5 +1,6 @@
 
 import { ChecklistTemplateType } from "@/types";
+import { DiscFactorType } from "@/types/disc";
 
 export function mapDbTemplateTypeToApp(dbType: string): ChecklistTemplateType {
   console.log("Mapeando tipo de template:", dbType);
@@ -84,25 +85,25 @@ export function getDefaultDiscQuestions() {
     {
       id: crypto.randomUUID(),
       text: "Sou uma pessoa que gosta de liderar projetos e tomar decisões importantes",
-      targetFactor: "D",
+      targetFactor: DiscFactorType.D,
       weight: 2
     },
     {
       id: crypto.randomUUID(),
       text: "Prefiro trabalhar em equipe e colaborar com outras pessoas",
-      targetFactor: "I",
+      targetFactor: DiscFactorType.I,
       weight: 2
     },
     {
       id: crypto.randomUUID(),
       text: "Valorizo a estabilidade e a consistência no trabalho",
-      targetFactor: "S",
+      targetFactor: DiscFactorType.S,
       weight: 2
     },
     {
       id: crypto.randomUUID(),
       text: "Sou detalhista e gosto de seguir procedimentos estabelecidos",
-      targetFactor: "C",
+      targetFactor: DiscFactorType.C,
       weight: 2
     }
   ];
@@ -288,8 +289,9 @@ export function getSafeDbTemplateType(templateType: string): string {
   return validTypes.includes(templateType) ? templateType : 'custom';
 }
 
-export function formatQuestionsForDb(questions: any[]) {
+export function formatQuestionsForDb(questions: any[], templateId?: string, templateType?: string) {
   return questions.map((question, index) => ({
+    template_id: templateId,
     question_text: question.text,
     target_factor: question.targetFactor || question.category || null,
     weight: question.weight || 1,

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +36,7 @@ export function EmployeeDashboard({ assessmentToken, templateId }: EmployeeDashb
           
           if (response.error) {
             toast.error(response.error);
-          } else if (response.template) {
+          } else if ('template' in response && response.template) {
             setAssessmentTemplate(response.template);
             setCurrentView('assessment');
           }

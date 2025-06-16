@@ -31,23 +31,24 @@ export default function AssessmentPage() {
           return;
         }
         
-        const { template: fetchedTemplate, error, assessmentId, linkId } = await fetchAssessmentByToken(token);
+        const response = await fetchAssessmentByToken(token);
         
-        if (error) {
-          setError(error);
+        if (response.error) {
+          setError(response.error);
           return;
         }
         
-        if (!fetchedTemplate) {
+        // Type guard para verificar se a resposta tem template
+        if (!('template' in response) || !response.template) {
           setError("Modelo de avaliação não encontrado");
           return;
         }
         
-        setTemplate(fetchedTemplate);
-        setAssessmentId(assessmentId);
-        setLinkId(linkId);
+        setTemplate(response.template);
+        setAssessmentId(response.assessmentId);
+        setLinkId(response.linkId);
         
-        console.log("Assessment loaded successfully:", { template: fetchedTemplate, assessmentId, linkId });
+        console.log("Assessment loaded successfully:", { template: response.template, assessmentId: response.assessmentId, linkId: response.linkId });
       } catch (err) {
         console.error("Error loading assessment:", err);
         setError("Erro ao carregar avaliação. Por favor, tente novamente.");
