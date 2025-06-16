@@ -22,6 +22,7 @@ import { AutomationRuleForm } from "./AutomationRuleForm";
 import { NotificationCenter } from "./NotificationCenter";
 import { EscalationConfig } from "./EscalationConfig";
 import { AutomationMetrics } from "./AutomationMetrics";
+import { AutomationRule } from "@/types/automation";
 
 interface AutomationRulesManagerProps {
   companyId?: string;
@@ -29,7 +30,7 @@ interface AutomationRulesManagerProps {
 
 export function AutomationRulesManager({ companyId }: AutomationRulesManagerProps) {
   const [showForm, setShowForm] = useState(false);
-  const [editingRule, setEditingRule] = useState<any>(null);
+  const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
   
   const {
     automationRules,
@@ -44,7 +45,10 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
 
   const handleCreateRule = async (ruleData: any) => {
     try {
-      await createRule(ruleData);
+      await createRule({
+        ...ruleData,
+        companyId: companyId || ''
+      });
       setShowForm(false);
     } catch (error) {
       console.error("Error creating rule:", error);
@@ -160,7 +164,7 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
           <div className="space-y-4">
             {/* Lista de Regras */}
             <div className="grid gap-4">
-              {automationRules.map((rule: any) => (
+              {automationRules.map((rule) => (
                 <Card key={rule.id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
@@ -178,7 +182,7 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={rule.isActive || rule.is_active}
+                          checked={rule.isActive}
                           onCheckedChange={(checked) => handleToggleRule(rule.id, checked)}
                         />
                         <Button
@@ -204,14 +208,14 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
                   <CardContent>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        {(rule.isActive || rule.is_active) ? (
+                        {rule.isActive ? (
                           <Play className="h-3 w-3 text-green-500" />
                         ) : (
                           <Pause className="h-3 w-3 text-gray-500" />
                         )}
-                        {(rule.isActive || rule.is_active) ? 'Ativa' : 'Pausada'}
+                        {rule.isActive ? 'Ativa' : 'Pausada'}
                       </div>
-                      <div>Trigger: {getTriggerTypeLabel(rule.triggerType || rule.trigger_type)}</div>
+                      <div>Trigger: {getTriggerTypeLabel(rule.triggerType)}</div>
                       <div>{rule.actions?.length || 0} ações configuradas</div>
                     </div>
                   </CardContent>

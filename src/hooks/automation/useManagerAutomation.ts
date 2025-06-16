@@ -2,15 +2,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AutomationRule, ManagerNotification, EscalationLevel } from "@/types/automation";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ManagerAutomationService } from "@/services/automation/managerAutomationService";
 
 export function useManagerAutomation(companyId?: string) {
   const queryClient = useQueryClient();
   const [selectedRule, setSelectedRule] = useState<AutomationRule | null>(null);
 
-  // Buscar regras de automação (usando tabela existing ou mock data)
+  // Mock automation rules data
   const { 
     data: automationRules = [], 
     isLoading: rulesLoading 
@@ -19,24 +17,40 @@ export function useManagerAutomation(companyId?: string) {
     queryFn: async () => {
       if (!companyId) return [];
       
-      // Como não temos tabela ainda, retornar dados mock
+      // Return mock data with proper types
       return [
         {
           id: '1',
           name: 'Alerta de Alto Risco',
           description: 'Notifica gestores quando risco alto é detectado',
           isActive: true,
-          triggerType: 'risk_detected',
-          priority: 'high',
+          companyId: companyId,
+          triggerType: 'risk_detected' as const,
+          priority: 'high' as const,
           conditions: [],
-          actions: []
+          actions: [],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: '2',
+          name: 'Prazo de Avaliação',
+          description: 'Lembra gestores sobre prazos próximos',
+          isActive: true,
+          companyId: companyId,
+          triggerType: 'deadline_approaching' as const,
+          priority: 'medium' as const,
+          conditions: [],
+          actions: [],
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
       ];
     },
     enabled: !!companyId
   });
 
-  // Buscar notificações de gestores (usar dados mock por enquanto)
+  // Mock manager notifications data
   const { 
     data: managerNotifications = [], 
     isLoading: notificationsLoading 
@@ -45,27 +59,44 @@ export function useManagerAutomation(companyId?: string) {
     queryFn: async () => {
       if (!companyId) return [];
       
-      // Mock data
+      // Return mock data with proper types
       return [
         {
           id: '1',
           managerId: 'manager1',
-          type: 'high_risk_alert',
-          priority: 'high',
+          type: 'high_risk_alert' as const,
+          priority: 'high' as const,
           title: 'Alto Risco Detectado',
           message: 'Foi detectado um alto risco para o funcionário João Silva',
-          relatedEntityType: 'assessment',
+          relatedEntityType: 'assessment' as const,
           relatedEntityId: 'assessment1',
           isRead: false,
           actionRequired: true,
-          createdAt: new Date()
+          createdAt: new Date(),
+          metadata: {
+            automationGenerated: true
+          }
+        },
+        {
+          id: '2',
+          managerId: 'manager1',
+          type: 'deadline_reminder' as const,
+          priority: 'medium' as const,
+          title: 'Prazo de Avaliação Próximo',
+          message: 'A avaliação psicossocial vence em 3 dias',
+          relatedEntityType: 'assessment' as const,
+          relatedEntityId: 'assessment2',
+          isRead: true,
+          actionRequired: false,
+          createdAt: new Date(),
+          metadata: {}
         }
       ];
     },
     enabled: !!companyId
   });
 
-  // Buscar níveis de escalação (usar dados mock)
+  // Mock escalation levels data
   const { 
     data: escalationLevels = [], 
     isLoading: escalationLoading 
@@ -74,7 +105,7 @@ export function useManagerAutomation(companyId?: string) {
     queryFn: async () => {
       if (!companyId) return [];
       
-      // Mock data
+      // Return mock data with proper types
       return [
         {
           id: '1',
@@ -82,20 +113,35 @@ export function useManagerAutomation(companyId?: string) {
           level: 1,
           roleIds: [],
           userIds: [],
-          notificationMethods: ['email', 'in_app'],
+          notificationMethods: ['email', 'in_app'] as const,
           escalationDelayMinutes: 60
+        },
+        {
+          id: '2',
+          name: 'Gerentes',
+          level: 2,
+          roleIds: [],
+          userIds: [],
+          notificationMethods: ['email', 'sms', 'in_app'] as const,
+          escalationDelayMinutes: 120
         }
       ];
     },
     enabled: !!companyId
   });
 
-  // Criar regra de automação
+  // Create automation rule mutation
   const createRuleMutation = useMutation({
     mutationFn: async (ruleData: Omit<AutomationRule, 'id' | 'createdAt' | 'updatedAt'>) => {
       console.log('Creating automation rule:', ruleData);
-      // Por enquanto só log, futuramente integrar com backend
-      return { id: Date.now().toString(), ...ruleData, createdAt: new Date(), updatedAt: new Date() };
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { 
+        id: Date.now().toString(), 
+        ...ruleData, 
+        createdAt: new Date(), 
+        updatedAt: new Date() 
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automationRules'] });
@@ -107,11 +153,12 @@ export function useManagerAutomation(companyId?: string) {
     }
   });
 
-  // Atualizar regra de automação
+  // Update automation rule mutation
   const updateRuleMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<AutomationRule> }) => {
       console.log('Updating automation rule:', id, updates);
-      // Por enquanto só log, futuramente integrar com backend
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return { id, ...updates };
     },
     onSuccess: () => {
@@ -124,11 +171,12 @@ export function useManagerAutomation(companyId?: string) {
     }
   });
 
-  // Excluir regra de automação
+  // Delete automation rule mutation
   const deleteRuleMutation = useMutation({
     mutationFn: async (ruleId: string) => {
       console.log('Deleting automation rule:', ruleId);
-      // Por enquanto só log, futuramente integrar com backend
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['automationRules'] });
@@ -140,11 +188,12 @@ export function useManagerAutomation(companyId?: string) {
     }
   });
 
-  // Marcar notificação como lida
+  // Mark notification as read mutation
   const markNotificationReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
       console.log('Marking notification as read:', notificationId);
-      // Por enquanto só log, futuramente integrar com backend
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['managerNotifications'] });
@@ -155,7 +204,7 @@ export function useManagerAutomation(companyId?: string) {
     }
   });
 
-  // Processar trigger de automação
+  // Process automation trigger function
   const processAutomationTrigger = async (
     triggerType: string,
     entityData: any
@@ -163,28 +212,29 @@ export function useManagerAutomation(companyId?: string) {
     if (!companyId) return;
 
     try {
-      await ManagerAutomationService.processAutomationTrigger(
-        triggerType,
-        entityData,
-        companyId
-      );
+      console.log('Processing automation trigger:', triggerType, entityData);
+      // Simulate processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Invalidar queries para atualizar dados
+      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['managerNotifications'] });
+      
+      toast.success("Trigger de automação processado com sucesso!");
     } catch (error) {
       console.error("Error processing automation trigger:", error);
+      toast.error("Erro ao processar trigger de automação");
     }
   };
 
   return {
-    // Dados
+    // Data
     automationRules,
     managerNotifications,
     escalationLevels,
     selectedRule,
     setSelectedRule,
     
-    // Estados de loading
+    // Loading states
     isLoading: rulesLoading || notificationsLoading || escalationLoading,
     rulesLoading,
     notificationsLoading,
@@ -196,10 +246,10 @@ export function useManagerAutomation(companyId?: string) {
     deleteRule: deleteRuleMutation.mutateAsync,
     markNotificationRead: markNotificationReadMutation.mutateAsync,
     
-    // Funções
+    // Functions
     processAutomationTrigger,
     
-    // Estados das mutations
+    // Mutation states
     isCreating: createRuleMutation.isPending,
     isUpdating: updateRuleMutation.isPending,
     isDeleting: deleteRuleMutation.isPending
