@@ -1,7 +1,7 @@
 
 {
-  "name": "PSI Safe - Avaliação Psicossocial",
-  "short_name": "PSI Safe",
+  "name": "PSI Unomed - Avaliação Psicossocial",
+  "short_name": "PSI Unomed",
   "description": "Sistema de Avaliação de Riscos Psicossociais - Unomed",
   "start_url": "/employee-portal",
   "display": "standalone",
@@ -21,6 +21,11 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     }
   ],
   "categories": ["business", "health", "productivity"],
