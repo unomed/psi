@@ -1,9 +1,8 @@
-
 // Define basic types
 export type RoleType = "admin" | "employee" | "superadmin";
 
 // Define RecurrenceType as a string type for API compatibility
-export type RecurrenceType = "none" | "monthly" | "semiannual" | "annual";
+export type RecurrenceType = "none" | "monthly" | "quarterly" | "semiannual" | "annual";
 
 // Scale type definitions
 export enum ScaleType {

@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Search, Building, Users, Briefcase } from "lucide-react";
 import { useEmployees } from "@/hooks/useEmployees";
+import { useSectors } from "@/hooks/sectors/useSectors";
+import { useRoles } from "@/hooks/useRoles";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface EmployeeSelectionStepProps {
@@ -21,21 +23,37 @@ export function EmployeeSelectionStep({
   const { userCompanies } = useAuth();
   const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
   const { employees } = useEmployees({ companyId });
+  const { sectors } = useSectors({ companyId });
+  const { roles } = useRoles();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSector, setSelectedSector] = useState<string>("all");
   const [selectedRole, setSelectedRole] = useState<string>("all");
 
-  // Extract unique sectors and roles
-  const sectors = [...new Set(employees?.map(emp => emp.sector?.name).filter(Boolean))];
-  const roles = [...new Set(employees?.map(emp => emp.role?.name).filter(Boolean))];
+  // Get sector and role names
+  const getSectorName = (sectorId: string) => {
+    return sectors?.find(s => s.id === sectorId)?.name || "Setor não encontrado";
+  };
+
+  const getRoleName = (roleId: string) => {
+    return roles?.find(r => r.id === roleId)?.name || "Função não encontrada";
+  };
+
+  // Extract unique sectors and roles from employees
+  const availableSectors = sectors?.filter(sector => 
+    employees?.some(emp => emp.sector_id === sector.id)
+  ) || [];
+  
+  const availableRoles = roles?.filter(role => 
+    employees?.some(emp => emp.role_id === role.id)
+  ) || [];
 
   // Filter employees
   const filteredEmployees = employees?.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSector = selectedSector === "all" || employee.sector?.name === selectedSector;
-    const matchesRole = selectedRole === "all" || employee.role?.name === selectedRole;
+    const matchesSector = selectedSector === "all" || employee.sector_id === selectedSector;
+    const matchesRole = selectedRole === "all" || employee.role_id === selectedRole;
     
     return matchesSearch && matchesSector && matchesRole;
   }) || [];
@@ -73,9 +91,9 @@ export function EmployeeSelectionStep({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os setores</SelectItem>
-              {sectors.map(sector => (
-                <SelectItem key={sector} value={sector}>
-                  {sector}
+              {availableSectors.map(sector => (
+                <SelectItem key={sector.id} value={sector.id}>
+                  {sector.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -90,9 +108,9 @@ export function EmployeeSelectionStep({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os cargos</SelectItem>
-              {roles.map(role => (
-                <SelectItem key={role} value={role}>
-                  {role}
+              {availableRoles.map(role => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -139,18 +157,14 @@ export function EmployeeSelectionStep({
               
               <CardContent className="pt-0">
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {employee.sector && (
-                    <Badge variant="outline" className="text-xs">
-                      <Building className="h-3 w-3 mr-1" />
-                      {employee.sector.name}
-                    </Badge>
-                  )}
-                  {employee.role && (
-                    <Badge variant="outline" className="text-xs">
-                      <Briefcase className="h-3 w-3 mr-1" />
-                      {employee.role.name}
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="text-xs">
+                    <Building className="h-3 w-3 mr-1" />
+                    {getSectorName(employee.sector_id)}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    <Briefcase className="h-3 w-3 mr-1" />
+                    {getRoleName(employee.role_id)}
+                  </Badge>
                   {employee.role?.risk_level && (
                     <Badge variant={
                       employee.role.risk_level === 'high' ? 'destructive' :
