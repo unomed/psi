@@ -8,9 +8,10 @@ import { CurrentTagsList } from "./CurrentTagsList";
 import { TagSystemDebug } from "./TagSystemDebug";
 import { TagMigrationStatus } from "./TagMigrationStatus";
 import { TagSystemErrorBoundary } from "./TagSystemErrorBoundary";
+import { AdvancedTagsManager } from "./AdvancedTagsManager";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, Database } from "lucide-react";
+import { AlertCircle, CheckCircle, Database, Zap, Settings } from "lucide-react";
 
 interface TechnicalTagsSectionProps {
   employeeId?: string;
@@ -21,6 +22,7 @@ interface TechnicalTagsSectionProps {
 export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }: TechnicalTagsSectionProps) {
   const [showDebug, setShowDebug] = useState(false);
   const [showMigration, setShowMigration] = useState(false);
+  const [useAdvancedMode, setUseAdvancedMode] = useState(false);
   
   const { employeeTags, isLoading: isLoadingEmployeeTags } = useEmployeeTags(employeeId);
   const { tagTypes, isLoading: isLoadingTagTypes } = useTagTypes();
@@ -32,7 +34,8 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
     employeeTagsCount: employeeTags.length,
     tagTypesCount: tagTypes.length,
     requiredTagsCount: requiredTags.length,
-    isLoading: { employeeTags: isLoadingEmployeeTags, tagTypes: isLoadingTagTypes, requiredTags: isLoadingRequiredTags }
+    isLoading: { employeeTags: isLoadingEmployeeTags, tagTypes: isLoadingTagTypes, requiredTags: isLoadingRequiredTags },
+    advancedMode: useAdvancedMode
   });
 
   const currentTagIds = employeeTags.map(t => t.tag_type_id);
@@ -67,6 +70,37 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
     );
   }
 
+  // Modo Avançado
+  if (useAdvancedMode) {
+    return (
+      <TagSystemErrorBoundary>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-lg font-semibold">Sistema Avançado de Tags</FormLabel>
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => setUseAdvancedMode(false)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Modo Simples
+              </Button>
+            </div>
+          </div>
+          
+          <AdvancedTagsManager
+            employeeId={employeeId}
+            selectedRole={selectedRole}
+            onTagsChange={onTagsChange}
+          />
+        </div>
+      </TagSystemErrorBoundary>
+    );
+  }
+
+  // Modo Simples (original com melhorias)
   return (
     <TagSystemErrorBoundary>
       <div className="space-y-4 border p-4 rounded-md">
@@ -80,6 +114,15 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
             )}
           </div>
           <div className="flex gap-2">
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setUseAdvancedMode(true)}
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Modo Avançado
+            </Button>
             <Button 
               type="button" 
               variant="ghost" 
@@ -150,6 +193,7 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
           <div className="text-xs text-muted-foreground space-y-1">
             <div>ID do funcionário: {employeeId}</div>
             <div>Função selecionada: {selectedRole || 'Nenhuma'}</div>
+            <div>Modo avançado: {useAdvancedMode ? 'Ativo' : 'Disponível'}</div>
           </div>
         )}
 
@@ -165,6 +209,7 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
               Obrigatórias={isLoadingRequiredTags ? "⏳" : "✅"}
             </div>
             <div>💚 Sistema saudável: {systemHealthy ? "✅" : "❌"}</div>
+            <div>🚀 Modo avançado disponível: ✅</div>
           </div>
         )}
       </div>
