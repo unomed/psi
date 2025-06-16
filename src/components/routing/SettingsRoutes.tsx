@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -12,6 +11,8 @@ import AssessmentCriteriaPage from "@/pages/configuracoes/AssessmentCriteriaPage
 import AutomacaoPsicossocialPage from "@/pages/configuracoes/AutomacaoPsicossocialPage";
 import AutomacaoAvancadaPage from "@/pages/configuracoes/AutomacaoAvancadaPage";
 import AuditoriaPage from "@/pages/configuracoes/AuditoriaPage";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import UsuariosPage from "@/pages/configuracoes/UsuariosPage";
 
 export function SettingsRoutes() {
   return (
@@ -21,8 +22,22 @@ export function SettingsRoutes() {
         <Route path="/servidor-email" element={<EmailServerPage />} />
         <Route path="/templates-email" element={<EmailTemplatesPage />} />
         <Route path="/notificacoes" element={<NotificationsPage />} />
-        <Route path="/permissoes" element={<PermissionsPage />} />
-        <Route path="/usuarios" element={<UserManagementPage />} />
+        <Route 
+          path="/permissoes" 
+          element={
+            <PermissionGuard requiredPermission="manage_permissions">
+              <PermissionsPage />
+            </PermissionGuard>
+          } 
+        />
+        <Route 
+          path="/usuarios" 
+          element={
+            <PermissionGuard requiredPermission="manage_users">
+              <UsuariosPage />
+            </PermissionGuard>
+          } 
+        />
         <Route path="/criterios-avaliacao" element={<AssessmentCriteriaPage />} />
         <Route path="/automacao-psicossocial" element={<AutomacaoPsicossocialPage />} />
         <Route path="/automacao-avancada" element={<AutomacaoAvancadaPage />} />

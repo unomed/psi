@@ -4,19 +4,39 @@ import { useLocation } from "react-router-dom";
 import { SidebarMenuSubItemComponent } from "./SidebarMenuItem";
 import { CollapsibleMenuItem } from "./CollapsibleMenuItem";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCheckPermission } from "@/hooks/useCheckPermission";
+import { usePermissionGuard } from "@/hooks/permissions/usePermissionGuard";
 import { settingsItems } from "./settingsItems";
 
 export function SettingsSubmenu() {
   const { userRole } = useAuth();
-  const { hasPermission } = useCheckPermission();
+  const { 
+    canAccessPermissionsPage, 
+    canAccessUsersPage, 
+    canAccessCompaniesPage, 
+    canAccessBillingPage,
+    canAccessSettingsPage 
+  } = usePermissionGuard();
   const location = useLocation();
 
   const filteredItems = settingsItems.filter((item) => {
-    // Por enquanto, permitir acesso para todos os itens
-    // Implementar verificação de permissão futuramente se necessário
-    return true;
+    switch (item.url) {
+      case '/configuracoes/permissoes':
+        return canAccessPermissionsPage();
+      case '/configuracoes/usuarios':
+        return canAccessUsersPage();
+      case '/configuracoes/empresas':
+        return canAccessCompaniesPage();
+      case '/configuracoes/faturamento':
+        return canAccessBillingPage();
+      default:
+        return canAccessSettingsPage();
+    }
   });
+
+  // Se o usuário não tem acesso a nenhuma configuração, não mostrar o menu
+  if (filteredItems.length === 0) {
+    return null;
+  }
 
   const isSettingsActive = location.pathname.startsWith('/configuracoes');
 

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +21,17 @@ export function useCheckPermission() {
         if (isMounted) {
           setLoadingPermission(false);
           setPermissions({});
+        }
+        return;
+      }
+
+      // Superadmin sempre tem todas as permissões
+      if (userRole === 'superadmin') {
+        console.log("[useCheckPermission] User is superadmin, granting all permissions");
+        if (isMounted) {
+          const allPermissions = getAllPermissions();
+          setPermissions(allPermissions);
+          setLoadingPermission(false);
         }
         return;
       }
@@ -95,6 +105,60 @@ export function useCheckPermission() {
   };
 }
 
+function getAllPermissions(): Record<string, boolean> {
+  return {
+    view_dashboard: true,
+    view_companies: true,
+    create_companies: true,
+    edit_companies: true,
+    delete_companies: true,
+    view_employees: true,
+    create_employees: true,
+    edit_employees: true,
+    delete_employees: true,
+    view_sectors: true,
+    create_sectors: true,
+    edit_sectors: true,
+    delete_sectors: true,
+    view_functions: true,
+    create_functions: true,
+    edit_functions: true,
+    delete_functions: true,
+    view_checklists: true,
+    create_checklists: true,
+    edit_checklists: true,
+    delete_checklists: true,
+    view_assessments: true,
+    create_assessments: true,
+    edit_assessments: true,
+    delete_assessments: true,
+    view_scheduling: true,
+    create_scheduling: true,
+    edit_scheduling: true,
+    delete_scheduling: true,
+    view_results: true,
+    export_results: true,
+    analyze_results: true,
+    view_risk_management: true,
+    create_risk_plans: true,
+    edit_risk_matrix: true,
+    view_action_plans: true,
+    create_action_plans: true,
+    edit_action_plans: true,
+    approve_action_plans: true,
+    view_reports: true,
+    export_reports: true,
+    create_custom_reports: true,
+    view_billing: true,
+    manage_billing: true,
+    view_invoices: true,
+    view_settings: true,
+    edit_settings: true,
+    manage_users: true,
+    manage_permissions: true,
+  };
+}
+
 function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
   const defaultPermissions: Record<string, boolean> = {
     view_dashboard: false,
@@ -149,11 +213,6 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
   };
 
   switch (role) {
-    case 'superadmin':
-      Object.keys(defaultPermissions).forEach(key => {
-        defaultPermissions[key] = true;
-      });
-      break;
     case 'admin':
       defaultPermissions.view_dashboard = true;
       defaultPermissions.view_employees = true;
@@ -166,7 +225,7 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
       defaultPermissions.delete_sectors = true;
       defaultPermissions.view_functions = true;
       defaultPermissions.create_functions = true;
-      defaultPermissions.edit_functions = true;
+      defaultPermissions.edit_functions = true,
       defaultPermissions.delete_functions = true;
       defaultPermissions.view_checklists = true;
       defaultPermissions.create_checklists = true;
@@ -190,7 +249,6 @@ function getDefaultPermissionsForRole(role: string): Record<string, boolean> {
       defaultPermissions.view_reports = true;
       defaultPermissions.export_reports = true;
       defaultPermissions.view_settings = true;
-      defaultPermissions.manage_users = true;
       break;
     case 'evaluator':
       defaultPermissions.view_dashboard = true;
