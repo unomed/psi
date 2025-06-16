@@ -43,12 +43,25 @@ export function useEmployeeAuthProvider() {
 
   const configureEmployeeSession = async (employeeId: string) => {
     try {
-      // Configurar o setting para a sessão atual do funcionário
-      await (supabase.rpc as any)('set_config', {
-        setting_name: 'app.current_employee_id',
-        setting_value: employeeId,
-        is_local: false
+      console.log(`[useEmployeeAuth] Configurando sessão para funcionário: ${employeeId}`);
+      
+      // Usar a nova função corrigida
+      await supabase.rpc('set_employee_session', {
+        employee_id_value: employeeId
       });
+      
+      // Verificar se a configuração foi aplicada
+      const { data: currentSetting } = await supabase
+        .from('employees') // Usar uma query simples para testar a sessão
+        .select('id')
+        .eq('id', employeeId)
+        .single();
+      
+      if (currentSetting) {
+        console.log(`[useEmployeeAuth] Sessão configurada com sucesso para: ${employeeId}`);
+      } else {
+        console.warn(`[useEmployeeAuth] Falha ao verificar configuração de sessão`);
+      }
     } catch (error) {
       console.error('Erro ao configurar sessão do funcionário:', error);
     }
@@ -58,18 +71,22 @@ export function useEmployeeAuthProvider() {
     try {
       setLoading(true);
       
+      console.log(`[useEmployeeAuth] Tentativa de login para CPF: ${cpf.substring(0, 3)}***`);
+      
       const { data, error } = await supabase.rpc('authenticate_employee', {
         p_cpf: cpf,
         p_password: password
       });
 
       if (error) {
+        console.error('[useEmployeeAuth] Erro na autenticação:', error);
         throw error;
       }
 
       const authData = data[0];
       
       if (!authData?.is_valid) {
+        console.log('[useEmployeeAuth] Credenciais inválidas');
         return { success: false, error: 'CPF ou senha inválidos' };
       }
 
@@ -93,6 +110,7 @@ export function useEmployeeAuthProvider() {
       // Configurar a sessão no Supabase para RLS
       await configureEmployeeSession(authData.employee_id);
 
+      console.log(`[useEmployeeAuth] Login bem-sucedido para: ${authData.employee_name}`);
       return { success: true };
     } catch (error: any) {
       console.error('Erro no login do funcionário:', error);
@@ -104,11 +122,11 @@ export function useEmployeeAuthProvider() {
 
   const logout = async () => {
     try {
+      console.log('[useEmployeeAuth] Fazendo logout do funcionário');
+      
       // Limpar o setting da sessão
-      await (supabase.rpc as any)('set_config', {
-        setting_name: 'app.current_employee_id',
-        setting_value: '',
-        is_local: false
+      await supabase.rpc('set_employee_session', {
+        employee_id_value: ''
       });
     } catch (error) {
       console.error('Erro ao limpar sessão do funcionário:', error);

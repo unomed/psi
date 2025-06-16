@@ -16,6 +16,17 @@ export function useEmployeeMood(employeeId: string) {
     }
   }, [employeeId]);
 
+  const ensureEmployeeSession = async () => {
+    try {
+      // Reconfigurar a sessão antes de operações críticas
+      await supabase.rpc('set_employee_session', {
+        employee_id_value: employeeId
+      });
+    } catch (error) {
+      console.error('Erro ao configurar sessão do funcionário:', error);
+    }
+  };
+
   const loadTodayMood = async () => {
     try {
       console.log(`[useEmployeeMood] Carregando humor do dia para funcionário: ${employeeId}`);
@@ -110,6 +121,9 @@ export function useEmployeeMood(employeeId: string) {
         return { success: false, error: 'Humor já registrado hoje' };
       }
 
+      // Garantir que a sessão esteja configurada
+      await ensureEmployeeSession();
+
       const { error } = await supabase
         .from('employee_mood_logs')
         .upsert({
@@ -124,7 +138,31 @@ export function useEmployeeMood(employeeId: string) {
 
       if (error) {
         console.error('[useEmployeeMood] Erro ao salvar humor:', error);
-        throw error;
+        
+        // Tratamento específico para erro de RLS
+        if (error.code === '42501') {
+          console.log('[useEmployeeMood] Erro de RLS detectado, tentando reconfigurar sessão...');
+          await ensureEmployeeSession();
+          
+          // Tentar novamente após reconfigurar
+          const { error: retryError } = await supabase
+            .from('employee_mood_logs')
+            .upsert({
+              employee_id: employeeId,
+              mood_score: moodScore,
+              mood_emoji: moodEmoji,
+              mood_description: moodDescription,
+              log_date: new Date().toISOString().split('T')[0]
+            }, {
+              onConflict: 'employee_id,log_date'
+            });
+          
+          if (retryError) {
+            throw retryError;
+          }
+        } else {
+          throw error;
+        }
       }
 
       console.log('[useEmployeeMood] Humor salvo com sucesso');

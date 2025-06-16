@@ -3137,12 +3137,8 @@ export type Database = {
         Args: { p_assessment_response_id: string }
         Returns: Json
       }
-      set_config: {
-        Args: {
-          setting_name: string
-          setting_value: string
-          is_local?: boolean
-        }
+      set_employee_session: {
+        Args: { employee_id_value: string }
         Returns: undefined
       }
       update_action_plan: {
