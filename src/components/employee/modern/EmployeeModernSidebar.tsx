@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -55,7 +54,7 @@ export function EmployeeModernSidebar({ currentView, onViewChange, employeeName 
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    window.location.href = "/auth/employee";
   };
 
   return (

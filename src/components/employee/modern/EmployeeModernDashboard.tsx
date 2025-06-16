@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    window.location.href = "/auth/employee";
   };
 
   const renderCurrentView = () => {
