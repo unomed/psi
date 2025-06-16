@@ -15,13 +15,17 @@ import {
   Bell,
   Users,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  BarChart3,
+  FileText
 } from "lucide-react";
 import { useManagerAutomation } from "@/hooks/automation/useManagerAutomation";
 import { AutomationRuleForm } from "./AutomationRuleForm";
 import { NotificationCenter } from "./NotificationCenter";
 import { EscalationConfig } from "./EscalationConfig";
 import { AutomationMetrics } from "./AutomationMetrics";
+import { AdvancedAnalytics } from "./AdvancedAnalytics";
+import { ReportsGenerator } from "./ReportsGenerator";
 import { AutomationRule } from "@/types/automation";
 
 interface AutomationRulesManagerProps {
@@ -141,7 +145,7 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
       </div>
 
       <Tabs defaultValue="rules" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="rules" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Regras
@@ -157,6 +161,14 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
           <TabsTrigger value="metrics" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Métricas
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Relatórios
           </TabsTrigger>
         </TabsList>
 
@@ -257,6 +269,14 @@ export function AutomationRulesManager({ companyId }: AutomationRulesManagerProp
 
         <TabsContent value="metrics">
           <AutomationMetrics companyId={companyId} />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AdvancedAnalytics companyId={companyId} />
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <ReportsGenerator companyId={companyId} />
         </TabsContent>
       </Tabs>
 
