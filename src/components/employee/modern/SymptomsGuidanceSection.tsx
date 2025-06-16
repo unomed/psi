@@ -11,7 +11,10 @@ import {
   AlertTriangle,
   ChevronRight,
   ChevronDown,
-  Info
+  Info,
+  Apple,
+  Dumbbell,
+  Shield
 } from "lucide-react";
 
 export function SymptomsGuidanceSection() {
@@ -41,6 +44,34 @@ export function SymptomsGuidanceSection() {
     { name: "Dificuldade de concentração", guidance: "Procure orientação médica para investigação" }
   ];
 
+  const nutritionTips = [
+    { topic: "Hidratação", guidance: "Beba pelo menos 2 litros de água por dia", details: "Mantenha uma garrafa de água sempre por perto" },
+    { topic: "Frutas e Vegetais", guidance: "Consuma ao menos 5 porções por dia", details: "Variedade de cores garante diferentes nutrientes" },
+    { topic: "Proteínas", guidance: "Inclua proteínas em todas as refeições", details: "Carnes magras, ovos, leguminosas e laticínios" },
+    { topic: "Carboidratos Integrais", guidance: "Prefira versões integrais", details: "Arroz integral, pães integrais, aveia" },
+    { topic: "Redução de Açúcar", guidance: "Limite doces e refrigerantes", details: "Prefira frutas como sobremesa" },
+    { topic: "Horários Regulares", guidance: "Faça refeições em horários fixos", details: "Evite pular refeições principais" }
+  ];
+
+  const exerciseTips = [
+    { activity: "Caminhada", frequency: "30 min, 5x por semana", benefits: "Melhora cardiovascular e disposição" },
+    { activity: "Alongamento", frequency: "10 min diários", benefits: "Flexibilidade e alívio de tensões" },
+    { activity: "Musculação", frequency: "2-3x por semana", benefits: "Fortalecimento muscular e ósseo" },
+    { activity: "Dança", frequency: "2x por semana", benefits: "Coordenação e bem-estar mental" },
+    { activity: "Natação", frequency: "2-3x por semana", benefits: "Exercício completo, baixo impacto" },
+    { activity: "Yoga/Pilates", frequency: "2x por semana", benefits: "Flexibilidade, força e relaxamento" }
+  ];
+
+  const preventiveCare = [
+    { care: "Check-up Anual", frequency: "1x por ano", description: "Exames gerais para prevenção" },
+    { care: "Exame Oftalmológico", frequency: "1-2x por ano", description: "Avaliação da visão e saúde ocular" },
+    { care: "Exame Dentário", frequency: "2x por ano", description: "Limpeza e prevenção de problemas bucais" },
+    { care: "Mamografia", frequency: "Anual após 40 anos", description: "Prevenção do câncer de mama" },
+    { care: "Papanicolau", frequency: "Anual ou conforme orientação", description: "Prevenção do câncer cervical" },
+    { care: "Colonoscopia", frequency: "Conforme orientação médica", description: "Prevenção do câncer colorretal" },
+    { care: "Vacinação", frequency: "Conforme calendário", description: "Manter cartão de vacinas atualizado" }
+  ];
+
   const toggleCategory = (category: string) => {
     setExpandedCategory(expandedCategory === category ? null : category);
   };
@@ -49,7 +80,7 @@ export function SymptomsGuidanceSection() {
     <div className="space-y-6">
       <div className="flex items-center space-x-3">
         <Activity className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold">Saúde e Sintomas</h2>
+        <h2 className="text-2xl font-bold">Saúde e Bem-estar</h2>
       </div>
 
       <Alert>
@@ -136,6 +167,112 @@ export function SymptomsGuidanceSection() {
                 <div key={index} className="border rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 mb-2">{symptom.name}</h4>
                   <p className="text-sm text-gray-600">{symptom.guidance}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Nutrição */}
+      <Card>
+        <CardHeader>
+          <CardTitle 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleCategory('nutrition')}
+          >
+            <div className="flex items-center space-x-2">
+              <Apple className="h-5 w-5 text-green-500" />
+              <span>Nutrição e Alimentação</span>
+              <Badge variant="secondary">{nutritionTips.length}</Badge>
+            </div>
+            {expandedCategory === 'nutrition' ? 
+              <ChevronDown className="h-5 w-5" /> : 
+              <ChevronRight className="h-5 w-5" />
+            }
+          </CardTitle>
+        </CardHeader>
+        
+        {expandedCategory === 'nutrition' && (
+          <CardContent>
+            <div className="space-y-4">
+              {nutritionTips.map((tip, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">{tip.topic}</h4>
+                  <p className="text-sm text-gray-700 mb-1">{tip.guidance}</p>
+                  <p className="text-xs text-gray-500">{tip.details}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Exercícios */}
+      <Card>
+        <CardHeader>
+          <CardTitle 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleCategory('exercise')}
+          >
+            <div className="flex items-center space-x-2">
+              <Dumbbell className="h-5 w-5 text-orange-500" />
+              <span>Exercícios e Atividade Física</span>
+              <Badge variant="secondary">{exerciseTips.length}</Badge>
+            </div>
+            {expandedCategory === 'exercise' ? 
+              <ChevronDown className="h-5 w-5" /> : 
+              <ChevronRight className="h-5 w-5" />
+            }
+          </CardTitle>
+        </CardHeader>
+        
+        {expandedCategory === 'exercise' && (
+          <CardContent>
+            <div className="space-y-4">
+              {exerciseTips.map((exercise, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">{exercise.activity}</h4>
+                  <div className="space-y-1">
+                    <p className="text-sm text-blue-600 font-medium">Frequência: {exercise.frequency}</p>
+                    <p className="text-xs text-gray-600">{exercise.benefits}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
+      {/* Cuidados Preventivos */}
+      <Card>
+        <CardHeader>
+          <CardTitle 
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleCategory('preventive')}
+          >
+            <div className="flex items-center space-x-2">
+              <Shield className="h-5 w-5 text-indigo-500" />
+              <span>Cuidados Preventivos</span>
+              <Badge variant="secondary">{preventiveCare.length}</Badge>
+            </div>
+            {expandedCategory === 'preventive' ? 
+              <ChevronDown className="h-5 w-5" /> : 
+              <ChevronRight className="h-5 w-5" />
+            }
+          </CardTitle>
+        </CardHeader>
+        
+        {expandedCategory === 'preventive' && (
+          <CardContent>
+            <div className="space-y-4">
+              {preventiveCare.map((care, index) => (
+                <div key={index} className="border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-2">{care.care}</h4>
+                  <div className="space-y-1">
+                    <p className="text-sm text-indigo-600 font-medium">Frequência: {care.frequency}</p>
+                    <p className="text-xs text-gray-600">{care.description}</p>
+                  </div>
                 </div>
               ))}
             </div>
