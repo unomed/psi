@@ -1,10 +1,6 @@
+
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Search, Mail, Copy, Link, Settings, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,8 +18,9 @@ import {
 import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment/links";
 import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
 import { EditScheduledAssessmentDialog } from "./EditScheduledAssessmentDialog";
-import { EditAssessmentButton } from "./EditAssessmentButton";
-import { DeleteAssessmentButton } from "./DeleteAssessmentButton";
+import { AssessmentListHeader } from "./AssessmentListHeader";
+import { AssessmentFilters } from "./AssessmentFilters";
+import { AssessmentItemsList } from "./AssessmentItemsList";
 
 export function ScheduledAssessmentsList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -212,133 +209,29 @@ export function ScheduledAssessmentsList() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Avaliações Agendadas</CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleSetupEmailTemplates}
-              title="Configurar templates de email padrão"
-            >
-              <Settings className="h-4 w-4 mr-1" />
-              Configurar Templates
-            </Button>
-          </div>
-          
-          {/* Filtros */}
-          <div className="flex gap-4 pt-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por funcionário..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="scheduled">Agendadas</SelectItem>
-                <SelectItem value="sent">Enviadas</SelectItem>
-                <SelectItem value="completed">Concluídas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <AssessmentListHeader onSetupEmailTemplates={handleSetupEmailTemplates} />
+          <AssessmentFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+          />
         </CardHeader>
         
         <CardContent>
-          {filteredAssessments?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {userCompanies.length === 0 ? 
-                "Você não tem acesso a nenhuma empresa" :
-                "Nenhuma avaliação encontrada"
-              }
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredAssessments?.map(assessment => {
-                const employeeName = assessment.employee_name || 'Nome não disponível';
-                
-                return (
-                  <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-medium">{employeeName}</h4>
-                        <Badge className={getStatusColor(assessment.status)}>
-                          {getStatusLabel(assessment.status)}
-                        </Badge>
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p>Template: {assessment.checklist_templates?.title}</p>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          Agendada para: {new Date(assessment.scheduled_date).toLocaleDateString('pt-BR')}
-                        </div>
-                        {assessment.recurrence_type !== "none" && (
-                          <p>Recorrência: {assessment.recurrence_type}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {/* Botão para enviar email */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleSendEmail(assessment.id)}
-                        disabled={sendingEmail === assessment.id || assessment.status === 'completed'}
-                        title="Enviar email com link de avaliação"
-                      >
-                        <Mail className="h-4 w-4 mr-1" />
-                        {sendingEmail === assessment.id ? 'Enviando...' : 'Enviar Email'}
-                      </Button>
-
-                      {/* Botão único para gerar/copiar link */}
-                      {assessment.link_url ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCopyLink(assessment.link_url)}
-                          title="Copiar link da avaliação"
-                        >
-                          <Copy className="h-4 w-4 mr-1" />
-                          Copiar Link
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleGenerateLink(assessment)}
-                          disabled={generatingLink === assessment.id || assessment.status === 'completed'}
-                          title="Gerar link da avaliação"
-                        >
-                          <Link className="h-4 w-4 mr-1" />
-                          {generatingLink === assessment.id ? 'Gerando...' : 'Gerar Link'}
-                        </Button>
-                      )}
-
-                      {/* Botão de editar */}
-                      <EditAssessmentButton
-                        onEdit={() => handleEditAssessment(assessment)}
-                        assessmentStatus={assessment.status}
-                      />
-
-                      {/* Botão de excluir */}
-                      <DeleteAssessmentButton
-                        onDelete={() => setDeleteAssessmentId(assessment.id)}
-                        assessmentStatus={assessment.status}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <AssessmentItemsList
+            filteredAssessments={filteredAssessments}
+            userCompanies={userCompanies}
+            generatingLink={generatingLink}
+            sendingEmail={sendingEmail}
+            onGenerateLink={handleGenerateLink}
+            onCopyLink={handleCopyLink}
+            onSendEmail={handleSendEmail}
+            onEditAssessment={handleEditAssessment}
+            onDeleteAssessment={(id) => setDeleteAssessmentId(id)}
+            getStatusColor={getStatusColor}
+            getStatusLabel={getStatusLabel}
+          />
         </CardContent>
       </Card>
 
