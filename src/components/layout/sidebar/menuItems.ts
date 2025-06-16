@@ -118,13 +118,13 @@ export const gestaoItems: MenuItem[] = [
   {
     title: "Auditoria",
     icon: ShieldCheck,
-    href: "/audit",
+    href: "/configuracoes/auditoria",
     roles: ["admin"],
     permission: "audit:read"
   }
 ];
 
-// Portais items - REMOVIDO Portal Funcionário
+// Portais items
 export const portaisItems: MenuItem[] = [
   {
     title: "Automação",
