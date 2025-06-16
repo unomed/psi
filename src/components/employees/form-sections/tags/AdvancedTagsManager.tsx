@@ -268,10 +268,10 @@ export function AdvancedTagsManager({
                         <div className="flex items-center gap-2">
                           <h5 className="font-medium">{tagType.name}</h5>
                           {isRequired && (
-                            <Badge variant="destructive" size="sm">Obrigatória</Badge>
+                            <Badge variant="destructive">Obrigatória</Badge>
                           )}
                           {tagType.category && (
-                            <Badge variant="outline" size="sm">{tagType.category}</Badge>
+                            <Badge variant="outline">{tagType.category}</Badge>
                           )}
                         </div>
                         {tagType.description && (
