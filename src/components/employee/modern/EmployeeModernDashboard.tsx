@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOut, MessageCircle } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
 import { EmployeeModernSidebar } from "./EmployeeModernSidebar";
 import { PendingAssessmentsList } from "../PendingAssessmentsList";
 import { MoodSelector } from "../MoodSelector";
 import { MoodStatsCard } from "../MoodStatsCard";
+import { QuestionnaireStatsCard } from "./QuestionnaireStatsCard";
 import { SymptomsGuidanceSection } from "./SymptomsGuidanceSection";
 import { WhatsAppButton } from "./WhatsAppButton";
 
@@ -38,11 +39,14 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Histórico de Avaliações</h2>
-            <Card className="bg-white border-gray-200">
-              <CardContent className="p-6">
-                <p className="text-gray-600">Histórico de avaliações será implementado aqui.</p>
-              </CardContent>
-            </Card>
+            <div className="grid gap-6">
+              <QuestionnaireStatsCard employeeId={session?.employee?.employeeId || ""} />
+              <Card className="bg-white border-gray-200">
+                <CardContent className="p-6">
+                  <p className="text-gray-600">Histórico detalhado de avaliações será implementado aqui.</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         );
       case 'symptoms':
@@ -65,22 +69,32 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
               </Button>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <div className="lg:col-span-2">
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Coluna Principal - Avaliações */}
+              <div className="lg:col-span-2 space-y-6">
                 <PendingAssessmentsList employeeId={session?.employee?.employeeId || ""} />
               </div>
 
+              {/* Coluna Lateral - Humor e Estatísticas */}
               <div className="space-y-6">
-                <Card className="bg-white border-gray-200">
+                {/* Seletor de Humor - Carro Chefe */}
+                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                   <CardHeader>
-                    <CardTitle className="text-gray-900">Como você está hoje?</CardTitle>
+                    <CardTitle className="text-gray-900 flex items-center">
+                      <span className="text-2xl mr-2">😊</span>
+                      Como você está hoje?
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <MoodSelector employeeId={session?.employee?.employeeId || ""} />
                   </CardContent>
                 </Card>
 
+                {/* Estatísticas de Humor */}
                 <MoodStatsCard employeeId={session?.employee?.employeeId || ""} />
+
+                {/* Estatísticas dos Questionários */}
+                <QuestionnaireStatsCard employeeId={session?.employee?.employeeId || ""} />
               </div>
             </div>
           </div>
