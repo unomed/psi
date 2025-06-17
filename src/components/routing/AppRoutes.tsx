@@ -13,6 +13,7 @@ import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import EmployeeLogin from "@/pages/auth/EmployeeLogin";
 import ChecklistPortal from "@/pages/ChecklistPortal";
+import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -23,7 +24,7 @@ export function AppRoutes() {
     currentPath: window.location.pathname
   });
 
-  // Loading melhorado
+  // Loading melhorado com detecção de problemas
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -39,8 +40,12 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas de autenticação - PRIORIDADE MÁXIMA */}
-      <Route path="/auth/*" element={<AuthRoutes />} />
+      {/* Rotas de autenticação - PRIORIDADE MÁXIMA com Error Boundary */}
+      <Route path="/auth/*" element={
+        <FormErrorBoundary>
+          <AuthRoutes />
+        </FormErrorBoundary>
+      } />
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
 
@@ -48,11 +53,13 @@ export function AppRoutes() {
       <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
       <Route path="/checklist" element={<ChecklistPortal />} />
 
-      {/* Rotas do portal do funcionário - isoladas */}
+      {/* Rotas do portal do funcionário - COMPLETAMENTE ISOLADAS */}
       <Route path="/auth/employee" element={
-        <EmployeeAuthProvider>
-          <EmployeeLogin />
-        </EmployeeAuthProvider>
+        <FormErrorBoundary>
+          <EmployeeAuthProvider>
+            <EmployeeLogin />
+          </EmployeeAuthProvider>
+        </FormErrorBoundary>
       } />
       
       <Route path="/employee-portal" element={
@@ -71,7 +78,7 @@ export function AppRoutes() {
         </EmployeeAuthProvider>
       } />
 
-      {/* Avaliações públicas com tokens */}
+      {/* Avaliações públicas com tokens - isoladas */}
       <Route path="/avaliacao/:token" element={
         <EmployeeAuthProvider>
           <PublicAssessment />
