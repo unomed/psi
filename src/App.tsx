@@ -22,6 +22,26 @@ function AppContent() {
   );
 }
 
+// Safe Toaster wrapper that only renders when React is ready
+function SafeToaster() {
+  const [isReady, setIsReady] = React.useState(false);
+  
+  React.useEffect(() => {
+    // Small delay to ensure React is fully initialized
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (!isReady) {
+    return null;
+  }
+  
+  return <Toaster />;
+}
+
 function App() {
   console.log('[App] Inicializando aplicação com arquitetura isolada');
   
@@ -34,7 +54,7 @@ function App() {
             <BrowserRouter>
               <TooltipProvider delayDuration={300}>
                 <AppContent />
-                <Toaster />
+                <SafeToaster />
                 <Sonner />
               </TooltipProvider>
             </BrowserRouter>

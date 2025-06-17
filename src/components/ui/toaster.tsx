@@ -11,7 +11,21 @@ import {
 import React from "react"
 
 export function Toaster() {
-  const { toasts } = useToast()
+  // Enhanced safety check - don't render if React isn't fully initialized
+  if (typeof React === 'undefined' || !React.useState || !React.useEffect) {
+    console.warn('[Toaster] React not fully initialized, skipping render');
+    return null;
+  }
+
+  // Additional safety check for the hook
+  let toasts;
+  try {
+    const toastHook = useToast();
+    toasts = toastHook.toasts;
+  } catch (error) {
+    console.warn('[Toaster] useToast hook not available:', error);
+    return null;
+  }
 
   // Safely handle cases where toasts might not be available
   if (!toasts || !Array.isArray(toasts)) {
