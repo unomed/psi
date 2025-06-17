@@ -50,7 +50,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
       return;
     }
 
-    console.log('Dados para agendamento:', {
+    console.log('Iniciando agendamento com dados:', {
       selectedEmployee,
       selectedChecklist,
       schedulingDetails: {
@@ -61,39 +61,28 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
     });
 
     try {
-      // Atualizar os detalhes de agendamento no hook
-      setSchedulingDetails(prev => ({
-        ...prev,
-        recurrenceType,
-        phoneNumber
-      }));
-
-      // Preparar dados para o hook
-      const assessmentData = {
-        employeeId: selectedEmployee.id,
-        templateId: selectedChecklist.id,
-        scheduledDate: schedulingDetails.scheduledDate,
-        recurrenceType,
-        phoneNumber,
-        sendEmail: schedulingDetails.sendEmail,
-        sendWhatsApp: schedulingDetails.sendWhatsApp,
-        companyId: selectedEmployee.companyId || selectedEmployee.company_id,
-        employeeName: selectedEmployee.name,
-        employeeEmail: selectedEmployee.email || '',
-        templateTitle: selectedChecklist.title,
-        checklistTemplate: selectedChecklist
+      // Preparar dados para agendamento com parâmetros atualizados
+      const scheduleParams = {
+        employee: selectedEmployee,
+        checklist: selectedChecklist,
+        schedulingDetails: {
+          scheduledDate: schedulingDetails.scheduledDate,
+          recurrenceType,
+          phoneNumber,
+          sendEmail: schedulingDetails.sendEmail,
+          sendWhatsApp: schedulingDetails.sendWhatsApp
+        }
       };
 
-      console.log('Dados preparados para agendamento:', assessmentData);
+      console.log('Chamando scheduleAssessment com parâmetros:', scheduleParams);
 
-      // Executar agendamento usando os dados locais
-      await scheduleAssessment();
+      await scheduleAssessment(scheduleParams);
       
       toast.success("Avaliação agendada com sucesso!");
       handleClose();
     } catch (error) {
       console.error("Erro ao agendar:", error);
-      toast.error("Erro ao agendar avaliação");
+      toast.error(error instanceof Error ? error.message : "Erro ao agendar avaliação");
     }
   };
 

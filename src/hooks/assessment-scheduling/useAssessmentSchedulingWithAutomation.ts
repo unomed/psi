@@ -23,12 +23,22 @@ interface ScheduleAssessmentWithAutomationData {
   checklistTemplate: ChecklistTemplate;
 }
 
+interface ScheduleAssessmentParams {
+  employee: any;
+  checklist: ChecklistTemplate;
+  schedulingDetails: {
+    scheduledDate: Date;
+    recurrenceType: RecurrenceType;
+    phoneNumber: string;
+    sendEmail: boolean;
+    sendWhatsApp: boolean;
+  };
+}
+
 export function useAssessmentSchedulingWithAutomation() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistTemplate | null>(null);
   const [schedulingDetails, setSchedulingDetails] = useState({
     scheduledDate: new Date(),
     recurrenceType: "none" as RecurrenceType,
@@ -134,26 +144,48 @@ export function useAssessmentSchedulingWithAutomation() {
     }
   });
 
-  const scheduleAssessment = async () => {
-    // Usar os dados do estado interno se não foram fornecidos parâmetros
-    const employee = selectedEmployee;
-    const checklist = selectedChecklist;
-    const details = schedulingDetails;
+  const scheduleAssessment = async (params: ScheduleAssessmentParams) => {
+    const { employee, checklist, schedulingDetails: details } = params;
 
-    console.log('Dados disponíveis para agendamento:', {
+    console.log('Dados recebidos para agendamento:', {
       employee,
       checklist,
       details
     });
 
-    if (!employee || !checklist || !details.scheduledDate) {
-      console.error('Dados incompletos:', {
-        hasEmployee: !!employee,
-        hasChecklist: !!checklist,
-        hasScheduledDate: !!details.scheduledDate
-      });
-      throw new Error("Dados incompletos para agendamento");
+    // Validação robusta dos dados
+    if (!employee) {
+      console.error('Funcionário não informado');
+      throw new Error("Funcionário não selecionado");
     }
+
+    if (!checklist) {
+      console.error('Checklist não informado');
+      throw new Error("Checklist não selecionado");
+    }
+
+    if (!details.scheduledDate) {
+      console.error('Data não informada');
+      throw new Error("Data de agendamento não informada");
+    }
+
+    if (!employee.id) {
+      console.error('ID do funcionário não encontrado', employee);
+      throw new Error("ID do funcionário inválido");
+    }
+
+    if (!checklist.id) {
+      console.error('ID do checklist não encontrado', checklist);
+      throw new Error("ID do checklist inválido");
+    }
+
+    const companyId = employee.companyId || employee.company_id;
+    if (!companyId) {
+      console.error('Company ID não encontrado', employee);
+      throw new Error("Company ID do funcionário inválido");
+    }
+
+    console.log('Validação passou, preparando dados para agendamento');
 
     const assessmentData: ScheduleAssessmentWithAutomationData = {
       employeeId: employee.id,
@@ -163,21 +195,19 @@ export function useAssessmentSchedulingWithAutomation() {
       phoneNumber: details.phoneNumber,
       sendEmail: details.sendEmail,
       sendWhatsApp: details.sendWhatsApp,
-      companyId: employee.companyId || employee.company_id,
+      companyId: companyId,
       employeeName: employee.name,
       employeeEmail: employee.email || '',
       templateTitle: checklist.title,
       checklistTemplate: checklist
     };
 
+    console.log('Dados finais para mutation:', assessmentData);
+
     return scheduleAssessmentMutation.mutateAsync(assessmentData);
   };
 
   return {
-    selectedEmployee,
-    setSelectedEmployee,
-    selectedChecklist,
-    setSelectedChecklist,
     schedulingDetails,
     setSchedulingDetails,
     scheduleAssessment,
