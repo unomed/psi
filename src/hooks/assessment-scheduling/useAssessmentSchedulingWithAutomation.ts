@@ -50,9 +50,9 @@ export function useAssessmentSchedulingWithAutomation() {
   const scheduleAssessmentMutation = useMutation({
     mutationFn: async (assessmentData: ScheduleAssessmentWithAutomationData) => {
       try {
-        console.log('Executando agendamento com dados:', assessmentData);
+        console.log('Executando agendamento com automação:', assessmentData);
 
-        // Calculate next scheduled date if recurrence is set
+        // Calcular próxima data agendada se houver recorrência
         let nextScheduledDate: Date | null = null;
         if (assessmentData.recurrenceType !== "none") {
           nextScheduledDate = new Date(assessmentData.scheduledDate);
@@ -72,7 +72,7 @@ export function useAssessmentSchedulingWithAutomation() {
           }
         }
 
-        // Create the scheduled assessment record first
+        // Criar o registro de agendamento primeiro
         const { data: scheduledAssessment, error: scheduleError } = await supabase
           .from('scheduled_assessments')
           .insert({
@@ -91,36 +91,39 @@ export function useAssessmentSchedulingWithAutomation() {
           .single();
 
         if (scheduleError) {
-          console.error("Error creating scheduled assessment:", scheduleError);
+          console.error("Erro ao criar agendamento:", scheduleError);
           throw new Error(`Erro ao criar agendamento: ${scheduleError.message}`);
         }
 
-        // Generate portal link using the assessment ID
+        // Gerar link do portal com dados completos
         const linkResult = await generateEmployeePortalLink(
           assessmentData.employeeId,
-          scheduledAssessment.id
+          scheduledAssessment.id,
+          assessmentData.templateId,
+          assessmentData.templateTitle
         );
 
         if (!linkResult) {
           throw new Error("Falha ao gerar link do portal");
         }
 
-        // Update the assessment with the portal link
+        // Atualizar o agendamento com o link gerado
         const { error: updateError } = await supabase
           .from('scheduled_assessments')
           .update({ 
             link_url: linkResult.linkUrl,
+            portal_token: linkResult.portalToken,
             status: 'sent',
             sent_at: new Date().toISOString()
           })
           .eq('id', scheduledAssessment.id);
 
         if (updateError) {
-          console.error("Error updating assessment with portal link:", updateError);
+          console.error("Erro ao atualizar agendamento com link:", updateError);
           throw new Error("Erro ao salvar link do portal");
         }
 
-        // Schedule automated email reminders if email is enabled
+        // Agendar lembretes automáticos por email se habilitado
         if (assessmentData.sendEmail && assessmentData.employeeEmail) {
           try {
             await scheduleAssessmentReminders(
@@ -137,22 +140,31 @@ export function useAssessmentSchedulingWithAutomation() {
           }
         }
 
+        console.log('Agendamento criado com sucesso:', {
+          assessmentId: scheduledAssessment.id,
+          linkUrl: linkResult.linkUrl,
+          employeeName: assessmentData.employeeName,
+          templateTitle: assessmentData.templateTitle
+        });
+
         return {
           success: true,
           assessmentId: scheduledAssessment.id,
-          linkUrl: linkResult.linkUrl
+          linkUrl: linkResult.linkUrl,
+          employeeName: assessmentData.employeeName,
+          templateTitle: assessmentData.templateTitle
         };
       } catch (error) {
-        console.error("Error in scheduleAssessment:", error);
+        console.error("Erro no agendamento com automação:", error);
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['scheduledAssessments'] });
-      toast.success("Avaliação agendada com sucesso! Link do portal foi gerado.");
+      toast.success(`Avaliação "${data.templateTitle}" agendada com sucesso para ${data.employeeName}! Link personalizado foi gerado.`);
     },
     onError: (error: any) => {
-      console.error("Schedule assessment error:", error);
+      console.error("Erro no agendamento:", error);
       toast.error(error.message || "Erro ao agendar avaliação");
     }
   });
@@ -160,7 +172,7 @@ export function useAssessmentSchedulingWithAutomation() {
   const scheduleAssessment = async (params: ScheduleAssessmentParams) => {
     const { employee, checklist, schedulingDetails: details } = params;
 
-    console.log('Dados recebidos para agendamento:', {
+    console.log('Iniciando agendamento com dados:', {
       employee,
       checklist,
       details
@@ -201,7 +213,7 @@ export function useAssessmentSchedulingWithAutomation() {
     // Verificar se o template existe na base de dados
     const { data: templateExists, error: templateError } = await supabase
       .from('checklist_templates')
-      .select('id')
+      .select('id, title')
       .eq('id', checklist.id)
       .single();
 
@@ -223,11 +235,11 @@ export function useAssessmentSchedulingWithAutomation() {
       companyId: companyId,
       employeeName: employee.name,
       employeeEmail: employee.email || '',
-      templateTitle: checklist.title,
+      templateTitle: templateExists.title,
       checklistTemplate: checklist
     };
 
-    console.log('Dados finais para mutation:', assessmentData);
+    console.log('Dados finais para agendamento:', assessmentData);
 
     return scheduleAssessmentMutation.mutateAsync(assessmentData);
   };

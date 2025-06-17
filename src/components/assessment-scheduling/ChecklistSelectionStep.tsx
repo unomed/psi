@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,7 @@ export function ChecklistSelectionStep({
         .from('checklist_templates')
         .select('*')
         .eq('title', templateData.name)
-        .eq('type', dbTemplateType as any) // Type assertion for Supabase compatibility
+        .eq('type', dbTemplateType as any)
         .maybeSingle();
 
       if (fetchError) {
@@ -98,7 +99,7 @@ export function ChecklistSelectionStep({
             is_active: true,
             estimated_time_minutes: tempTemplate.estimatedTimeMinutes,
             instructions: tempTemplate.instructions
-          } as any) // Type assertion to bypass strict typing
+          } as any)
           .select()
           .single();
 
@@ -142,7 +143,7 @@ export function ChecklistSelectionStep({
       }
 
       onChecklistSelect(finalTemplate);
-      toast.success("Template selecionado com sucesso!");
+      toast.success(`Template "${finalTemplate.title}" selecionado com sucesso!`);
     } catch (error) {
       console.error('Erro ao processar template:', error);
       toast.error("Erro ao processar template selecionado");
@@ -156,7 +157,7 @@ export function ChecklistSelectionStep({
       <div>
         <h3 className="text-lg font-semibold mb-2">Selecionar Checklist</h3>
         <p className="text-muted-foreground">
-          Escolha o checklist que será enviado para a avaliação
+          Escolha o checklist que será enviado para a avaliação. O link será gerado automaticamente com o nome do questionário.
         </p>
       </div>
 
@@ -218,6 +219,12 @@ export function ChecklistSelectionStep({
                   <p className="text-sm">{template.instructions}</p>
                 </div>
               )}
+
+              <div className="mt-3 p-2 bg-green-50 rounded-md border border-green-200">
+                <p className="text-xs text-green-700">
+                  <strong>Link gerado:</strong> avaliacao.unomed.med.br/checklist/{template.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}
+                </p>
+              </div>
             </CardContent>
           </Card>
         ))}

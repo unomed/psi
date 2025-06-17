@@ -12,6 +12,7 @@ import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import EmployeeLogin from "@/pages/auth/EmployeeLogin";
+import ChecklistPortal from "@/pages/ChecklistPortal";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -42,6 +43,10 @@ export function AppRoutes() {
       <Route path="/auth/*" element={<AuthRoutes />} />
       <Route path="/login" element={<Navigate to="/auth/login" replace />} />
       <Route path="/register" element={<Navigate to="/auth/register" replace />} />
+
+      {/* Nova rota para checklist com validação */}
+      <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
+      <Route path="/checklist" element={<ChecklistPortal />} />
 
       {/* Rotas do portal do funcionário - isoladas */}
       <Route path="/auth/employee" element={
