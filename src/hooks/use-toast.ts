@@ -170,17 +170,14 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  // Enhanced safety check for React availability
-  if (typeof React === 'undefined' || !React.useState || !React.useEffect) {
-    console.warn('[useToast] React hooks not available, returning fallback');
-    return {
-      toasts: [],
-      toast: () => ({ id: '', dismiss: () => {}, update: () => {} }),
-      dismiss: () => {},
-    };
-  }
-
+  // Enhanced safety check with multiple fallback layers
   try {
+    // Verify React hooks are available
+    if (!React || !React.useState || !React.useEffect) {
+      console.warn('[useToast] React hooks not available, using fallback');
+      return createFallbackToast();
+    }
+
     const [state, setState] = React.useState<State>(memoryState)
 
     React.useEffect(() => {
@@ -199,13 +196,33 @@ function useToast() {
       dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
     }
   } catch (error) {
-    console.error('[useToast] Critical error in hook initialization:', error);
-    return {
-      toasts: [],
-      toast: () => ({ id: '', dismiss: () => {}, update: () => {} }),
-      dismiss: () => {},
-    };
+    console.error('[useToast] Hook initialization error, using fallback:', error);
+    return createFallbackToast();
   }
+}
+
+// Fallback toast system that doesn't use React hooks
+function createFallbackToast() {
+  return {
+    toasts: [],
+    toast: (props: Toast) => {
+      console.log('[useToast] Fallback toast:', props);
+      
+      // Use simple fallback if available
+      if (typeof window !== 'undefined' && (window as any).showSimpleToast) {
+        const message = props.description || props.title || 'Notificação';
+        const type = props.variant === 'destructive' ? 'error' : 'info';
+        (window as any).showSimpleToast(message, type);
+      }
+      
+      return { 
+        id: genId(), 
+        dismiss: () => {}, 
+        update: () => {} 
+      };
+    },
+    dismiss: () => {},
+  };
 }
 
 export { useToast, toast }

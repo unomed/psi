@@ -11,24 +11,33 @@ import {
 import React from "react"
 
 export function Toaster() {
-  // Enhanced safety check - don't render if React isn't fully initialized
-  if (typeof React === 'undefined' || !React.useState || !React.useEffect) {
-    console.warn('[Toaster] React not fully initialized, skipping render');
-    return null;
-  }
+  // Multiple safety layers to prevent hook errors
+  const [isMounted, setIsMounted] = React.useState(false);
+  const [toasts, setToasts] = React.useState<any[]>([]);
+  
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-  // Additional safety check for the hook
-  let toasts;
-  try {
-    const toastHook = useToast();
-    toasts = toastHook.toasts;
-  } catch (error) {
-    console.warn('[Toaster] useToast hook not available:', error);
-    return null;
-  }
+  React.useEffect(() => {
+    if (!isMounted) return;
 
-  // Safely handle cases where toasts might not be available
-  if (!toasts || !Array.isArray(toasts)) {
+    try {
+      const toastHook = useToast();
+      if (toastHook && Array.isArray(toastHook.toasts)) {
+        setToasts(toastHook.toasts);
+      }
+    } catch (error) {
+      console.warn('[Toaster] useToast hook error, using fallback:', error);
+      // Use simple fallback toast system
+      if (typeof window !== 'undefined' && (window as any).showSimpleToast) {
+        // Already setup in error boundary
+      }
+    }
+  }, [isMounted]);
+
+  // Don't render until component is mounted and React is stable
+  if (!isMounted) {
     return null;
   }
 

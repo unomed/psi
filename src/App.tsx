@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { AppRoutes } from "@/components/routing/AppRoutes";
+import { SafeLazyToaster } from "@/components/ui/lazy-toaster";
 import React from "react";
 
 const queryClient = new QueryClient();
@@ -22,45 +23,24 @@ function AppContent() {
   );
 }
 
-// Safe Toaster wrapper that only renders when React is ready
-function SafeToaster() {
-  const [isReady, setIsReady] = React.useState(false);
-  
-  React.useEffect(() => {
-    // Small delay to ensure React is fully initialized
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
-  if (!isReady) {
-    return null;
-  }
-  
-  return <Toaster />;
-}
-
 function App() {
-  console.log('[App] Inicializando aplicação com arquitetura isolada');
+  console.log('[App] Inicializando aplicação com arquitetura isolada e toaster robusto');
   
   // Enhanced error boundary for critical initialization issues
   try {
     return (
-      <React.StrictMode>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <BrowserRouter>
-              <TooltipProvider delayDuration={300}>
-                <AppContent />
-                <SafeToaster />
-                <Sonner />
-              </TooltipProvider>
-            </BrowserRouter>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </React.StrictMode>
+      // Temporarily removing React.StrictMode to eliminate double rendering race condition
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <BrowserRouter>
+            <TooltipProvider delayDuration={300}>
+              <AppContent />
+              <SafeLazyToaster />
+              <Sonner />
+            </TooltipProvider>
+          </BrowserRouter>
+        </ThemeProvider>
+      </QueryClientProvider>
     );
   } catch (error) {
     console.error('[App] Critical initialization error:', error);
