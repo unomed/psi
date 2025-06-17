@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RecurrenceType, ChecklistTemplate } from "@/types";
@@ -39,6 +40,8 @@ export function useAssessmentSchedulingWithAutomation() {
   const scheduleAssessmentMutation = useMutation({
     mutationFn: async (assessmentData: ScheduleAssessmentWithAutomationData) => {
       try {
+        console.log('Executando agendamento com dados:', assessmentData);
+
         // Generate the assessment link
         const linkResult = await generateUniqueAssessmentLink(
           assessmentData.templateId,
@@ -96,14 +99,19 @@ export function useAssessmentSchedulingWithAutomation() {
 
         // Schedule automated email reminders if email is enabled
         if (assessmentData.sendEmail && assessmentData.employeeEmail) {
-          await scheduleAssessmentReminders(
-            scheduledAssessment.id,
-            assessmentData.scheduledDate,
-            assessmentData.employeeEmail,
-            assessmentData.employeeName,
-            assessmentData.templateTitle,
-            linkResult.linkUrl
-          );
+          try {
+            await scheduleAssessmentReminders(
+              scheduledAssessment.id,
+              assessmentData.scheduledDate,
+              assessmentData.employeeEmail,
+              assessmentData.employeeName,
+              assessmentData.templateTitle,
+              linkResult.linkUrl
+            );
+          } catch (reminderError) {
+            console.warn("Falha ao agendar lembretes automáticos:", reminderError);
+            // Não falhar o agendamento se os lembretes falharem
+          }
         }
 
         return {
@@ -127,23 +135,39 @@ export function useAssessmentSchedulingWithAutomation() {
   });
 
   const scheduleAssessment = async () => {
-    if (!selectedEmployee || !selectedChecklist || !schedulingDetails.scheduledDate) {
+    // Usar os dados do estado interno se não foram fornecidos parâmetros
+    const employee = selectedEmployee;
+    const checklist = selectedChecklist;
+    const details = schedulingDetails;
+
+    console.log('Dados disponíveis para agendamento:', {
+      employee,
+      checklist,
+      details
+    });
+
+    if (!employee || !checklist || !details.scheduledDate) {
+      console.error('Dados incompletos:', {
+        hasEmployee: !!employee,
+        hasChecklist: !!checklist,
+        hasScheduledDate: !!details.scheduledDate
+      });
       throw new Error("Dados incompletos para agendamento");
     }
 
     const assessmentData: ScheduleAssessmentWithAutomationData = {
-      employeeId: selectedEmployee.id,
-      templateId: selectedChecklist.id,
-      scheduledDate: schedulingDetails.scheduledDate,
-      recurrenceType: schedulingDetails.recurrenceType,
-      phoneNumber: schedulingDetails.phoneNumber,
-      sendEmail: schedulingDetails.sendEmail,
-      sendWhatsApp: schedulingDetails.sendWhatsApp,
-      companyId: selectedEmployee.companyId || selectedEmployee.company_id,
-      employeeName: selectedEmployee.name,
-      employeeEmail: selectedEmployee.email || '',
-      templateTitle: selectedChecklist.title,
-      checklistTemplate: selectedChecklist
+      employeeId: employee.id,
+      templateId: checklist.id,
+      scheduledDate: details.scheduledDate,
+      recurrenceType: details.recurrenceType,
+      phoneNumber: details.phoneNumber,
+      sendEmail: details.sendEmail,
+      sendWhatsApp: details.sendWhatsApp,
+      companyId: employee.companyId || employee.company_id,
+      employeeName: employee.name,
+      employeeEmail: employee.email || '',
+      templateTitle: checklist.title,
+      checklistTemplate: checklist
     };
 
     return scheduleAssessmentMutation.mutateAsync(assessmentData);

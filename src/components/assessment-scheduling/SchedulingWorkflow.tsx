@@ -7,9 +7,9 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ChecklistSelectionStep } from "./ChecklistSelectionStep";
 import { EmployeeSelectionStep } from "./EmployeeSelectionStep";
 import { SchedulingDetailsStep } from "./steps/SchedulingDetailsStep";
-import { useAssessmentScheduling } from "@/hooks/assessment-scheduling/useAssessmentScheduling";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { toast } from "sonner";
+import { useAssessmentSchedulingWithAutomation } from "@/hooks/assessment-scheduling/useAssessmentSchedulingWithAutomation";
 
 interface SchedulingWorkflowProps {
   isOpen: boolean;
@@ -20,15 +20,13 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
   const [currentStep, setCurrentStep] = useState<'checklist' | 'employee' | 'scheduling'>('checklist');
   const [selectedChecklist, setSelectedChecklist] = useState<ChecklistTemplate | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  const [schedulingDetails, setSchedulingDetails] = useState({
-    scheduledDate: new Date(),
-    recurrenceType: "none" as RecurrenceType,
-    phoneNumber: "",
-    sendEmail: true,
-    sendWhatsApp: false
-  });
 
-  const { scheduleAssessment, isLoading } = useAssessmentScheduling();
+  const {
+    schedulingDetails,
+    setSchedulingDetails,
+    scheduleAssessment,
+    isLoading
+  } = useAssessmentSchedulingWithAutomation();
 
   const handleNext = () => {
     if (currentStep === 'checklist' && selectedChecklist) {
@@ -48,13 +46,49 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
 
   const handleSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
     if (!selectedEmployee || !selectedChecklist || !schedulingDetails.scheduledDate) {
-      toast.error("Dados incompletos para agendamento");
+      toast.error("Selecione um funcionário, checklist e data para continuar");
       return;
     }
 
+    console.log('Dados para agendamento:', {
+      selectedEmployee,
+      selectedChecklist,
+      schedulingDetails: {
+        ...schedulingDetails,
+        recurrenceType,
+        phoneNumber
+      }
+    });
+
     try {
-      // Simulate scheduling with the complete data
+      // Atualizar os detalhes de agendamento no hook
+      setSchedulingDetails(prev => ({
+        ...prev,
+        recurrenceType,
+        phoneNumber
+      }));
+
+      // Preparar dados para o hook
+      const assessmentData = {
+        employeeId: selectedEmployee.id,
+        templateId: selectedChecklist.id,
+        scheduledDate: schedulingDetails.scheduledDate,
+        recurrenceType,
+        phoneNumber,
+        sendEmail: schedulingDetails.sendEmail,
+        sendWhatsApp: schedulingDetails.sendWhatsApp,
+        companyId: selectedEmployee.companyId || selectedEmployee.company_id,
+        employeeName: selectedEmployee.name,
+        employeeEmail: selectedEmployee.email || '',
+        templateTitle: selectedChecklist.title,
+        checklistTemplate: selectedChecklist
+      };
+
+      console.log('Dados preparados para agendamento:', assessmentData);
+
+      // Executar agendamento usando os dados locais
       await scheduleAssessment();
+      
       toast.success("Avaliação agendada com sucesso!");
       handleClose();
     } catch (error) {
@@ -124,7 +158,10 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
                 employeeEmail={selectedEmployee?.email}
                 templateTitle={selectedChecklist?.title}
                 scheduledDate={schedulingDetails.scheduledDate}
-                onDateSelect={(date) => setSchedulingDetails(prev => ({ ...prev, scheduledDate: date || new Date() }))}
+                onDateSelect={(date) => setSchedulingDetails(prev => ({ 
+                  ...prev, 
+                  scheduledDate: date || new Date() 
+                }))}
                 onBack={handleBack}
                 onSchedule={handleSchedule}
               />
