@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,21 @@ import { ModernMoodSelector } from "./ModernMoodSelector";
 interface EmployeeModernDashboardProps {
   assessmentToken?: string | null;
   templateId?: string;
+  assessmentId?: string | null;
+  expectedEmployeeId?: string | null;
 }
 
-export function EmployeeModernDashboard({ assessmentToken, templateId }: EmployeeModernDashboardProps) {
+export function EmployeeModernDashboard({ 
+  assessmentToken, 
+  templateId, 
+  assessmentId,
+  expectedEmployeeId 
+}: EmployeeModernDashboardProps) {
   const { session, logout } = useEmployeeAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'assessments' | 'history' | 'symptoms'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'assessments' | 'history' | 'symptoms'>(
+    // Se há um assessment específico, começar na aba de avaliações
+    assessmentId ? 'assessments' : 'dashboard'
+  );
 
   const handleLogout = () => {
     logout();
@@ -33,7 +44,10 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Avaliações Agendadas</h2>
-            <PendingAssessmentsList employeeId={session?.employee?.employeeId || ""} />
+            <PendingAssessmentsList 
+              employeeId={session?.employee?.employeeId || ""} 
+              highlightAssessmentId={assessmentId}
+            />
           </div>
         );
       case 'history':
@@ -64,6 +78,13 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
                 <p className="text-lg text-gray-600">
                   {session?.employee?.companyName}
                 </p>
+                {assessmentId && (
+                  <div className="mt-2 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
+                    <p className="text-blue-800 text-sm">
+                      Você tem uma avaliação pendente. Acesse a aba "Avaliações" para responder.
+                    </p>
+                  </div>
+                )}
               </div>
               <Button variant="outline" onClick={handleLogout} className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 md:hidden">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -105,6 +126,7 @@ export function EmployeeModernDashboard({ assessmentToken, templateId }: Employe
         currentView={currentView} 
         onViewChange={setCurrentView}
         employeeName={session?.employee?.employeeName || ""}
+        hasNewAssessment={!!assessmentId}
       />
       
       <div className="flex-1 flex flex-col min-w-0">

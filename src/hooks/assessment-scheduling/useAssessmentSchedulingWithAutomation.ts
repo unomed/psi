@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RecurrenceType, ChecklistTemplate } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { generateUniqueAssessmentLink } from "@/services/assessment/linkGeneration";
+import { generateEmployeePortalLink } from "@/services/assessment/portalLinkGeneration";
 import { scheduleAssessmentReminders } from "@/services/assessment/automationService";
 
 interface ScheduleAssessmentWithAutomationData {
@@ -52,17 +51,6 @@ export function useAssessmentSchedulingWithAutomation() {
       try {
         console.log('Executando agendamento com dados:', assessmentData);
 
-        // Generate the assessment link
-        const linkResult = await generateUniqueAssessmentLink(
-          assessmentData.templateId,
-          assessmentData.employeeId,
-          7 // expires in 7 days
-        );
-
-        if (!linkResult) {
-          throw new Error("Falha ao gerar link de avaliação");
-        }
-
         // Calculate next scheduled date if recurrence is set
         let nextScheduledDate: Date | null = null;
         if (assessmentData.recurrenceType !== "none") {
@@ -83,7 +71,7 @@ export function useAssessmentSchedulingWithAutomation() {
           }
         }
 
-        // Create the scheduled assessment record
+        // Create the scheduled assessment record first
         const { data: scheduledAssessment, error: scheduleError } = await supabase
           .from('scheduled_assessments')
           .insert({
@@ -96,7 +84,6 @@ export function useAssessmentSchedulingWithAutomation() {
             phone_number: assessmentData.phoneNumber,
             company_id: assessmentData.companyId,
             employee_name: assessmentData.employeeName,
-            link_url: linkResult.linkUrl,
             created_by: user?.id
           })
           .select()
@@ -105,6 +92,31 @@ export function useAssessmentSchedulingWithAutomation() {
         if (scheduleError) {
           console.error("Error creating scheduled assessment:", scheduleError);
           throw new Error("Erro ao agendar avaliação");
+        }
+
+        // Generate portal link using the assessment ID
+        const linkResult = await generateEmployeePortalLink(
+          assessmentData.employeeId,
+          scheduledAssessment.id
+        );
+
+        if (!linkResult) {
+          throw new Error("Falha ao gerar link do portal");
+        }
+
+        // Update the assessment with the portal link
+        const { error: updateError } = await supabase
+          .from('scheduled_assessments')
+          .update({ 
+            link_url: linkResult.linkUrl,
+            status: 'sent',
+            sent_at: new Date().toISOString()
+          })
+          .eq('id', scheduledAssessment.id);
+
+        if (updateError) {
+          console.error("Error updating assessment with portal link:", updateError);
+          throw new Error("Erro ao salvar link do portal");
         }
 
         // Schedule automated email reminders if email is enabled
@@ -136,7 +148,7 @@ export function useAssessmentSchedulingWithAutomation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduledAssessments'] });
-      toast.success("Avaliação agendada com sucesso! Emails automáticos foram configurados.");
+      toast.success("Avaliação agendada com sucesso! Link do portal foi gerado.");
     },
     onError: (error: any) => {
       console.error("Schedule assessment error:", error);

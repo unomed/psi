@@ -14,13 +14,15 @@ interface EmployeeLoginFormProps {
   expectedEmployeeId?: string | null;
   assessmentToken?: string | null;
   templateId?: string;
+  assessmentId?: string | null;
 }
 
 export function EmployeeLoginForm({ 
   onLoginSuccess, 
   expectedEmployeeId,
   assessmentToken,
-  templateId 
+  templateId,
+  assessmentId
 }: EmployeeLoginFormProps) {
   const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
@@ -83,8 +85,8 @@ export function EmployeeLoginForm({
       const result = await login(cleanCpf, password);
       
       if (result.success) {
-        // Se há um token de avaliação e ID esperado, verificar se corresponde
-        if (expectedEmployeeId && assessmentToken) {
+        // Se há um assessment específico, verificar se corresponde ao funcionário logado
+        if (expectedEmployeeId && assessmentId) {
           toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
         } else {
           toast.success("Login realizado com sucesso!");
@@ -110,7 +112,7 @@ export function EmployeeLoginForm({
           Portal do Funcionário
         </CardTitle>
         <p className="text-center text-muted-foreground">
-          {assessmentToken ? 
+          {assessmentId ? 
             "Faça login para acessar sua avaliação" : 
             "Entre com seu CPF e senha"
           }
@@ -159,7 +161,7 @@ export function EmployeeLoginForm({
             </Alert>
           )}
 
-          {assessmentToken && (
+          {assessmentId && (
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>

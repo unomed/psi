@@ -1,49 +1,43 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEmployeeAssessments } from "@/hooks/useEmployeeAssessments";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Clock, FileText, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useEmployeeAssessments } from '@/hooks/useEmployeeAssessments';
-import { Clock, ExternalLink, Calendar } from 'lucide-react';
-import { formatDate } from '@/utils/dateFormat';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PendingAssessmentsListProps {
   employeeId: string;
+  highlightAssessmentId?: string | null;
 }
 
-export function PendingAssessmentsList({ employeeId }: PendingAssessmentsListProps) {
+export function PendingAssessmentsList({ employeeId, highlightAssessmentId }: PendingAssessmentsListProps) {
   const { pendingAssessments, loading } = useEmployeeAssessments(employeeId);
+
+  const handleStartAssessment = (linkUrl: string) => {
+    window.open(linkUrl, '_blank');
+  };
 
   if (loading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>📋 Avaliações Pendentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">
-            Carregando avaliações...
-          </div>
+        <CardContent className="py-8">
+          <div className="text-center">Carregando avaliações...</div>
         </CardContent>
       </Card>
     );
   }
 
-  if (pendingAssessments.length === 0) {
+  if (!pendingAssessments || pendingAssessments.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>📋 Avaliações Pendentes</CardTitle>
-          <CardDescription>
-            Suas avaliações programadas aparecerão aqui
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <div className="text-4xl mb-2">🎉</div>
-            <p className="text-lg font-medium">Nenhuma avaliação pendente!</p>
-            <p className="text-sm text-muted-foreground">
-              Você está em dia com suas avaliações.
-            </p>
+        <CardContent className="py-8">
+          <div className="text-center text-muted-foreground">
+            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Nenhuma avaliação pendente
+            </h3>
+            <p>Você não possui avaliações agendadas no momento.</p>
           </div>
         </CardContent>
       </Card>
@@ -51,60 +45,92 @@ export function PendingAssessmentsList({ employeeId }: PendingAssessmentsListPro
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>📋 Avaliações Pendentes</CardTitle>
-        <CardDescription>
-          {pendingAssessments.length} avaliação(ões) aguardando sua resposta
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {pendingAssessments.map((assessment) => (
-          <div
-            key={assessment.assessmentId}
-            className="border rounded-lg p-4 space-y-3"
+    <div className="space-y-4">
+      {highlightAssessmentId && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Você foi direcionado para uma avaliação específica. Ela está destacada abaixo.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {pendingAssessments.map((assessment) => {
+        const isHighlighted = highlightAssessmentId === assessment.assessmentId;
+        const daysRemaining = assessment.daysRemaining;
+        const isOverdue = daysRemaining < 0;
+        const isUrgent = daysRemaining <= 3 && daysRemaining >= 0;
+
+        return (
+          <Card 
+            key={assessment.assessmentId} 
+            className={`transition-all ${
+              isHighlighted 
+                ? 'ring-2 ring-blue-500 shadow-lg border-blue-200' 
+                : isOverdue 
+                  ? 'border-red-200 bg-red-50' 
+                  : isUrgent 
+                    ? 'border-yellow-200 bg-yellow-50' 
+                    : ''
+            }`}
           >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium">{assessment.templateTitle}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {assessment.templateDescription}
-                </p>
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {assessment.templateTitle}
+                    {isHighlighted && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                        Nova Avaliação
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  {assessment.templateDescription && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {assessment.templateDescription}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    {new Date(assessment.scheduledDate).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                {assessment.daysRemaining <= 0 ? (
-                  <Badge variant="destructive">Vencida</Badge>
-                ) : assessment.daysRemaining <= 3 ? (
-                  <Badge variant="secondary">Urgente</Badge>
-                ) : (
-                  <Badge variant="outline">{assessment.daysRemaining} dias</Badge>
-                )}
+            </CardHeader>
+            
+            <CardContent className="pt-0">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  {isOverdue ? (
+                    <Badge variant="destructive">
+                      Atrasada ({Math.abs(daysRemaining)} dias)
+                    </Badge>
+                  ) : isUrgent ? (
+                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                      Urgente ({daysRemaining} dias restantes)
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">
+                      {daysRemaining} dias restantes
+                    </Badge>
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={() => handleStartAssessment(assessment.linkUrl)}
+                  variant={isHighlighted ? "default" : "outline"}
+                  size="sm"
+                  className={isHighlighted ? "bg-blue-600 hover:bg-blue-700" : ""}
+                >
+                  {isHighlighted ? "Responder Agora" : "Iniciar Avaliação"}
+                </Button>
               </div>
-            </div>
-
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>Agendada para {formatDate(new Date(assessment.scheduledDate))}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>~15-20 min</span>
-              </div>
-            </div>
-
-            <Button 
-              className="w-full"
-              onClick={() => window.open(assessment.linkUrl, '_blank')}
-              disabled={!assessment.linkUrl}
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Responder Avaliação
-            </Button>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 }

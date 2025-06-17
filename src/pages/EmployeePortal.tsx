@@ -11,6 +11,7 @@ export default function EmployeePortal() {
   const { templateId } = useParams();
   const [searchParams] = useSearchParams();
   const employeeIdFromUrl = searchParams.get("employee");
+  const assessmentIdFromUrl = searchParams.get("assessment");
   const tokenFromUrl = searchParams.get("token");
   const { session, loading } = useEmployeeAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -18,6 +19,7 @@ export default function EmployeePortal() {
   console.log("[EmployeePortal] Parâmetros recebidos:", {
     templateId,
     employeeIdFromUrl,
+    assessmentIdFromUrl,
     tokenFromUrl: tokenFromUrl ? `${tokenFromUrl.substring(0, 10)}...` : null,
     hasSession: !!session,
     sessionAuthenticated: session?.isAuthenticated,
@@ -52,6 +54,7 @@ export default function EmployeePortal() {
           expectedEmployeeId={employeeIdFromUrl}
           assessmentToken={tokenFromUrl}
           templateId={templateId}
+          assessmentId={assessmentIdFromUrl}
         />
         <InstallPrompt />
       </div>
@@ -65,6 +68,8 @@ export default function EmployeePortal() {
       <EmployeeModernDashboard 
         assessmentToken={tokenFromUrl}
         templateId={templateId}
+        assessmentId={assessmentIdFromUrl}
+        expectedEmployeeId={employeeIdFromUrl}
       />
       <InstallPrompt />
     </>
