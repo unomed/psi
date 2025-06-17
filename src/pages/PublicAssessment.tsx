@@ -1,4 +1,3 @@
-
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
@@ -23,7 +22,7 @@ export default function PublicAssessment() {
   const [template, setTemplate] = useState<ChecklistTemplate | null>(null);
   const [currentView, setCurrentView] = useState<'assessment' | 'completed'>('assessment');
   const [assessmentResult, setAssessmentResult] = useState<any>(null);
-  const [employeeName, setEmployeeName] = useState<string>("");
+  const [employeeName, setEmployeeName] = useState<string>("Funcionário");
   const [retryCount, setRetryCount] = useState(0);
 
   console.log("[PublicAssessment] Iniciando validação do token:", token);
@@ -55,7 +54,8 @@ export default function PublicAssessment() {
         if ('template' in response && response.template) {
           console.log("[PublicAssessment] Validação bem-sucedida:", response.template);
           setTemplate(response.template);
-          setEmployeeName(response.employeeName || "Funcionário");
+          // Usar nome padrão já que employeeName não está disponível no response
+          setEmployeeName("Funcionário");
           setIsLoading(false);
         } else {
           console.error("[PublicAssessment] Resposta inválida:", response);
