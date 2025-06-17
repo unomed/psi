@@ -60,7 +60,7 @@ export const cadastrosItems: MenuItem[] = [
   }
 ];
 
-// Avaliações items - ROTAS PADRONIZADAS
+// Avaliações items - ROTAS PADRONIZADAS EM PORTUGUÊS
 export const avaliacoesItems: MenuItem[] = [
   {
     title: "Templates",
@@ -92,7 +92,7 @@ export const avaliacoesItems: MenuItem[] = [
   }
 ];
 
-// Gestão items - ROTAS PADRONIZADAS
+// Gestão items - ROTAS PADRONIZADAS EM PORTUGUÊS
 export const gestaoItems: MenuItem[] = [
   {
     title: "Gestão de Riscos",
@@ -124,7 +124,7 @@ export const gestaoItems: MenuItem[] = [
   }
 ];
 
-// Portais items
+// Portais items - ROTAS PADRONIZADAS EM PORTUGUÊS
 export const portaisItems: MenuItem[] = [
   {
     title: "Faturamento",
@@ -134,8 +134,6 @@ export const portaisItems: MenuItem[] = [
     permission: "billing:read"
   }
 ];
-
-// Removido faturamentoItem separado pois agora está em portais
 
 // Legacy export for backward compatibility
 export const menuItems: MenuItem[] = [

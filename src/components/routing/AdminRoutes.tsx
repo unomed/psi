@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";
 import Funcionarios from "@/pages/Funcionarios";
@@ -37,45 +37,45 @@ export function AdminRoutes() {
       <Route path="/" element={<Dashboard />} />
       <Route path="/dashboard" element={<Dashboard />} />
       
-      {/* CADASTROS - Rotas padronizadas */}
+      {/* CADASTROS - Rotas padronizadas em português */}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/funcionarios" element={<Funcionarios />} />
       <Route path="/funcoes" element={<Funcoes />} />
       <Route path="/setores" element={<Setores />} />
       
-      {/* AVALIAÇÕES - Rotas padronizadas */}
+      {/* AVALIAÇÕES - Rotas padronizadas em português */}
       <Route path="/templates" element={<Checklists />} />
       <Route path="/resultados" element={<AssessmentResults />} />
       <Route path="/candidatos/comparacao" element={<CandidatosComparacao />} />
       <Route path="/candidatos/avaliacoes" element={<CandidatosAvaliacoes />} />
       
-      {/* GESTÃO - Rotas padronizadas */}
+      {/* GESTÃO - Rotas padronizadas em português */}
       <Route path="/gestao-riscos" element={<GestaoRiscos />} />
       <Route path="/plano-acao" element={<PlanoAcao />} />
       <Route path="/agendamentos" element={<AssessmentScheduling />} />
       <Route path="/relatorios" element={<Relatorios />} />
       <Route path="/relatorios/nr01" element={<NR01Page />} />
       
-      {/* PORTAIS */}
+      {/* PORTAIS - Rotas padronizadas em português */}
       <Route path="/faturamento" element={<Faturamento />} />
       
       {/* Rotas de assessments específicos */}
       <Route path="/assessments/:id" element={<AssessmentPage />} />
       
-      {/* BACKWARD COMPATIBILITY - Rotas antigas redirecionam */}
-      <Route path="/companies" element={<Empresas />} />
-      <Route path="/employees" element={<Funcionarios />} />
-      <Route path="/roles" element={<Funcoes />} />
-      <Route path="/sectors" element={<Setores />} />
-      <Route path="/checklists" element={<Checklists />} />
-      <Route path="/assessment-results" element={<AssessmentResults />} />
-      <Route path="/psychosocial-risks" element={<GestaoRiscos />} />
-      <Route path="/action-plans" element={<PlanoAcao />} />
-      <Route path="/assessment-scheduling" element={<AssessmentScheduling />} />
-      <Route path="/reports" element={<Relatorios />} />
-      <Route path="/billing" element={<Faturamento />} />
+      {/* REDIRECTS - Rotas antigas em inglês redirecionam para as novas em português */}
+      <Route path="/companies" element={<Navigate to="/empresas" replace />} />
+      <Route path="/employees" element={<Navigate to="/funcionarios" replace />} />
+      <Route path="/roles" element={<Navigate to="/funcoes" replace />} />
+      <Route path="/sectors" element={<Navigate to="/setores" replace />} />
+      <Route path="/checklists" element={<Navigate to="/templates" replace />} />
+      <Route path="/assessment-results" element={<Navigate to="/resultados" replace />} />
+      <Route path="/psychosocial-risks" element={<Navigate to="/gestao-riscos" replace />} />
+      <Route path="/action-plans" element={<Navigate to="/plano-acao" replace />} />
+      <Route path="/assessment-scheduling" element={<Navigate to="/agendamentos" replace />} />
+      <Route path="/reports" element={<Navigate to="/relatorios" replace />} />
+      <Route path="/billing" element={<Navigate to="/faturamento" replace />} />
       
-      {/* Settings routes */}
+      {/* Settings routes - mantém em português */}
       <Route path="/configuracoes/criterios-avaliacao" element={<AssessmentCriteriaPage />} />
       <Route path="/configuracoes/auditoria" element={<AuditoriaPage />} />
       <Route path="/configuracoes/automacao-avancada" element={<AutomacaoAvancadaPage />} />
