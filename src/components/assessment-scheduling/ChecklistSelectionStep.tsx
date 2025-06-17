@@ -1,10 +1,13 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, Users, Star } from "lucide-react";
 import { ChecklistTemplate } from "@/types";
 import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires";
 import { createStandardTemplate } from "@/data/standardQuestionnaires";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ChecklistSelectionStepProps {
   selectedChecklist: ChecklistTemplate | null;
@@ -15,6 +18,7 @@ export function ChecklistSelectionStep({
   selectedChecklist, 
   onChecklistSelect 
 }: ChecklistSelectionStepProps) {
+  const [loading, setLoading] = useState(false);
   
   const getTemplateTypeLabel = (type: string) => {
     const types = {
@@ -36,10 +40,106 @@ export function ChecklistSelectionStep({
     return types[type as keyof typeof types] || type;
   };
 
-  const handleTemplateSelect = (templateId: string) => {
-    const template = createStandardTemplate(templateId);
-    if (template) {
-      onChecklistSelect(template);
+  const handleTemplateSelect = async (templateId: string) => {
+    setLoading(true);
+    try {
+      // Primeiro verificar se o template já existe na base de dados
+      const { data: existingTemplate, error: fetchError } = await supabase
+        .from('checklist_templates')
+        .select('*')
+        .eq('title', STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId)?.name)
+        .eq('type', templateId === 'disc' ? 'disc' : 'psicossocial')
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Erro ao buscar template existente:', fetchError);
+      }
+
+      let finalTemplate: ChecklistTemplate;
+
+      if (existingTemplate) {
+        // Se já existe, usar o template existente
+        finalTemplate = {
+          id: existingTemplate.id,
+          title: existingTemplate.title,
+          description: existingTemplate.description || "",
+          type: existingTemplate.type,
+          scaleType: existingTemplate.scale_type,
+          questions: [], // As questões serão carregadas conforme necessário
+          createdAt: new Date(existingTemplate.created_at),
+          isStandard: existingTemplate.is_standard,
+          estimatedTimeMinutes: existingTemplate.estimated_time_minutes,
+          instructions: existingTemplate.instructions
+        };
+      } else {
+        // Se não existe, criar e salvar o template
+        const tempTemplate = createStandardTemplate(templateId);
+        if (!tempTemplate) {
+          throw new Error("Template não encontrado");
+        }
+
+        // Salvar template na base de dados
+        const { data: savedTemplate, error: saveError } = await supabase
+          .from('checklist_templates')
+          .insert({
+            title: tempTemplate.title,
+            description: tempTemplate.description,
+            type: tempTemplate.type,
+            scale_type: tempTemplate.scaleType,
+            is_standard: true,
+            is_active: true,
+            estimated_time_minutes: tempTemplate.estimatedTimeMinutes,
+            instructions: tempTemplate.instructions
+          })
+          .select()
+          .single();
+
+        if (saveError) {
+          console.error('Erro ao salvar template:', saveError);
+          throw new Error("Erro ao salvar template na base de dados");
+        }
+
+        // Salvar questões do template
+        if (tempTemplate.questions && tempTemplate.questions.length > 0) {
+          const questionsToInsert = tempTemplate.questions.map((question, index) => ({
+            template_id: savedTemplate.id,
+            question_text: question.text,
+            order_number: index + 1,
+            target_factor: 'targetFactor' in question ? question.targetFactor : question.category || 'general',
+            weight: 'weight' in question ? question.weight : 1
+          }));
+
+          const { error: questionsError } = await supabase
+            .from('questions')
+            .insert(questionsToInsert);
+
+          if (questionsError) {
+            console.error('Erro ao salvar questões:', questionsError);
+            // Não falhar se as questões não forem salvas, pois o template principal já foi criado
+          }
+        }
+
+        finalTemplate = {
+          id: savedTemplate.id,
+          title: savedTemplate.title,
+          description: savedTemplate.description || "",
+          type: savedTemplate.type,
+          scaleType: savedTemplate.scale_type,
+          questions: tempTemplate.questions,
+          createdAt: new Date(savedTemplate.created_at),
+          isStandard: savedTemplate.is_standard,
+          estimatedTimeMinutes: savedTemplate.estimated_time_minutes,
+          instructions: savedTemplate.instructions
+        };
+      }
+
+      onChecklistSelect(finalTemplate);
+      toast.success("Template selecionado com sucesso!");
+    } catch (error) {
+      console.error('Erro ao processar template:', error);
+      toast.error("Erro ao processar template selecionado");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,7 +158,7 @@ export function ChecklistSelectionStep({
             key={template.id}
             className={`cursor-pointer transition-all hover:shadow-md ${
               selectedChecklist?.title === template.name ? 'ring-2 ring-primary' : ''
-            }`}
+            } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
             onClick={() => handleTemplateSelect(template.id)}
           >
             <CardHeader className="pb-3">
@@ -114,6 +214,12 @@ export function ChecklistSelectionStep({
           </Card>
         ))}
       </div>
+
+      {loading && (
+        <div className="text-center text-sm text-muted-foreground">
+          Processando template selecionado...
+        </div>
+      )}
     </div>
   );
 }
