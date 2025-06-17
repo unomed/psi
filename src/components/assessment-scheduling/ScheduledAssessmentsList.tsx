@@ -140,9 +140,9 @@ export function ScheduledAssessmentsList() {
     setEditingAssessment(null);
   };
 
-  // Usar a função de exclusão do hook que já implementa cascata
-  const handleDeleteAssessmentWrapper = async (assessmentId: string) => {
-    return await handleDeleteAssessment(assessmentId);
+  // Wrapper para garantir que retorna Promise<void>
+  const handleDeleteAssessmentWrapper = async (assessmentId: string): Promise<void> => {
+    await handleDeleteAssessment(assessmentId);
   };
 
   if (isLoading) {

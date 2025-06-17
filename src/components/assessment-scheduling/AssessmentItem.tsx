@@ -14,7 +14,7 @@ interface AssessmentItemProps {
   onCopyLink: (linkUrl: string) => void;
   onSendEmail: (assessmentId: string) => void;
   onEditAssessment: (assessment: any) => void;
-  onDeleteAssessment: (assessmentId: string) => Promise<boolean>;
+  onDeleteAssessment: (assessmentId: string) => Promise<void>;
   getStatusColor: (status: string) => string;
   getStatusLabel: (status: string) => string;
 }
@@ -118,7 +118,9 @@ export function AssessmentItem({
             </Button>
 
             <DeleteAssessmentButton
-              onDelete={() => onDeleteAssessment(assessment.id)}
+              onDelete={async () => {
+                await onDeleteAssessment(assessment.id);
+              }}
               assessmentStatus={assessment.status}
               employeeName={employeeName}
             />
