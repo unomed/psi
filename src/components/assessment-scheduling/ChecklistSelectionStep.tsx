@@ -50,12 +50,14 @@ export function ChecklistSelectionStep({
         throw new Error("Template não encontrado");
       }
 
+      const dbTemplateType = mapAppTemplateTypeToDb(templateData.type);
+
       // Primeiro verificar se o template já existe na base de dados
       const { data: existingTemplate, error: fetchError } = await supabase
         .from('checklist_templates')
         .select('*')
         .eq('title', templateData.name)
-        .eq('type', mapAppTemplateTypeToDb(templateData.type))
+        .eq('type', dbTemplateType as any) // Type assertion for Supabase compatibility
         .maybeSingle();
 
       if (fetchError) {
@@ -89,7 +91,7 @@ export function ChecklistSelectionStep({
         const { data: savedTemplate, error: saveError } = await supabase
           .from('checklist_templates')
           .insert({
-            title: tempTemplate.title,
+            title: tempTemplate.title, // Using 'title' which is the correct column name
             description: tempTemplate.description,
             type: mapAppTemplateTypeToDb(tempTemplate.type),
             scale_type: scaleTypeToDbScaleType(tempTemplate.scaleType),
