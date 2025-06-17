@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -50,19 +50,9 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
       return;
     }
 
-    console.log('Iniciando agendamento com dados:', {
-      selectedEmployee,
-      selectedChecklist,
-      schedulingDetails: {
-        ...schedulingDetails,
-        recurrenceType,
-        phoneNumber
-      }
-    });
-
     try {
-      // Preparar dados para agendamento com parâmetros atualizados
-      const scheduleParams = {
+      // Passar dados diretamente para o hook
+      await scheduleAssessment({
         employee: selectedEmployee,
         checklist: selectedChecklist,
         schedulingDetails: {
@@ -72,11 +62,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
           sendEmail: schedulingDetails.sendEmail,
           sendWhatsApp: schedulingDetails.sendWhatsApp
         }
-      };
-
-      console.log('Chamando scheduleAssessment com parâmetros:', scheduleParams);
-
-      await scheduleAssessment(scheduleParams);
+      });
       
       toast.success("Avaliação agendada com sucesso!");
       handleClose();
@@ -111,6 +97,9 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
       <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Agendar Nova Avaliação</DialogTitle>
+          <DialogDescription>
+            Selecione um template de avaliação, funcionário e configure os detalhes do agendamento.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

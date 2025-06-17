@@ -1,3 +1,4 @@
+
 import { ChecklistTemplate } from "./checklist";
 
 export type AssessmentStatus = "scheduled" | "sent" | "completed";
@@ -15,7 +16,8 @@ export interface ScheduledAssessment {
   recurrenceType?: RecurrenceType;
   nextScheduledDate?: Date | null;
   phoneNumber?: string;
-  company_id?: string; // Add company_id field
+  company_id?: string;
+  employee_name?: string; // Add employee_name field
   // Make employees optional and add possible error state
   employees?: {
     name: string;
@@ -24,7 +26,7 @@ export interface ScheduledAssessment {
   } | null;
   checklist_templates?: {
     title: string;
-  };
+  } | null;
 }
 
 // Types for email templates

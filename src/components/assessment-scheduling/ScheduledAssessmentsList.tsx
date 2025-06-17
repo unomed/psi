@@ -33,27 +33,49 @@ export function ScheduledAssessmentsList() {
   
   const { userRole, userCompanies } = useAuth();
 
-  const { data: assessments, isLoading, refetch } = useQuery({
+  const { data: assessments, isLoading, refetch, error } = useQuery({
     queryKey: ['scheduledAssessments', userCompanies],
     queryFn: async () => {
-      let query = supabase
-        .from('scheduled_assessments')
-        .select(`
-          *,
-          checklist_templates(title, type)
-        `);
+      try {
+        let query = supabase
+          .from('scheduled_assessments')
+          .select(`
+            *,
+            checklist_templates(title, type)
+          `);
 
-      // Se não for superadmin, filtrar apenas empresas do usuário
-      if (userRole !== 'superadmin' && userCompanies.length > 0) {
-        const companyIds = userCompanies.map(uc => uc.companyId);
-        query = query.in('company_id', companyIds);
+        // Se não for superadmin, filtrar apenas empresas do usuário
+        if (userRole !== 'superadmin' && userCompanies?.length > 0) {
+          const companyIds = userCompanies.map(uc => uc.companyId).filter(Boolean);
+          if (companyIds.length > 0) {
+            query = query.in('company_id', companyIds);
+          }
+        }
+
+        const { data, error } = await query.order('scheduled_date', { ascending: false });
+
+        if (error) {
+          console.error("Erro ao buscar agendamentos:", error);
+          throw error;
+        }
+
+        // Filtrar registros com dados válidos
+        return (data || []).filter(assessment => {
+          // Validar dados obrigatórios
+          return assessment.id && 
+                 assessment.employee_id && 
+                 assessment.template_id && 
+                 assessment.scheduled_date &&
+                 assessment.employee_name; // Validar se tem nome do funcionário
+        });
+      } catch (error) {
+        console.error("Erro na query de agendamentos:", error);
+        toast.error("Erro ao carregar agendamentos");
+        return [];
       }
-
-      const { data, error } = await query.order('scheduled_date', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    }
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
   const filteredAssessments = assessments?.filter(assessment => {
@@ -201,8 +223,29 @@ export function ScheduledAssessmentsList() {
     setEditingAssessment(null);
   };
 
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="text-center text-red-600">
+            <p>Erro ao carregar agendamentos.</p>
+            <Button onClick={() => refetch()} className="mt-2">
+              Tentar Novamente
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (isLoading) {
-    return <div className="text-center py-8">Carregando agendamentos...</div>;
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="text-center">Carregando agendamentos...</div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -220,8 +263,8 @@ export function ScheduledAssessmentsList() {
         
         <CardContent>
           <AssessmentItemsList
-            filteredAssessments={filteredAssessments}
-            userCompanies={userCompanies}
+            filteredAssessments={filteredAssessments || []}
+            userCompanies={userCompanies || []}
             generatingLink={generatingLink}
             sendingEmail={sendingEmail}
             onGenerateLink={handleGenerateLink}
