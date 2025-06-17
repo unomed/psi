@@ -2417,12 +2417,14 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string | null
+          employee_data: Json | null
           employee_id: string
           employee_name: string | null
           id: string
           link_url: string | null
           next_scheduled_date: string | null
           phone_number: string | null
+          portal_token: string | null
           recurrence_type: string | null
           scheduled_date: string
           sent_at: string | null
@@ -2434,12 +2436,14 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          employee_data?: Json | null
           employee_id: string
           employee_name?: string | null
           id?: string
           link_url?: string | null
           next_scheduled_date?: string | null
           phone_number?: string | null
+          portal_token?: string | null
           recurrence_type?: string | null
           scheduled_date: string
           sent_at?: string | null
@@ -2451,12 +2455,14 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          employee_data?: Json | null
           employee_id?: string
           employee_name?: string | null
           id?: string
           link_url?: string | null
           next_scheduled_date?: string | null
           phone_number?: string | null
+          portal_token?: string | null
           recurrence_type?: string | null
           scheduled_date?: string
           sent_at?: string | null

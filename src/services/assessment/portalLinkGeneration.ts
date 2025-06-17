@@ -97,6 +97,7 @@ export async function generateEmployeePortalLink(
         employee_name: employeeData.name,
         company_id: employeeData.company_id,
         portal_token: portalToken,
+        template_id: templateId,
         employee_data: {
           name: employeeData.name,
           email: employeeData.email,
@@ -143,10 +144,15 @@ export async function validatePortalAccess(
       .select('employee_id, status, portal_token, employee_name')
       .eq('id', assessmentId)
       .eq('employee_id', employeeId)
-      .single();
+      .maybeSingle();
     
-    if (error || !assessment) {
-      console.error("Agendamento não encontrado ou não pertence ao funcionário:", error);
+    if (error) {
+      console.error("Erro ao buscar agendamento:", error);
+      return false;
+    }
+
+    if (!assessment) {
+      console.error("Agendamento não encontrado ou não pertence ao funcionário");
       return false;
     }
 
