@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -45,7 +46,24 @@ const cleanupAuthState = () => {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { session, user, loading: authLoading } = useAuthSession();
-  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
+  
+  // Add safety check before calling useUserRole
+  const userRoleHook = React.useMemo(() => {
+    try {
+      return useUserRole();
+    } catch (error) {
+      console.error("[AuthProvider] Error initializing useUserRole:", error);
+      return {
+        userRole: null,
+        userCompanies: [],
+        roleLoading: false,
+        fetchUserRoleAndCompanies: () => Promise.resolve(),
+        clearCache: () => {},
+      };
+    }
+  }, []);
+
+  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = userRoleHook;
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
   // Fetch user role when session changes - com debounce
