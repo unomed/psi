@@ -28,121 +28,114 @@ export const dashboardItem: MenuItem = {
   permission: "dashboard:read"
 };
 
-// Cadastros items
+// Cadastros items - ROTAS PADRONIZADAS EM PORTUGUÊS
 export const cadastrosItems: MenuItem[] = [
   {
     title: "Empresas",
     icon: Building2,
-    href: "/companies",
+    href: "/empresas",
     roles: ["admin", "superadmin"],
     permission: "companies:read"
   },
   {
     title: "Funcionários",
     icon: Users,
-    href: "/employees",
+    href: "/funcionarios",
     roles: ["admin", "manager"],
     permission: "employees:read"
   },
   {
-    title: "Cargos",
+    title: "Funções",
     icon: UserCircle,
-    href: "/roles",
+    href: "/funcoes",
     roles: ["admin", "manager"],
     permission: "roles:read"
   },
   {
     title: "Setores",
     icon: Building2,
-    href: "/sectors",
+    href: "/setores",
     roles: ["admin", "manager"],
     permission: "sectors:read"
   }
 ];
 
-// Avaliações items
+// Avaliações items - ROTAS PADRONIZADAS
 export const avaliacoesItems: MenuItem[] = [
   {
-    title: "Checklists",
+    title: "Templates",
     icon: ClipboardList,
-    href: "/checklists",
+    href: "/templates",
     roles: ["admin", "manager"],
     permission: "checklists:read"
   },
   {
-    title: "Avaliações",
+    title: "Resultados",
+    icon: BarChart3,
+    href: "/resultados",
+    roles: ["admin", "manager"],
+    permission: "assessment_results:read"
+  },
+  {
+    title: "Comparação",
     icon: FileCheck,
-    href: "/assessments",
+    href: "/candidatos/comparacao",
     roles: ["admin", "manager"],
     permission: "assessments:read"
   },
   {
-    title: "Agendamentos",
+    title: "Avaliações",
     icon: Calendar,
-    href: "/assessment-scheduling",
+    href: "/candidatos/avaliacoes",
     roles: ["admin", "manager"],
     permission: "assessments:schedule"
-  },
-  {
-    title: "Resultados",
-    icon: BarChart3,
-    href: "/assessment-results",
-    roles: ["admin", "manager"],
-    permission: "assessment_results:read"
   }
 ];
 
-// Gestão items
+// Gestão items - ROTAS PADRONIZADAS
 export const gestaoItems: MenuItem[] = [
   {
-    title: "Riscos Psicossociais",
+    title: "Gestão de Riscos",
     icon: AlertTriangle,
-    href: "/psychosocial-risks",
+    href: "/gestao-riscos",
     roles: ["admin", "manager"],
     permission: "psychosocial_risks:read"
   },
   {
-    title: "Planos de Ação",
+    title: "Plano de Ação",
     icon: FileText,
-    href: "/action-plans",
+    href: "/plano-acao",
     roles: ["admin", "manager"],
     permission: "action_plans:read"
   },
   {
-    title: "Relatórios",
-    icon: TrendingUp,
-    href: "/reports",
+    title: "Agendamentos",
+    icon: Calendar,
+    href: "/agendamentos",
     roles: ["admin", "manager"],
-    permission: "reports:read"
+    permission: "assessments:schedule"
   },
   {
-    title: "Auditoria",
-    icon: ShieldCheck,
-    href: "/configuracoes/auditoria",
-    roles: ["admin"],
-    permission: "audit:read"
+    title: "Relatórios",
+    icon: TrendingUp,
+    href: "/relatorios",
+    roles: ["admin", "manager"],
+    permission: "reports:read"
   }
 ];
 
 // Portais items
 export const portaisItems: MenuItem[] = [
   {
-    title: "Automação",
-    icon: Zap,
-    href: "/automation",
-    roles: ["admin"],
-    permission: "automation:read"
+    title: "Faturamento",
+    icon: CreditCard,
+    href: "/faturamento",
+    roles: ["admin", "superadmin"],
+    permission: "billing:read"
   }
 ];
 
-// Faturamento item
-export const faturamentoItem: MenuItem = {
-  title: "Faturamento",
-  icon: CreditCard,
-  href: "/billing",
-  roles: ["admin", "superadmin"],
-  permission: "billing:read"
-};
+// Removido faturamentoItem separado pois agora está em portais
 
 // Legacy export for backward compatibility
 export const menuItems: MenuItem[] = [
@@ -150,6 +143,5 @@ export const menuItems: MenuItem[] = [
   ...cadastrosItems,
   ...avaliacoesItems,
   ...gestaoItems,
-  ...portaisItems,
-  faturamentoItem
+  ...portaisItems
 ];

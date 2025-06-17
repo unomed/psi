@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import Empresas from "@/pages/Empresas";
@@ -35,28 +36,44 @@ export function AdminRoutes() {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      
+      {/* CADASTROS - Rotas padronizadas */}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/funcionarios" element={<Funcionarios />} />
       <Route path="/funcoes" element={<Funcoes />} />
       <Route path="/setores" element={<Setores />} />
-      <Route path="/checklists" element={<Checklists />} />
-      <Route path="/templates" element={<Checklists />} />
-      <Route path="/assessment-results" element={<AssessmentResults />} />
-      <Route path="/resultados" element={<AssessmentResults />} />
-      <Route path="/gestao-riscos" element={<GestaoRiscos />} />
-      <Route path="/plano-acao" element={<PlanoAcao />} />
-      <Route path="/relatorios" element={<Relatorios />} />
-      <Route path="/relatorios/nr01" element={<NR01Page />} />
-      <Route path="/faturamento" element={<Faturamento />} />
-      <Route path="/assessments/:id" element={<AssessmentPage />} />
-      <Route path="/agendamentos" element={<AssessmentScheduling />} />
       
-      {/* Rotas para candidatos */}
+      {/* AVALIAÇÕES - Rotas padronizadas */}
+      <Route path="/templates" element={<Checklists />} />
+      <Route path="/resultados" element={<AssessmentResults />} />
       <Route path="/candidatos/comparacao" element={<CandidatosComparacao />} />
       <Route path="/candidatos/avaliacoes" element={<CandidatosAvaliacoes />} />
       
-      {/* Nova rota para Portal do Funcionário */}
-      <Route path="/portal-funcionario" element={<div className="p-6"><h1 className="text-2xl font-bold">Portal do Funcionário</h1><p>Em desenvolvimento...</p></div>} />
+      {/* GESTÃO - Rotas padronizadas */}
+      <Route path="/gestao-riscos" element={<GestaoRiscos />} />
+      <Route path="/plano-acao" element={<PlanoAcao />} />
+      <Route path="/agendamentos" element={<AssessmentScheduling />} />
+      <Route path="/relatorios" element={<Relatorios />} />
+      <Route path="/relatorios/nr01" element={<NR01Page />} />
+      
+      {/* PORTAIS */}
+      <Route path="/faturamento" element={<Faturamento />} />
+      
+      {/* Rotas de assessments específicos */}
+      <Route path="/assessments/:id" element={<AssessmentPage />} />
+      
+      {/* BACKWARD COMPATIBILITY - Rotas antigas redirecionam */}
+      <Route path="/companies" element={<Empresas />} />
+      <Route path="/employees" element={<Funcionarios />} />
+      <Route path="/roles" element={<Funcoes />} />
+      <Route path="/sectors" element={<Setores />} />
+      <Route path="/checklists" element={<Checklists />} />
+      <Route path="/assessment-results" element={<AssessmentResults />} />
+      <Route path="/psychosocial-risks" element={<GestaoRiscos />} />
+      <Route path="/action-plans" element={<PlanoAcao />} />
+      <Route path="/assessment-scheduling" element={<AssessmentScheduling />} />
+      <Route path="/reports" element={<Relatorios />} />
+      <Route path="/billing" element={<Faturamento />} />
       
       {/* Settings routes */}
       <Route path="/configuracoes/criterios-avaliacao" element={<AssessmentCriteriaPage />} />

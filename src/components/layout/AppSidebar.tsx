@@ -9,8 +9,7 @@ import {
   cadastrosItems, 
   avaliacoesItems, 
   gestaoItems,
-  portaisItems,
-  faturamentoItem 
+  portaisItems
 } from "./sidebar/menuItems";
 import { settingsItems } from "./sidebar/settingsItems";
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
@@ -82,29 +81,18 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarSection>
 
-        {/* PORTAIS - Agora sem Portal Funcionário */}
-        {portaisItems.length > 0 && (
-          <SidebarSection title="PORTAIS">
-            <SidebarMenu className="space-y-1">
-              {portaisItems.map((item) => (
-                <MenuItemGuard 
-                  key={item.href} 
-                  allowedRoles={item.roles} 
-                  requiredPermission={item.permission}
-                >
-                  <SidebarMenuItem item={item} />
-                </MenuItemGuard>
-              ))}
-            </SidebarMenu>
-          </SidebarSection>
-        )}
-
-        {/* FATURAMENTO */}
-        <SidebarSection title="">
+        {/* PORTAIS */}
+        <SidebarSection title="PORTAIS">
           <SidebarMenu className="space-y-1">
-            <MenuItemGuard allowedRoles={faturamentoItem.roles} requiredPermission={faturamentoItem.permission}>
-              <SidebarMenuItem key={faturamentoItem.href} item={faturamentoItem} />
-            </MenuItemGuard>
+            {portaisItems.map((item) => (
+              <MenuItemGuard 
+                key={item.href} 
+                allowedRoles={item.roles} 
+                requiredPermission={item.permission}
+              >
+                <SidebarMenuItem item={item} />
+              </MenuItemGuard>
+            ))}
           </SidebarMenu>
         </SidebarSection>
 
