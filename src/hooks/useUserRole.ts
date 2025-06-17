@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,6 +7,18 @@ export type CompanyAccess = {
 };
 
 export function useUserRole() {
+  // Add safety check for React hooks availability
+  if (typeof useState === 'undefined') {
+    console.warn('[useUserRole] React hooks not available, returning fallback');
+    return {
+      userRole: null,
+      userCompanies: [],
+      roleLoading: false,
+      fetchUserRoleAndCompanies: () => Promise.resolve(),
+      clearCache: () => {},
+    };
+  }
+
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userCompanies, setUserCompanies] = useState<CompanyAccess[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
