@@ -3200,6 +3200,9 @@ export type Database = {
         | "eri"
         | "disc"
         | "custom"
+        | "psicossocial"
+        | "personal_life"
+        | "evaluation_360"
       psychosocial_exposure_level: "baixo" | "medio" | "alto" | "critico"
       psychosocial_risk_category:
         | "organizacao_trabalho"
@@ -3377,6 +3380,9 @@ export const Constants = {
         "eri",
         "disc",
         "custom",
+        "psicossocial",
+        "personal_life",
+        "evaluation_360",
       ],
       psychosocial_exposure_level: ["baixo", "medio", "alto", "critico"],
       psychosocial_risk_category: [
