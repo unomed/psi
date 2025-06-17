@@ -23,7 +23,7 @@ function App() {
           <Sonner />
           <BrowserRouter>
             <ErrorBoundary>
-              {/* Contexto administrativo isolado */}
+              {/* Contexto administrativo isolado - DENTRO do BrowserRouter */}
               <AuthProvider>
                 <AppRoutes />
               </AuthProvider>
