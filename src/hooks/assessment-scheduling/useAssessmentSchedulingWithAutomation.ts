@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RecurrenceType, ChecklistTemplate } from "@/types";
@@ -91,7 +92,7 @@ export function useAssessmentSchedulingWithAutomation() {
 
         if (scheduleError) {
           console.error("Error creating scheduled assessment:", scheduleError);
-          throw new Error("Erro ao agendar avaliação");
+          throw new Error(`Erro ao criar agendamento: ${scheduleError.message}`);
         }
 
         // Generate portal link using the assessment ID
@@ -195,6 +196,18 @@ export function useAssessmentSchedulingWithAutomation() {
     if (!companyId) {
       console.error('Company ID não encontrado', employee);
       throw new Error("Company ID do funcionário inválido");
+    }
+
+    // Verificar se o template existe na base de dados
+    const { data: templateExists, error: templateError } = await supabase
+      .from('checklist_templates')
+      .select('id')
+      .eq('id', checklist.id)
+      .single();
+
+    if (templateError || !templateExists) {
+      console.error('Template não encontrado na base de dados:', checklist.id);
+      throw new Error("Template de avaliação não encontrado. Verifique se o template está salvo corretamente.");
     }
 
     console.log('Validação passou, preparando dados para agendamento');
