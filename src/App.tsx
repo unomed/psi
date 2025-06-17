@@ -12,26 +12,33 @@ import React from "react";
 
 const queryClient = new QueryClient();
 
+function AppContent() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   console.log('[App] Inicializando aplicação com arquitetura isolada');
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider delayDuration={300}>
-          <Toaster />
-          <Sonner />
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
           <BrowserRouter>
-            <ErrorBoundary>
-              {/* Contexto administrativo isolado - DENTRO do BrowserRouter */}
-              <AuthProvider>
-                <AppRoutes />
-              </AuthProvider>
-            </ErrorBoundary>
+            <TooltipProvider delayDuration={300}>
+              <AppContent />
+              <Toaster />
+              <Sonner />
+            </TooltipProvider>
           </BrowserRouter>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 }
 

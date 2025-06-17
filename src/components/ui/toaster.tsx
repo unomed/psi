@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -7,9 +8,15 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
+import React from "react"
 
 export function Toaster() {
   const { toasts } = useToast()
+
+  // Safely handle cases where toasts might not be available
+  if (!toasts || !Array.isArray(toasts)) {
+    return null;
+  }
 
   return (
     <ToastProvider>
