@@ -10,7 +10,7 @@ interface AssessmentItemsListProps {
   onCopyLink: (linkUrl: string) => void;
   onSendEmail: (assessmentId: string) => void;
   onEditAssessment: (assessment: any) => void;
-  onDeleteAssessment: (assessmentId: string) => Promise<boolean>;
+  onDeleteAssessment: (assessmentId: string) => Promise<void>;
   getStatusColor: (status: string) => string;
   getStatusLabel: (status: string) => string;
 }
