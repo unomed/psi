@@ -8,6 +8,8 @@ import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires"
 import { createStandardTemplate } from "@/data/standardQuestionnaires";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { scaleTypeToDbScaleType } from "@/types/scale";
+import { mapAppTemplateTypeToDb } from "@/services/checklist/utils";
 
 interface ChecklistSelectionStepProps {
   selectedChecklist: ChecklistTemplate | null;
@@ -43,12 +45,17 @@ export function ChecklistSelectionStep({
   const handleTemplateSelect = async (templateId: string) => {
     setLoading(true);
     try {
+      const templateData = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
+      if (!templateData) {
+        throw new Error("Template não encontrado");
+      }
+
       // Primeiro verificar se o template já existe na base de dados
       const { data: existingTemplate, error: fetchError } = await supabase
         .from('checklist_templates')
         .select('*')
-        .eq('title', STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId)?.name)
-        .eq('type', templateId === 'disc' ? 'disc' : 'psicossocial')
+        .eq('title', templateData.name)
+        .eq('type', mapAppTemplateTypeToDb(templateData.type))
         .maybeSingle();
 
       if (fetchError) {
@@ -63,8 +70,8 @@ export function ChecklistSelectionStep({
           id: existingTemplate.id,
           title: existingTemplate.title,
           description: existingTemplate.description || "",
-          type: existingTemplate.type,
-          scaleType: existingTemplate.scale_type,
+          type: templateData.type,
+          scaleType: templateData.scaleType,
           questions: [], // As questões serão carregadas conforme necessário
           createdAt: new Date(existingTemplate.created_at),
           isStandard: existingTemplate.is_standard,
@@ -84,8 +91,8 @@ export function ChecklistSelectionStep({
           .insert({
             title: tempTemplate.title,
             description: tempTemplate.description,
-            type: tempTemplate.type,
-            scale_type: tempTemplate.scaleType,
+            type: mapAppTemplateTypeToDb(tempTemplate.type),
+            scale_type: scaleTypeToDbScaleType(tempTemplate.scaleType),
             is_standard: true,
             is_active: true,
             estimated_time_minutes: tempTemplate.estimatedTimeMinutes,
@@ -123,8 +130,8 @@ export function ChecklistSelectionStep({
           id: savedTemplate.id,
           title: savedTemplate.title,
           description: savedTemplate.description || "",
-          type: savedTemplate.type,
-          scaleType: savedTemplate.scale_type,
+          type: tempTemplate.type,
+          scaleType: tempTemplate.scaleType,
           questions: tempTemplate.questions,
           createdAt: new Date(savedTemplate.created_at),
           isStandard: savedTemplate.is_standard,
