@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Lock, AlertCircle } from "lucide-react";
-import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
+import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 import { toast } from "sonner";
 
 interface EmployeeNativeLoginFormProps {
@@ -26,7 +26,9 @@ export function EmployeeNativeLoginForm({
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useEmployeeAuth();
+  
+  // Usar o contexto nativo
+  const { login } = useEmployeeAuthNative();
 
   const formatCPF = (value: string) => {
     const digits = value.replace(/\D/g, '');
@@ -73,20 +75,29 @@ export function EmployeeNativeLoginForm({
         return;
       }
 
-      console.log(`[EmployeeNativeLogin] Tentando login com CPF: ${cleanCpf.slice(0, 3)}***`);
+      console.log(`[EmployeeNativeLoginForm] Tentando login com CPF: ${cleanCpf.slice(0, 3)}***`);
 
       const result = await login(cleanCpf, password);
       
       if (result.success) {
         if (expectedEmployeeId && assessmentId) {
-          toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
+          // Usar fallback toast nativo se sonner falhar
+          try {
+            toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
+          } catch {
+            console.log("Login realizado com sucesso! Redirecionando para sua avaliação...");
+          }
         } else {
-          toast.success("Login realizado com sucesso!");
+          try {
+            toast.success("Login realizado com sucesso!");
+          } catch {
+            console.log("Login realizado com sucesso!");
+          }
         }
         
         onLoginSuccess(result);
       } else {
-        console.error(`[EmployeeNativeLogin] Erro no login:`, result.error);
+        console.error(`[EmployeeNativeLoginForm] Erro no login:`, result.error);
         setError(result.error || "Erro no login. Verifique suas credenciais.");
       }
     } catch (error) {

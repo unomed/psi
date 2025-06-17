@@ -11,9 +11,10 @@ import { EmployeeGuard } from "@/components/auth/EmployeeGuard";
 import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
-import EmployeeLogin from "@/pages/auth/EmployeeLogin";
 import ChecklistPortal from "@/pages/ChecklistPortal";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
+import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
+import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -53,42 +54,49 @@ export function AppRoutes() {
       <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
       <Route path="/checklist" element={<ChecklistPortal />} />
 
-      {/* Rotas do portal do funcionário - COMPLETAMENTE ISOLADAS */}
+      {/* ROTA ISOLADA PARA FUNCIONÁRIOS - SEM PROVIDERS PROBLEMÁTICOS */}
       <Route path="/auth/employee" element={
-        <FormErrorBoundary>
-          <EmployeeAuthProvider>
-            <EmployeeLogin />
-          </EmployeeAuthProvider>
-        </FormErrorBoundary>
+        <EmployeeErrorBoundary>
+          <EmployeeLoginIsolated />
+        </EmployeeErrorBoundary>
       } />
       
+      {/* Portal do funcionário com providers originais */}
       <Route path="/employee-portal" element={
-        <EmployeeAuthProvider>
-          <EmployeeGuard>
-            <EmployeePortal />
-          </EmployeeGuard>
-        </EmployeeAuthProvider>
+        <EmployeeErrorBoundary>
+          <EmployeeAuthProvider>
+            <EmployeeGuard>
+              <EmployeePortal />
+            </EmployeeGuard>
+          </EmployeeAuthProvider>
+        </EmployeeErrorBoundary>
       } />
       
       <Route path="/employee-portal/:templateId" element={
-        <EmployeeAuthProvider>
-          <EmployeeGuard>
-            <EmployeePortal />
-          </EmployeeGuard>
-        </EmployeeAuthProvider>
+        <EmployeeErrorBoundary>
+          <EmployeeAuthProvider>
+            <EmployeeGuard>
+              <EmployeePortal />
+            </EmployeeGuard>
+          </EmployeeAuthProvider>
+        </EmployeeErrorBoundary>
       } />
 
       {/* Avaliações públicas com tokens - isoladas */}
       <Route path="/avaliacao/:token" element={
-        <EmployeeAuthProvider>
-          <PublicAssessment />
-        </EmployeeAuthProvider>
+        <EmployeeErrorBoundary>
+          <EmployeeAuthProvider>
+            <PublicAssessment />
+          </EmployeeAuthProvider>
+        </EmployeeErrorBoundary>
       } />
       
       <Route path="/assessment/:token" element={
-        <EmployeeAuthProvider>
-          <PublicAssessment />
-        </EmployeeAuthProvider>
+        <EmployeeErrorBoundary>
+          <EmployeeAuthProvider>
+            <PublicAssessment />
+          </EmployeeAuthProvider>
+        </EmployeeErrorBoundary>
       } />
 
       {/* Redirecionamento do portal do funcionário */}
