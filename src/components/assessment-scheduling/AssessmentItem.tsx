@@ -14,7 +14,7 @@ interface AssessmentItemProps {
   onCopyLink: (linkUrl: string) => void;
   onSendEmail: (assessmentId: string) => void;
   onEditAssessment: (assessment: any) => void;
-  onDeleteAssessment: (assessmentId: string) => Promise<void>;
+  onDeleteAssessment: (assessmentId: string) => Promise<boolean>;
   getStatusColor: (status: string) => string;
   getStatusLabel: (status: string) => string;
 }
@@ -45,12 +45,15 @@ export function AssessmentItem({
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
 
+  // Usar o nome do funcionário do objeto assessment
+  const employeeName = assessment.employees?.name || assessment.employee_name || 'Funcionário não encontrado';
+
   return (
-    <div className="border rounded-lg p-4 space-y-3">
+    <div className="w-full border rounded-lg p-4 space-y-3">
       <div className="flex justify-between items-start">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">{assessment.employee_name}</h3>
+            <h3 className="font-medium">{employeeName}</h3>
             <Badge className={getStatusColor(assessment.status)}>
               {getStatusLabel(assessment.status)}
             </Badge>
@@ -59,12 +62,12 @@ export function AssessmentItem({
           <div className="text-sm text-muted-foreground space-y-1">
             <p><strong>Checklist:</strong> {assessment.checklist_templates?.title || 'Template não encontrado'}</p>
             <p><strong>Empresa:</strong> {getCompanyName(assessment.company_id)}</p>
-            <p><strong>Agendado para:</strong> {formatDate(assessment.scheduled_date)}</p>
-            {assessment.sent_at && (
-              <p><strong>Enviado em:</strong> {formatDate(assessment.sent_at)}</p>
+            <p><strong>Agendado para:</strong> {formatDate(assessment.scheduledDate || assessment.scheduled_date)}</p>
+            {assessment.sentAt && (
+              <p><strong>Enviado em:</strong> {formatDate(assessment.sentAt)}</p>
             )}
-            {assessment.completed_at && (
-              <p><strong>Concluído em:</strong> {formatDate(assessment.completed_at)}</p>
+            {assessment.completedAt && (
+              <p><strong>Concluído em:</strong> {formatDate(assessment.completedAt)}</p>
             )}
           </div>
         </div>
@@ -81,11 +84,11 @@ export function AssessmentItem({
           {generatingLink === assessment.id ? "Gerando..." : "Gerar Link"}
         </Button>
 
-        {assessment.link_url && (
+        {assessment.linkUrl && (
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onCopyLink(assessment.link_url)}
+            onClick={() => onCopyLink(assessment.linkUrl)}
           >
             <Copy className="h-4 w-4 mr-1" />
             Copiar Link
@@ -117,7 +120,7 @@ export function AssessmentItem({
             <DeleteAssessmentButton
               onDelete={() => onDeleteAssessment(assessment.id)}
               assessmentStatus={assessment.status}
-              employeeName={assessment.employee_name}
+              employeeName={employeeName}
             />
           </>
         )}

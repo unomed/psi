@@ -15,9 +15,9 @@ export default function AssessmentScheduling() {
   const { user } = useAuth();
 
   return (
-    <div className="space-y-8">
+    <div className="w-full max-w-none p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Agendamento de Avaliações</h1>
           <p className="text-muted-foreground">
@@ -31,8 +31,8 @@ export default function AssessmentScheduling() {
       </div>
 
       {/* Tabs for different sections */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4 mb-6">
           <TabsTrigger value="overview">
             <Calendar className="h-4 w-4 mr-2" />
             Visão Geral
@@ -51,7 +51,7 @@ export default function AssessmentScheduling() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="w-full space-y-6">
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
@@ -128,15 +128,15 @@ export default function AssessmentScheduling() {
           <ScheduledAssessmentsList />
         </TabsContent>
 
-        <TabsContent value="scheduled">
+        <TabsContent value="scheduled" className="w-full">
           <ScheduledAssessmentsList />
         </TabsContent>
 
-        <TabsContent value="templates">
+        <TabsContent value="templates" className="w-full">
           <EmailTemplateSection />
         </TabsContent>
 
-        <TabsContent value="metrics">
+        <TabsContent value="metrics" className="w-full">
           <AssessmentMetrics />
         </TabsContent>
       </Tabs>

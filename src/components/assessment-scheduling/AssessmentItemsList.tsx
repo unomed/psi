@@ -10,7 +10,7 @@ interface AssessmentItemsListProps {
   onCopyLink: (linkUrl: string) => void;
   onSendEmail: (assessmentId: string) => void;
   onEditAssessment: (assessment: any) => void;
-  onDeleteAssessment: (assessmentId: string) => void;
+  onDeleteAssessment: (assessmentId: string) => Promise<boolean>;
   getStatusColor: (status: string) => string;
   getStatusLabel: (status: string) => string;
 }
@@ -28,10 +28,6 @@ export function AssessmentItemsList({
   getStatusColor,
   getStatusLabel
 }: AssessmentItemsListProps) {
-  
-  const handleDeleteAssessment = async (assessmentId: string) => {
-    await onDeleteAssessment(assessmentId);
-  };
 
   if (filteredAssessments.length === 0) {
     return (
@@ -42,7 +38,7 @@ export function AssessmentItemsList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-4">
       {filteredAssessments.map((assessment) => (
         <AssessmentItem
           key={assessment.id}
@@ -54,7 +50,7 @@ export function AssessmentItemsList({
           onCopyLink={onCopyLink}
           onSendEmail={onSendEmail}
           onEditAssessment={onEditAssessment}
-          onDeleteAssessment={handleDeleteAssessment}
+          onDeleteAssessment={onDeleteAssessment}
           getStatusColor={getStatusColor}
           getStatusLabel={getStatusLabel}
         />

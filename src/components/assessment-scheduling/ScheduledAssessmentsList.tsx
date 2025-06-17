@@ -2,31 +2,19 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { generateAssessmentLink, sendAssessmentEmail } from "@/services/assessment/links";
 import { createDefaultEmailTemplates } from "@/services/emailTemplates/createDefaultTemplates";
 import { EditScheduledAssessmentDialog } from "./EditScheduledAssessmentDialog";
 import { AssessmentListHeader } from "./AssessmentListHeader";
 import { AssessmentFilters } from "./AssessmentFilters";
 import { AssessmentItemsList } from "./AssessmentItemsList";
+import { useScheduledAssessments } from "@/hooks/checklist/useScheduledAssessments";
+import { toast } from "sonner";
 
 export function ScheduledAssessmentsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [deleteAssessmentId, setDeleteAssessmentId] = useState<string | null>(null);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [editingAssessment, setEditingAssessment] = useState<any>(null);
@@ -34,53 +22,18 @@ export function ScheduledAssessmentsList() {
   
   const { userRole, userCompanies } = useAuth();
 
-  const { data: assessments, isLoading, refetch, error } = useQuery({
-    queryKey: ['scheduledAssessments', userCompanies],
-    queryFn: async () => {
-      try {
-        let query = supabase
-          .from('scheduled_assessments')
-          .select(`
-            *,
-            checklist_templates(title, type)
-          `);
-
-        // Se não for superadmin, filtrar apenas empresas do usuário
-        if (userRole !== 'superadmin' && userCompanies?.length > 0) {
-          const companyIds = userCompanies.map(uc => uc.companyId).filter(Boolean);
-          if (companyIds.length > 0) {
-            query = query.in('company_id', companyIds);
-          }
-        }
-
-        const { data, error } = await query.order('scheduled_date', { ascending: false });
-
-        if (error) {
-          console.error("Erro ao buscar agendamentos:", error);
-          throw error;
-        }
-
-        // Filtrar registros com dados válidos
-        return (data || []).filter(assessment => {
-          // Validar dados obrigatórios
-          return assessment.id && 
-                 assessment.employee_id && 
-                 assessment.template_id && 
-                 assessment.scheduled_date &&
-                 assessment.employee_name; // Validar se tem nome do funcionário
-        });
-      } catch (error) {
-        console.error("Erro na query de agendamentos:", error);
-        toast.error("Erro ao carregar agendamentos");
-        return [];
-      }
-    },
-    retry: 3,
-    retryDelay: 1000
+  // Usar o hook correto com exclusão em cascata
+  const { 
+    scheduledAssessments: assessments, 
+    isLoading, 
+    refetch, 
+    handleDeleteAssessment 
+  } = useScheduledAssessments({
+    companyId: userRole === 'superadmin' ? null : userCompanies?.[0]?.companyId || null
   });
 
   const filteredAssessments = assessments?.filter(assessment => {
-    const employeeName = assessment.employee_name || '';
+    const employeeName = assessment.employees?.name || assessment.employee_name || '';
     const matchesSearch = searchTerm === "" || 
       employeeName.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -110,7 +63,7 @@ export function ScheduledAssessmentsList() {
   };
 
   const handleGenerateLink = async (assessment: any) => {
-    if (!assessment.employee_id || !assessment.template_id) {
+    if (!assessment.employeeId || !assessment.templateId) {
       toast.error("Dados incompletos para gerar o link");
       return;
     }
@@ -118,33 +71,17 @@ export function ScheduledAssessmentsList() {
     try {
       setGeneratingLink(assessment.id);
       console.log("Gerando link para avaliação:", {
-        employeeId: assessment.employee_id,
-        templateId: assessment.template_id,
+        employeeId: assessment.employeeId,
+        templateId: assessment.templateId,
         assessmentId: assessment.id
       });
       
       const link = await generateAssessmentLink(
-        assessment.employee_id,
-        assessment.template_id
+        assessment.employeeId,
+        assessment.templateId
       );
       
       if (link) {
-        // Atualizar o agendamento com o link gerado
-        const { error: updateError } = await supabase
-          .from('scheduled_assessments')
-          .update({ 
-            link_url: link,
-            status: 'sent',
-            sent_at: new Date().toISOString()
-          })
-          .eq('id', assessment.id);
-
-        if (updateError) {
-          console.error("Erro ao atualizar agendamento:", updateError);
-          toast.error("Erro ao salvar o link gerado");
-          return;
-        }
-
         // Copiar link para clipboard
         await navigator.clipboard.writeText(link);
         toast.success("Link gerado e copiado para a área de transferência!");
@@ -185,27 +122,6 @@ export function ScheduledAssessmentsList() {
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!deleteAssessmentId) return;
-
-    try {
-      const { error } = await supabase
-        .from('scheduled_assessments')
-        .delete()
-        .eq('id', deleteAssessmentId);
-
-      if (error) throw error;
-      
-      toast.success("Agendamento excluído com sucesso!");
-      refetch();
-    } catch (error) {
-      console.error("Erro ao excluir agendamento:", error);
-      toast.error("Erro ao excluir agendamento");
-    } finally {
-      setDeleteAssessmentId(null);
-    }
-  };
-
   const handleSetupEmailTemplates = async () => {
     try {
       await createDefaultEmailTemplates();
@@ -224,34 +140,26 @@ export function ScheduledAssessmentsList() {
     setEditingAssessment(null);
   };
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="py-8">
-          <div className="text-center text-red-600">
-            <p>Erro ao carregar agendamentos.</p>
-            <Button onClick={() => refetch()} className="mt-2">
-              Tentar Novamente
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Usar a função de exclusão do hook que já implementa cascata
+  const handleDeleteAssessmentWrapper = async (assessmentId: string) => {
+    return await handleDeleteAssessment(assessmentId);
+  };
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="py-8">
-          <div className="text-center">Carregando agendamentos...</div>
-        </CardContent>
-      </Card>
+      <div className="w-full">
+        <Card className="w-full">
+          <CardContent className="py-8">
+            <div className="text-center">Carregando agendamentos...</div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <>
-      <Card>
+    <div className="w-full space-y-6">
+      <Card className="w-full">
         <CardHeader>
           <AssessmentListHeader onSetupEmailTemplates={handleSetupEmailTemplates} />
           <AssessmentFilters
@@ -272,37 +180,18 @@ export function ScheduledAssessmentsList() {
             onCopyLink={handleCopyLink}
             onSendEmail={handleSendEmail}
             onEditAssessment={handleEditAssessment}
-            onDeleteAssessment={(id) => setDeleteAssessmentId(id)}
+            onDeleteAssessment={handleDeleteAssessmentWrapper}
             getStatusColor={getStatusColor}
             getStatusLabel={getStatusLabel}
           />
         </CardContent>
       </Card>
 
-      {/* Dialog de confirmação para exclusão */}
-      <AlertDialog open={!!deleteAssessmentId} onOpenChange={() => setDeleteAssessmentId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Add edit dialog */}
       <EditScheduledAssessmentDialog
         isOpen={isEditDialogOpen}
         onClose={handleCloseEditDialog}
         assessment={editingAssessment}
       />
-    </>
+    </div>
   );
 }
