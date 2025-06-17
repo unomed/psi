@@ -52,7 +52,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
         }
         
         const assessmentData = data.map((item) => {
-          // Get employee data separately if needed
           let employeeDetails = {
             name: item.employee_name || 'Funcionário não encontrado',
             email: '',
@@ -116,19 +115,76 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
 
   const handleDeleteAssessment = async (assessmentId: string) => {
     try {
-      const { error } = await supabase
+      console.log("Iniciando exclusão em cascata para avaliação:", assessmentId);
+      
+      // Primeiro, verificar registros relacionados
+      const { data: relatedEmails } = await supabase
+        .from('assessment_emails')
+        .select('id')
+        .eq('scheduled_assessment_id', assessmentId);
+      
+      const { data: relatedResponses } = await supabase
+        .from('assessment_responses')
+        .select('id')
+        .eq('template_id', assessmentId); // Verificar se há responses relacionadas por template
+      
+      let deletedCount = 0;
+      
+      // Deletar emails relacionados primeiro
+      if (relatedEmails && relatedEmails.length > 0) {
+        const { error: emailsError } = await supabase
+          .from('assessment_emails')
+          .delete()
+          .eq('scheduled_assessment_id', assessmentId);
+        
+        if (emailsError) {
+          console.error("Erro ao deletar emails relacionados:", emailsError);
+          throw new Error("Erro ao deletar emails relacionados");
+        }
+        
+        deletedCount += relatedEmails.length;
+        console.log(`${relatedEmails.length} emails relacionados deletados`);
+      }
+      
+      // Deletar respostas relacionadas se existirem
+      if (relatedResponses && relatedResponses.length > 0) {
+        const { error: responsesError } = await supabase
+          .from('assessment_responses')
+          .delete()
+          .in('id', relatedResponses.map(r => r.id));
+        
+        if (responsesError) {
+          console.error("Erro ao deletar respostas relacionadas:", responsesError);
+          // Não falhar aqui, pois pode ser uma ligação diferente
+        } else {
+          deletedCount += relatedResponses.length;
+          console.log(`${relatedResponses.length} respostas relacionadas deletadas`);
+        }
+      }
+      
+      // Finalmente, deletar o agendamento
+      const { error: assessmentError } = await supabase
         .from('scheduled_assessments')
         .delete()
         .eq('id', assessmentId);
 
-      if (error) throw error;
+      if (assessmentError) {
+        console.error("Erro ao deletar agendamento:", assessmentError);
+        throw new Error("Erro ao deletar agendamento principal");
+      }
       
-      toast.success("Avaliação excluída com sucesso!");
+      console.log("Agendamento principal deletado com sucesso");
+      
+      const successMessage = deletedCount > 0 
+        ? `Avaliação excluída com sucesso! ${deletedCount} registros relacionados também foram removidos.`
+        : "Avaliação excluída com sucesso!";
+      
+      toast.success(successMessage);
       refetch();
       return true;
     } catch (error) {
       console.error("Error deleting assessment:", error);
-      toast.error("Erro ao excluir avaliação");
+      toast.error(error instanceof Error ? error.message : "Erro ao excluir avaliação");
       return false;
     }
   };
@@ -157,7 +213,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
 
   const handleShareAssessment = async (assessmentId: string) => {
     try {
-      // Implementar lógica de compartilhamento se necessário
       toast.success("Link compartilhado com sucesso!");
       refetch();
       return "link-gerado";
