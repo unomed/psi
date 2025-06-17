@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ProfileSkeleton from "@/components/profile/ProfileSkeleton";
 import { ProfileInfo } from "@/components/profile/ProfileInfo";
+import { PasswordChangeForm } from "@/components/profile/PasswordChangeForm";
 
 export default function Perfil() {
   const { user, userRole } = useAuth();
@@ -95,7 +96,10 @@ export default function Perfil() {
       <h1 className="text-3xl font-bold mb-6">Meu Perfil</h1>
       
       <div className="grid gap-6 md:grid-cols-2">
-        <ProfileInfo profile={profile} />
+        <div className="space-y-6">
+          <ProfileInfo profile={profile} />
+          <PasswordChangeForm />
+        </div>
         
         <Card>
           <CardHeader>
