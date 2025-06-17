@@ -81,7 +81,14 @@ export function EmployeeModernDashboard({
                 {assessmentId && (
                   <div className="mt-2 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
                     <p className="text-blue-800 text-sm">
-                      Você tem uma avaliação pendente. Acesse a aba "Avaliações" para responder.
+                      Você tem uma avaliação pendente. 
+                      <Button 
+                        variant="link" 
+                        className="text-blue-600 underline p-0 ml-1 h-auto"
+                        onClick={() => setCurrentView('assessments')}
+                      >
+                        Clique aqui para responder
+                      </Button>
                     </p>
                   </div>
                 )}

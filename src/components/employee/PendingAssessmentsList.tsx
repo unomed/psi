@@ -15,7 +15,8 @@ export function PendingAssessmentsList({ employeeId, highlightAssessmentId }: Pe
   const { pendingAssessments, loading } = useEmployeeAssessments(employeeId);
 
   const handleStartAssessment = (linkUrl: string) => {
-    window.open(linkUrl, '_blank');
+    // Abrir a avaliação na mesma aba
+    window.location.href = linkUrl;
   };
 
   if (loading) {
@@ -66,7 +67,7 @@ export function PendingAssessmentsList({ employeeId, highlightAssessmentId }: Pe
             key={assessment.assessmentId} 
             className={`transition-all ${
               isHighlighted 
-                ? 'ring-2 ring-blue-500 shadow-lg border-blue-200' 
+                ? 'ring-2 ring-blue-500 shadow-lg border-blue-200 bg-blue-50' 
                 : isOverdue 
                   ? 'border-red-200 bg-red-50' 
                   : isUrgent 
