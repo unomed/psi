@@ -1,15 +1,12 @@
 
-import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppContent } from "@/components/routing/AppContent";
+import { SimpleAppContent } from "@/components/routing/SimpleAppContent";
 
-// QueryClient configuração
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
       retry: 1,
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
     },
   },
 });
@@ -17,15 +14,9 @@ const queryClient = new QueryClient({
 function App() {
   console.log('[App] Sistema Principal - Iniciando aplicação');
   
-  // Ensure React is available before rendering
-  if (typeof React === 'undefined') {
-    console.error('[App] React not available');
-    return null;
-  }
-  
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <SimpleAppContent />
     </QueryClientProvider>
   );
 }
