@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useSafeState, useSafeEffect } from '@/hooks/useSafeReact';
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';

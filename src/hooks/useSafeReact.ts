@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Safe wrapper for React hooks that checks for React availability
 export function useSafeState<T>(initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
