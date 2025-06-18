@@ -165,8 +165,8 @@ export class EmployeeAuthNativeProvider extends Component<
 
 // Hook seguro que não depende de React.useContext
 export function useEmployeeAuthNative(): EmployeeAuthContextType {
-  // Safety check for React availability
-  if (typeof React === 'undefined' || !React.useContext) {
+  // Safety check for React availability - return early if React is not available
+  if (typeof React === 'undefined' || !React || !React.useContext) {
     console.warn('[useEmployeeAuthNative] React não disponível, retornando valores padrão');
     return {
       session: null,
@@ -176,7 +176,19 @@ export function useEmployeeAuthNative(): EmployeeAuthContextType {
     };
   }
 
-  const context = React.useContext(EmployeeAuthContext);
+  let context: EmployeeAuthContextType | null = null;
+  
+  try {
+    context = React.useContext(EmployeeAuthContext);
+  } catch (error) {
+    console.error('[useEmployeeAuthNative] Erro ao acessar contexto:', error);
+    return {
+      session: null,
+      login: async () => ({ success: false, error: 'Sistema indisponível' }),
+      logout: () => {},
+      loading: false
+    };
+  }
   
   if (!context) {
     console.warn('[useEmployeeAuthNative] Contexto não encontrado, retornando valores padrão');
