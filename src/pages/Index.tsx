@@ -1,11 +1,11 @@
 
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { LoadingSpinner } from '@/components/auth/LoadingSpinner';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useSimpleAuth();
 
   // Mostrar loading enquanto verifica autenticação
   if (loading) {

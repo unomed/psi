@@ -1,6 +1,6 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { AuthRoutes } from "./AuthRoutes";
 import { AdminRoutes } from "./AdminRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
@@ -18,7 +18,7 @@ import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
 import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
 
 export function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useSimpleAuth();
 
   console.log('[AppRoutes] Estado atual:', {
     hasUser: !!user,

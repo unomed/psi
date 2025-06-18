@@ -1,6 +1,6 @@
 
 import { useRoutePermissions } from '@/hooks/permissions/useRoutePermissions';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 
 interface MenuItemGuardProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export function MenuItemGuard({
   allowedRoles 
 }: MenuItemGuardProps) {
   const { canAccessRoute, getRouteAccessConfig } = useRoutePermissions();
-  const { userRole } = useAuth();
+  const { userRole } = useSimpleAuth();
 
   console.log('[MenuItemGuard] Checking access:', {
     userRole,
