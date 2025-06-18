@@ -1,84 +1,66 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PendingAssessment } from '@/types/employee-auth';
 
-interface CompletedAssessment {
-  assessmentId: string;
+interface PendingAssessment {
+  id: string;
   templateTitle: string;
-  completedAt: string;
-  status: 'completed';
+  dueDate: string;
+  status: string;
 }
 
 export function useEmployeeAssessments(employeeId: string) {
-  const [pendingAssessments, setPendingAssessments] = useState<PendingAssessment[]>([]);
-  const [assessments, setAssessments] = useState<CompletedAssessment[]>([]);
+  const [assessments, setAssessments] = useState<PendingAssessment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (employeeId) {
-      loadAssessments();
+    if (!employeeId) {
+      setLoading(false);
+      return;
     }
+
+    const loadAssessments = async () => {
+      try {
+        console.log(`[useEmployeeAssessments] Carregando avaliações para funcionário: ${employeeId}`);
+        
+        const { data, error } = await supabase
+          .from('scheduled_assessments')
+          .select(`
+            id,
+            template_id,
+            due_date,
+            status,
+            checklist_templates!inner(title)
+          `)
+          .eq('employee_id', employeeId)
+          .eq('status', 'pending')
+          .order('due_date', { ascending: true });
+
+        if (error) {
+          console.error('[useEmployeeAssessments] Erro ao carregar avaliações:', error);
+          throw error;
+        }
+
+        const formattedAssessments = (data || []).map(assessment => ({
+          id: assessment.id,
+          templateTitle: assessment.checklist_templates?.title || 'Avaliação',
+          dueDate: assessment.due_date,
+          status: assessment.status
+        }));
+
+        setAssessments(formattedAssessments);
+        console.log(`[useEmployeeAssessments] ${formattedAssessments.length} avaliações carregadas`);
+      } catch (error: any) {
+        console.error('Erro ao carregar avaliações pendentes:', error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAssessments();
   }, [employeeId]);
 
-  const loadAssessments = async () => {
-    setLoading(true);
-    setIsLoading(true);
-    
-    try {
-      // Load pending assessments
-      const { data: pendingData, error: pendingError } = await supabase.rpc('get_employee_pending_assessments', {
-        p_employee_id: employeeId
-      });
-
-      if (pendingError) throw pendingError;
-      
-      const pending: PendingAssessment[] = (pendingData || []).map((item: any) => ({
-        assessmentId: item.assessment_id,
-        templateTitle: item.template_title,
-        templateDescription: item.template_description,
-        scheduledDate: item.scheduled_date,
-        linkUrl: item.link_url,
-        daysRemaining: item.days_remaining
-      }));
-
-      setPendingAssessments(pending);
-
-      // Load completed assessments
-      const { data: completedData, error: completedError } = await supabase
-        .from('assessment_responses')
-        .select(`
-          id,
-          completed_at,
-          checklist_templates!inner(title)
-        `)
-        .eq('employee_id', employeeId)
-        .order('completed_at', { ascending: false });
-
-      if (completedError) throw completedError;
-
-      const completed: CompletedAssessment[] = (completedData || []).map((item: any) => ({
-        assessmentId: item.id,
-        templateTitle: item.checklist_templates?.title || 'Avaliação',
-        completedAt: item.completed_at,
-        status: 'completed' as const
-      }));
-
-      setAssessments(completed);
-    } catch (error) {
-      console.error('Erro ao carregar avaliações:', error);
-    } finally {
-      setLoading(false);
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    pendingAssessments,
-    assessments,
-    loading,
-    isLoading,
-    refresh: loadAssessments
-  };
+  return { assessments, loading, error };
 }
