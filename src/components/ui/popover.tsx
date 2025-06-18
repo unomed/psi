@@ -5,24 +5,69 @@ import { cn } from "@/lib/utils"
 // POPOVER NATIVO - SEM RADIX UI
 const Popover = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<"div"> & { children: React.ReactNode }
->(({ children, className, ...props }, ref) => (
-  <div ref={ref} className={cn("relative inline-block", className)} {...props}>
-    {children}
-  </div>
-))
+  React.ComponentPropsWithoutRef<"div"> & { 
+    children: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }
+>(({ children, className, open, onOpenChange, ...props }, ref) => {
+  const [isOpen, setIsOpen] = React.useState(open || false);
+
+  React.useEffect(() => {
+    if (open !== undefined) {
+      setIsOpen(open);
+    }
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
+
+  return (
+    <div ref={ref} className={cn("relative inline-block", className)} {...props}>
+      {React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+          if (child.type === PopoverTrigger) {
+            return React.cloneElement(child as any, { 
+              onClick: () => handleOpenChange(!isOpen),
+              ...child.props 
+            });
+          }
+          if (child.type === PopoverContent) {
+            return isOpen ? React.cloneElement(child as any, child.props) : null;
+          }
+        }
+        return child;
+      })}
+    </div>
+  );
+});
 Popover.displayName = "Popover"
 
 const PopoverTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentPropsWithoutRef<"button">
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={className}
-    {...props}
-  />
-))
+  React.ComponentPropsWithoutRef<"button"> & {
+    asChild?: boolean;
+  }
+>(({ className, asChild, children, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      ...props,
+      className: cn(className, children.props.className),
+    });
+  }
+
+  return (
+    <button
+      ref={ref}
+      className={className}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
 PopoverTrigger.displayName = "PopoverTrigger"
 
 const PopoverContent = React.forwardRef<
@@ -45,7 +90,7 @@ const PopoverContent = React.forwardRef<
     style={{ marginTop: sideOffset }}
     {...props}
   />
-))
+));
 PopoverContent.displayName = "PopoverContent"
 
 export { Popover, PopoverTrigger, PopoverContent }
