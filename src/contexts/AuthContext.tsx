@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -48,23 +48,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
-  // Fetch user role when session changes
-  React.useEffect(() => {
+  // Fetch user role when session changes - com debounce
+  useEffect(() => {
     if (user?.id) {
-      fetchUserRoleAndCompanies(user.id);
+      // Debounce para evitar chamadas múltiplas
+      const timeoutId = setTimeout(() => {
+        fetchUserRoleAndCompanies(user.id);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     } else {
+      // Limpar cache quando usuário sai
       clearCache();
     }
   }, [user?.id, fetchUserRoleAndCompanies, clearCache]);
 
   const isLoading = authLoading || roleLoading;
 
-  // Implementar ações de auth
+  // Implementar ações de auth diretamente no contexto - SEM useNavigate
   const signIn = async (email: string, password: string) => {
     try {
       console.log("[AuthProvider] Iniciando processo de login");
       
-      // Limpar estado anterior
+      // Limpar estado anterior antes de tentar login
       cleanupAuthState();
       
       // Tentar logout global primeiro
@@ -72,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (signOutError) {
         console.warn("[AuthProvider] Erro ao fazer logout prévio:", signOutError);
+        // Continuar mesmo se der erro
       }
       
       const { error, data } = await supabase.auth.signInWithPassword({ 
@@ -125,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (authData.user && role) {
+        // Use type assertion to match the expected type in the database
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
@@ -166,6 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (signOutError) {
         console.warn("[AuthProvider] Erro no logout do Supabase:", signOutError);
+        // Continuar mesmo se der erro
       }
       
       toast({
@@ -173,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Até breve!"
       });
       
-      // Forçar redirecionamento
+      // Forçar redirecionamento via window.location para garantir limpeza completa
       setTimeout(() => {
         window.location.href = '/';
       }, 100);
@@ -187,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Memoizar o valor do contexto
+  // Memoizar o valor do contexto para evitar re-renders desnecessários
   const contextValue = useMemo(() => ({
     session,
     user,
