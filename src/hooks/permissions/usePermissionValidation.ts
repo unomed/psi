@@ -1,5 +1,5 @@
-
-import { useAuth } from '@/contexts/AuthContext';
+import { useMemo } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useCheckPermission } from '@/hooks/useCheckPermission';
 
 export function usePermissionValidation() {

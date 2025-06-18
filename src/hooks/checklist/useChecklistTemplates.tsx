@@ -1,15 +1,9 @@
-
-import { useQuery } from "@tanstack/react-query";
-import { ChecklistTemplate } from "@/types/checklist";
-import { 
-  fetchChecklistTemplates, 
-  updateChecklistTemplate,
-  deleteChecklistTemplate,
-  copyTemplateForCompany,
-  saveChecklistTemplate 
-} from "@/services/checklist";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ChecklistTemplate } from "@/types/checklist";
+import { useAuth } from '@/hooks/useAuth';
 
 export function useChecklistTemplates() {
   const { user, hasRole } = useAuth();

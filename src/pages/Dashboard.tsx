@@ -1,46 +1,27 @@
-
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardMetricsReal } from "@/components/dashboard/DashboardMetricsReal";
-import { DashboardQuickActions } from "@/components/dashboard/DashboardQuickActions";
-import { RecentAssessmentsReal } from "@/components/dashboard/RecentAssessmentsReal";
-import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
+import { RoleCheck } from '@/components/auth/RoleCheck';
 
 export default function Dashboard() {
-  const { userRole, userCompanies } = useAuth();
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    // Auto-select first company for non-superadmin users
-    if (userRole !== 'superadmin' && userCompanies.length > 0) {
-      return userCompanies[0].companyId;
-    }
-    return null;
-  });
-
-  const handleCompanyChange = (companyId: string) => {
-    // Convert empty string back to null for "all companies"
-    setSelectedCompanyId(companyId || null);
-  };
+  const { user } = useAuth();
 
   return (
-    <div className="space-y-8">
-      <DashboardHeader 
-        title="Dashboard"
-        description="Visão geral do sistema de avaliação psicossocial"
-      />
+    <RoleCheck>
+      <div className="w-full max-w-7xl mx-auto p-6">
+        <DashboardHeader />
 
-      <CompanySelectorReal
-        selectedCompanyId={selectedCompanyId}
-        onCompanyChange={handleCompanyChange}
-      />
-
-      <DashboardMetricsReal companyId={selectedCompanyId} />
-
-      <DashboardQuickActions />
-
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-1">
-        <RecentAssessmentsReal companyId={selectedCompanyId} />
+        <div className="mt-8 space-y-6">
+          <WelcomeBanner user={user} />
+          <DashboardMetrics />
+          <QuickActions />
+          <RecentActivity />
+        </div>
       </div>
-    </div>
+    </RoleCheck>
   );
 }

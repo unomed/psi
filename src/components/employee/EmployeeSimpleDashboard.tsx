@@ -9,6 +9,7 @@ import { WellnessCard } from "./modern/WellnessCard";
 import { DailyHealthMessage } from "./modern/DailyHealthMessage";
 import { ModernMoodSelector } from "./modern/ModernMoodSelector";
 import { QuestionnaireStatsCard } from "./modern/QuestionnaireStatsCard";
+import { AssessmentCard } from "./AssessmentCard";
 
 interface Assessment {
   id: string;
@@ -33,14 +34,14 @@ export function EmployeeSimpleDashboard({
   const { assessments, loading } = useEmployeeAssessments(employeeId);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
-  // Convert assessments to Assessment interface
+  // Convert assessments to Assessment interface with proper type casting
   const convertedAssessments: Assessment[] = assessments.map(assessment => ({
     id: assessment.id,
     title: assessment.title || assessment.template_name || 'Avaliação sem título',
-    status: assessment.status,
-    dueDate: assessment.dueDate,
-    completedAt: assessment.completedAt,
-    description: assessment.description
+    status: (assessment.status === 'completed' || assessment.status === 'pending') ? assessment.status : 'pending',
+    dueDate: assessment.dueDate ? new Date(assessment.dueDate) : undefined,
+    completedAt: assessment.completedAt ? new Date(assessment.completedAt) : undefined,
+    description: assessment.description || undefined
   }));
 
   // Separate assessments by status

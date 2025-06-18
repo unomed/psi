@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { RiskAssessment, RiskLevel } from "@/types/risk";
+import { useAuth } from '@/hooks/useAuth';
 
 export interface IntegratedRiskAssessment {
   id: string;

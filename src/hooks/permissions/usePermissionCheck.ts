@@ -1,6 +1,5 @@
-
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { PermissionService } from '@/services/permissions/permissionService';
 import { getAllPermissions, getDefaultPermissionsForRole } from '@/utils/permissions/defaultPermissions';
 

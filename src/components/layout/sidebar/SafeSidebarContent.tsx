@@ -13,7 +13,7 @@ import {
   portaisItems
 } from './menuItems';
 import { settingsItems } from './settingsItems';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 export function SafeSidebarContent() {
   const { userRole } = useAuth();

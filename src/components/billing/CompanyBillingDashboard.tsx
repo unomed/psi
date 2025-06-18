@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CreditCard, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useCompanyBilling } from "@/hooks/billing/useCompanyBilling";
 import { useBillingRecords } from "@/hooks/billing/useBillingRecords";
 import { formatCurrency } from "@/lib/utils";
