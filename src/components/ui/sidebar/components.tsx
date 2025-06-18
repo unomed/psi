@@ -1,4 +1,5 @@
 
+
 // Export all components individually to avoid conflicts
 export { SidebarContent } from "./base/content";
 export { 
@@ -9,20 +10,15 @@ export {
 export { 
   SidebarMenu, 
   SidebarMenuButton, 
-  SidebarMenuItem, 
-  SidebarMenuSkeleton, 
-  SidebarMenuSub, 
-  SidebarMenuSubButton, 
-  SidebarMenuSubItem 
+  SidebarMenuItem,
+  SidebarMenuLink
 } from "./base/menu";
-export { SidebarSection } from "./base/sections";
 export { 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarFooter, 
-  SidebarRail, 
-  SidebarInset, 
-  SidebarInput, 
-  SidebarTrigger, 
-  SidebarSeparator 
+  SidebarHeader,
+  SidebarFooter,
+  SidebarTrigger
+} from "./base/sections";
+export { 
+  Sidebar
 } from "./base/sidebar";
+
