@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/layout/AuthLayout';
-import { LoginForm } from '@/components/auth/login/LoginForm';
+import { AdaptiveLoginForm } from '@/components/auth/login/AdaptiveLoginForm';
 import { Shield } from 'lucide-react';
 
 export default function Login() {
@@ -34,7 +34,7 @@ export default function Login() {
               Acesso completo ao sistema de gestão
             </p>
           </div>
-          <LoginForm />
+          <AdaptiveLoginForm />
         </div>
       </div>
     </AuthLayout>
