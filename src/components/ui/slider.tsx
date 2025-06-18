@@ -2,17 +2,19 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-interface SliderProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> {
+interface SliderProps {
+  className?: string;
   value?: number[];
   onValueChange?: (value: number[]) => void;
   defaultValue?: number[];
   min?: number;
   max?: number;
   step?: number;
+  disabled?: boolean;
 }
 
 const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
-  ({ className, value, onValueChange, defaultValue = [50], min = 0, max = 100, step = 1, ...props }, ref) => {
+  ({ className, value, onValueChange, defaultValue = [50], min = 0, max = 100, step = 1, disabled, ...props }, ref) => {
     const [internalValue, setInternalValue] = React.useState(defaultValue);
     
     const isControlled = value !== undefined;
@@ -54,6 +56,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
           min={min}
           max={max}
           step={step}
+          disabled={disabled}
           {...props}
         />
         <div 

@@ -154,7 +154,6 @@ export const useToast = () => {
   return context;
 };
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
 export {
