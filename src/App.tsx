@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { AppRoutes } from "@/components/routing/AppRoutes";
 import { AdaptiveToastSystem } from "@/components/ui/AdaptiveToastSystem";
-import { useReactStability } from "@/hooks/useReactStability";
 import React from "react";
 
 const queryClient = new QueryClient({
@@ -19,17 +18,37 @@ const queryClient = new QueryClient({
   },
 });
 
+// Função simples para verificar se React está estável SEM usar hooks
+function isReactStableSync(): boolean {
+  try {
+    // Verificações básicas sem usar hooks
+    if (typeof React === 'undefined') return false;
+    if (typeof React.useState !== 'function') return false;
+    if (typeof React.useEffect !== 'function') return false;
+    
+    // Verificar se há um dispatcher React ativo
+    const ReactInternals = (React as any).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+    if (!ReactInternals) return false;
+    
+    const dispatcher = ReactInternals.ReactCurrentDispatcher?.current;
+    return dispatcher !== null && dispatcher !== undefined;
+  } catch {
+    return false;
+  }
+}
+
 // Componente que só renderiza TooltipProvider quando React está estável
 function SafeTooltipProvider({ children }: { children: React.ReactNode }) {
-  const { isStable, isChecking } = useReactStability();
+  // Verificação síncrona SEM hooks
+  const isStable = isReactStableSync();
 
-  // Se ainda está verificando ou não está estável, renderizar sem TooltipProvider
-  if (isChecking || !isStable) {
-    console.log('[SafeTooltipProvider] Renderizando sem TooltipProvider - React instável');
+  // Se não está estável, renderizar sem TooltipProvider
+  if (!isStable) {
+    console.log('[SafeTooltipProvider] React não estável, renderizando sem TooltipProvider');
     return <>{children}</>;
   }
 
-  // Importação dinâmica do TooltipProvider apenas quando estável
+  // Se estável, tentar carregar TooltipProvider
   try {
     const { TooltipProvider } = require("@/components/ui/tooltip");
     return (
@@ -54,7 +73,7 @@ function AppContent() {
 }
 
 function App() {
-  console.log('[App] Inicializando aplicação com arquitetura robusta e sistema de estabilidade');
+  console.log('[App] Inicializando aplicação com verificação de estabilidade aprimorada');
   
   // Enhanced error boundary for critical initialization issues
   try {
