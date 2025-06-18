@@ -71,14 +71,8 @@ export function NativeLoginForm() {
     try {
       await signIn(formData.email, formData.password);
       
-      // Mostrar notificação de sucesso
-      try {
-        if (window.showAdvancedToast) {
-          window.showAdvancedToast('Login realizado com sucesso!', 'success');
-        }
-      } catch {
-        console.log('Login realizado com sucesso!');
-      }
+      // Log de sucesso simples
+      console.log('Login realizado com sucesso!');
       
       // Definir flag para redirecionamento
       setShouldRedirect(true);
@@ -100,15 +94,7 @@ export function NativeLoginForm() {
       }
       
       setLoginError(errorMessage);
-      
-      // Mostrar erro com sistema nativo
-      try {
-        if (window.showAdvancedToast) {
-          window.showAdvancedToast(errorMessage, 'error');
-        }
-      } catch {
-        console.error('Erro no login:', errorMessage);
-      }
+      console.error('Erro no login:', errorMessage);
     } finally {
       setIsLoading(false);
     }

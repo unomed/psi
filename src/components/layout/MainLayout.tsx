@@ -1,5 +1,5 @@
 
-import { SidebarProviderRobust } from "@/components/ui/sidebar/SidebarProviderRobust";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarErrorBoundary } from "@/components/ui/sidebar/SidebarErrorBoundary";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -14,7 +14,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarErrorBoundary>
       <NotificationProvider>
-        <SidebarProviderRobust>
+        <SidebarProvider>
           <div className="min-h-screen flex w-full bg-background">
             <AppSidebar />
             <div className="flex-1">
@@ -29,7 +29,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               </main>
             </div>
           </div>
-        </SidebarProviderRobust>
+        </SidebarProvider>
       </NotificationProvider>
     </SidebarErrorBoundary>
   );
