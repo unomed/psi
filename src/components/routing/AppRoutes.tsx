@@ -25,7 +25,6 @@ export function AppRoutes() {
     currentPath: window.location.pathname
   });
 
-  // Loading melhorado com detecção de problemas
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -41,14 +40,12 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Rotas de autenticação - PRIORIDADE MÁXIMA com Error Boundary */}
+      {/* Rotas de autenticação - PRIORIDADE MÁXIMA */}
       <Route path="/auth/*" element={
         <FormErrorBoundary>
           <AuthRoutes />
         </FormErrorBoundary>
       } />
-      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-      <Route path="/register" element={<Navigate to="/auth/register" replace />} />
 
       {/* Nova rota para checklist com validação */}
       <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
@@ -99,7 +96,7 @@ export function AppRoutes() {
         </EmployeeErrorBoundary>
       } />
 
-      {/* Redirecionamento do portal do funcionário */}
+      {/* Redirecionamentos diretos sem múltiplas camadas */}
       <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />
       <Route path="/portal" element={<Navigate to="/employee-portal" replace />} />
 
@@ -130,7 +127,7 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento padrão corrigido para não interferir com rotas de funcionário */}
+      {/* Redirecionamento padrão simplificado */}
       <Route 
         path="/" 
         element={
