@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Link, Mail, Trash2 } from "lucide-react";
 import { ScheduledAssessment } from "@/types";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AssessmentListActionsProps {
   assessment: ScheduledAssessment;

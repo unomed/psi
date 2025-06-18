@@ -1,7 +1,6 @@
-
 import React from "react";
 import { useCompanies } from "@/hooks/useCompanies";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Select,
   SelectContent,
@@ -82,4 +81,3 @@ export function CompanySelector({
     </div>
   );
 }
-

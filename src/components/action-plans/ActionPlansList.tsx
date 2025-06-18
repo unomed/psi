@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
-import { ActionPlanCard } from './ActionPlanCard';
-import { ActionPlanForm } from './ActionPlanForm';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,15 +23,23 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Search } from 'lucide-react';
 import { useActionPlans, ActionPlan } from '@/hooks/useActionPlans';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
-export function ActionPlansList() {
+interface ActionPlansListProps {
+  onCreatePlan: () => void;
+  onEditPlan: (plan: ActionPlan) => void;
+  onViewDetails: (plan: ActionPlan) => void;
+}
+
+export function ActionPlansList({ onCreatePlan, onEditPlan, onViewDetails }: ActionPlansListProps) {
+  const { userRole, userCompanies } = useAuth();
+  
   const { actionPlans, isLoading, createActionPlan, updateActionPlan, deleteActionPlan } = useActionPlans();
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<ActionPlan | null>(null);
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedPlan, setSelectedPlan] = React.useState<ActionPlan | null>(null);
 
   const filteredPlans = actionPlans.filter(plan =>
     plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -149,13 +157,14 @@ export function ActionPlansList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPlans.map((plan) => (
-            <ActionPlanCard
-              key={plan.id}
-              plan={plan}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-            />
+            <Card key={plan.id}>
+              <CardHeader>
+                <CardTitle>{plan.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {plan.description}
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -173,7 +182,7 @@ export function ActionPlansList() {
               }
             </DialogDescription>
           </DialogHeader>
-          <ActionPlanForm
+          {/*<ActionPlanForm
             plan={selectedPlan || undefined}
             onSubmit={selectedPlan ? handleUpdatePlan : handleCreatePlan}
             onCancel={() => {
@@ -181,7 +190,7 @@ export function ActionPlansList() {
               setSelectedPlan(null);
             }}
             isLoading={createActionPlan.isPending || updateActionPlan.isPending}
-          />
+          />*/}
         </DialogContent>
       </Dialog>
 

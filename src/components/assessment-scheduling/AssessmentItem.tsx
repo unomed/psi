@@ -1,9 +1,8 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Link, Mail, Edit, Copy } from "lucide-react";
 import { DeleteAssessmentButton } from "./DeleteAssessmentButton";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AssessmentItemProps {
   assessment: any;

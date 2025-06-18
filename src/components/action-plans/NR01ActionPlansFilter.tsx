@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNR01ActionPlans, NR01ActionPlan } from '@/hooks/action-plans/useNR01ActionPlans';
 import { usePsychosocialRiskData } from '@/hooks/action-plans/usePsychosocialRiskData';
 import { useSectors } from '@/hooks/sectors/useSectors';
 import { useActionPlans } from '@/hooks/useActionPlans';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { DateRange } from 'react-day-picker';
 import { NR01RiskStatistics } from './nr01/NR01RiskStatistics';
 import { NR01FiltersSection } from './nr01/NR01FiltersSection';

@@ -1,6 +1,5 @@
 
-import React from 'react';
-import { useSafeState, useSafeEffect } from '@/hooks/useSafeReact';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Smartphone, X, Download, Plus } from 'lucide-react';
@@ -12,18 +11,12 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InstallPrompt() {
-  // Check React availability first
-  if (typeof React === 'undefined' || !React) {
-    console.warn('[InstallPrompt] React not available');
-    return null;
-  }
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
-  const [deferredPrompt, setDeferredPrompt] = useSafeState<BeforeInstallPromptEvent | null>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useSafeState(false);
-  const [isIOS, setIsIOS] = useSafeState(false);
-  const [isStandalone, setIsStandalone] = useSafeState(false);
-
-  useSafeEffect(() => {
+  useEffect(() => {
     console.log('[InstallPrompt] Inicializando...');
     
     // Detectar se é iOS

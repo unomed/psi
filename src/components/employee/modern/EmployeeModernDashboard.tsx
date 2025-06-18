@@ -110,11 +110,11 @@ export function EmployeeModernDashboard({
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Coluna Principal - Humor e Mensagens */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Mensagem Diária de Saúde */}
-                <DailyHealthMessage employeeId={session?.employee?.employeeId || ""} />
+                {/* Mensagem Diária de Saúde - removendo employeeId prop */}
+                <DailyHealthMessage />
 
-                {/* Seletor de Humor Moderno */}
-                <ModernMoodSelector employeeId={session?.employee?.employeeId || ""} />
+                {/* Seletor de Humor Moderno - removendo employeeId prop */}
+                <ModernMoodSelector />
               </div>
 
               {/* Coluna Lateral - Estatísticas e Bem-estar */}

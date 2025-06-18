@@ -1,4 +1,3 @@
-
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ScheduledAssessment } from "@/types/assessment";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +9,7 @@ import { ResultsList } from "./lists/ResultsList";
 import { EmailChecklistForm } from "./email/EmailChecklistForm";
 import { EmailHistoryTable } from "./email/EmailHistoryTable";
 import { useEmailSending } from "@/hooks/checklists/useEmailSending";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ChecklistTabsProps {
   activeTab: string;
