@@ -6,4 +6,8 @@ import "./index.css";
 
 console.log('[Main] Portal do Funcionário iniciando...');
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
