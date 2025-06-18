@@ -11,7 +11,7 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
+import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 
 interface EmployeeModernSidebarProps {
   currentView: string;
@@ -27,7 +27,7 @@ export function EmployeeModernSidebar({
   hasNewAssessment = false
 }: EmployeeModernSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useEmployeeAuth();
+  const { logout } = useEmployeeAuthNative();
 
   const handleLogout = () => {
     logout();
