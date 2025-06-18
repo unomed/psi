@@ -28,13 +28,17 @@ export function useSafeState<T>(initialState: T | (() => T)) {
   try {
     if (typeof React === 'undefined' || typeof React.useState === 'undefined') {
       console.error('[useSafeState] React useState não disponível');
-      return [initialState, () => {}] as const;
+      // Return the actual initial value, not a function
+      const actualValue = typeof initialState === 'function' ? (initialState as () => T)() : initialState;
+      return [actualValue, () => {}] as const;
     }
     
     return useState(initialState);
   } catch (error) {
     console.error('[useSafeState] Erro ao usar useState:', error);
-    return [initialState, () => {}] as const;
+    // Return the actual initial value, not a function
+    const actualValue = typeof initialState === 'function' ? (initialState as () => T)() : initialState;
+    return [actualValue, () => {}] as const;
   }
 }
 
