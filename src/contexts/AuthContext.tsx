@@ -1,7 +1,8 @@
+
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useUserRoleSafe } from '@/hooks/useUserRoleSafe';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,26 +47,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { session, user, loading: authLoading } = useAuthSession();
   
-  // Call useUserRole directly at the top level - no more useMemo wrapping
-  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
+  // Use the safer version of useUserRole
+  const { 
+    userRole, 
+    userCompanies, 
+    roleLoading, 
+    fetchUserRoleAndCompanies, 
+    clearCache,
+    isInitialized 
+  } = useUserRoleSafe();
+  
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
-  // Fetch user role when session changes - com debounce
+  // Fetch user role when session changes - with safety checks
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && isInitialized) {
       // Debounce para evitar chamadas múltiplas
       const timeoutId = setTimeout(() => {
         fetchUserRoleAndCompanies(user.id);
       }, 100);
 
       return () => clearTimeout(timeoutId);
-    } else {
+    } else if (!user && isInitialized) {
       // Limpar cache quando usuário sai
       clearCache();
     }
-  }, [user?.id, fetchUserRoleAndCompanies, clearCache]);
+  }, [user?.id, fetchUserRoleAndCompanies, clearCache, isInitialized]);
 
-  const isLoading = authLoading || roleLoading;
+  const isLoading = authLoading || roleLoading || !isInitialized;
 
   // Implementar ações de auth diretamente no contexto para evitar dependência circular
   const signIn = async (email: string, password: string) => {

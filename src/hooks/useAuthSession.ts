@@ -14,6 +14,7 @@ export function useAuthSession() {
   const subscriptionRef = useRef<any>(null);
   const initialCheckDone = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const mountedRef = useRef(true);
 
   useEffect(() => {
     // Evitar múltiplas inicializações
@@ -22,19 +23,20 @@ export function useAuthSession() {
     }
     
     let mounted = true;
+    mountedRef.current = true;
     initialized.current = true;
 
     // Timeout reduzido para melhor UX
     timeoutRef.current = setTimeout(() => {
-      if (mounted && loading) {
+      if (mounted && loading && mountedRef.current) {
         console.warn('[useAuthSession] Timeout atingido, definindo loading como false');
         setLoading(false);
       }
-    }, 3000); // Reduzido de 10s para 3s
+    }, 3000);
 
     // Primeiro verificar sessão existente
     const checkInitialSession = async () => {
-      if (initialCheckDone.current) return;
+      if (initialCheckDone.current || !mountedRef.current) return;
       initialCheckDone.current = true;
       
       try {
@@ -50,7 +52,7 @@ export function useAuthSession() {
           }
         }
         
-        if (!mounted) return;
+        if (!mounted || !mountedRef.current) return;
         
         // Validar sessão se existe
         let validSession = currentSession;
@@ -68,18 +70,22 @@ export function useAuthSession() {
           }
         }
         
-        setSession(validSession);
-        setUser(validSession?.user ?? null);
-        setLoading(false);
+        if (mountedRef.current) {
+          setSession(validSession);
+          setUser(validSession?.user ?? null);
+          setLoading(false);
+        }
         
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
       } catch (error) {
         console.error("Erro na verificação de autenticação:", error);
-        setSession(null);
-        setUser(null);
-        setLoading(false);
+        if (mountedRef.current) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        }
         
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
@@ -91,7 +97,7 @@ export function useAuthSession() {
     const setupAuthListener = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, currentSession) => {
-          if (!mounted) return;
+          if (!mounted || !mountedRef.current) return;
           
           try {
             console.log('[useAuthSession] Auth state change:', event);
@@ -104,12 +110,14 @@ export function useAuthSession() {
               }
             }
             
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            setLoading(false);
+            if (mountedRef.current) {
+              setSession(currentSession);
+              setUser(currentSession?.user ?? null);
+              setLoading(false);
+            }
             
             // Toasts otimizados - apenas para eventos relevantes
-            if (mounted && event === 'SIGNED_IN' && currentSession) {
+            if (mounted && mountedRef.current && event === 'SIGNED_IN' && currentSession) {
               toast({
                 title: "Login realizado com sucesso",
                 description: "Bem-vindo de volta!"
@@ -122,9 +130,11 @@ export function useAuthSession() {
             }
           } catch (error) {
             console.error("Erro ao processar mudança de autenticação:", error);
-            setSession(null);
-            setUser(null);
-            setLoading(false);
+            if (mountedRef.current) {
+              setSession(null);
+              setUser(null);
+              setLoading(false);
+            }
           }
         }
       );
@@ -134,7 +144,7 @@ export function useAuthSession() {
 
     // Executar verificação inicial primeiro, depois configurar listener
     checkInitialSession().then(() => {
-      if (mounted) {
+      if (mounted && mountedRef.current) {
         setupAuthListener();
       }
     });
@@ -142,6 +152,7 @@ export function useAuthSession() {
     // Cleanup
     return () => {
       mounted = false;
+      mountedRef.current = false;
       initialized.current = false;
       initialCheckDone.current = false;
       

@@ -7,7 +7,7 @@ import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminGuard } from "@/components/auth/AdminGuard";
-import { EmployeeGuard } from "@/components/auth/EmployeeGuard";
+import { SafeEmployeeGuard } from "@/components/auth/SafeEmployeeGuard";
 import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
@@ -65,9 +65,9 @@ export function AppRoutes() {
       <Route path="/employee-portal" element={
         <EmployeeErrorBoundary>
           <EmployeeAuthNativeProvider>
-            <EmployeeGuard>
+            <SafeEmployeeGuard>
               <EmployeePortal />
-            </EmployeeGuard>
+            </SafeEmployeeGuard>
           </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
@@ -75,9 +75,9 @@ export function AppRoutes() {
       <Route path="/employee-portal/:templateId" element={
         <EmployeeErrorBoundary>
           <EmployeeAuthNativeProvider>
-            <EmployeeGuard>
+            <SafeEmployeeGuard>
               <EmployeePortal />
-            </EmployeeGuard>
+            </SafeEmployeeGuard>
           </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
