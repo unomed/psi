@@ -1,181 +1,140 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Lock, AlertCircle } from "lucide-react";
+import { Loader2, User, Lock } from "lucide-react";
 import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
-import { showSimpleToast } from "@/components/ui/simple-toast";
 
 interface EmployeeNativeLoginFormProps {
-  onLoginSuccess: (employeeData: any) => void;
-  expectedEmployeeId?: string | null;
-  assessmentToken?: string | null;
-  templateId?: string;
-  assessmentId?: string | null;
+  onLoginSuccess?: () => void;
 }
 
-export function EmployeeNativeLoginForm({ 
-  onLoginSuccess, 
-  expectedEmployeeId,
-  assessmentToken,
-  templateId,
-  assessmentId
-}: EmployeeNativeLoginFormProps) {
+export function EmployeeNativeLoginForm({ onLoginSuccess }: EmployeeNativeLoginFormProps) {
+  const { login, loading } = useEmployeeAuthNative();
   const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
-  const { login } = useEmployeeAuthNative();
 
   const formatCPF = (value: string) => {
+    // Remove tudo que não é dígito
     const digits = value.replace(/\D/g, '');
-    return digits
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .slice(0, 14);
-  };
-
-  const getLastFourDigits = (cpfValue: string) => {
-    const digits = cpfValue.replace(/\D/g, '');
-    if (digits.length >= 4) {
-      return digits.slice(-4);
+    
+    // Aplica máscara de CPF
+    if (digits.length <= 11) {
+      return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
     }
-    return '';
+    
+    return value;
   };
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedCpf = formatCPF(e.target.value);
-    setCpf(formattedCpf);
-    
-    const lastFour = getLastFourDigits(formattedCpf);
-    if (lastFour.length === 4) {
-      setPassword(lastFour);
-    }
+    const formatted = formatCPF(e.target.value);
+    setCpf(formatted);
+    if (error) setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+
+    // Validações básicas
+    const cleanCpf = cpf.replace(/\D/g, '');
+    if (cleanCpf.length !== 11) {
+      setError("CPF deve ter 11 dígitos");
+      return;
+    }
+
+    if (password.length !== 4) {
+      setError("Senha deve ter exatamente 4 dígitos");
+      return;
+    }
 
     try {
-      const cleanCpf = cpf.replace(/\D/g, '');
+      const success = await login(cleanCpf, password);
       
-      if (cleanCpf.length !== 11) {
-        setError("CPF deve conter 11 dígitos");
-        return;
-      }
-
-      if (password.length !== 4) {
-        setError("Senha deve conter 4 dígitos");
-        return;
-      }
-
-      console.log(`[EmployeeNativeLoginForm] Tentando login com CPF: ${cleanCpf.slice(0, 3)}***`);
-
-      const result = await login(cleanCpf, password);
-      
-      if (result.success) {
-        showSimpleToast({
-          message: "Login realizado com sucesso!",
-          type: "success"
-        });
+      if (success) {
+        console.log('[EmployeeNativeLoginForm] Login realizado com sucesso');
         
-        onLoginSuccess(result);
+        // Chamar callback se fornecido
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
+        
+        // Redirecionamento direto via window.location para garantir limpeza
+        setTimeout(() => {
+          window.location.href = '/portal';
+        }, 100);
       } else {
-        console.error(`[EmployeeNativeLoginForm] Erro no login:`, result.error);
-        setError(result.error || "Erro no login. Verifique suas credenciais.");
+        setError("CPF ou senha inválidos");
       }
-    } catch (error) {
-      console.error("Erro no login:", error);
-      setError("Erro interno. Tente novamente mais tarde.");
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      console.error('[EmployeeNativeLoginForm] Erro no login:', err);
+      setError("Erro ao realizar login. Tente novamente.");
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl">
-          Entrar no Portal
-        </CardTitle>
-        <p className="text-muted-foreground">
-          {assessmentId ? 
-            "Faça login para acessar sua avaliação" : 
-            "Digite seu CPF e senha para continuar"
-          }
-        </p>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl text-center">Login Funcionário</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="cpf" className="text-sm font-medium leading-none">
+            <label htmlFor="cpf" className="text-sm font-medium">
               CPF
             </label>
             <div className="relative">
               <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 id="cpf"
                 type="text"
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={handleCpfChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
+                className="pl-10"
                 maxLength={14}
-                disabled={isLoading}
+                required
+                disabled={loading}
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium leading-none">
+            <label htmlFor="password" className="text-sm font-medium">
               Senha (últimos 4 dígitos do CPF)
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 id="password"
                 type="password"
                 placeholder="0000"
                 value={password}
-                onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                required
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setPassword(value);
+                  if (error) setError("");
+                }}
+                className="pl-10"
                 maxLength={4}
-                disabled={isLoading}
+                required
+                disabled={loading}
               />
             </div>
           </div>
 
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+              {error}
+            </div>
           )}
 
-          {assessmentId && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Você foi direcionado para completar uma avaliação. Faça login para continuar.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isLoading}
-          >
-            {isLoading ? (
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Entrando...
               </>
             ) : (
@@ -183,6 +142,10 @@ export function EmployeeNativeLoginForm({
             )}
           </Button>
         </form>
+
+        <div className="mt-4 text-center text-sm text-gray-600">
+          <p>Use seu CPF e os últimos 4 dígitos como senha</p>
+        </div>
       </CardContent>
     </Card>
   );

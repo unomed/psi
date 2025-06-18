@@ -13,47 +13,8 @@ import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
 import { EmployeeLoginPage } from "@/pages/EmployeeLoginPage";
 import { EmployeePortalPage } from "@/pages/EmployeePortalPage";
-import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 import Login from "@/pages/auth/Login";
 import Index from "@/pages/Index";
-
-// Componente para rotas de funcionários
-function EmployeeRoutes() {
-  const { session, loading } = useEmployeeAuthNative();
-
-  console.log('[EmployeeRoutes] Estado funcionário:', {
-    hasSession: !!session,
-    isAuthenticated: session?.isAuthenticated,
-    loading
-  });
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-600">Carregando Portal do Funcionário...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <Routes>
-      {!session?.isAuthenticated ? (
-        <>
-          <Route path="/auth/employee" element={<EmployeeLoginPage />} />
-          <Route path="/*" element={<Navigate to="/auth/employee" replace />} />
-        </>
-      ) : (
-        <>
-          <Route path="/portal" element={<EmployeePortalPage />} />
-          <Route path="/*" element={<Navigate to="/portal" replace />} />
-        </>
-      )}
-    </Routes>
-  );
-}
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -83,15 +44,10 @@ export function AppRoutes() {
       {/* Página inicial - seletor de sistema */}
       <Route path="/" element={<Index />} />
 
-      {/* Rotas de funcionários - isoladas e simples */}
-      <Route path="/employee/*" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <EmployeeRoutes />
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-      
+      {/* Login administrativo */}
+      <Route path="/auth/login" element={<Login />} />
+
+      {/* Rotas de funcionários - isoladas e com contexto próprio */}
       <Route path="/auth/employee" element={
         <EmployeeErrorBoundary>
           <EmployeeAuthNativeProvider>
@@ -108,7 +64,7 @@ export function AppRoutes() {
         </EmployeeErrorBoundary>
       } />
 
-      {/* Nova rota para checklist com validação */}
+      {/* Rotas para checklist com validação */}
       <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
       <Route path="/checklist" element={<ChecklistPortal />} />
 
@@ -128,9 +84,6 @@ export function AppRoutes() {
           </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
-
-      {/* Login administrativo */}
-      <Route path="/auth/login" element={<Login />} />
 
       {/* Rotas administrativas protegidas */}
       {user && (
