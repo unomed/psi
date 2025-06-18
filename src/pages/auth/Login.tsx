@@ -1,29 +1,33 @@
 
 import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/layout/AuthLayout';
-import { LoginForm } from '@/components/auth/login/LoginForm';
+import { NativeLoginForm } from '@/components/auth/login/NativeLoginForm';
 import { Shield } from 'lucide-react';
 
 export default function Login() {
   return (
     <AuthLayout
-      title="Acesso ao Sistema"
+      title="Acesso Administrativo"
       description="Faça login para acessar o sistema de gestão"
       footer={
         <div className="w-full space-y-4">
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Não tem uma conta de administrador?{" "}
-              <Link to="/auth/register" className="underline text-primary">
-                Cadastre-se
+              É funcionário?{" "}
+              <Link to="/auth/employee" className="underline text-primary">
+                Acesse o Portal do Funcionário
               </Link>
             </p>
+          </div>
+          <div className="text-center">
+            <Link to="/" className="text-sm text-muted-foreground underline">
+              ← Voltar ao início
+            </Link>
           </div>
         </div>
       }
     >
       <div className="space-y-6">
-        {/* Formulário de Login */}
         <div className="space-y-4">
           <div className="text-center">
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-primary/10 rounded-lg mb-3">
@@ -34,7 +38,7 @@ export default function Login() {
               Acesso completo ao sistema de gestão
             </p>
           </div>
-          <LoginForm />
+          <NativeLoginForm />
         </div>
       </div>
     </AuthLayout>
