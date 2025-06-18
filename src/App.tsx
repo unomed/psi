@@ -2,10 +2,10 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
-import { SimpleRoutes } from "@/components/routing/SimpleRoutes";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { AppRoutes } from "@/components/routing/AppRoutes";
 
-// QueryClient configuração simples
+// QueryClient configuração
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -17,14 +17,14 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log('[App] Portal do Funcionário - Iniciando aplicação');
+  console.log('[App] Sistema Principal - Iniciando aplicação');
   
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <EmployeeAuthNativeProvider>
-          <SimpleRoutes />
-        </EmployeeAuthNativeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
