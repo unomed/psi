@@ -8,6 +8,7 @@ import { ChecklistResponseForm } from '@/components/checklists/ChecklistResponse
 import { supabase } from '@/integrations/supabase/client';
 import { useEmployeeAuthNative } from '@/contexts/EmployeeAuthNative';
 import { toast } from 'sonner';
+import { ChecklistTemplateType } from '@/types/checklist';
 
 interface AssessmentData {
   id: string;
@@ -16,7 +17,7 @@ interface AssessmentData {
     id: string;
     title: string;
     description: string;
-    type: string;
+    type: ChecklistTemplateType;
     scale_type: string;
     questions: any[];
     createdAt: Date;
@@ -104,7 +105,7 @@ export function AssessmentResponse() {
           id: template.id,
           title: template.title,
           description: template.description || '',
-          type: template.type,
+          type: template.type as ChecklistTemplateType,
           scale_type: template.scale_type,
           questions: questions || [],
           createdAt: new Date(template.created_at)
