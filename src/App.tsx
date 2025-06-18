@@ -1,6 +1,5 @@
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -8,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { AppRoutes } from "@/components/routing/AppRoutes";
 import { AdaptiveToastSystem } from "@/components/ui/AdaptiveToastSystem";
+import { useReactStability } from "@/hooks/useReactStability";
 import React from "react";
 
 const queryClient = new QueryClient({
@@ -18,6 +18,30 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Componente que só renderiza TooltipProvider quando React está estável
+function SafeTooltipProvider({ children }: { children: React.ReactNode }) {
+  const { isStable, isChecking } = useReactStability();
+
+  // Se ainda está verificando ou não está estável, renderizar sem TooltipProvider
+  if (isChecking || !isStable) {
+    console.log('[SafeTooltipProvider] Renderizando sem TooltipProvider - React instável');
+    return <>{children}</>;
+  }
+
+  // Importação dinâmica do TooltipProvider apenas quando estável
+  try {
+    const { TooltipProvider } = require("@/components/ui/tooltip");
+    return (
+      <TooltipProvider delayDuration={300}>
+        {children}
+      </TooltipProvider>
+    );
+  } catch (error) {
+    console.warn('[SafeTooltipProvider] Erro ao carregar TooltipProvider:', error);
+    return <>{children}</>;
+  }
+}
 
 function AppContent() {
   return (
@@ -38,11 +62,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <BrowserRouter>
-            <TooltipProvider delayDuration={300}>
+            <SafeTooltipProvider>
               <AppContent />
               <AdaptiveToastSystem />
               <Sonner />
-            </TooltipProvider>
+            </SafeTooltipProvider>
           </BrowserRouter>
         </ThemeProvider>
       </QueryClientProvider>

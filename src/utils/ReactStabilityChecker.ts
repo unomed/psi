@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 // Sistema robusto de verificação de estabilidade do React
 export class ReactStabilityChecker {
   private static instance: ReactStabilityChecker;
@@ -43,7 +45,6 @@ export class ReactStabilityChecker {
   private testReactGlobal(): boolean {
     try {
       return typeof window !== 'undefined' && 
-             typeof window.React !== 'undefined' &&
              typeof React !== 'undefined';
     } catch {
       return false;
