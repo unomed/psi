@@ -3,17 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { LoginForm } from './LoginForm';
 import { NativeLoginForm } from './NativeLoginForm';
 import { AuthErrorBoundary } from '../AuthErrorBoundary';
+import { useReactStability } from '@/hooks/useReactStability';
 
-// Função para detectar se react-hook-form está funcionando
-const isReactHookFormStable = (): boolean => {
+// Função melhorada para detectar se react-hook-form está funcionando
+const isReactHookFormStable = async (): Promise<boolean> => {
   try {
-    // Verificar se os hooks básicos estão funcionando
+    // Verificar se React hooks básicos estão funcionando
     if (typeof React === 'undefined' || !React.useContext || !React.useState) {
       return false;
     }
     
-    // Verificar se react-hook-form pode ser importado
-    const { useForm } = require('react-hook-form');
+    // Usar dynamic import em vez de require
+    const { useForm } = await import('react-hook-form');
     return typeof useForm === 'function';
   } catch (error) {
     console.warn('[AdaptiveLoginForm] react-hook-form não disponível:', error);
@@ -22,45 +23,53 @@ const isReactHookFormStable = (): boolean => {
 };
 
 export function AdaptiveLoginForm() {
+  const { isStable, isChecking } = useReactStability();
   const [useNativeForm, setUseNativeForm] = useState(false);
-  const [isCheckingStability, setIsCheckingStability] = useState(true);
+  const [isCheckingHookForm, setIsCheckingHookForm] = useState(true);
 
   useEffect(() => {
-    // Verificar estabilidade do React e react-hook-form
-    const checkStability = () => {
+    if (!isStable) {
+      console.log('[AdaptiveLoginForm] React não estável, usando formulário nativo');
+      setUseNativeForm(true);
+      setIsCheckingHookForm(false);
+      return;
+    }
+
+    // Se React está estável, verificar react-hook-form
+    const checkHookForm = async () => {
       try {
-        if (!isReactHookFormStable()) {
-          console.log('[AdaptiveLoginForm] Usando formulário nativo devido a problemas com react-hook-form');
+        const hookFormStable = await isReactHookFormStable();
+        if (!hookFormStable) {
+          console.log('[AdaptiveLoginForm] react-hook-form não estável, usando formulário nativo');
           setUseNativeForm(true);
         }
       } catch (error) {
-        console.error('[AdaptiveLoginForm] Erro na verificação de estabilidade:', error);
+        console.error('[AdaptiveLoginForm] Erro na verificação de react-hook-form:', error);
         setUseNativeForm(true);
       } finally {
-        setIsCheckingStability(false);
+        setIsCheckingHookForm(false);
       }
     };
 
-    // Verificação com pequeno delay para aguardar estabilização
-    const timeoutId = setTimeout(checkStability, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, []);
+    checkHookForm();
+  }, [isStable]);
 
-  // Mostrar loading durante verificação
-  if (isCheckingStability) {
+  // Mostrar loading durante verificações
+  if (isChecking || isCheckingHookForm) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center space-y-2">
           <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Carregando formulário...</p>
+          <p className="text-sm text-muted-foreground">
+            {isChecking ? 'Verificando estabilidade...' : 'Carregando formulário...'}
+          </p>
         </div>
       </div>
     );
   }
 
   // Se deve usar formulário nativo, renderizar diretamente
-  if (useNativeForm) {
+  if (useNativeForm || !isStable) {
     return <NativeLoginForm />;
   }
 

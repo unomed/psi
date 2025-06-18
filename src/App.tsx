@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toaster";
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,9 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ErrorBoundary } from "@/components/error-boundary/ErrorBoundary";
 import { AppRoutes } from "@/components/routing/AppRoutes";
-import { SafeLazyToaster } from "@/components/ui/lazy-toaster";
+import { AdaptiveToastSystem } from "@/components/ui/AdaptiveToastSystem";
 import React from "react";
-import { EnhancedToastSystem } from "@/components/ui/enhanced-toast-system";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,7 +30,7 @@ function AppContent() {
 }
 
 function App() {
-  console.log('[App] Inicializando aplicação com arquitetura robusta e sistema de toast nativo');
+  console.log('[App] Inicializando aplicação com arquitetura robusta e sistema de estabilidade');
   
   // Enhanced error boundary for critical initialization issues
   try {
@@ -41,7 +40,7 @@ function App() {
           <BrowserRouter>
             <TooltipProvider delayDuration={300}>
               <AppContent />
-              <EnhancedToastSystem />
+              <AdaptiveToastSystem />
               <Sonner />
             </TooltipProvider>
           </BrowserRouter>

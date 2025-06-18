@@ -1,47 +1,35 @@
-
-import { Outlet } from "react-router-dom";
+import { SidebarProviderRobust } from "@/components/ui/sidebar/SidebarProviderRobust";
+import { SidebarErrorBoundary } from "@/components/ui/sidebar/SidebarErrorBoundary";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { UserProfileMenu } from "./UserProfileMenu";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationProvider } from "@/components/notifications/NotificationService";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { FadeIn } from "@/components/ui/fade-in";
-import { PageTransition } from "@/components/ui/page-transition";
+import React from "react";
 
 interface MainLayoutProps {
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
-    <NotificationProvider>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background transition-colors duration-300">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col">
-            <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 transition-all duration-200">
-              <div className="flex h-14 items-center justify-between px-4 lg:px-6">
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger className="transition-transform duration-200 hover:scale-105" />
+    <SidebarErrorBoundary>
+      <NotificationProvider>
+        <SidebarProviderRobust>
+          <div className="min-h-screen flex w-full bg-background">
+            <AppSidebar />
+            <SidebarInset className="flex-1">
+              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarTrigger className="-ml-1" />
+                <div className="ml-auto flex items-center space-x-4">
+                  {/* Header content can be added here */}
                 </div>
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <ThemeToggle />
-                  <NotificationBell />
-                  <UserProfileMenu />
-                </div>
-              </div>
-            </header>
-            <div className="flex-1 overflow-auto">
-              <PageTransition>
-                <div className="p-4 sm:p-6 lg:p-8">
-                  {children || <Outlet />}
-                </div>
-              </PageTransition>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
-    </NotificationProvider>
+              </header>
+              <main className="flex-1 overflow-auto p-4">
+                {children}
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarProviderRobust>
+      </NotificationProvider>
+    </SidebarErrorBoundary>
   );
 }

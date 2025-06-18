@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,16 +12,31 @@ export function NativeLoginForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
-  // Redirect se já estiver logado
-  if (user && !loading) {
-    navigate('/dashboard', { replace: true });
-    return null;
-  }
+  // Redirecionamento estável usando useEffect
+  useEffect(() => {
+    if (user && !loading && shouldRedirect) {
+      console.log('[NativeLoginForm] Executando redirecionamento seguro');
+      const timeoutId = setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100); // Pequeno delay para garantir estabilidade
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user, loading, shouldRedirect, navigate]);
+
+  // Verificação inicial de usuário logado
+  useEffect(() => {
+    if (user && !loading) {
+      console.log('[NativeLoginForm] Usuário já logado, preparando redirecionamento');
+      setShouldRedirect(true);
+    }
+  }, [user, loading]);
 
   const validateForm = () => {
     if (!formData.email) {
@@ -56,22 +71,18 @@ export function NativeLoginForm() {
     try {
       await signIn(formData.email, formData.password);
       
-      // Mostrar notificação nativa se o toast falhar
+      // Mostrar notificação de sucesso
       try {
-        // Tentar usar o toast se disponível
-        if (window.showNativeToast) {
-          window.showNativeToast('Login realizado com sucesso!', 'success');
+        if (window.showAdvancedToast) {
+          window.showAdvancedToast('Login realizado com sucesso!', 'success');
         }
       } catch {
         console.log('Login realizado com sucesso!');
       }
       
-      // Fallback de redirecionamento
-      setTimeout(() => {
-        if (window.location.pathname === '/auth/login') {
-          navigate('/dashboard', { replace: true });
-        }
-      }, 500);
+      // Definir flag para redirecionamento
+      setShouldRedirect(true);
+      
     } catch (error) {
       console.error("Erro no login:", error);
       let errorMessage = "Erro ao realizar login. Verifique suas credenciais.";
@@ -92,8 +103,8 @@ export function NativeLoginForm() {
       
       // Mostrar erro com sistema nativo
       try {
-        if (window.showNativeToast) {
-          window.showNativeToast(errorMessage, 'error');
+        if (window.showAdvancedToast) {
+          window.showAdvancedToast(errorMessage, 'error');
         }
       } catch {
         console.error('Erro no login:', errorMessage);
@@ -107,6 +118,18 @@ export function NativeLoginForm() {
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
     if (loginError) setLoginError(null);
   };
+
+  // Se deve redirecionar, mostrar loading
+  if (shouldRedirect && user) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center space-y-2">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">Redirecionando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
