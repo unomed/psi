@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +17,7 @@ import {
 } from "lucide-react";
 
 export function SymptomsGuidanceSection() {
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = React.useState<string | null>(null);
 
   const physicalSymptoms = [
     { name: "Fadiga e cansaço", exams: ["Hemograma completo", "TSH", "Glicemia"] },
