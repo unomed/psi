@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +58,7 @@ export function ChecklistTemplateForm({ template, onCancel }: ChecklistTemplateF
       const payload = {
         title: values.title,
         description: values.description,
-        type: 'psychosocial' as const,
+        type: 'psicossocial' as const,
         scale_type: 'likert5' as const,
         company_id: user.user_metadata?.companyId,
         created_by: user.id,
@@ -68,7 +69,7 @@ export function ChecklistTemplateForm({ template, onCancel }: ChecklistTemplateF
       if (isNewTemplate) {
         result = await supabase
           .from('checklist_templates')
-          .insert(payload);
+          .insert([payload]);
       } else {
         result = await supabase
           .from('checklist_templates')

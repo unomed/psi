@@ -45,7 +45,7 @@ export function NewAssessmentDialog({
   const [showRecurrenceWarning, setShowRecurrenceWarning] = useState<boolean>(false);
   const [attemptedSave, setAttemptedSave] = useState<boolean>(false);
 
-  const employeeRiskLevel = selectedEmployeeData?.role?.risk_level;
+  const employeeRiskLevel = selectedEmployeeData?.role?.risk_level || 'medium';
   const suggestedPeriodicity = usePeriodicityForRisk(employeeRiskLevel);
   
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);

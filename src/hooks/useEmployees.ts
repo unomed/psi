@@ -1,85 +1,66 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from "@/hooks/useAuth";
+import type { Employee } from "@/types/employee";
 
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  cpf: string;
-  company_id: string;
-  role_id: string;
-  sector_id: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  role?: { name: string };
-  sectors?: { name: string };
+interface UseEmployeesParams {
+  companyId?: string;
 }
 
-interface UseEmployeesProps {
-  companyId?: string | null;
-  sectorId?: string | null;
-  roleId?: string | null;
-  searchQuery?: string | null;
-}
-
-export function useEmployees({ companyId, sectorId, roleId, searchQuery }: UseEmployeesProps = {}) {
-  const { user } = useAuth();
-
-  const query = useQuery({
-    queryKey: ['employees', companyId, sectorId, roleId, searchQuery, user?.id],
+export function useEmployees(params: UseEmployeesParams = {}) {
+  const { userCompanies, userRole } = useAuth();
+  
+  return useQuery({
+    queryKey: ['employees', params.companyId],
     queryFn: async (): Promise<Employee[]> => {
-      if (!companyId && user?.role !== 'superadmin') {
-        console.warn("Company ID is missing for non-superadmin user. Returning empty employee list.");
-        return [];
-      }
-
-      let queryBuilder = supabase
+      let query = supabase
         .from('employees')
         .select(`
           *,
-          roles:role_id(name),
-          sectors:sector_id(name)
-        `)
-        .eq('status', 'active');
+          role:roles(id, name, risk_level, required_tags),
+          sectors(id, name)
+        `);
 
-      if (companyId) {
-        queryBuilder = queryBuilder.eq('company_id', companyId);
+      // Apply company filter
+      if (params.companyId) {
+        query = query.eq('company_id', params.companyId);
+      } else if (userRole !== 'superadmin' && userCompanies.length > 0) {
+        const companyIds = userCompanies.map(uc => uc.companyId);
+        query = query.in('company_id', companyIds);
       }
 
-      if (sectorId) {
-        queryBuilder = queryBuilder.eq('sector_id', sectorId);
-      }
-
-      if (roleId) {
-        queryBuilder = queryBuilder.eq('role_id', roleId);
-      }
-
-      if (searchQuery) {
-        queryBuilder = queryBuilder.ilike('name', `%${searchQuery}%`);
-      }
-
-      const { data, error } = await queryBuilder;
-
+      const { data, error } = await query;
+      
       if (error) {
         console.error("Error fetching employees:", error);
         throw error;
       }
 
-      return data?.map(emp => ({
-        ...emp,
-        role: emp.roles,
-        sectors: emp.sectors
-      })) || [];
+      return (data || []).map(emp => ({
+        id: emp.id,
+        name: emp.name,
+        cpf: emp.cpf,
+        email: emp.email,
+        phone: emp.phone,
+        birth_date: emp.birth_date,
+        gender: emp.gender,
+        address: emp.address,
+        start_date: emp.start_date,
+        status: emp.status,
+        special_conditions: emp.special_conditions,
+        photo_url: emp.photo_url,
+        company_id: emp.company_id,
+        sector_id: emp.sector_id,
+        role_id: emp.role_id,
+        employee_type: emp.employee_type || 'funcionario',
+        employee_tags: emp.employee_tags || [],
+        role: emp.role,
+        sectors: emp.sectors,
+        created_at: emp.created_at,
+        updated_at: emp.updated_at
+      }));
     },
+    enabled: userRole === 'superadmin' || userCompanies.length > 0,
   });
-
-  return {
-    employees: query.data || [],
-    isLoading: query.isLoading,
-    error: query.error,
-    ...query
-  };
 }

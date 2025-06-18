@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChecklistTemplateForm } from "./ChecklistTemplateForm";
@@ -63,11 +62,8 @@ export function ChecklistTemplateWorkflow({
             />
           ) : (
             <ChecklistTemplateForm
-              defaultValues={selectedTemplate || existingTemplate}
-              onSubmit={handleFormSubmit}
+              template={selectedTemplate || existingTemplate}
               onCancel={step === 'form' ? handleBackToSelector : handleClose}
-              existingTemplate={existingTemplate}
-              isEditing={isEditing}
             />
           )}
         </div>
