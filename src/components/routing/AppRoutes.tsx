@@ -41,6 +41,9 @@ export function AppRoutes() {
 
   return (
     <Routes>
+      {/* Direct login route - redirect to auth/login */}
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+
       {/* Rotas de autenticação - PRIORIDADE MÁXIMA */}
       <Route path="/auth/*" element={
         <FormErrorBoundary>
