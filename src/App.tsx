@@ -2,21 +2,20 @@
 import React from "react";
 import TestMinimal from "./test-minimal";
 
-// VERSÃO TEMPORÁRIA PARA TESTE - REACT PURO SEM DEPS
+// VERSÃO FINAL - REACT PURO SEM NENHUMA DEPENDÊNCIA RADIX UI
 function App() {
-  console.log('[App] TESTE EMERGENCIAL - React puro iniciado');
+  console.log('[App] React puro - ZERO Radix UI');
   console.log('[App] React version:', React.version);
-  console.log('[App] React.useState disponível:', !!React.useState);
+  console.log('[App] useState funcionando:', !!React.useState);
   
   try {
     return <TestMinimal />;
   } catch (error) {
-    console.error('[App] ERRO CRÍTICO no render:', error);
+    console.error('[App] ERRO:', error);
     return (
       <div style={{ padding: '20px', color: 'red', fontFamily: 'Arial' }}>
-        <h1>🚨 ERRO CRÍTICO</h1>
+        <h1>🚨 ERRO</h1>
         <p>Erro: {error instanceof Error ? error.message : 'Erro desconhecido'}</p>
-        <p>O React não está funcionando corretamente.</p>
       </div>
     );
   }
