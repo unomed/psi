@@ -1,45 +1,74 @@
 
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-
 import { cn } from "@/lib/utils"
 
-// FALLBACK TEMPORÁRIO - Remover Radix UI até resolver problema React
+// SISTEMA DE TOOLTIP COMPATÍVEL - sem Radix UI
 const TooltipProvider = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<"div"> & { delayDuration?: number }
->(({ delayDuration = 300, children, ...props }, _ref) => (
-  <div {...props}>
+  React.ComponentPropsWithoutRef<"div"> & { 
+    delayDuration?: number;
+    children: React.ReactNode;
+  }
+>(({ delayDuration = 300, children, className, ...props }, ref) => (
+  <div ref={ref} className={className} {...props}>
     {children}
   </div>
 ))
 TooltipProvider.displayName = "TooltipProvider"
 
-// TOOLTIP SIMPLES sem Radix UI
-const Tooltip = ({ children }: { children: React.ReactNode }) => (
-  <div>{children}</div>
-)
-
-const TooltipTrigger = React.forwardRef<
+// TOOLTIP CONTAINER SIMPLES
+const Tooltip = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<"div">
->(({ children, ...props }, ref) => (
-  <div ref={ref} {...props}>
+  React.ComponentPropsWithoutRef<"div"> & { children: React.ReactNode }
+>(({ children, className, ...props }, ref) => (
+  <div ref={ref} className={cn("relative inline-block", className)} {...props}>
     {children}
   </div>
 ))
+Tooltip.displayName = "Tooltip"
+
+// TRIGGER que suporta asChild
+const TooltipTrigger = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<"div"> & { 
+    asChild?: boolean;
+    children: React.ReactNode;
+  }
+>(({ asChild = false, children, className, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      ref,
+      className: cn(children.props.className, className),
+      ...props
+    });
+  }
+  
+  return (
+    <div ref={ref} className={className} {...props}>
+      {children}
+    </div>
+  )
+})
 TooltipTrigger.displayName = "TooltipTrigger"
 
+// CONTENT SIMPLES
 const TooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentPropsWithoutRef<"div"> & { sideOffset?: number }
+  React.ComponentPropsWithoutRef<"div"> & { 
+    sideOffset?: number;
+    children: React.ReactNode;
+  }
 >(({ className, sideOffset = 4, children, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md",
+      "absolute top-full left-1/2 transform -translate-x-1/2 mt-1",
+      "opacity-0 pointer-events-none transition-opacity",
+      "group-hover:opacity-100 group-hover:pointer-events-auto",
       className
     )}
+    style={{ marginTop: sideOffset }}
     {...props}
   >
     {children}

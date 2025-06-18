@@ -16,7 +16,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log('[App] Sistema Unificado - Admin/Superadmin e Funcionários');
+  console.log('[App] Sistema inicializado sem PWA - cache limpo');
+  console.log('[App] Inicializando aplicação com arquitetura isolada');
   
   return (
     <QueryClientProvider client={queryClient}>
