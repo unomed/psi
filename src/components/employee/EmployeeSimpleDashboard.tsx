@@ -1,243 +1,193 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Home, ClipboardList, BarChart3, Calendar, User, Heart } from "lucide-react";
-import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
-import { PendingAssessmentsList } from "@/components/employee/PendingAssessmentsList";
-import { MoodSelector } from "@/components/employee/MoodSelector";
-import { MoodStatsCard } from "@/components/employee/MoodStatsCard";
-import { SymptomsGuidanceSection } from "@/components/employee/modern/SymptomsGuidanceSection";
-import { WhatsAppButton } from "@/components/employee/modern/WhatsAppButton";
-import { WellnessCard } from "@/components/employee/modern/WellnessCard";
-import { DailyHealthMessage } from "@/components/employee/modern/DailyHealthMessage";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, CheckCircle, Clock, FileText, Sparkles, Heart } from "lucide-react";
+import { useEmployeeAssessments } from "@/hooks/useEmployeeAssessments";
+import { AssessmentCard } from "./AssessmentCard";
+import { WellnessCard } from "./modern/WellnessCard";
+import { DailyHealthMessage } from "./modern/DailyHealthMessage";
+import { ModernMoodSelector } from "./modern/ModernMoodSelector";
+import { QuestionnaireStatsCard } from "./modern/QuestionnaireStatsCard";
 
-type ViewType = 'dashboard' | 'assessments' | 'history' | 'health' | 'profile';
+interface EmployeeSimpleDashboardProps {
+  employeeId: string;
+  employeeName: string;
+  companyName?: string;
+}
 
-export function EmployeeSimpleDashboard() {
-  const { session, logout } = useEmployeeAuthNative();
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+export function EmployeeSimpleDashboard({
+  employeeId,
+  employeeName,
+  companyName = "Empresa"
+}: EmployeeSimpleDashboardProps) {
+  const { assessments, loading } = useEmployeeAssessments(employeeId);
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
-  const handleLogout = () => {
-    logout();
-  };
+  // Separate assessments by status
+  const pendingAssessments = assessments.filter(a => a.status === 'pending');
+  const completedAssessments = assessments.filter(a => a.status === 'completed');
 
-  if (!session?.employee) {
-    return null;
-  }
-
-  const menuItems = [
-    { id: 'dashboard', label: 'Painel', icon: Home },
-    { id: 'assessments', label: 'Avaliações', icon: ClipboardList },
-    { id: 'health', label: 'Saúde', icon: Heart },
-    { id: 'history', label: 'Histórico', icon: BarChart3 },
-    { id: 'profile', label: 'Perfil', icon: User },
+  const stats = [
+    {
+      title: "Avaliações Pendentes",
+      value: pendingAssessments.length,
+      icon: Clock,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50"
+    },
+    {
+      title: "Avaliações Concluídas",
+      value: completedAssessments.length,
+      icon: CheckCircle,
+      color: "text-green-600",
+      bgColor: "bg-green-50"
+    },
+    {
+      title: "Total de Avaliações",
+      value: assessments.length,
+      icon: FileText,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50"
+    }
   ];
 
-  const renderContent = () => {
-    switch (currentView) {
-      case 'assessments':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Avaliações Pendentes</h2>
-            <PendingAssessmentsList employeeId={session.employee.employeeId} />
-          </div>
-        );
-      
-      case 'health':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Saúde e Bem-estar</h2>
-            <SymptomsGuidanceSection />
-          </div>
-        );
-      
-      case 'history':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Histórico</h2>
-            <div className="grid gap-6">
-              <MoodStatsCard employeeId={session.employee.employeeId} />
-              <Card className="bg-white border-gray-200">
-                <CardContent className="p-6">
-                  <p className="text-gray-600">Histórico detalhado de avaliações será implementado em breve...</p>
-                </CardContent>
-              </Card>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
             </div>
           </div>
-        );
-      
-      case 'profile':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Meu Perfil</h2>
-            <Card className="bg-white border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Informações Pessoais
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Nome</label>
-                  <p className="text-gray-900">{session.employee.employeeName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Empresa</label>
-                  <p className="text-gray-900">{session.employee.companyName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">ID do Funcionário</label>
-                  <p className="text-gray-900 font-mono">{session.employee.employeeId}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      
-      default:
-        return (
-          <div className="space-y-6">
-            {/* Header Welcome com gradiente */}
-            <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-xl p-6 text-white shadow-lg">
-              <h1 className="text-3xl font-bold mb-2">
-                Olá, {session.employee.employeeName}! 👋
-              </h1>
-              <p className="text-lg text-blue-100">{session.employee.companyName}</p>
-            </div>
-
-            {/* Grid Principal */}
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Coluna Principal */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Mensagem Diária de Saúde */}
-                <DailyHealthMessage employeeId={session.employee.employeeId} />
-
-                {/* Humor do Dia */}
-                <Card className="bg-white border-gray-200 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-blue-500" />
-                      Como você está hoje?
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <MoodSelector employeeId={session.employee.employeeId} />
-                  </CardContent>
-                </Card>
-
-                {/* Avaliações Pendentes */}
-                <Card className="bg-white border-gray-200 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5 text-green-500" />
-                      Avaliações Pendentes
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <PendingAssessmentsList employeeId={session.employee.employeeId} />
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Coluna Lateral */}
-              <div className="space-y-6">
-                {/* Card de Bem-estar */}
-                <WellnessCard />
-
-                {/* Estatísticas de Humor */}
-                <MoodStatsCard employeeId={session.employee.employeeId} />
-
-                {/* Ações Rápidas */}
-                <Card className="bg-white border-gray-200 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-purple-500" />
-                      Ações Rápidas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start hover:bg-blue-50"
-                      onClick={() => setCurrentView('assessments')}
-                    >
-                      <ClipboardList className="mr-2 h-4 w-4" />
-                      Ver Todas as Avaliações
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start hover:bg-green-50"
-                      onClick={() => setCurrentView('health')}
-                    >
-                      <Heart className="mr-2 h-4 w-4" />
-                      Orientações de Saúde
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start hover:bg-purple-50"
-                      onClick={() => setCurrentView('history')}
-                    >
-                      <BarChart3 className="mr-2 h-4 w-4" />
-                      Histórico Completo
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        );
-    }
-  };
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex">
-      {/* Sidebar Modernizada */}
-      <div className="w-64 bg-white shadow-lg border-r border-gray-200">
-        <div className="p-6 bg-gradient-to-r from-blue-600 to-green-600 text-white">
-          <h2 className="text-xl font-bold">Portal do Funcionário</h2>
-          <p className="text-sm text-blue-100">Unomed</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Olá, {employeeName}!
+          </h1>
+          <p className="text-gray-600">
+            Bem-vindo ao seu portal de avaliações - {companyName}
+          </p>
         </div>
-        
-        <nav className="px-4 py-6 space-y-2">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id as ViewType)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
-                currentView === item.id
-                  ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-              {item.label}
-            </button>
-          ))}
-        </nav>
 
-        <div className="absolute bottom-4 left-4 right-4">
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="w-full justify-start bg-white border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </Button>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {stats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <Card key={index} className={`${stat.bgColor} border-none`}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                      <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+                    </div>
+                    <IconComponent className={`h-8 w-8 ${stat.color}`} />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Daily Health Check */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DailyHealthMessage />
+              <ModernMoodSelector />
+            </div>
+
+            {/* Pending Assessments */}
+            {pendingAssessments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                    Avaliações Pendentes
+                    <Badge variant="secondary">{pendingAssessments.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {pendingAssessments.map((assessment) => (
+                      <AssessmentCard
+                        key={assessment.id}
+                        assessment={assessment}
+                        showActions={true}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Completed Assessments */}
+            {completedAssessments.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    Avaliações Concluídas
+                    <Badge variant="outline">{completedAssessments.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {completedAssessments.slice(0, 3).map((assessment) => (
+                      <AssessmentCard
+                        key={assessment.id}
+                        assessment={assessment}
+                        showActions={false}
+                      />
+                    ))}
+                    {completedAssessments.length > 3 && (
+                      <p className="text-sm text-gray-500 text-center">
+                        E mais {completedAssessments.length - 3} avaliações concluídas...
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Empty State */}
+            {assessments.length === 0 && (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Nenhuma avaliação encontrada
+                  </h3>
+                  <p className="text-gray-500">
+                    Você não possui avaliações pendentes ou concluídas no momento.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <QuestionnaireStatsCard employeeId={employeeId} />
+            <WellnessCard />
+          </div>
         </div>
       </div>
-
-      {/* Conteúdo Principal */}
-      <div className="flex-1 overflow-auto">
-        <main className="p-6">
-          {renderContent()}
-        </main>
-      </div>
-
-      {/* Botão do WhatsApp */}
-      <WhatsAppButton />
     </div>
   );
 }
