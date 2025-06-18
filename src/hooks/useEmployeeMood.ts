@@ -5,10 +5,11 @@ import { MoodLog, MoodStats, MOOD_OPTIONS } from '@/types/employee-auth';
 
 export function useEmployeeMood(employeeId: string) {
   const [currentMood, setCurrentMood] = useState<number | null>(null);
+  const [todayMood, setTodayMood] = useState<MoodLog | null>(null);
   const [moodStats, setMoodStats] = useState<MoodStats | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const logMood = async (moodScore: number, moodEmoji: string, moodDescription: string) => {
+  const saveMood = async (moodScore: number, moodEmoji: string, moodDescription: string) => {
     if (!employeeId) return;
 
     setLoading(true);
@@ -26,6 +27,19 @@ export function useEmployeeMood(employeeId: string) {
       if (error) throw error;
       
       setCurrentMood(moodScore);
+      
+      // Update todayMood with the new mood
+      const newMood: MoodLog = {
+        id: crypto.randomUUID(),
+        employeeId,
+        moodScore,
+        moodEmoji,
+        moodDescription,
+        logDate: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString()
+      };
+      setTodayMood(newMood);
+      
       await fetchMoodStats();
     } catch (error) {
       console.error('Erro ao registrar humor:', error);
@@ -34,10 +48,43 @@ export function useEmployeeMood(employeeId: string) {
     }
   };
 
+  const logMood = saveMood; // Alias for compatibility
+
   const fetchMoodStats = async () => {
     if (!employeeId) return;
 
     try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Fetch today's mood first
+      const { data: todayData, error: todayError } = await supabase
+        .from('employee_mood_logs')
+        .select('*')
+        .eq('employee_id', employeeId)
+        .eq('log_date', today)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (todayError) throw todayError;
+
+      if (todayData && todayData.length > 0) {
+        const mood = todayData[0];
+        setTodayMood({
+          id: mood.id,
+          employeeId: mood.employee_id,
+          moodScore: mood.mood_score,
+          moodEmoji: mood.mood_emoji,
+          moodDescription: mood.mood_description,
+          logDate: mood.log_date,
+          createdAt: mood.created_at
+        });
+        setCurrentMood(mood.mood_score);
+      } else {
+        setTodayMood(null);
+        setCurrentMood(null);
+      }
+
+      // Fetch general mood stats
       const { data, error } = await supabase
         .from('employee_mood_logs')
         .select('*')
@@ -69,8 +116,6 @@ export function useEmployeeMood(employeeId: string) {
           totalLogs: data.length,
           moodDistribution
         });
-
-        setCurrentMood(data[0].mood_score);
       }
     } catch (error) {
       console.error('Erro ao buscar estatísticas de humor:', error);
@@ -85,8 +130,10 @@ export function useEmployeeMood(employeeId: string) {
 
   return {
     currentMood,
+    todayMood,
     moodStats,
     loading,
+    saveMood,
     logMood,
     moodOptions: MOOD_OPTIONS
   };
