@@ -4,35 +4,47 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
 
+// FALLBACK TEMPORÁRIO - Remover Radix UI até resolver problema React
 const TooltipProvider = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Provider>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>
->(({ delayDuration = 300, ...props }, _ref) => (
-  <TooltipPrimitive.Provider 
-    delayDuration={delayDuration} 
-    {...props} 
-  />
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<"div"> & { delayDuration?: number }
+>(({ delayDuration = 300, children, ...props }, _ref) => (
+  <div {...props}>
+    {children}
+  </div>
 ))
 TooltipProvider.displayName = "TooltipProvider"
 
-const Tooltip = TooltipPrimitive.Root
+// TOOLTIP SIMPLES sem Radix UI
+const Tooltip = ({ children }: { children: React.ReactNode }) => (
+  <div>{children}</div>
+)
 
-const TooltipTrigger = TooltipPrimitive.Trigger
+const TooltipTrigger = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<"div">
+>(({ children, ...props }, ref) => (
+  <div ref={ref} {...props}>
+    {children}
+  </div>
+))
+TooltipTrigger.displayName = "TooltipTrigger"
 
 const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Content
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<"div"> & { sideOffset?: number }
+>(({ className, sideOffset = 4, children, ...props }, ref) => (
+  <div
     ref={ref}
-    sideOffset={sideOffset}
     className={cn(
-      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md",
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </div>
 ))
-TooltipContent.displayName = TooltipPrimitive.Content.displayName
+TooltipContent.displayName = "TooltipContent"
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
