@@ -10,8 +10,25 @@ interface DialogContextType {
 
 const DialogContext = React.createContext<DialogContextType | null>(null);
 
-const Dialog = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false);
+interface DialogProps {
+  children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+const Dialog = ({ children, open: controlledOpen, onOpenChange }: DialogProps) => {
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  
+  const setOpen = React.useCallback((newOpen: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  }, [isControlled, onOpenChange]);
   
   return (
     <DialogContext.Provider value={{ open, setOpen }}>
@@ -22,18 +39,26 @@ const Dialog = ({ children }: { children: React.ReactNode }) => {
 
 const DialogTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button">
->(({ className, children, onClick, ...props }, ref) => {
+  React.ComponentProps<"button"> & { asChild?: boolean }
+>(({ className, children, onClick, asChild, ...props }, ref) => {
   const context = React.useContext(DialogContext);
+  
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    context?.setOpen(true);
+    onClick?.(e);
+  };
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement, {
+      onClick: handleClick,
+    });
+  }
   
   return (
     <button
       ref={ref}
       className={className}
-      onClick={(e) => {
-        context?.setOpen(true);
-        onClick?.(e);
-      }}
+      onClick={handleClick}
       {...props}
     >
       {children}
@@ -48,18 +73,26 @@ const DialogPortal = ({ children }: { children: React.ReactNode }) => {
 
 const DialogClose = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button">
->(({ className, children, onClick, ...props }, ref) => {
+  React.ComponentProps<"button"> & { asChild?: boolean }
+>(({ className, children, onClick, asChild, ...props }, ref) => {
   const context = React.useContext(DialogContext);
+  
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    context?.setOpen(false);
+    onClick?.(e);
+  };
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement, {
+      onClick: handleClick,
+    });
+  }
   
   return (
     <button
       ref={ref}
       className={className}
-      onClick={(e) => {
-        context?.setOpen(false);
-        onClick?.(e);
-      }}
+      onClick={handleClick}
       {...props}
     >
       {children}

@@ -10,8 +10,25 @@ interface AlertDialogContextType {
 
 const AlertDialogContext = React.createContext<AlertDialogContextType | null>(null);
 
-const AlertDialog = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = React.useState(false);
+interface AlertDialogProps {
+  children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+const AlertDialog = ({ children, open: controlledOpen, onOpenChange }: AlertDialogProps) => {
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  
+  const setOpen = React.useCallback((newOpen: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
+  }, [isControlled, onOpenChange]);
   
   return (
     <AlertDialogContext.Provider value={{ open, setOpen }}>
@@ -22,18 +39,26 @@ const AlertDialog = ({ children }: { children: React.ReactNode }) => {
 
 const AlertDialogTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button">
->(({ className, children, onClick, ...props }, ref) => {
+  React.ComponentProps<"button"> & { asChild?: boolean }
+>(({ className, children, onClick, asChild, ...props }, ref) => {
   const context = React.useContext(AlertDialogContext);
+  
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    context?.setOpen(true);
+    onClick?.(e);
+  };
+
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement, {
+      onClick: handleClick,
+    });
+  }
   
   return (
     <button
       ref={ref}
       className={className}
-      onClick={(e) => {
-        context?.setOpen(true);
-        onClick?.(e);
-      }}
+      onClick={handleClick}
       {...props}
     >
       {children}

@@ -10,6 +10,7 @@ export interface CalendarProps extends React.ComponentProps<"div"> {
   onSelect?: (date: Date | Date[] | { from?: Date; to?: Date } | undefined) => void;
   disabled?: (date: Date) => boolean;
   showOutsideDays?: boolean;
+  initialFocus?: boolean; // Add this for compatibility
 }
 
 function Calendar({
@@ -19,6 +20,7 @@ function Calendar({
   onSelect,
   disabled,
   showOutsideDays = true,
+  initialFocus, // Accept but ignore for now
   ...props
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
