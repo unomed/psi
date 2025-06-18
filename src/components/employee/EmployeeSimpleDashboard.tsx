@@ -2,13 +2,17 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, Home, ClipboardList, BarChart3, Calendar, User } from "lucide-react";
+import { LogOut, Home, ClipboardList, BarChart3, Calendar, User, Heart } from "lucide-react";
 import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 import { PendingAssessmentsList } from "@/components/employee/PendingAssessmentsList";
 import { MoodSelector } from "@/components/employee/MoodSelector";
 import { MoodStatsCard } from "@/components/employee/MoodStatsCard";
+import { SymptomsGuidanceSection } from "@/components/employee/modern/SymptomsGuidanceSection";
+import { WhatsAppButton } from "@/components/employee/modern/WhatsAppButton";
+import { WellnessCard } from "@/components/employee/modern/WellnessCard";
+import { DailyHealthMessage } from "@/components/employee/modern/DailyHealthMessage";
 
-type ViewType = 'dashboard' | 'assessments' | 'history' | 'profile';
+type ViewType = 'dashboard' | 'assessments' | 'history' | 'health' | 'profile';
 
 export function EmployeeSimpleDashboard() {
   const { session, logout } = useEmployeeAuthNative();
@@ -25,6 +29,7 @@ export function EmployeeSimpleDashboard() {
   const menuItems = [
     { id: 'dashboard', label: 'Painel', icon: Home },
     { id: 'assessments', label: 'Avaliações', icon: ClipboardList },
+    { id: 'health', label: 'Saúde', icon: Heart },
     { id: 'history', label: 'Histórico', icon: BarChart3 },
     { id: 'profile', label: 'Perfil', icon: User },
   ];
@@ -39,15 +44,23 @@ export function EmployeeSimpleDashboard() {
           </div>
         );
       
+      case 'health':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-900">Saúde e Bem-estar</h2>
+            <SymptomsGuidanceSection />
+          </div>
+        );
+      
       case 'history':
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Histórico</h2>
             <div className="grid gap-6">
               <MoodStatsCard employeeId={session.employee.employeeId} />
-              <Card>
+              <Card className="bg-white border-gray-200">
                 <CardContent className="p-6">
-                  <p className="text-gray-600">Histórico de avaliações em desenvolvimento...</p>
+                  <p className="text-gray-600">Histórico detalhado de avaliações será implementado em breve...</p>
                 </CardContent>
               </Card>
             </div>
@@ -58,9 +71,12 @@ export function EmployeeSimpleDashboard() {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">Meu Perfil</h2>
-            <Card>
+            <Card className="bg-white border-gray-200">
               <CardHeader>
-                <CardTitle>Informações Pessoais</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Informações Pessoais
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -83,23 +99,26 @@ export function EmployeeSimpleDashboard() {
       default:
         return (
           <div className="space-y-6">
-            {/* Header Welcome */}
-            <div className="bg-white rounded-lg p-6 shadow-sm border">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {/* Header Welcome com gradiente */}
+            <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-xl p-6 text-white shadow-lg">
+              <h1 className="text-3xl font-bold mb-2">
                 Olá, {session.employee.employeeName}! 👋
               </h1>
-              <p className="text-lg text-gray-600">{session.employee.companyName}</p>
+              <p className="text-lg text-blue-100">{session.employee.companyName}</p>
             </div>
 
             {/* Grid Principal */}
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Coluna Principal */}
               <div className="lg:col-span-2 space-y-6">
+                {/* Mensagem Diária de Saúde */}
+                <DailyHealthMessage employeeId={session.employee.employeeId} />
+
                 {/* Humor do Dia */}
-                <Card>
+                <Card className="bg-white border-gray-200 shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
+                      <BarChart3 className="h-5 w-5 text-blue-500" />
                       Como você está hoje?
                     </CardTitle>
                   </CardHeader>
@@ -109,10 +128,10 @@ export function EmployeeSimpleDashboard() {
                 </Card>
 
                 {/* Avaliações Pendentes */}
-                <Card>
+                <Card className="bg-white border-gray-200 shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5" />
+                      <ClipboardList className="h-5 w-5 text-green-500" />
                       Avaliações Pendentes
                     </CardTitle>
                   </CardHeader>
@@ -124,21 +143,24 @@ export function EmployeeSimpleDashboard() {
 
               {/* Coluna Lateral */}
               <div className="space-y-6">
+                {/* Card de Bem-estar */}
+                <WellnessCard />
+
                 {/* Estatísticas de Humor */}
                 <MoodStatsCard employeeId={session.employee.employeeId} />
 
                 {/* Ações Rápidas */}
-                <Card>
+                <Card className="bg-white border-gray-200 shadow-sm">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
+                      <Calendar className="h-5 w-5 text-purple-500" />
                       Ações Rápidas
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="w-full justify-start hover:bg-blue-50"
                       onClick={() => setCurrentView('assessments')}
                     >
                       <ClipboardList className="mr-2 h-4 w-4" />
@@ -146,7 +168,15 @@ export function EmployeeSimpleDashboard() {
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="w-full justify-start hover:bg-green-50"
+                      onClick={() => setCurrentView('health')}
+                    >
+                      <Heart className="mr-2 h-4 w-4" />
+                      Orientações de Saúde
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start hover:bg-purple-50"
                       onClick={() => setCurrentView('history')}
                     >
                       <BarChart3 className="mr-2 h-4 w-4" />
@@ -162,23 +192,23 @@ export function EmployeeSimpleDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar Simples */}
-      <div className="w-64 bg-white shadow-sm border-r">
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-900">Portal</h2>
-          <p className="text-sm text-gray-500">Funcionário</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex">
+      {/* Sidebar Modernizada */}
+      <div className="w-64 bg-white shadow-lg border-r border-gray-200">
+        <div className="p-6 bg-gradient-to-r from-blue-600 to-green-600 text-white">
+          <h2 className="text-xl font-bold">Portal do Funcionário</h2>
+          <p className="text-sm text-blue-100">Unomed</p>
         </div>
         
-        <nav className="px-4 space-y-2">
+        <nav className="px-4 py-6 space-y-2">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setCurrentView(item.id as ViewType)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                 currentView === item.id
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-200'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               <item.icon className="h-5 w-5" />
@@ -191,7 +221,7 @@ export function EmployeeSimpleDashboard() {
           <Button 
             variant="outline" 
             onClick={handleLogout}
-            className="w-full justify-start"
+            className="w-full justify-start bg-white border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sair
@@ -205,6 +235,9 @@ export function EmployeeSimpleDashboard() {
           {renderContent()}
         </main>
       </div>
+
+      {/* Botão do WhatsApp */}
+      <WhatsAppButton />
     </div>
   );
 }
