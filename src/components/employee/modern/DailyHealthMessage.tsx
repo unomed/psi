@@ -50,10 +50,11 @@ export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
   const [currentMessage, setCurrentMessage] = useState(0);
 
   useEffect(() => {
-    // Rotaciona a mensagem baseado no dia
+    // Rotaciona a mensagem baseado no dia + employeeId para personalização
     const today = new Date().getDate();
-    setCurrentMessage(today % healthMessages.length);
-  }, []);
+    const employeeHash = employeeId.length; // Simples hash baseado no ID
+    setCurrentMessage((today + employeeHash) % healthMessages.length);
+  }, [employeeId]);
 
   const handleRefresh = () => {
     setCurrentMessage((prev) => (prev + 1) % healthMessages.length);

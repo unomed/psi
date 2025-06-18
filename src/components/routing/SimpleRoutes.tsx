@@ -32,6 +32,7 @@ export function SimpleRoutes() {
       {!session?.isAuthenticated ? (
         <>
           <Route path="/login" element={<EmployeeLoginPage />} />
+          <Route path="/auth/employee" element={<EmployeeLoginPage />} />
           <Route path="/*" element={<Navigate to="/login" replace />} />
         </>
       ) : (
