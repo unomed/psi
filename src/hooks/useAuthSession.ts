@@ -5,6 +5,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 export function useAuthSession() {
+  // Safety check for React hooks availability
+  if (typeof React === 'undefined' || typeof React.useState === 'undefined') {
+    console.error('[useAuthSession] React hooks not available');
+    return {
+      session: null,
+      user: null,
+      loading: false
+    };
+  }
+
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);

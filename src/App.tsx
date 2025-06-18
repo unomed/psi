@@ -17,6 +17,12 @@ const queryClient = new QueryClient({
 function App() {
   console.log('[App] Sistema Principal - Iniciando aplicação');
   
+  // Ensure React is available before rendering
+  if (typeof React === 'undefined') {
+    console.error('[App] React not available');
+    return null;
+  }
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AppContent />

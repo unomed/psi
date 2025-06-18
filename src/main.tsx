@@ -6,4 +6,16 @@ import "./index.css";
 
 console.log('[Main] Portal do Funcionário iniciando...');
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
+// Ensure React is properly initialized
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+// Use StrictMode for better error detection and proper React initialization
+ReactDOM.createRoot(rootElement).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

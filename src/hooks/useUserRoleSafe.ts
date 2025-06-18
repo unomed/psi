@@ -1,5 +1,4 @@
-
-import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export type CompanyAccess = {
@@ -15,6 +14,19 @@ interface UseUserRoleState {
 }
 
 export function useUserRoleSafe() {
+  // Safety check for React hooks availability
+  if (typeof React === 'undefined' || typeof React.useState === 'undefined') {
+    console.error('[useUserRoleSafe] React hooks not available');
+    return {
+      userRole: null,
+      userCompanies: [],
+      roleLoading: false,
+      fetchUserRoleAndCompanies: () => Promise.resolve(),
+      clearCache: () => {},
+      isInitialized: false
+    };
+  }
+
   // Initialize state with safe defaults
   const [state, setState] = useState<UseUserRoleState>({
     userRole: null,
