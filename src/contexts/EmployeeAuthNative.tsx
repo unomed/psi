@@ -10,7 +10,6 @@ interface EmployeeAuthContextType {
   loading: boolean;
 }
 
-// Context criado fora do componente para evitar problemas de hooks
 const EmployeeAuthContext = createContext<EmployeeAuthContextType | undefined>(undefined);
 
 interface EmployeeAuthState {
@@ -18,7 +17,6 @@ interface EmployeeAuthState {
   loading: boolean;
 }
 
-// Provider nativo usando Class Component para evitar hooks
 export class EmployeeAuthNativeProvider extends Component<
   { children: ReactNode },
   EmployeeAuthState
@@ -31,7 +29,6 @@ export class EmployeeAuthNativeProvider extends Component<
       loading: true
     };
 
-    // Bind methods
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
     this.loadStoredSession = this.loadStoredSession.bind(this);
@@ -39,7 +36,7 @@ export class EmployeeAuthNativeProvider extends Component<
   }
 
   componentDidMount() {
-    console.log('[EmployeeAuthNative] Inicializando provider nativo');
+    console.log('[EmployeeAuthNative] Inicializando provider simplificado');
     this.loadStoredSession();
   }
 
@@ -54,7 +51,6 @@ export class EmployeeAuthNativeProvider extends Component<
           loading: false 
         });
         
-        // Configurar sessão no Supabase de forma assíncrona
         setTimeout(() => {
           this.configureEmployeeSession(parsedSession.employee.employeeId);
         }, 100);
@@ -125,8 +121,6 @@ export class EmployeeAuthNativeProvider extends Component<
       });
       
       localStorage.setItem('employee-session', JSON.stringify(newSession));
-
-      // Configurar a sessão no Supabase
       await this.configureEmployeeSession(authData.employee_id);
 
       console.log(`[EmployeeAuthNative] Login bem-sucedido para: ${authData.employee_name}`);
@@ -169,9 +163,7 @@ export class EmployeeAuthNativeProvider extends Component<
   }
 }
 
-// Hook para usar o contexto (com verificação de segurança)
 export function useEmployeeAuthNative() {
-  // Verificação adicional de segurança
   if (typeof React === 'undefined' || !React.useContext) {
     console.warn('[useEmployeeAuthNative] React.useContext não disponível, usando fallback');
     return {

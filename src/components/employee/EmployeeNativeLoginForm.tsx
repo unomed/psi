@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Lock, AlertCircle } from "lucide-react";
 import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
-import { toast } from "sonner";
+import { showSimpleToast } from "@/components/ui/simple-toast";
 
 interface EmployeeNativeLoginFormProps {
   onLoginSuccess: (employeeData: any) => void;
@@ -27,7 +27,6 @@ export function EmployeeNativeLoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   
-  // Usar o contexto nativo
   const { login } = useEmployeeAuthNative();
 
   const formatCPF = (value: string) => {
@@ -80,20 +79,10 @@ export function EmployeeNativeLoginForm({
       const result = await login(cleanCpf, password);
       
       if (result.success) {
-        if (expectedEmployeeId && assessmentId) {
-          // Usar fallback toast nativo se sonner falhar
-          try {
-            toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
-          } catch {
-            console.log("Login realizado com sucesso! Redirecionando para sua avaliação...");
-          }
-        } else {
-          try {
-            toast.success("Login realizado com sucesso!");
-          } catch {
-            console.log("Login realizado com sucesso!");
-          }
-        }
+        showSimpleToast({
+          message: "Login realizado com sucesso!",
+          type: "success"
+        });
         
         onLoginSuccess(result);
       } else {
@@ -109,22 +98,22 @@ export function EmployeeNativeLoginForm({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">
-          Portal do Funcionário
+    <Card className="w-full max-w-md mx-auto shadow-lg">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl">
+          Entrar no Portal
         </CardTitle>
-        <p className="text-center text-muted-foreground">
+        <p className="text-muted-foreground">
           {assessmentId ? 
             "Faça login para acessar sua avaliação" : 
-            "Entre com seu CPF e senha"
+            "Digite seu CPF e senha para continuar"
           }
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="cpf" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="cpf" className="text-sm font-medium leading-none">
               CPF
             </label>
             <div className="relative">
@@ -135,16 +124,17 @@ export function EmployeeNativeLoginForm({
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={handleCpfChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
                 maxLength={14}
+                disabled={isLoading}
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Senha
+            <label htmlFor="password" className="text-sm font-medium leading-none">
+              Senha (últimos 4 dígitos do CPF)
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -154,9 +144,10 @@ export function EmployeeNativeLoginForm({
                 placeholder="0000"
                 value={password}
                 onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 required
                 maxLength={4}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -182,7 +173,14 @@ export function EmployeeNativeLoginForm({
             className="w-full" 
             disabled={isLoading}
           >
-            {isLoading ? "Entrando..." : "Entrar"}
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Entrando...
+              </>
+            ) : (
+              "Entrar"
+            )}
           </Button>
         </form>
       </CardContent>
