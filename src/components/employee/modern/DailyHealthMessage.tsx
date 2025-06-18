@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';
 
@@ -47,9 +47,9 @@ interface DailyHealthMessageProps {
 }
 
 export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
-  const [currentMessage, setCurrentMessage] = useState(0);
+  const [currentMessage, setCurrentMessage] = React.useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Rotaciona a mensagem baseado no dia + employeeId para personalização
     const today = new Date().getDate();
     const employeeHash = employeeId.length; // Simples hash baseado no ID
