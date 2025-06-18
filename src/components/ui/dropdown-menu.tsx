@@ -51,9 +51,12 @@ const DropdownMenuTrigger = React.forwardRef<
     onClick?.(e);
   };
 
+  // Handle asChild prop by cloning the child element if it exists
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement, {
       onClick: handleClick,
+      ref,
+      ...props,
     });
   }
   
@@ -122,18 +125,36 @@ DropdownMenuSubContent.displayName = "DropdownMenuSubContent";
 
 const DropdownMenuContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & { sideOffset?: number }
->(({ className, sideOffset = 4, ...props }, ref) => {
+  React.ComponentProps<"div"> & { 
+    sideOffset?: number;
+    align?: "start" | "center" | "end";
+    forceMount?: boolean;
+  }
+>(({ className, sideOffset = 4, align = "center", forceMount, ...props }, ref) => {
   const context = React.useContext(DropdownMenuContext);
   
-  if (!context?.open) return null;
+  // Always render if forceMount is true, otherwise check context
+  if (!forceMount && !context?.open) return null;
+  
+  const getAlignmentClass = () => {
+    switch (align) {
+      case "start":
+        return "left-0";
+      case "end":
+        return "right-0";
+      case "center":
+      default:
+        return "left-1/2 transform -translate-x-1/2";
+    }
+  };
   
   return (
     <DropdownMenuPortal>
       <div
         ref={ref}
         className={cn(
-          "absolute top-full left-0 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
+          "absolute top-full z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white p-1 text-gray-900 shadow-md animate-in fade-in-0 zoom-in-95",
+          getAlignmentClass(),
           className
         )}
         style={{ marginTop: sideOffset }}
@@ -146,18 +167,38 @@ DropdownMenuContent.displayName = "DropdownMenuContent";
 
 const DropdownMenuItem = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & { inset?: boolean }
->(({ className, inset, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
-      inset && "pl-8",
-      className
-    )}
-    {...props}
-  />
-));
+  React.ComponentProps<"button"> & { 
+    inset?: boolean;
+    asChild?: boolean;
+  }
+>(({ className, inset, asChild, children, ...props }, ref) => {
+  // Handle asChild prop by cloning the child element if it exists
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children as React.ReactElement, {
+      className: cn(
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-gray-100 hover:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
+        inset && "pl-8",
+        className
+      ),
+      ref,
+      ...props,
+    });
+  }
+
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-gray-100 hover:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
+        inset && "pl-8",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
 DropdownMenuItem.displayName = "DropdownMenuItem";
 
 const DropdownMenuCheckboxItem = React.forwardRef<
@@ -167,7 +208,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-gray-100 hover:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
       className
     )}
     {...props}
@@ -187,7 +228,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-gray-100 hover:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left",
       className
     )}
     {...props}
@@ -222,7 +263,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    className={cn("-mx-1 my-1 h-px bg-gray-200", className)}
     {...props}
   />
 ));
