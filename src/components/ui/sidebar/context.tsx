@@ -37,7 +37,24 @@ export function SidebarProvider({
 }: SidebarProviderProps) {
   const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = React.useState(false);
-  const [_open, _setOpen] = React.useState(defaultOpen);
+  
+  // Forçar estado expandido por padrão no preview
+  const [_open, _setOpen] = React.useState(() => {
+    // Verificar se há um cookie salvo
+    if (typeof document !== 'undefined') {
+      const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+        ?.split('=')[1];
+      
+      if (cookieValue !== undefined) {
+        return cookieValue === 'true';
+      }
+    }
+    
+    // Se não há cookie, usar defaultOpen (que é true por padrão)
+    return defaultOpen;
+  });
   
   const open = openProp ?? _open;
   const setOpen = React.useCallback(
@@ -48,7 +65,10 @@ export function SidebarProvider({
       } else {
         _setOpen(openState);
       }
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      // Salvar no cookie
+      if (typeof document !== 'undefined') {
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      }
     },
     [setOpenProp, open]
   );
