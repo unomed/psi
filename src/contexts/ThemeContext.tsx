@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import * as React from 'react';
 
 type Theme = 'light'; // Forçando apenas tema claro
 
@@ -9,14 +9,14 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = React.createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Sempre inicializar com tema claro
-  const [theme] = useState<Theme>('light');
-  const [effectiveTheme] = useState<'light'>('light');
+  const [theme] = React.useState<Theme>('light');
+  const [effectiveTheme] = React.useState<'light'>('light');
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Forçar sempre o tema claro
     const root = window.document.documentElement;
     root.classList.remove('dark', 'system');
@@ -45,7 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
+  const context = React.useContext(ThemeContext);
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
