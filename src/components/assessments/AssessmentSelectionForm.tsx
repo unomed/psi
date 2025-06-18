@@ -13,40 +13,87 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface AssessmentSelectionFormProps {
   companyId?: string | null;
+  selectedEmployee?: string | null;
+  selectedTemplate?: ChecklistTemplate | null;
+  templates?: ChecklistTemplate[];
+  isTemplatesLoading?: boolean;
+  onStartAssessment?: () => void;
+  onScheduleAssessment?: () => void;
+  onGenerateLink?: () => void;
+  onEmployeeSelect?: (employeeId: string) => void;
+  onTemplateSelect?: (templateId: string) => void;
 }
 
-export function AssessmentSelectionForm({ companyId }: AssessmentSelectionFormProps) {
+export function AssessmentSelectionForm({ 
+  companyId,
+  selectedEmployee: externalSelectedEmployee,
+  selectedTemplate: externalSelectedTemplate,
+  templates: externalTemplates,
+  isTemplatesLoading: externalIsLoading,
+  onStartAssessment,
+  onScheduleAssessment,
+  onGenerateLink,
+  onEmployeeSelect: externalOnEmployeeSelect,
+  onTemplateSelect: externalOnTemplateSelect
+}: AssessmentSelectionFormProps) {
   const { userCompanies } = useAuth();
   const targetCompanyId = companyId || (userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined);
   
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
+  const [internalSelectedEmployeeId, setInternalSelectedEmployeeId] = useState<string | null>(null);
+  const [internalSelectedTemplate, setInternalSelectedTemplate] = useState<ChecklistTemplate | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [generatedLink, setGeneratedLink] = useState("");
 
   const { employees } = useEmployees({ companyId: targetCompanyId });
-  const { checklists } = useChecklistTemplates();
+  const { checklists, isLoading: internalIsLoading } = useChecklistTemplates();
+
+  // Use external or internal state
+  const selectedEmployeeId = externalSelectedEmployee || internalSelectedEmployeeId;
+  const selectedTemplate = externalSelectedTemplate || internalSelectedTemplate;
+  const templates = externalTemplates || checklists;
+  const isTemplatesLoading = externalIsLoading !== undefined ? externalIsLoading : internalIsLoading;
 
   const handleEmployeeChange = (employeeId: string) => {
-    setSelectedEmployeeId(employeeId);
+    if (externalOnEmployeeSelect) {
+      externalOnEmployeeSelect(employeeId);
+    } else {
+      setInternalSelectedEmployeeId(employeeId);
+    }
   };
 
   const handleTemplateChange = (templateId: string) => {
-    const template = checklists.find(t => t.id === templateId);
-    setSelectedTemplate(template || null);
+    const template = templates.find(t => t.id === templateId);
+    if (externalOnTemplateSelect) {
+      externalOnTemplateSelect(templateId);
+    } else {
+      setInternalSelectedTemplate(template || null);
+    }
   };
 
   const handleScheduleAssessment = () => {
-    setIsScheduleDialogOpen(true);
+    if (onScheduleAssessment) {
+      onScheduleAssessment();
+    } else {
+      setIsScheduleDialogOpen(true);
+    }
   };
 
   const handleGenerateLink = () => {
-    if (selectedEmployeeId && selectedTemplate) {
+    if (onGenerateLink) {
+      onGenerateLink();
+    } else if (selectedEmployeeId && selectedTemplate) {
       const link = `${window.location.origin}/portal/${selectedTemplate.id}?employee=${selectedEmployeeId}`;
       setGeneratedLink(link);
       setIsLinkDialogOpen(true);
+    }
+  };
+
+  const handleStartAssessment = () => {
+    if (onStartAssessment) {
+      onStartAssessment();
     }
   };
 
@@ -66,17 +113,29 @@ export function AssessmentSelectionForm({ companyId }: AssessmentSelectionFormPr
         </CardHeader>
         <CardContent className="space-y-6">
           <EmployeeSelector
+            selectedRole={selectedRole}
             selectedEmployee={selectedEmployeeId}
             onEmployeeChange={handleEmployeeChange}
           />
 
           <TemplateSelector
-            templates={checklists}
+            selectedEmployee={selectedEmployeeId}
+            templates={templates}
             selectedTemplateValue={selectedTemplate?.id || null}
+            isTemplatesLoading={isTemplatesLoading}
             onTemplateSelect={handleTemplateChange}
           />
 
           <div className="flex gap-4">
+            {onStartAssessment && (
+              <Button
+                onClick={handleStartAssessment}
+                disabled={!selectedEmployeeId || !selectedTemplate}
+              >
+                Iniciar Avaliação
+              </Button>
+            )}
+            
             <Button
               onClick={handleScheduleAssessment}
               disabled={!selectedEmployeeId || !selectedTemplate}

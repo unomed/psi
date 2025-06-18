@@ -5,11 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, CheckCircle, Clock, FileText, Sparkles, Heart } from "lucide-react";
 import { useEmployeeAssessments } from "@/hooks/useEmployeeAssessments";
-import { AssessmentCard } from "./AssessmentCard";
 import { WellnessCard } from "./modern/WellnessCard";
 import { DailyHealthMessage } from "./modern/DailyHealthMessage";
 import { ModernMoodSelector } from "./modern/ModernMoodSelector";
 import { QuestionnaireStatsCard } from "./modern/QuestionnaireStatsCard";
+
+interface Assessment {
+  id: string;
+  title: string;
+  status: 'pending' | 'completed';
+  dueDate?: Date;
+  completedAt?: Date;
+  description?: string;
+}
 
 interface EmployeeSimpleDashboardProps {
   employeeId: string;
@@ -25,9 +33,19 @@ export function EmployeeSimpleDashboard({
   const { assessments, loading } = useEmployeeAssessments(employeeId);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
+  // Convert assessments to Assessment interface
+  const convertedAssessments: Assessment[] = assessments.map(assessment => ({
+    id: assessment.id,
+    title: assessment.title || assessment.template_name || 'Avaliação sem título',
+    status: assessment.status,
+    dueDate: assessment.dueDate,
+    completedAt: assessment.completedAt,
+    description: assessment.description
+  }));
+
   // Separate assessments by status
-  const pendingAssessments = assessments.filter(a => a.status === 'pending');
-  const completedAssessments = assessments.filter(a => a.status === 'completed');
+  const pendingAssessments = convertedAssessments.filter(a => a.status === 'pending');
+  const completedAssessments = convertedAssessments.filter(a => a.status === 'completed');
 
   const stats = [
     {
@@ -46,12 +64,62 @@ export function EmployeeSimpleDashboard({
     },
     {
       title: "Total de Avaliações",
-      value: assessments.length,
+      value: convertedAssessments.length,
       icon: FileText,
       color: "text-blue-600",
       bgColor: "bg-blue-50"
     }
   ];
+
+  const AssessmentCard = ({ assessment, showActions = true }: { assessment: Assessment; showActions?: boolean }) => {
+    const getStatusIcon = () => {
+      return assessment.status === 'completed' ? CheckCircle : Clock;
+    };
+
+    const getStatusColor = () => {
+      return assessment.status === 'completed' ? 'text-green-600' : 'text-orange-600';
+    };
+
+    const StatusIcon = getStatusIcon();
+
+    return (
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">{assessment.title}</CardTitle>
+            <div className="flex items-center gap-2">
+              <StatusIcon className={`h-5 w-5 ${getStatusColor()}`} />
+              <Badge variant={assessment.status === 'completed' ? 'default' : 'secondary'}>
+                {assessment.status === 'completed' ? 'Concluída' : 'Pendente'}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {assessment.description && (
+            <p className="text-sm text-gray-600 mb-3">{assessment.description}</p>
+          )}
+          
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+            <Calendar className="h-4 w-4" />
+            {assessment.status === 'completed' && assessment.completedAt ? (
+              <span>Concluída em {assessment.completedAt.toLocaleDateString()}</span>
+            ) : assessment.dueDate ? (
+              <span>Prazo: {assessment.dueDate.toLocaleDateString()}</span>
+            ) : (
+              <span>Sem prazo definido</span>
+            )}
+          </div>
+
+          {showActions && assessment.status === 'pending' && (
+            <Button size="sm" className="w-full">
+              Iniciar Avaliação
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
@@ -166,7 +234,7 @@ export function EmployeeSimpleDashboard({
             )}
 
             {/* Empty State */}
-            {assessments.length === 0 && (
+            {convertedAssessments.length === 0 && (
               <Card className="text-center py-12">
                 <CardContent>
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />

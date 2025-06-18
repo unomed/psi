@@ -7,7 +7,7 @@ import { SchedulingWorkflow } from "@/components/assessment-scheduling/Schedulin
 import { ScheduledAssessmentsList } from "@/components/assessment-scheduling/ScheduledAssessmentsList";
 import { AssessmentMetrics } from "@/components/assessment-scheduling/AssessmentMetrics";
 import { EmailTemplateSection } from "@/components/assessment-scheduling/email-templates/EmailTemplateSection";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AssessmentScheduling() {

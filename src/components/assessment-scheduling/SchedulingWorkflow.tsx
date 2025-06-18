@@ -19,7 +19,8 @@ interface SchedulingWorkflowProps {
 export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps) {
   const [currentStep, setCurrentStep] = useState<'checklist' | 'employee' | 'scheduling'>('checklist');
   const [selectedChecklist, setSelectedChecklist] = useState<ChecklistTemplate | null>(null);
-  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   const {
     schedulingDetails,
@@ -31,7 +32,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
   const handleNext = () => {
     if (currentStep === 'checklist' && selectedChecklist) {
       setCurrentStep('employee');
-    } else if (currentStep === 'employee' && selectedEmployee) {
+    } else if (currentStep === 'employee' && selectedEmployeeId) {
       setCurrentStep('scheduling');
     }
   };
@@ -44,8 +45,16 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
     }
   };
 
+  const handleEmployeeSelect = (employeeId: string) => {
+    setSelectedEmployeeId(employeeId);
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+  };
+
   const handleSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
-    if (!selectedEmployee || !selectedChecklist || !schedulingDetails.scheduledDate) {
+    if (!selectedEmployeeId || !selectedChecklist || !schedulingDetails.scheduledDate) {
       toast.error("Selecione um funcionário, checklist e data para continuar");
       return;
     }
@@ -53,7 +62,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
     try {
       // Passar dados diretamente para o hook
       await scheduleAssessment({
-        employee: selectedEmployee,
+        employee: { id: selectedEmployeeId },
         checklist: selectedChecklist,
         schedulingDetails: {
           scheduledDate: schedulingDetails.scheduledDate,
@@ -75,7 +84,8 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
   const handleClose = () => {
     setCurrentStep('checklist');
     setSelectedChecklist(null);
-    setSelectedEmployee(null);
+    setSelectedEmployeeId(null);
+    setSelectedTemplateId(null);
     setSchedulingDetails({
       scheduledDate: new Date(),
       recurrenceType: "none",
@@ -88,7 +98,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
 
   const isNextDisabled = () => {
     if (currentStep === 'checklist') return !selectedChecklist;
-    if (currentStep === 'employee') return !selectedEmployee;
+    if (currentStep === 'employee') return !selectedEmployeeId;
     return false;
   };
 
@@ -125,15 +135,18 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
 
             <TabsContent value="employee" className="mt-6">
               <EmployeeSelectionStep
-                selectedEmployee={selectedEmployee}
-                onEmployeeSelect={setSelectedEmployee}
+                selectedEmployeeId={selectedEmployeeId}
+                selectedTemplateId={selectedTemplateId}
+                onEmployeeSelect={handleEmployeeSelect}
+                onTemplateSelect={handleTemplateSelect}
+                onNext={handleNext}
               />
             </TabsContent>
 
             <TabsContent value="scheduling" className="mt-6">
               <SchedulingDetailsStep
-                employeeName={selectedEmployee?.name || ""}
-                employeeEmail={selectedEmployee?.email}
+                employeeName={selectedEmployeeId || ""}
+                employeeEmail=""
                 templateTitle={selectedChecklist?.title}
                 scheduledDate={schedulingDetails.scheduledDate}
                 onDateSelect={(date) => setSchedulingDetails(prev => ({ 
