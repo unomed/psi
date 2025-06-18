@@ -2,15 +2,6 @@
 import * as React from "react";
 import type { SidebarContext as SidebarContextType } from "./types";
 
-// Import with fallback check
-let useIsMobile: () => boolean;
-try {
-  useIsMobile = require("@/hooks/use-mobile").useIsMobile;
-} catch (error) {
-  console.warn('useIsMobile hook not available, using fallback');
-  useIsMobile = () => false; // Fallback for mobile detection
-}
-
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
@@ -43,15 +34,8 @@ export function SidebarProvider({
   children,
   ...props
 }: SidebarProviderProps) {
-  // Use safe mobile detection with fallback
-  const isMobile = React.useMemo(() => {
-    try {
-      return useIsMobile();
-    } catch (error) {
-      console.warn('Mobile detection failed, defaulting to false:', error);
-      return false;
-    }
-  }, []);
+  // Remove mobile detection completely - always desktop layout
+  const isMobile = false;
 
   const [openMobile, setOpenMobile] = React.useState(false);
   const [_open, _setOpen] = React.useState(defaultOpen);
