@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';
@@ -48,7 +49,18 @@ interface DailyHealthMessageProps {
 
 export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
   const [currentMessage, setCurrentMessage] = useState(0);
-  const { data: employeeData } = useEmployeeData(employeeId);
+  
+  // Add error boundary for the query
+  let employeeData = null;
+  let queryError = null;
+  
+  try {
+    const { data } = useEmployeeData(employeeId);
+    employeeData = data;
+  } catch (error) {
+    console.error('[DailyHealthMessage] Error loading employee data:', error);
+    queryError = error;
+  }
 
   const isBirthday = () => {
     if (!employeeData?.birth_date) return false;
@@ -84,6 +96,35 @@ export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
       setCurrentMessage((prev) => (prev + 1) % healthMessages.length);
     }
   };
+
+  // Se há erro na query, mostrar mensagem padrão
+  if (queryError) {
+    const defaultMessage = healthMessages[0];
+    const IconComponent = defaultMessage.icon;
+    
+    return (
+      <Card className={`bg-gradient-to-r ${defaultMessage.color} text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300`}>
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                <IconComponent className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-semibold">{defaultMessage.title}</h3>
+            </div>
+            <button
+              onClick={handleRefresh}
+              className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+              title="Nova mensagem"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="text-white/90 leading-relaxed">{defaultMessage.message}</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Priorizar mensagem de aniversário se for o caso
   const message = isBirthday() ? getBirthdayMessage() : healthMessages[currentMessage];
