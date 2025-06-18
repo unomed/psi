@@ -24,26 +24,21 @@ export default defineConfig(({ mode }) => ({
     // FORÇAR RESOLUÇÃO para development e browser
     conditions: ['development', 'browser']
   },
-  // OTIMIZAÇÃO FORÇADA para incluir todas as dependências React
+  // OTIMIZAÇÃO FORÇADA - Reconstruir tudo
   optimizeDeps: {
     include: [
       'react', 
       'react-dom',
-      '@radix-ui/react-tooltip',
-      '@radix-ui/react-scroll-area',
-      '@radix-ui/react-slot',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-popover',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-checkbox',
-      '@radix-ui/react-switch',
-      '@radix-ui/react-label',
-      '@radix-ui/react-avatar',
-      '@radix-ui/react-button'
+      'react-router-dom',
+      '@tanstack/react-query'
     ],
-    force: true
+    force: true, // FORÇAR REBUILD COMPLETO
+    esbuildOptions: {
+      // Garantir que React seja único
+      define: {
+        global: 'globalThis',
+      },
+    }
   },
   // CONFIGURAÇÕES ADICIONAIS para build estável
   build: {
@@ -51,15 +46,16 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'radix-vendor': [
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-scroll-area',
-            '@radix-ui/react-slot'
-          ]
+          'router-vendor': ['react-router-dom'],
+          'query-vendor': ['@tanstack/react-query']
         }
       }
-    }
+    },
+    // Forçar rebuild completo
+    emptyOutDir: true
   },
+  // CACHE LIMPO
+  cacheDir: '.vite-clean',
   // Limpar tela desabilitado para debug
   clearScreen: false
 }));
