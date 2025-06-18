@@ -1,124 +1,141 @@
-
 import { useState } from "react";
-import { Employee, EmployeeFormData } from "@/types/employee";
-import { useEmployees } from "@/hooks/useEmployees";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
-export function useEmployeeOperations(selectedCompany: string | null) {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  cpf: string;
+  company_id: string;
+  role_id: string;
+  sector_id: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  role?: { name: string };
+  sectors?: { name: string };
+}
 
-  const { userRole } = useAuth();
-  const { verifyCompanyAccess } = useCompanyAccessCheck();
-  const { createEmployee, updateEmployee, deleteEmployee } = useEmployees();
+interface UseEmployeeOperationsProps {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
 
-  const handleCreate = async (data: EmployeeFormData) => {
-    if (!selectedCompany) {
-      toast.error("Selecione uma empresa primeiro");
-      return;
-    }
-    
-    try {
-      // Garantir que o funcionário seja criado na empresa selecionada
-      await createEmployee.mutateAsync({
-        ...data,
-        company_id: selectedCompany
-      });
-      setIsCreateDialogOpen(false);
-    } catch (error) {
+export function useEmployeeOperations({ onSuccess, onError }: UseEmployeeOperationsProps = {}) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const createEmployeeMutation = useMutation({
+    mutationFn: async (newEmployee: Omit<Employee, 'id' | 'created_at' | 'updated_at' | 'role' | 'sectors'>) => {
+      setIsCreating(true);
+      const { data, error } = await supabase
+        .from('employees')
+        .insert([
+          {
+            ...newEmployee,
+            company_id: user?.user_metadata?.companyId,
+          }
+        ]);
+
+      if (error) {
+        console.error("Error creating employee:", error);
+        toast.error(`Erro ao criar funcionário: ${error.message}`);
+        onError?.(error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      setIsCreating(false);
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success("Funcionário criado com sucesso!");
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      setIsCreating(false);
       console.error("Error creating employee:", error);
-    }
-  };
+      toast.error(`Erro ao criar funcionário: ${error.message}`);
+      onError?.(error);
+    },
+  });
 
-  const handleEdit = async (data: EmployeeFormData) => {
-    if (!selectedEmployee) return;
-    
-    // Verificar se o usuário tem acesso à empresa do funcionário
-    if (userRole !== 'superadmin') {
-      const hasAccess = await verifyCompanyAccess(selectedEmployee.company_id);
-      if (!hasAccess) {
-        toast.error('Você não tem permissão para editar este funcionário');
-        return;
+  const updateEmployeeMutation = useMutation({
+    mutationFn: async (updatedEmployee: Employee) => {
+      setIsUpdating(true);
+      const { data, error } = await supabase
+        .from('employees')
+        .update({
+          ...updatedEmployee,
+        })
+        .eq('id', updatedEmployee.id);
+
+      if (error) {
+        console.error("Error updating employee:", error);
+        toast.error(`Erro ao atualizar funcionário: ${error.message}`);
+        onError?.(error);
+        throw error;
       }
-    }
-    
-    try {
-      await updateEmployee.mutateAsync({ ...data, id: selectedEmployee.id });
-      setIsEditDialogOpen(false);
-      setSelectedEmployee(null);
-    } catch (error) {
+
+      return data;
+    },
+    onSuccess: () => {
+      setIsUpdating(false);
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success("Funcionário atualizado com sucesso!");
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      setIsUpdating(false);
       console.error("Error updating employee:", error);
-    }
-  };
+      toast.error(`Erro ao atualizar funcionário: ${error.message}`);
+      onError?.(error);
+    },
+  });
 
-  const handleDelete = async () => {
-    if (!selectedEmployee) return;
-    
-    // Verificar se o usuário tem acesso à empresa do funcionário
-    if (userRole !== 'superadmin') {
-      const hasAccess = await verifyCompanyAccess(selectedEmployee.company_id);
-      if (!hasAccess) {
-        toast.error('Você não tem permissão para excluir este funcionário');
-        return;
+  const deleteEmployeeMutation = useMutation({
+    mutationFn: async (employeeId: string) => {
+      setIsDeleting(true);
+      const { data, error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', employeeId);
+
+      if (error) {
+        console.error("Error deleting employee:", error);
+        toast.error(`Erro ao excluir funcionário: ${error.message}`);
+        onError?.(error);
+        throw error;
       }
-    }
-    
-    try {
-      await deleteEmployee.mutateAsync(selectedEmployee.id);
-      setIsDeleteDialogOpen(false);
-      setSelectedEmployee(null);
-    } catch (error) {
+
+      return data;
+    },
+    onSuccess: () => {
+      setIsDeleting(false);
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success("Funcionário excluído com sucesso!");
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      setIsDeleting(false);
       console.error("Error deleting employee:", error);
-    }
-  };
-
-  const handleCreateClick = () => {
-    if (!selectedCompany) {
-      toast.error("Selecione uma empresa primeiro");
-      return;
-    }
-    setIsCreateDialogOpen(true);
-  };
-
-  const handleEditClick = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleViewClick = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsViewDialogOpen(true);
-  };
+      toast.error(`Erro ao excluir funcionário: ${error.message}`);
+      onError?.(error);
+    },
+  });
 
   return {
-    // Dialog states
-    isCreateDialogOpen,
-    setIsCreateDialogOpen,
-    isEditDialogOpen,
-    setIsEditDialogOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    isViewDialogOpen,
-    setIsViewDialogOpen,
-    selectedEmployee,
-    
-    // Handlers
-    handleCreate,
-    handleEdit,
-    handleDelete,
-    handleCreateClick,
-    handleEditClick,
-    handleDeleteClick,
-    handleViewClick
+    createEmployee: createEmployeeMutation.mutateAsync,
+    updateEmployee: updateEmployeeMutation.mutateAsync,
+    deleteEmployee: deleteEmployeeMutation.mutateAsync,
+    isCreating,
+    isUpdating,
+    isDeleting,
   };
 }

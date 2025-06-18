@@ -8,7 +8,7 @@ import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function GestaoRiscos() {
   const { userCompanies } = useAuth();

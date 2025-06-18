@@ -1,7 +1,7 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface PsychosocialRiskStats {
   totalAnalyses: number;
@@ -56,6 +56,7 @@ export function usePsychosocialRiskData() {
 
       if (error) {
         console.error('Error fetching psychosocial risk data:', error);
+        toast.error('Error fetching psychosocial risk data');
         throw error;
       }
 

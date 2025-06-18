@@ -1,5 +1,4 @@
-
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/hooks/useAuth';
 import { useAutomationConfig } from "./useAutomationConfig";
 import { useProcessingLogs } from "./useProcessingLogs";
 import { useNotifications } from "./useNotifications";

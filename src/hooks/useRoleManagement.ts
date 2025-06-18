@@ -1,75 +1,121 @@
-
-import { useState, useEffect } from "react";
-import { useRoles } from "@/hooks/useRoles";
-import { useAuth } from "@/contexts/AuthContext";
-import { RoleData } from "@/components/roles/RoleCard";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
-export function useRoleManagement() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<RoleData | null>(null);
-  const [viewingRole, setViewingRole] = useState<RoleData | null>(null);
-  const [canCreateRoles, setCanCreateRoles] = useState(false);
-  const { roles, isLoading, createRole, updateRole, deleteRole } = useRoles();
-  const { userRole } = useAuth();
+interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  companyId: string;
+}
 
-  useEffect(() => {
-    const checkPermissions = async () => {
-      const isSuperAdminOrAdmin = userRole === 'superadmin' || userRole === 'admin';
-      setCanCreateRoles(isSuperAdminOrAdmin);
-    };
-    
-    checkPermissions();
-  }, [userRole]);
+export function useRoleManagement(companyId?: string) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleCreateOrUpdateRole = async (values: any) => {
-    try {
-      if (!canCreateRoles) {
-        toast.error("Você não tem permissão para gerenciar funções");
-        return;
+  const getRoles = useQuery({
+    queryKey: ['roles', companyId],
+    queryFn: async () => {
+      if (!companyId && user?.role !== 'superadmin') {
+        console.warn("Company ID is missing for non-superadmin user. Returning empty role list.");
+        return [];
       }
 
-      if (editingRole) {
-        await updateRole.mutateAsync({
-          ...editingRole,
-          ...values,
-          sectorId: values.sectorId || null,
-        });
-      } else {
-        await createRole.mutateAsync({
-          ...values,
-          sectorId: values.sectorId || null,
-        });
+      let queryBuilder = supabase
+        .from('roles')
+        .select('*');
+
+      if (companyId) {
+        queryBuilder = queryBuilder.eq('company_id', companyId);
       }
 
-      setIsDialogOpen(false);
-      setEditingRole(null);
-    } catch (error) {
-      console.error("Error managing role:", error);
-    }
-  };
+      const { data, error } = await queryBuilder;
 
-  const handleDeleteRole = async (role: RoleData) => {
-    if (confirm("Tem certeza que deseja excluir esta função?")) {
-      try {
-        await deleteRole.mutateAsync(role.id);
-      } catch (error) {
+      if (error) {
+        console.error("Error fetching roles:", error);
+        throw error;
+      }
+
+      return data || [];
+    },
+    enabled: !!companyId || user?.role === 'superadmin',
+  });
+
+  const createRole = useMutation({
+    mutationFn: async (newRole: Omit<Role, 'id'>) => {
+      const { data, error } = await supabase
+        .from('roles')
+        .insert([newRole]);
+
+      if (error) {
+        console.error("Error creating role:", error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles', companyId] });
+      toast.success("Role created successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(`Error creating role: ${error.message}`);
+    },
+  });
+
+  const updateRole = useMutation({
+    mutationFn: async (updatedRole: Role) => {
+      const { data, error } = await supabase
+        .from('roles')
+        .update(updatedRole)
+        .eq('id', updatedRole.id);
+
+      if (error) {
+        console.error("Error updating role:", error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles', companyId] });
+      toast.success("Role updated successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(`Error updating role: ${error.message}`);
+    },
+  });
+
+  const deleteRole = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from('roles')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
         console.error("Error deleting role:", error);
+        throw error;
       }
-    }
-  };
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles', companyId] });
+      toast.success("Role deleted successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(`Error deleting role: ${error.message}`);
+    },
+  });
 
   return {
-    isDialogOpen,
-    setIsDialogOpen,
-    editingRole,
-    setEditingRole,
-    viewingRole,
-    setViewingRole,
-    canCreateRoles,
-    roles,
-    isLoading,
-    handleCreateOrUpdateRole,
-    handleDeleteRole,
+    roles: getRoles.data || [],
+    isLoading: getRoles.isLoading,
+    error: getRoles.error,
+    createRole: createRole.mutateAsync,
+    updateRole: updateRole.mutateAsync,
+    deleteRole: deleteRole.mutateAsync,
   };
 }

@@ -1,101 +1,151 @@
-
-import React, { useState } from 'react';
-import { NR01ComplianceReport } from '@/components/reports/NR01ComplianceReport';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { DatePickerWithRange } from '@/components/reports/DatePickerWithRange';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { DateRange } from '@/types/date';
-import { FileText, Shield } from 'lucide-react';
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { DatePickerWithRange } from "@/components/reports/DatePickerWithRange";
+import { NR01ComplianceReport } from "@/components/reports/NR01ComplianceReport";
+import { ActionPlanSummary } from "@/components/reports/ActionPlanSummary";  
+import { RiskAnalysisSummary } from "@/components/reports/RiskAnalysisSummary";
+import { EffectivenessMetrics } from "@/components/reports/EffectivenessMetrics";
+import { FileText, Download, BarChart3, Target, TrendingUp } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function NR01Page() {
   const { userCompanies } = useAuth();
-  const [selectedCompany, setSelectedCompany] = useState<string>('');
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: new Date(new Date().getFullYear(), 0, 1), // Start of current year
-    to: new Date()
-  });
+  const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
+  const [activeTab, setActiveTab] = useState("compliance");
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
 
-  const companies = userCompanies || [];
+  const handleDateRangeChange = (dates: [Date | null, Date | null]) => {
+    setDateRange(dates);
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="h-8 w-8" />
-            Relatórios NR-01
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Relatórios de conformidade e documentação para fiscalização do trabalho
+          <h1 className="text-3xl font-bold">Relatório NR-01</h1>
+          <p className="text-muted-foreground">
+            Geração de relatórios de conformidade com a NR-01
           </p>
         </div>
+        <Button>
+          <Download className="h-4 w-4 mr-2" />
+          Exportar Relatório
+        </Button>
       </div>
 
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Configurações do Relatório
-          </CardTitle>
-          <CardDescription>
-            Selecione a empresa e período para gerar o relatório de conformidade
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Empresa</Label>
-              <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map((company) => (
-                    <SelectItem key={company.companyId} value={company.companyId}>
-                      {company.companyName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <Tabs defaultValue="compliance" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="compliance" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Conformidade
+          </TabsTrigger>
+          <TabsTrigger value="action-plans" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Planos de Ação
+          </TabsTrigger>
+          <TabsTrigger value="risk-analysis" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Análise de Risco
+          </TabsTrigger>
+           <TabsTrigger value="effectiveness" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Efetividade
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
 
-            <div className="space-y-2">
-              <Label>Período de Avaliação</Label>
-              <DatePickerWithRange
-                dateRange={dateRange}
-                setDateRange={setDateRange}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <TabsContent value="compliance" className="space-y-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Relatório de Conformidade NR-01
+              </CardTitle>
+              <CardDescription>
+                Visão geral da conformidade com os requisitos da NR-01
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DatePickerWithRange onChange={handleDateRangeChange} />
+              <NR01ComplianceReport companyId={companyId} dateRange={dateRange} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Relatório */}
-      {selectedCompany && dateRange.from && dateRange.to && (
-        <NR01ComplianceReport
-          companyId={selectedCompany}
-          periodStart={dateRange.from.toISOString()}
-          periodEnd={dateRange.to.toISOString()}
-        />
-      )}
+        <TabsContent value="action-plans">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Sumário dos Planos de Ação
+              </CardTitle>
+              <CardDescription>
+                Resumo dos planos de ação implementados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+               <DatePickerWithRange onChange={handleDateRangeChange} />
+              <ActionPlanSummary companyId={companyId} dateRange={dateRange} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {!selectedCompany && (
-        <Card>
-          <CardContent className="flex items-center justify-center py-12">
-            <div className="text-center space-y-2">
-              <Shield className="h-12 w-12 text-muted-foreground mx-auto" />
-              <h3 className="text-lg font-medium">Selecione uma empresa</h3>
-              <p className="text-muted-foreground">
-                Escolha uma empresa acima para visualizar o relatório de conformidade NR-01
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        <TabsContent value="risk-analysis">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Sumário da Análise de Risco
+              </CardTitle>
+              <CardDescription>
+                Visão geral das análises de risco realizadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+               <DatePickerWithRange onChange={handleDateRangeChange} />
+              <RiskAnalysisSummary companyId={companyId} dateRange={dateRange} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="effectiveness">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Métricas de Efetividade
+              </CardTitle>
+              <CardDescription>
+                Métricas para avaliar a efetividade das ações implementadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+               <DatePickerWithRange onChange={handleDateRangeChange} />
+              <EffectivenessMetrics companyId={companyId} dateRange={dateRange} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+              <CardDescription>
+                Análise detalhada dos dados de conformidade
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Adicionar componentes de análise detalhada aqui */}
+              Em desenvolvimento...
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,216 +1,184 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CalendarDays, CheckCircle, User2 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getCurrentEmployeeId } from '@/utils/auth';
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
-import { getEmployeePendingAssessments, getEmployeeMoodStats } from '@/services/employee/employeeService';
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { CalendarIcon } from '@radix-ui/react-icons';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Assessment {
   id: string;
   title: string;
   status: 'pending' | 'completed';
   dueDate: string;
-  completedAt: string | null;
-  description: string;
+  completedAt?: string;
+  description?: string;
 }
 
 interface PendingAssessment {
-  assessment_id: string;
-  template_title: string;
-  template_description: string;
+  id: string;
   scheduled_date: string;
-  completed_date: string | null;
-  days_remaining: number | null;
+  status: string;
+  checklist_template: {
+    title: string;
+    description?: string;
+  };
 }
 
-export function EmployeeSimpleDashboard() {
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const employeeId = getCurrentEmployeeId();
-  
-  const { data: pendingAssessments = [], isLoading: isLoadingAssessments } = useQuery({
-    queryKey: ['employee-pending-assessments', employeeId],
-    queryFn: () => getEmployeePendingAssessments(employeeId!),
-    enabled: !!employeeId,
+interface EmployeeSimpleDashboardProps {
+  templateId?: string;
+  employeeId?: string;
+}
+
+export function EmployeeSimpleDashboard({ templateId, employeeId }: EmployeeSimpleDashboardProps) {
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+
+  const { data: pendingAssessments, isLoading } = useQuery({
+    queryKey: ['employee-assessments', employeeId],
+    queryFn: async () => {
+      if (!employeeId) return [];
+      
+      const { data, error } = await supabase
+        .from('scheduled_assessments')
+        .select(`
+          id,
+          scheduled_date,
+          status,
+          checklist_template:checklist_templates(title, description)
+        `)
+        .eq('employee_id', employeeId)
+        .eq('status', 'scheduled');
+
+      if (error) throw error;
+      return data as PendingAssessment[];
+    },
+    enabled: !!employeeId
   });
 
-  const { data: moodStats } = useQuery({
-    queryKey: ['employee-mood-stats', employeeId],
-    queryFn: () => getEmployeeMoodStats(employeeId!),
-    enabled: !!employeeId,
-  });
+  useEffect(() => {
+    if (pendingAssessments) {
+      const formattedAssessments: Assessment[] = pendingAssessments.map(assessment => ({
+        id: assessment.id,
+        title: assessment.checklist_template?.title || 'Avaliação sem título',
+        status: assessment.status === 'completed' ? 'completed' : 'pending' as 'pending' | 'completed',
+        dueDate: assessment.scheduled_date,
+        completedAt: undefined,
+        description: assessment.checklist_template?.description || undefined
+      }));
 
-  // Convert PendingAssessment to Assessment format
-  const assessments: Assessment[] = pendingAssessments.map((assessment) => ({
-    id: assessment.assessment_id,
-    title: assessment.template_title || 'Avaliação',
-    status: 'pending' as const,
-    dueDate: new Date(assessment.scheduled_date).toLocaleDateString(),
-    completedAt: null,
-    description: assessment.template_description || 'Sem descrição',
-  }));
+      setAssessments(formattedAssessments);
+    }
+  }, [pendingAssessments]);
 
-  const recentAssessments: Assessment[] = pendingAssessments
-    .filter(assessment => assessment.days_remaining !== null && assessment.days_remaining <= 7)
-    .map((assessment) => ({
-      id: assessment.assessment_id,
-      title: assessment.template_title || 'Avaliação',
-      status: 'pending' as const,
-      dueDate: new Date(assessment.scheduled_date).toLocaleDateString(),
-      completedAt: null,
-      description: assessment.template_description || 'Sem descrição',
-    }));
-
-  const handleMoodSelection = (mood: number) => {
-    setSelectedMood(mood);
-    // Implement mood logging logic here
-    console.log(`Mood selected: ${mood}`);
+  const handleStartAssessment = (assessmentId: string) => {
+    toast.success('Iniciando avaliação...');
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full max-w-none p-6">
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {/* Profile Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Meu Perfil</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center space-x-4">
-            <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">Seu Nome</p>
-              <p className="text-xs text-muted-foreground">
-                seuemail@example.com
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold">Portal do Funcionário</h1>
+        <p className="text-muted-foreground">
+          Suas avaliações e tarefas pendentes
+        </p>
+      </div>
+
+      <Tabs defaultValue="assessments" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="assessments">Avaliações</TabsTrigger>
+          <TabsTrigger value="completed">Concluídas</TabsTrigger>
+          <TabsTrigger value="profile">Perfil</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="assessments">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Avaliações Pendentes
+              </CardTitle>
+              <CardDescription>Você tem {assessments.filter(a => a.status === 'pending').length} avaliação(ões) pendente(s)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {assessments.filter(a => a.status === 'pending').map((assessment) => (
+                <div key={assessment.id} className="p-4 border rounded-lg flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold">{assessment.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Prazo: {new Date(assessment.dueDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button onClick={() => handleStartAssessment(assessment.id)}>
+                    Iniciar
+                  </Button>
+                </div>
+              ))}
+              {assessments.filter(a => a.status === 'pending').length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  Nenhuma avaliação pendente no momento.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="completed">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                Avaliações Concluídas
+              </CardTitle>
+              <CardDescription>Histórico das suas avaliações concluídas</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {assessments.filter(a => a.status === 'completed').map((assessment) => (
+                <div key={assessment.id} className="p-4 border rounded-lg">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold">{assessment.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Concluída em: {assessment.completedAt ? new Date(assessment.completedAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                    <Badge variant="outline">Concluída</Badge>
+                  </div>
+                </div>
+              ))}
+              {assessments.filter(a => a.status === 'completed').length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  Nenhuma avaliação concluída ainda.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="profile">
+          <Card>
+            <CardHeader>
+              <CardTitle>Meu Perfil</CardTitle>
+              <CardDescription>Informações do seu perfil</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Informações do perfil em desenvolvimento...
               </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Mood Logging Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Como você está se sentindo hoje?</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center space-x-4">
-            <Button
-              variant={selectedMood === 1 ? "secondary" : "outline"}
-              onClick={() => handleMoodSelection(1)}
-            >
-              Muito Ruim
-            </Button>
-            <Button
-              variant={selectedMood === 2 ? "secondary" : "outline"}
-              onClick={() => handleMoodSelection(2)}
-            >
-              Ruim
-            </Button>
-            <Button
-              variant={selectedMood === 3 ? "secondary" : "outline"}
-              onClick={() => handleMoodSelection(3)}
-            >
-              Neutro
-            </Button>
-            <Button
-              variant={selectedMood === 4 ? "secondary" : "outline"}
-              onClick={() => handleMoodSelection(4)}
-            >
-              Bem
-            </Button>
-            <Button
-              variant={selectedMood === 5 ? "secondary" : "outline"}
-              onClick={() => handleMoodSelection(5)}
-            >
-              Muito Bem
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
-            <CardDescription>Acesso rápido a funcionalidades importantes.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <Button variant="outline" className="justify-start">
-              <User2 className="mr-2 h-4 w-4" />
-              Ver meu perfil
-            </Button>
-            <Button variant="outline" className="justify-start">
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Agendar Avaliação
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Separator className="my-6" />
-
-      {/* Assessments Section */}
-      <div className="grid gap-4 grid-cols-1">
-        <Card>
-          <CardHeader>
-            <CardTitle>Suas Avaliações Pendentes</CardTitle>
-            <CardDescription>Lista de avaliações que você precisa completar.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px] w-full">
-              <div className="divide-y divide-border">
-                {assessments.map((assessment) => (
-                  <div key={assessment.id} className="py-4">
-                    <div className="flex justify-between">
-                      <p className="text-sm font-medium">{assessment.title}</p>
-                      <Badge variant="secondary">{assessment.status}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{assessment.description}</p>
-                    <div className="flex items-center text-xs text-muted-foreground mt-2">
-                      <CalendarIcon className="mr-1 w-3 h-3" />
-                      Entrega: {assessment.dueDate}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Atividades Recentes</CardTitle>
-            <CardDescription>
-              Notificações sobre suas últimas atividades e avaliações.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px] w-full">
-              <div className="divide-y divide-border">
-                {recentAssessments.map((assessment) => (
-                  <div key={assessment.id} className="py-4">
-                    <div className="flex justify-between">
-                      <p className="text-sm font-medium">{assessment.title}</p>
-                      <Badge variant="secondary">{assessment.status}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{assessment.description}</p>
-                    <div className="flex items-center text-xs text-muted-foreground mt-2">
-                      <CalendarIcon className="mr-1 w-3 h-3" />
-                      Entrega: {assessment.dueDate}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,20 +1,19 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ReportFilters } from "@/components/reports/ReportFilters";
-import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistribution";
-import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
-import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
-import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
-import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
-import { FileText, Download, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DateRange } from "@/types/date";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
-import { useReportsData } from "@/hooks/reports/useReportsData";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { 
+  BarChart3, 
+  FileText, 
+  Download,
+  TrendingUp,
+  Users,
+  AlertTriangle,
+  Calendar,
+  Eye
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Relatorios() {
   const [dateRange, setDateRange] = useState<DateRange>({ 

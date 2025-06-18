@@ -1,12 +1,13 @@
-
 import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Settings, Activity, Cpu } from "lucide-react";
-import { BackgroundProcessingMonitor } from "@/components/risks/processing-monitor/BackgroundProcessingMonitor";
-import { AutomationTriggerConfig } from "@/components/risks/automation/AutomationTriggerConfig";
-import { PsychosocialAdvancedConfig } from "@/components/risks/PsychosocialAdvancedConfig";
-import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AutomationRulesManager } from "@/components/automation/AutomationRulesManager";
+import { EscalationConfig } from "@/components/automation/EscalationConfig";
+import { NotificationCenter } from "@/components/automation/NotificationCenter";
+import { ReportsGenerator } from "@/components/automation/ReportsGenerator";
+import { AdvancedAnalytics } from "@/components/automation/AdvancedAnalytics";
+import { Bot, Settings, Bell, BarChart3, FileText } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AutomacaoAvancadaPage() {
   const { userCompanies } = useAuth();
@@ -18,50 +19,97 @@ export default function AutomacaoAvancadaPage() {
         <div>
           <h1 className="text-3xl font-bold">Automação Avançada</h1>
           <p className="text-muted-foreground">
-            Configurações avançadas do sistema de automação psicossocial
+            Configurações avançadas para automação de processos
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="processing" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="processing" className="flex items-center gap-2">
-            <Cpu className="h-4 w-4" />
-            Processamento Background
-          </TabsTrigger>
-          <TabsTrigger value="triggers" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Triggers e Automação
-          </TabsTrigger>
-          <TabsTrigger value="advanced" className="flex items-center gap-2">
+      <Tabs defaultValue="rules" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="rules" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
-            Configurações Avançadas
+            Regras de Automação
+          </TabsTrigger>
+          <TabsTrigger value="escalation" className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Escalonamento
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notificações
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Relatórios
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="processing">
+        <TabsContent value="rules">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Monitor de Processamento em Background
+                <Bot className="h-5 w-5" />
+                Gerenciador de Regras de Automação
               </CardTitle>
               <CardDescription>
-                Acompanhe o status e controle o sistema de processamento automático
+                Crie e gerencie regras para automatizar tarefas e processos
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <BackgroundProcessingMonitor />
+              <AutomationRulesManager companyId={companyId} />
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="triggers">
-          <AutomationTriggerConfig companyId={companyId} />
+        <TabsContent value="escalation">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Configurações de Escalonamento
+              </CardTitle>
+              <CardDescription>
+                Defina as regras de escalonamento para garantir que os problemas sejam resolvidos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EscalationConfig companyId={companyId} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="advanced">
-          <PsychosocialAdvancedConfig companyId={companyId} />
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Central de Notificações
+              </CardTitle>
+              <CardDescription>
+                Configure as notificações para manter todos informados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NotificationCenter companyId={companyId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Gerador de Relatórios
+              </CardTitle>
+              <CardDescription>
+                Crie relatórios personalizados para acompanhar o desempenho
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ReportsGenerator companyId={companyId} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

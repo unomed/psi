@@ -1,7 +1,6 @@
-
-import { supabase } from '@/integrations/supabase/client';
-import { useCallback, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export type AuditAction = 'create' | 'read' | 'update' | 'delete' | 'login' | 'logout' | 'export' | 'import' | 'email_send' | 'permission_change' | 'assessment_complete' | 'report_generate';
 

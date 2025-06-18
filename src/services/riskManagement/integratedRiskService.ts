@@ -1,5 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
-import { RiskAssessment, RiskLevel } from "@/types/risk";
+
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface IntegratedRiskAssessment {

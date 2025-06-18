@@ -1,12 +1,8 @@
-
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { RecurrenceType, ChecklistTemplate } from "@/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
-import { generateEmployeePortalLink } from "@/services/assessment/portalLinkGeneration";
-import { scheduleAssessmentReminders } from "@/services/assessment/automationService";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ScheduleAssessmentWithAutomationData {
   employeeId: string;

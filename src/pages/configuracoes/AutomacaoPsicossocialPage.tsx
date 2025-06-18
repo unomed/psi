@@ -1,11 +1,9 @@
-
 import React from "react";
-import { PsychosocialAutomationDashboard } from "@/components/risks/PsychosocialAutomationDashboard";
-import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AutomacaoPsicossocialPage() {
-  const { userCompanies } = useAuth();
-  const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
+  const { user } = useAuth();
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -13,12 +11,24 @@ export default function AutomacaoPsicossocialPage() {
         <div>
           <h1 className="text-3xl font-bold">Automação Psicossocial</h1>
           <p className="text-muted-foreground">
-            Configure e monitore o processamento automático das avaliações psicossociais
+            Configurações e monitoramento da automação de processos psicossociais
           </p>
         </div>
       </div>
 
-      <PsychosocialAutomationDashboard companyId={companyId} />
+      <Card>
+        <CardHeader>
+          <CardTitle>Status da Automação</CardTitle>
+          <CardDescription>
+            Informações sobre o funcionamento da automação
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Status da automação em desenvolvimento...
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
