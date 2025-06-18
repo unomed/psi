@@ -2,7 +2,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-// SISTEMA DE TOOLTIP COMPATÍVEL - sem Radix UI
+// TOOLTIP NATIVO SIMPLES - SEM RADIX UI
 const TooltipProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div"> & { 
@@ -16,7 +16,6 @@ const TooltipProvider = React.forwardRef<
 ))
 TooltipProvider.displayName = "TooltipProvider"
 
-// TOOLTIP CONTAINER SIMPLES
 const Tooltip = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div"> & { children: React.ReactNode }
@@ -27,7 +26,6 @@ const Tooltip = React.forwardRef<
 ))
 Tooltip.displayName = "Tooltip"
 
-// TRIGGER que suporta asChild - CORRIGIDO
 const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div"> & { 
@@ -35,15 +33,6 @@ const TooltipTrigger = React.forwardRef<
     children: React.ReactNode;
   }
 >(({ asChild = false, children, className, ...props }, ref) => {
-  if (asChild && React.isValidElement(children)) {
-    // Corrigir tipagem para React.cloneElement
-    return React.cloneElement(children as React.ReactElement<any>, {
-      ...children.props,
-      className: cn(children.props.className, className),
-      ...props
-    });
-  }
-  
   return (
     <div ref={ref} className={className} {...props}>
       {children}
@@ -52,7 +41,6 @@ const TooltipTrigger = React.forwardRef<
 })
 TooltipTrigger.displayName = "TooltipTrigger"
 
-// CONTENT SIMPLES
 const TooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div"> & { 
