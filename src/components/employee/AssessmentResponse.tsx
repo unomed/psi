@@ -19,6 +19,7 @@ interface AssessmentData {
     type: string;
     scale_type: string;
     questions: any[];
+    createdAt: Date;
   };
   scheduledDate: string;
   dueDate?: string;
@@ -45,46 +46,71 @@ export function AssessmentResponse() {
 
   const loadAssessment = async () => {
     try {
-      const { data, error } = await supabase
+      // First, get the scheduled assessment
+      const { data: scheduledAssessment, error: scheduledError } = await supabase
         .from('scheduled_assessments')
         .select(`
           id,
           template_id,
           scheduled_date,
           due_date,
-          status,
-          checklist_templates!inner(
-            id,
-            title,
-            description,
-            type,
-            scale_type,
-            questions
-          )
+          status
         `)
         .eq('id', assessmentId)
         .eq('employee_id', session?.employee?.employeeId)
         .in('status', ['scheduled', 'sent'])
         .single();
 
-      if (error) {
-        console.error('Erro ao carregar avaliação:', error);
+      if (scheduledError) {
+        console.error('Erro ao carregar avaliação agendada:', scheduledError);
         throw new Error('Avaliação não encontrada ou já foi concluída');
       }
 
+      // Then get the template details
+      const { data: template, error: templateError } = await supabase
+        .from('checklist_templates')
+        .select(`
+          id,
+          title,
+          description,
+          type,
+          scale_type,
+          created_at
+        `)
+        .eq('id', scheduledAssessment.template_id)
+        .single();
+
+      if (templateError) {
+        console.error('Erro ao carregar template:', templateError);
+        throw new Error('Template de avaliação não encontrado');
+      }
+
+      // Get the questions for this template
+      const { data: questions, error: questionsError } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('template_id', template.id)
+        .order('order_number');
+
+      if (questionsError) {
+        console.error('Erro ao carregar perguntas:', questionsError);
+        // Don't throw error here, some templates might not have questions in the database
+      }
+
       setAssessment({
-        id: data.id,
-        templateId: data.template_id,
+        id: scheduledAssessment.id,
+        templateId: scheduledAssessment.template_id,
         template: {
-          id: data.checklist_templates.id,
-          title: data.checklist_templates.title,
-          description: data.checklist_templates.description,
-          type: data.checklist_templates.type,
-          scale_type: data.checklist_templates.scale_type,
-          questions: data.checklist_templates.questions || []
+          id: template.id,
+          title: template.title,
+          description: template.description || '',
+          type: template.type,
+          scale_type: template.scale_type,
+          questions: questions || [],
+          createdAt: new Date(template.created_at)
         },
-        scheduledDate: data.scheduled_date,
-        dueDate: data.due_date
+        scheduledDate: scheduledAssessment.scheduled_date,
+        dueDate: scheduledAssessment.due_date
       });
     } catch (error: any) {
       console.error('Erro ao carregar avaliação:', error);
