@@ -24,7 +24,7 @@ export const dashboardItem: MenuItem = {
   title: "Dashboard",
   icon: LayoutDashboard,
   href: "/dashboard",
-  roles: ["admin", "manager"],
+  roles: ["admin", "superadmin", "manager"],
   permission: "dashboard:read"
 };
 
@@ -41,21 +41,21 @@ export const cadastrosItems: MenuItem[] = [
     title: "Funcionários",
     icon: Users,
     href: "/funcionarios",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "employees:read"
   },
   {
     title: "Funções",
     icon: UserCircle,
     href: "/funcoes",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "roles:read"
   },
   {
     title: "Setores",
     icon: Building2,
     href: "/setores",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "sectors:read"
   }
 ];
@@ -66,28 +66,28 @@ export const avaliacoesItems: MenuItem[] = [
     title: "Templates",
     icon: ClipboardList,
     href: "/templates",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "checklists:read"
   },
   {
     title: "Resultados",
     icon: BarChart3,
     href: "/resultados",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "assessment_results:read"
   },
   {
     title: "Comparação",
     icon: FileCheck,
     href: "/candidatos/comparacao",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "assessments:read"
   },
   {
     title: "Avaliações",
     icon: Calendar,
     href: "/candidatos/avaliacoes",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "assessments:schedule"
   }
 ];
@@ -98,28 +98,28 @@ export const gestaoItems: MenuItem[] = [
     title: "Gestão de Riscos",
     icon: AlertTriangle,
     href: "/gestao-riscos",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "psychosocial_risks:read"
   },
   {
     title: "Plano de Ação",
     icon: FileText,
     href: "/plano-acao",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "action_plans:read"
   },
   {
     title: "Agendamentos",
     icon: Calendar,
     href: "/agendamentos",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "assessments:schedule"
   },
   {
     title: "Relatórios",
     icon: TrendingUp,
     href: "/relatorios",
-    roles: ["admin", "manager"],
+    roles: ["admin", "superadmin", "manager"],
     permission: "reports:read"
   }
 ];

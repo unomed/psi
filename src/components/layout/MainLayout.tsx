@@ -4,6 +4,7 @@ import { SidebarErrorBoundary } from "@/components/ui/sidebar/SidebarErrorBounda
 import { UIErrorBoundary } from "@/components/ui/ui-error-boundary";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { UserProfileMenu } from "./UserProfileMenu";
 import { NotificationProvider } from "@/components/notifications/NotificationService";
 import React from "react";
 
@@ -23,7 +24,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                   <SidebarTrigger className="-ml-1" />
                   <div className="ml-auto flex items-center space-x-4">
-                    {/* Header content can be added here */}
+                    <UserProfileMenu />
                   </div>
                 </header>
                 <main className="flex-1 overflow-auto p-4">

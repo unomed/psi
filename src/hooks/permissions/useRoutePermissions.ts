@@ -30,11 +30,11 @@ export function useRoutePermissions() {
     },
     users: {
       requiredPermission: 'manage_users',
-      allowedRoles: ['superadmin']
+      allowedRoles: ['superadmin', 'admin']
     },
     companies: {
       requiredPermission: 'view_companies',
-      allowedRoles: ['superadmin']
+      allowedRoles: ['superadmin', 'admin']
     },
     billing: {
       requiredPermission: 'view_billing',

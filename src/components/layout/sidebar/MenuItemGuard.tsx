@@ -42,6 +42,15 @@ export function MenuItemGuard({
     };
   }
 
+  // Se não há configuração de rota, usar allowedRoles fornecidos
+  if (!routeConfig.allowedRoles && !routeConfig.requiredPermission) {
+    if (allowedRoles && userRole) {
+      const hasAccess = allowedRoles.includes(userRole);
+      console.log('[MenuItemGuard] Direct role check:', { hasAccess, userRole, allowedRoles });
+      return hasAccess ? <>{children}</> : null;
+    }
+  }
+
   const hasAccess = canAccessRoute(routeConfig);
 
   console.log('[MenuItemGuard] Access result:', {

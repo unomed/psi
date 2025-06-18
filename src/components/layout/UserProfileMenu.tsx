@@ -18,6 +18,8 @@ export function UserProfileMenu() {
   const { user, signOut, userRole } = useAuth();
   const navigate = useNavigate();
   
+  console.log('[UserProfileMenu] Current user:', { user: !!user, userRole });
+  
   const initials = user?.user_metadata?.full_name
     ? user.user_metadata.full_name
         .split(" ")
@@ -30,9 +32,20 @@ export function UserProfileMenu() {
   const userName = user?.user_metadata?.full_name || "Usuário";
   
   const handleLogout = async () => {
-    await signOut();
-    navigate("/auth/login");
+    console.log('[UserProfileMenu] Iniciando logout');
+    try {
+      await signOut();
+      console.log('[UserProfileMenu] Logout realizado, redirecionando');
+      navigate("/auth/login");
+    } catch (error) {
+      console.error('[UserProfileMenu] Erro no logout:', error);
+    }
   };
+  
+  if (!user) {
+    console.log('[UserProfileMenu] Usuário não autenticado, não mostrando menu');
+    return null;
+  }
   
   return (
     <DropdownMenu>
@@ -52,6 +65,11 @@ export function UserProfileMenu() {
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email}
             </p>
+            {userRole && (
+              <p className="text-xs leading-none text-muted-foreground capitalize">
+                Perfil: {userRole}
+              </p>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -64,7 +82,7 @@ export function UserProfileMenu() {
           </DropdownMenuItem>
           {(userRole === 'superadmin' || userRole === 'admin') && (
             <DropdownMenuItem asChild>
-              <Link to="/configuracoes/criterios">
+              <Link to="/configuracoes/criterios-avaliacao">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Configurações</span>
               </Link>
