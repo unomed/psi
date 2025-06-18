@@ -1,24 +1,33 @@
 
 import React from "react";
-import TestMinimal from "./test-minimal";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppRoutes } from "@/components/routing/AppRoutes";
+import { AuthProvider } from "@/contexts/AuthContext";
 
-// VERSÃO FINAL - REACT PURO SEM NENHUMA DEPENDÊNCIA RADIX UI
+// QueryClient simples sem muita configuração
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
+
 function App() {
-  console.log('[App] React puro - ZERO Radix UI');
-  console.log('[App] React version:', React.version);
-  console.log('[App] useState funcionando:', !!React.useState);
+  console.log('[App] Sistema inicializado sem PWA - cache limpo');
+  console.log('[App] Inicializando aplicação com arquitetura isolada');
   
-  try {
-    return <TestMinimal />;
-  } catch (error) {
-    console.error('[App] ERRO:', error);
-    return (
-      <div style={{ padding: '20px', color: 'red', fontFamily: 'Arial' }}>
-        <h1>🚨 ERRO</h1>
-        <p>Erro: {error instanceof Error ? error.message : 'Erro desconhecido'}</p>
-      </div>
-    );
-  }
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 }
 
 export default App;
