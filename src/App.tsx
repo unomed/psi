@@ -1,33 +1,25 @@
 
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppRoutes } from "@/components/routing/AppRoutes";
-import { AuthProvider } from "@/contexts/AuthContext";
+import TestMinimal from "./test-minimal";
 
-// QueryClient simples sem muita configuração
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-    },
-  },
-});
-
+// VERSÃO TEMPORÁRIA PARA TESTE - REACT PURO SEM DEPS
 function App() {
-  console.log('[App] Sistema inicializado sem PWA - cache limpo');
-  console.log('[App] Inicializando aplicação com arquitetura isolada');
+  console.log('[App] TESTE EMERGENCIAL - React puro iniciado');
+  console.log('[App] React version:', React.version);
+  console.log('[App] React.useState disponível:', !!React.useState);
   
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
+  try {
+    return <TestMinimal />;
+  } catch (error) {
+    console.error('[App] ERRO CRÍTICO no render:', error);
+    return (
+      <div style={{ padding: '20px', color: 'red', fontFamily: 'Arial' }}>
+        <h1>🚨 ERRO CRÍTICO</h1>
+        <p>Erro: {error instanceof Error ? error.message : 'Erro desconhecido'}</p>
+        <p>O React não está funcionando corretamente.</p>
+      </div>
+    );
+  }
 }
 
 export default App;
