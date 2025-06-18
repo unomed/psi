@@ -1,64 +1,38 @@
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cn } from "@/lib/utils"
+import { SafeScrollArea } from "../../scroll-area-safe"
+
+export interface SidebarContentProps extends React.ComponentProps<"div"> {
+  asChild?: boolean
+}
 
 export const SidebarContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => (
-  <ScrollArea className="h-full">
-    <div
+  SidebarContentProps
+>(({ asChild = false, className, children, ...props }, ref) => {
+  const Comp = asChild ? Slot : "div"
+
+  return (
+    <Comp
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-hidden group-data-[collapsible=icon]:overflow-visible",
         className
       )}
       {...props}
-    />
-  </ScrollArea>
-));
-SidebarContent.displayName = "SidebarContent";
-
-export const SidebarGroup = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-sidebar="group"
-    className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
-    {...props}
-  />
-));
-SidebarGroup.displayName = "SidebarGroup";
-
-export const SidebarGroupContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-sidebar="group-content"
-    className={cn("relative flex w-full min-w-0 flex-col", className)}
-    {...props}
-  />
-));
-SidebarGroupContent.displayName = "SidebarGroupContent";
-
-export const SidebarGroupLabel = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    data-sidebar="group-label"
-    className={cn(
-      "text-xs font-medium uppercase tracking-wider text-sidebar-foreground/50 group-data-[collapsible=icon]:ml-2 group-data-[collapsible=icon]:text-center",
-      className
-    )}
-    {...props}
-  />
-));
-SidebarGroupLabel.displayName = "SidebarGroupLabel";
+    >
+      <SafeScrollArea 
+        className="flex-1"
+        fallback={<div className="overflow-auto flex-1">{children}</div>}
+      >
+        <div className="flex flex-col gap-2 p-2">
+          {children}
+        </div>
+      </SafeScrollArea>
+    </Comp>
+  )
+})
+SidebarContent.displayName = "SidebarContent"
