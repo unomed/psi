@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Select,
@@ -12,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRiskMatrix } from "@/hooks/useRiskMatrix";
 import { useRiskAssessments } from "@/hooks/useRiskAssessments";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RiskAnalysisFormIntegrated() {
   const { userCompanies } = useAuth();

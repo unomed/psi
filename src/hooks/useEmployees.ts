@@ -1,17 +1,21 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 
 interface Employee {
   id: string;
-  full_name: string;
+  name: string;
   email: string;
+  cpf: string;
   company_id: string;
   role_id: string;
   sector_id: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  role?: { name: string };
+  sectors?: { name: string };
 }
 
 interface UseEmployeesProps {
@@ -24,7 +28,7 @@ interface UseEmployeesProps {
 export function useEmployees({ companyId, sectorId, roleId, searchQuery }: UseEmployeesProps = {}) {
   const { user } = useAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['employees', companyId, sectorId, roleId, searchQuery, user?.id],
     queryFn: async (): Promise<Employee[]> => {
       if (!companyId && user?.role !== 'superadmin') {
@@ -32,35 +36,50 @@ export function useEmployees({ companyId, sectorId, roleId, searchQuery }: UseEm
         return [];
       }
 
-      let query = supabase
+      let queryBuilder = supabase
         .from('employees')
-        .select('*')
-        .eq('is_active', true);
+        .select(`
+          *,
+          roles:role_id(name),
+          sectors:sector_id(name)
+        `)
+        .eq('status', 'active');
 
       if (companyId) {
-        query = query.eq('company_id', companyId);
+        queryBuilder = queryBuilder.eq('company_id', companyId);
       }
 
       if (sectorId) {
-        query = query.eq('sector_id', sectorId);
+        queryBuilder = queryBuilder.eq('sector_id', sectorId);
       }
 
       if (roleId) {
-        query = query.eq('role_id', roleId);
+        queryBuilder = queryBuilder.eq('role_id', roleId);
       }
 
       if (searchQuery) {
-        query = query.ilike('full_name', `%${searchQuery}%`);
+        queryBuilder = queryBuilder.ilike('name', `%${searchQuery}%`);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await queryBuilder;
 
       if (error) {
         console.error("Error fetching employees:", error);
         throw error;
       }
 
-      return data || [];
+      return data?.map(emp => ({
+        ...emp,
+        role: emp.roles,
+        sectors: emp.sectors
+      })) || [];
     },
   });
+
+  return {
+    employees: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    ...query
+  };
 }

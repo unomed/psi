@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -20,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CirclePlus, Trash2 } from "lucide-react";
 import { useRiskMatrix } from "@/hooks/useRiskMatrix";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const COLORS = [
   "#F2FCE2", // Verde (baixo)

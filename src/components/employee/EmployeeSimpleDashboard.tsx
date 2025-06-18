@@ -1,261 +1,215 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, CheckCircle, Clock, FileText, Sparkles, Heart } from "lucide-react";
-import { useEmployeeAssessments } from "@/hooks/useEmployeeAssessments";
-import { WellnessCard } from "./modern/WellnessCard";
-import { DailyHealthMessage } from "./modern/DailyHealthMessage";
-import { ModernMoodSelector } from "./modern/ModernMoodSelector";
-import { QuestionnaireStatsCard } from "./modern/QuestionnaireStatsCard";
-import { AssessmentCard } from "./AssessmentCard";
+import { CalendarDays, CheckCircle, User2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getCurrentEmployeeId } from '@/utils/auth';
+import { useQuery } from '@tanstack/react-query';
+import { getEmployeePendingAssessments, getEmployeeMoodStats } from '@/services/employee/employeeService';
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { CalendarIcon } from '@radix-ui/react-icons';
 
 interface Assessment {
   id: string;
   title: string;
   status: 'pending' | 'completed';
-  dueDate?: Date;
-  completedAt?: Date;
-  description?: string;
+  dueDate: string;
+  completedAt: string | null;
+  description: string;
 }
 
-interface EmployeeSimpleDashboardProps {
-  employeeId: string;
-  employeeName: string;
-  companyName?: string;
+interface PendingAssessment {
+  assessment_id: string;
+  template_title: string;
+  template_description: string;
+  scheduled_date: string;
+  completed_date: string | null;
+  days_remaining: number | null;
 }
 
-export function EmployeeSimpleDashboard({
-  employeeId,
-  employeeName,
-  companyName = "Empresa"
-}: EmployeeSimpleDashboardProps) {
-  const { assessments, loading } = useEmployeeAssessments(employeeId);
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+export function EmployeeSimpleDashboard() {
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const employeeId = getCurrentEmployeeId();
+  
+  const { data: pendingAssessments = [], isLoading: isLoadingAssessments } = useQuery({
+    queryKey: ['employee-pending-assessments', employeeId],
+    queryFn: () => getEmployeePendingAssessments(employeeId!),
+    enabled: !!employeeId,
+  });
 
-  // Convert assessments to Assessment interface with proper type casting
-  const convertedAssessments: Assessment[] = assessments.map(assessment => ({
-    id: assessment.id,
-    title: assessment.title || assessment.template_name || 'Avaliação sem título',
-    status: (assessment.status === 'completed' || assessment.status === 'pending') ? assessment.status : 'pending',
-    dueDate: assessment.dueDate ? new Date(assessment.dueDate) : undefined,
-    completedAt: assessment.completedAt ? new Date(assessment.completedAt) : undefined,
-    description: assessment.description || undefined
+  const { data: moodStats } = useQuery({
+    queryKey: ['employee-mood-stats', employeeId],
+    queryFn: () => getEmployeeMoodStats(employeeId!),
+    enabled: !!employeeId,
+  });
+
+  // Convert PendingAssessment to Assessment format
+  const assessments: Assessment[] = pendingAssessments.map((assessment) => ({
+    id: assessment.assessment_id,
+    title: assessment.template_title || 'Avaliação',
+    status: 'pending' as const,
+    dueDate: new Date(assessment.scheduled_date).toLocaleDateString(),
+    completedAt: null,
+    description: assessment.template_description || 'Sem descrição',
   }));
 
-  // Separate assessments by status
-  const pendingAssessments = convertedAssessments.filter(a => a.status === 'pending');
-  const completedAssessments = convertedAssessments.filter(a => a.status === 'completed');
+  const recentAssessments: Assessment[] = pendingAssessments
+    .filter(assessment => assessment.days_remaining !== null && assessment.days_remaining <= 7)
+    .map((assessment) => ({
+      id: assessment.assessment_id,
+      title: assessment.template_title || 'Avaliação',
+      status: 'pending' as const,
+      dueDate: new Date(assessment.scheduled_date).toLocaleDateString(),
+      completedAt: null,
+      description: assessment.template_description || 'Sem descrição',
+    }));
 
-  const stats = [
-    {
-      title: "Avaliações Pendentes",
-      value: pendingAssessments.length,
-      icon: Clock,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50"
-    },
-    {
-      title: "Avaliações Concluídas",
-      value: completedAssessments.length,
-      icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-50"
-    },
-    {
-      title: "Total de Avaliações",
-      value: convertedAssessments.length,
-      icon: FileText,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
-    }
-  ];
-
-  const AssessmentCard = ({ assessment, showActions = true }: { assessment: Assessment; showActions?: boolean }) => {
-    const getStatusIcon = () => {
-      return assessment.status === 'completed' ? CheckCircle : Clock;
-    };
-
-    const getStatusColor = () => {
-      return assessment.status === 'completed' ? 'text-green-600' : 'text-orange-600';
-    };
-
-    const StatusIcon = getStatusIcon();
-
-    return (
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">{assessment.title}</CardTitle>
-            <div className="flex items-center gap-2">
-              <StatusIcon className={`h-5 w-5 ${getStatusColor()}`} />
-              <Badge variant={assessment.status === 'completed' ? 'default' : 'secondary'}>
-                {assessment.status === 'completed' ? 'Concluída' : 'Pendente'}
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {assessment.description && (
-            <p className="text-sm text-gray-600 mb-3">{assessment.description}</p>
-          )}
-          
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-            <Calendar className="h-4 w-4" />
-            {assessment.status === 'completed' && assessment.completedAt ? (
-              <span>Concluída em {assessment.completedAt.toLocaleDateString()}</span>
-            ) : assessment.dueDate ? (
-              <span>Prazo: {assessment.dueDate.toLocaleDateString()}</span>
-            ) : (
-              <span>Sem prazo definido</span>
-            )}
-          </div>
-
-          {showActions && assessment.status === 'pending' && (
-            <Button size="sm" className="w-full">
-              Iniciar Avaliação
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    );
+  const handleMoodSelection = (mood: number) => {
+    setSelectedMood(mood);
+    // Implement mood logging logic here
+    console.log(`Mood selected: ${mood}`);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Olá, {employeeName}!
-          </h1>
-          <p className="text-gray-600">
-            Bem-vindo ao seu portal de avaliações - {companyName}
-          </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {stats.map((stat, index) => {
-            const IconComponent = stat.icon;
-            return (
-              <Card key={index} className={`${stat.bgColor} border-none`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                      <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-                    </div>
-                    <IconComponent className={`h-8 w-8 ${stat.color}`} />
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Daily Health Check */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DailyHealthMessage />
-              <ModernMoodSelector />
+    <div className="w-full max-w-none p-6">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {/* Profile Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Meu Perfil</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center space-x-4">
+            <Avatar>
+              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium">Seu Nome</p>
+              <p className="text-xs text-muted-foreground">
+                seuemail@example.com
+              </p>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Pending Assessments */}
-            {pendingAssessments.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-orange-600" />
-                    Avaliações Pendentes
-                    <Badge variant="secondary">{pendingAssessments.length}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {pendingAssessments.map((assessment) => (
-                      <AssessmentCard
-                        key={assessment.id}
-                        assessment={assessment}
-                        showActions={true}
-                      />
-                    ))}
+        {/* Mood Logging Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Como você está se sentindo hoje?</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center space-x-4">
+            <Button
+              variant={selectedMood === 1 ? "secondary" : "outline"}
+              onClick={() => handleMoodSelection(1)}
+            >
+              Muito Ruim
+            </Button>
+            <Button
+              variant={selectedMood === 2 ? "secondary" : "outline"}
+              onClick={() => handleMoodSelection(2)}
+            >
+              Ruim
+            </Button>
+            <Button
+              variant={selectedMood === 3 ? "secondary" : "outline"}
+              onClick={() => handleMoodSelection(3)}
+            >
+              Neutro
+            </Button>
+            <Button
+              variant={selectedMood === 4 ? "secondary" : "outline"}
+              onClick={() => handleMoodSelection(4)}
+            >
+              Bem
+            </Button>
+            <Button
+              variant={selectedMood === 5 ? "secondary" : "outline"}
+              onClick={() => handleMoodSelection(5)}
+            >
+              Muito Bem
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+            <CardDescription>Acesso rápido a funcionalidades importantes.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <Button variant="outline" className="justify-start">
+              <User2 className="mr-2 h-4 w-4" />
+              Ver meu perfil
+            </Button>
+            <Button variant="outline" className="justify-start">
+              <CalendarDays className="mr-2 h-4 w-4" />
+              Agendar Avaliação
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator className="my-6" />
+
+      {/* Assessments Section */}
+      <div className="grid gap-4 grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>Suas Avaliações Pendentes</CardTitle>
+            <CardDescription>Lista de avaliações que você precisa completar.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px] w-full">
+              <div className="divide-y divide-border">
+                {assessments.map((assessment) => (
+                  <div key={assessment.id} className="py-4">
+                    <div className="flex justify-between">
+                      <p className="text-sm font-medium">{assessment.title}</p>
+                      <Badge variant="secondary">{assessment.status}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{assessment.description}</p>
+                    <div className="flex items-center text-xs text-muted-foreground mt-2">
+                      <CalendarIcon className="mr-1 w-3 h-3" />
+                      Entrega: {assessment.dueDate}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
 
-            {/* Completed Assessments */}
-            {completedAssessments.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    Avaliações Concluídas
-                    <Badge variant="outline">{completedAssessments.length}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {completedAssessments.slice(0, 3).map((assessment) => (
-                      <AssessmentCard
-                        key={assessment.id}
-                        assessment={assessment}
-                        showActions={false}
-                      />
-                    ))}
-                    {completedAssessments.length > 3 && (
-                      <p className="text-sm text-gray-500 text-center">
-                        E mais {completedAssessments.length - 3} avaliações concluídas...
-                      </p>
-                    )}
+        {/* Recent Activity Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Atividades Recentes</CardTitle>
+            <CardDescription>
+              Notificações sobre suas últimas atividades e avaliações.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px] w-full">
+              <div className="divide-y divide-border">
+                {recentAssessments.map((assessment) => (
+                  <div key={assessment.id} className="py-4">
+                    <div className="flex justify-between">
+                      <p className="text-sm font-medium">{assessment.title}</p>
+                      <Badge variant="secondary">{assessment.status}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{assessment.description}</p>
+                    <div className="flex items-center text-xs text-muted-foreground mt-2">
+                      <CalendarIcon className="mr-1 w-3 h-3" />
+                      Entrega: {assessment.dueDate}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Empty State */}
-            {convertedAssessments.length === 0 && (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhuma avaliação encontrada
-                  </h3>
-                  <p className="text-gray-500">
-                    Você não possui avaliações pendentes ou concluídas no momento.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <QuestionnaireStatsCard employeeId={employeeId} />
-            <WellnessCard />
-          </div>
-        </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

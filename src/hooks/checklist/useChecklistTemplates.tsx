@@ -1,9 +1,70 @@
+
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ChecklistTemplate } from "@/types/checklist";
 import { useAuth } from '@/hooks/useAuth';
+
+async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
+  const { data, error } = await supabase
+    .from('checklist_templates')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching checklist templates:", error);
+    throw error;
+  }
+
+  return data || [];
+}
+
+async function saveChecklistTemplate(data: Omit<ChecklistTemplate, "id" | "createdAt">, isSuperAdmin: boolean) {
+  const { error } = await supabase
+    .from('checklist_templates')
+    .insert([data]);
+
+  if (error) {
+    throw error;
+  }
+}
+
+async function updateChecklistTemplate(id: string, data: Partial<ChecklistTemplate>) {
+  const { error } = await supabase
+    .from('checklist_templates')
+    .update(data)
+    .eq('id', id);
+
+  if (error) {
+    throw error;
+  }
+}
+
+async function deleteChecklistTemplate(id: string) {
+  const { error } = await supabase
+    .from('checklist_templates')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw error;
+  }
+}
+
+async function copyTemplateForCompany(templateId: string, companyId: string, newTitle: string) {
+  const { error } = await supabase
+    .rpc('copy_template_for_company', {
+      template_id: templateId,
+      company_id: companyId,
+      new_title: newTitle
+    });
+
+  if (error) {
+    throw error;
+  }
+}
 
 export function useChecklistTemplates() {
   const { user, hasRole } = useAuth();
@@ -46,8 +107,7 @@ export function useChecklistTemplates() {
       }
 
       console.log("Atualizando template:", template);
-      // Usando apenas o ID e os campos a serem atualizados
-      const result = await updateChecklistTemplate(template.id, {
+      await updateChecklistTemplate(template.id, {
         title: template.title,
         description: template.description,
         type: template.type,
@@ -69,7 +129,6 @@ export function useChecklistTemplates() {
     try {
       const isSuperAdmin = await hasRole('superadmin');
       
-      // Para superadmins, permitir excluir qualquer template
       if (isSuperAdmin) {
         console.log("SuperAdmin excluindo template:", template.id);
         await deleteChecklistTemplate(template.id);
@@ -78,7 +137,6 @@ export function useChecklistTemplates() {
         return true;
       }
       
-      // Para usuários não superadmin, verificar permissões
       if (template.isStandard) {
         toast.error("Apenas superadmins podem excluir modelos padrão.");
         return false;

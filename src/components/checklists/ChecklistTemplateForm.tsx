@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,8 +56,11 @@ export function ChecklistTemplateForm({ template, onCancel }: ChecklistTemplateF
       }
 
       const payload = {
-        ...values,
-        company_id: user.user_metadata.companyId,
+        title: values.title,
+        description: values.description,
+        type: 'psychosocial',
+        scale_type: 'likert_5',
+        company_id: user.user_metadata?.companyId,
         created_by: user.id,
       };
 

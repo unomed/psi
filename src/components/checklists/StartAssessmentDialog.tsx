@@ -36,7 +36,7 @@ export function StartAssessmentDialog({
   };
 
   const handleTemplateSelect = (templateId: string) => {
-    const template = checklists.find(t => t.id === templateId);
+    const template = (checklists || []).find(t => t.id === templateId);
     setCurrentSelectedTemplate(template || null);
   };
 
@@ -46,7 +46,6 @@ export function StartAssessmentDialog({
       return;
     }
 
-    // Navegar para a página de avaliação
     navigate(`/assessment/${currentSelectedTemplate.id}/${selectedEmployee}`);
     onClose();
   };
@@ -57,7 +56,6 @@ export function StartAssessmentDialog({
       return;
     }
 
-    // Navegar para agendamentos
     navigate("/agendamentos");
     onClose();
   };
@@ -68,10 +66,8 @@ export function StartAssessmentDialog({
       return;
     }
 
-    // Gerar link de avaliação
     const link = `${window.location.origin}/funcionario?template=${currentSelectedTemplate.id}&employee=${selectedEmployee}`;
     
-    // Copiar para clipboard
     navigator.clipboard.writeText(link).then(() => {
       toast.success("Link copiado para a área de transferência!");
     }).catch(() => {
