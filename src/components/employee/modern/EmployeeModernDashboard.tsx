@@ -35,7 +35,7 @@ export function EmployeeModernDashboard({
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    window.location.href = "/auth/employee";
   };
 
   const renderCurrentView = () => {
@@ -43,7 +43,14 @@ export function EmployeeModernDashboard({
       case 'assessments':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Avaliações Agendadas</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Avaliações Agendadas</h2>
+              {assessmentId && (
+                <div className="text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                  ✨ Você tem uma avaliação específica para responder
+                </div>
+              )}
+            </div>
             <PendingAssessmentsList 
               employeeId={session?.employee?.employeeId || ""} 
               highlightAssessmentId={assessmentId}

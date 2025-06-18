@@ -4,8 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface PendingAssessment {
   id: string;
+  templateId: string;
   templateTitle: string;
-  dueDate: string;
+  templateDescription?: string;
+  scheduledDate: string;
+  dueDate?: string;
   status: string;
 }
 
@@ -29,13 +32,17 @@ export function useEmployeeAssessments(employeeId: string) {
           .select(`
             id,
             template_id,
+            scheduled_date,
             due_date,
             status,
-            checklist_templates!inner(title)
+            checklist_templates!inner(
+              title,
+              description
+            )
           `)
           .eq('employee_id', employeeId)
-          .eq('status', 'pending')
-          .order('due_date', { ascending: true });
+          .in('status', ['scheduled', 'sent'])
+          .order('scheduled_date', { ascending: true });
 
         if (error) {
           console.error('[useEmployeeAssessments] Erro ao carregar avaliações:', error);
@@ -44,7 +51,10 @@ export function useEmployeeAssessments(employeeId: string) {
 
         const formattedAssessments = (data || []).map(assessment => ({
           id: assessment.id,
+          templateId: assessment.template_id,
           templateTitle: assessment.checklist_templates?.title || 'Avaliação',
+          templateDescription: assessment.checklist_templates?.description || '',
+          scheduledDate: assessment.scheduled_date,
           dueDate: assessment.due_date,
           status: assessment.status
         }));

@@ -12,6 +12,7 @@ import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import ChecklistPortal from "@/pages/ChecklistPortal";
+import { AssessmentResponse } from "@/components/employee/AssessmentResponse";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
 import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
@@ -74,6 +75,17 @@ export function AppRoutes() {
           <EmployeeAuthNativeProvider>
             <SafeEmployeeGuard>
               <EmployeePortal />
+            </SafeEmployeeGuard>
+          </EmployeeAuthNativeProvider>
+        </EmployeeErrorBoundary>
+      } />
+
+      {/* Nova rota para resposta de avaliação no portal */}
+      <Route path="/employee-portal/assessment/:assessmentId" element={
+        <EmployeeErrorBoundary>
+          <EmployeeAuthNativeProvider>
+            <SafeEmployeeGuard>
+              <AssessmentResponse />
             </SafeEmployeeGuard>
           </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
