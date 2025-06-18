@@ -95,7 +95,15 @@ export function AppRoutes() {
       <Route path="/auth/employee" element={
         <EmployeeErrorBoundary>
           <EmployeeAuthNativeProvider>
-            <EmployeeRoutes />
+            <EmployeeLoginPage />
+          </EmployeeAuthNativeProvider>
+        </EmployeeErrorBoundary>
+      } />
+
+      <Route path="/portal" element={
+        <EmployeeErrorBoundary>
+          <EmployeeAuthNativeProvider>
+            <EmployeePortalPage />
           </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
