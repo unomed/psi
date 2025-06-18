@@ -4,13 +4,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getButtonClasses } from "@/components/ui/button";
 
-export interface CalendarProps extends React.ComponentProps<"div"> {
+export interface CalendarProps extends Omit<React.ComponentProps<"div">, "onSelect"> {
   mode?: "single" | "multiple" | "range";
   selected?: Date | Date[] | { from?: Date; to?: Date };
   onSelect?: (date: Date | Date[] | { from?: Date; to?: Date } | undefined) => void;
   disabled?: (date: Date) => boolean;
   showOutsideDays?: boolean;
-  initialFocus?: boolean; // Add this for compatibility
+  initialFocus?: boolean;
+  defaultMonth?: Date;
+  numberOfMonths?: number;
+  locale?: any; // Using any for locale since it can be from date-fns
 }
 
 function Calendar({
@@ -20,10 +23,13 @@ function Calendar({
   onSelect,
   disabled,
   showOutsideDays = true,
-  initialFocus, // Accept but ignore for now
+  initialFocus,
+  defaultMonth,
+  numberOfMonths = 1,
+  locale,
   ...props
 }: CalendarProps) {
-  const [currentMonth, setCurrentMonth] = React.useState(new Date());
+  const [currentMonth, setCurrentMonth] = React.useState(defaultMonth || new Date());
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = new Date(e.target.value);
@@ -58,6 +64,13 @@ function Calendar({
     });
   };
 
+  const formatMonthYear = (date: Date) => {
+    if (locale?.code === 'pt-BR' || locale?.formatLong) {
+      return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    }
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
   return (
     <div className={cn("p-3 pointer-events-auto", className)} {...props}>
       <div className="space-y-4">
@@ -74,7 +87,7 @@ function Calendar({
           </button>
           
           <div className="text-sm font-medium">
-            {currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+            {formatMonthYear(currentMonth)}
           </div>
           
           <button
