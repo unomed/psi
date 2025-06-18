@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthSessionSafe } from '@/hooks/useAuthSessionSafe';
 import { useUserRoleSimple } from '@/hooks/useUserRoleSimple';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { AppRole } from '@/types';
@@ -26,23 +26,27 @@ const SimpleAuthContext = createContext<SimpleAuthContextType | undefined>(undef
 const cleanupAuthState = () => {
   console.log("[SimpleAuthProvider] Limpando estado de autenticação");
   
-  // Limpar localStorage
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      localStorage.removeItem(key);
-    }
-  });
-  
-  // Limpar sessionStorage
-  Object.keys(sessionStorage || {}).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      sessionStorage.removeItem(key);
-    }
-  });
+  try {
+    // Limpar localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Limpar sessionStorage
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  } catch (error) {
+    console.warn("[SimpleAuthProvider] Erro ao limpar storage:", error);
+  }
 };
 
 export function SimpleAuthProvider({ children }: { children: React.ReactNode }) {
-  const { session, user, loading: authLoading } = useAuthSession();
+  const { session, user, loading: authLoading } = useAuthSessionSafe();
   
   const { 
     userRole, 
