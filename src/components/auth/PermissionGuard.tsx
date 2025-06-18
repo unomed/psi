@@ -1,8 +1,8 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { usePermissionGuard } from '@/hooks/permissions/usePermissionGuard';
-import { LoadingSpinner } from './LoadingSpinner';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 
 interface PermissionGuardProps {

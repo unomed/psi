@@ -1,133 +1,154 @@
-
-import React from 'react';
-import { useSafeState, useSafeEffect } from '@/hooks/useSafeReact';
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';
-import { useEmployeeData } from '@/hooks/useEmployeeData';
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Heart, MessageCircle, Calendar, Trophy, Target, Clock, TrendingUp, Users, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const healthMessages = [
-  {
-    icon: Heart,
-    title: "Cuide do seu coração",
-    message: "Lembre-se de respirar fundo. Alguns minutos de respiração consciente podem reduzir o estresse e melhorar seu humor.",
-    color: "from-pink-500 to-rose-500"
-  },
-  {
-    icon: Brain,
-    title: "Sua mente importa",
-    message: "Cada pequeno passo é uma vitória. Você está fazendo o seu melhor e isso é suficiente.",
-    color: "from-purple-500 to-indigo-500"
-  },
-  {
-    icon: Sun,
-    title: "Energia positiva",
-    message: "Um novo dia, novas possibilidades. Que tal uma pausa de 5 minutos para apreciar algo bom ao seu redor?",
-    color: "from-amber-500 to-orange-500"
-  },
-  {
-    icon: Heart,
-    title: "Autocuidado é importante",
-    message: "Hidrate-se, estique-se e sorria. Pequenos gestos de autocuidado fazem toda a diferença.",
-    color: "from-teal-500 to-cyan-500"
-  },
-  {
-    icon: Brain,
-    title: "Mindfulness no trabalho",
-    message: "Pratique a presença consciente. Concentre-se no momento atual e deixe as preocupações para depois.",
-    color: "from-emerald-500 to-green-500"
-  },
-  {
-    icon: Sun,
-    title: "Gratidão diária",
-    message: "Pense em 3 coisas pelas quais você é grato hoje. A gratidão é um remédio natural para a mente.",
-    color: "from-blue-500 to-cyan-500"
-  }
+// Remove useSafeState - usar useState normal
+const moodsData = [
+  { emoji: "😔", level: 1, description: "Muito triste", color: "bg-red-100 text-red-800" },
+  { emoji: "😐", level: 2, description: "Neutro", color: "bg-gray-100 text-gray-800" },
+  { emoji: "😊", level: 3, description: "Bem", color: "bg-yellow-100 text-yellow-800" },
+  { emoji: "😄", level: 4, description: "Muito bem", color: "bg-green-100 text-green-800" },
+  { emoji: "🤗", level: 5, description: "Excelente", color: "bg-blue-100 text-blue-800" }
 ];
 
 interface DailyHealthMessageProps {
-  employeeId: string;
+  onSubmit?: (data: { mood: number; message: string; selectedTopics: string[] }) => void;
 }
 
-export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
-  // Check React availability first
-  if (typeof React === 'undefined' || !React) {
-    console.warn('[DailyHealthMessage] React not available');
-    return null;
-  }
+export function DailyHealthMessage({ onSubmit }: DailyHealthMessageProps) {
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [message, setMessage] = useState("");
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [showTopics, setShowTopics] = useState(false);
 
-  const [currentMessage, setCurrentMessage] = useSafeState(0);
-  const { data: employeeData } = useEmployeeData(employeeId);
+  
+  const healthTopics = [
+    { id: "sono", label: "Qualidade do sono", icon: Clock },
+    { id: "estresse", label: "Níveis de estresse", icon: TrendingUp },
+    { id: "trabalho", label: "Satisfação no trabalho", icon: Target },
+    { id: "relacionamento", label: "Relacionamentos", icon: Users },
+    { id: "energia", label: "Níveis de energia", icon: Trophy },
+    { id: "motivacao", label: "Motivação", icon: Star }
+  ];
 
-  const isBirthday = () => {
-    if (!employeeData?.birth_date) return false;
-    
-    const today = new Date();
-    const birthDate = new Date(employeeData.birth_date);
-    
-    return today.getDate() === birthDate.getDate() && 
-           today.getMonth() === birthDate.getMonth();
-  };
-
-  const getBirthdayMessage = () => {
-    if (!employeeData) return null;
-    
-    return {
-      icon: Gift,
-      title: "🎉 Feliz Aniversário!",
-      message: `Parabéns, ${employeeData.name.split(' ')[0]}! A Unomed deseja um dia repleto de alegria e realizações. Que este novo ano de vida seja cheio de saúde, felicidade e conquistas!`,
-      color: "from-purple-500 via-pink-500 to-red-500"
-    };
-  };
-
-  useSafeEffect(() => {
-    if (!isBirthday()) {
-      // Rotaciona a mensagem a cada carregamento baseado no dia
-      const today = new Date().getDate();
-      setCurrentMessage(today % healthMessages.length);
-    }
-  }, [employeeData]);
-
-  const handleRefresh = () => {
-    if (!isBirthday()) {
-      setCurrentMessage((prev) => (prev + 1) % healthMessages.length);
+  const handleMoodSelect = (moodLevel: number) => {
+    setSelectedMood(moodLevel);
+    if (moodLevel <= 2) {
+      setShowTopics(true);
+    } else {
+      setSelectedTopics([]);
+      setShowTopics(false);
     }
   };
 
-  // Priorizar mensagem de aniversário se for o caso
-  const message = isBirthday() ? getBirthdayMessage() : healthMessages[currentMessage];
-  
-  if (!message) return null;
-  
-  const IconComponent = message.icon;
+  const toggleTopic = (topicId: string) => {
+    setSelectedTopics(prev => 
+      prev.includes(topicId) 
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
+    );
+  };
+
+  const handleSubmit = () => {
+    if (selectedMood && onSubmit) {
+      onSubmit({
+        mood: selectedMood,
+        message,
+        selectedTopics
+      });
+    }
+  };
+
+  const selectedMoodData = selectedMood ? moodsData.find(m => m.level === selectedMood) : null;
 
   return (
-    <Card className={`bg-gradient-to-r ${message.color} text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${isBirthday() ? 'animate-pulse' : ''}`}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <IconComponent className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-semibold">{message.title}</h3>
+    <Card className="w-full max-w-md mx-auto">
+      <CardContent className="p-6 space-y-6">
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <Heart className="h-5 w-5 text-red-500" />
+            <h3 className="text-lg font-semibold">Como você está hoje?</h3>
           </div>
-          {!isBirthday() && (
-            <button
-              onClick={handleRefresh}
-              className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-              title="Nova mensagem"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </button>
-          )}
+          <p className="text-sm text-muted-foreground">
+            Compartilhe como você se sente para que possamos te apoiar melhor
+          </p>
         </div>
-        <p className="text-white/90 leading-relaxed">{message.message}</p>
-        {isBirthday() && (
-          <div className="mt-4 text-center">
-            <div className="inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-sm font-medium">
-              🎂 Mensagem especial da Unomed
+
+        <div className="grid grid-cols-5 gap-2">
+          {moodsData.map((mood) => (
+            <button
+              key={mood.level}
+              onClick={() => handleMoodSelect(mood.level)}
+              className={cn(
+                "p-3 rounded-lg border-2 transition-all hover:scale-105",
+                selectedMood === mood.level
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
+              )}
+            >
+              <div className="text-2xl mb-1">{mood.emoji}</div>
+              <div className="text-xs font-medium">{mood.level}</div>
+            </button>
+          ))}
+        </div>
+
+        {selectedMoodData && (
+          <div className="text-center">
+            <Badge className={selectedMoodData.color}>
+              {selectedMoodData.description}
+            </Badge>
+          </div>
+        )}
+
+        {showTopics && (
+          <div className="space-y-3">
+            <div className="text-sm font-medium">
+              O que está afetando seu bem-estar? (opcional)
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {healthTopics.map((topic) => (
+                <button
+                  key={topic.id}
+                  onClick={() => toggleTopic(topic.id)}
+                  className={cn(
+                    "p-2 rounded-lg border text-xs transition-all",
+                    selectedTopics.includes(topic.id)
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/50"
+                  )}
+                >
+                  <topic.icon className="h-3 w-3 mx-auto mb-1" />
+                  {topic.label}
+                </button>
+              ))}
             </div>
           </div>
         )}
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">
+            Quer compartilhar algo mais? (opcional)
+          </label>
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Como foi seu dia? O que você gostaria de compartilhar?"
+            className="min-h-[80px]"
+          />
+        </div>
+
+        <Button 
+          onClick={handleSubmit}
+          disabled={!selectedMood}
+          className="w-full"
+        >
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Compartilhar
+        </Button>
       </CardContent>
     </Card>
   );

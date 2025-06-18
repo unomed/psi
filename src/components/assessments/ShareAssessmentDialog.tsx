@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { ChecklistTemplate, ScheduledAssessment } from "@/types";
 import { useEmployees } from "@/hooks/useEmployees";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ShareAssessmentDialogProps {
   isOpen: boolean;

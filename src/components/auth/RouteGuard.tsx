@@ -1,10 +1,10 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useCheckPermission } from '@/hooks/useCheckPermission';
 import { useCompanyAccess } from '@/hooks/useCompanyAccess';
 import { RoleCheck } from './RoleCheck';
-import { LoadingSpinner } from './LoadingSpinner';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 
 interface RouteGuardProps {

@@ -1,8 +1,7 @@
-
 import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar";
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
 import { SafeSidebarContent } from "./sidebar/SafeSidebarContent";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AppSidebar() {
   const { userRole } = useAuth();

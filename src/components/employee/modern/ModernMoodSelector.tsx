@@ -1,132 +1,135 @@
 
-import React from 'react';
-import { useSafeState } from '@/hooks/useSafeReact';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MOOD_OPTIONS } from '@/types/employee-auth';
-import { useEmployeeMoodSafe } from '@/hooks/useEmployeeMoodSafe';
-import { formatDate } from '@/utils/dateFormat';
-import { Sparkles, CheckCircle, Info } from 'lucide-react';
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar, MessageSquare, TrendingUp, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface ModernMoodSelectorProps {
-  employeeId: string;
+// Remove useSafeState - usar useState normal
+interface MoodEntry {
+  id: string;
+  mood: number;
+  emoji: string;
+  description: string;
+  message?: string;
+  timestamp: Date;
 }
 
-export function ModernMoodSelector({ employeeId }: ModernMoodSelectorProps) {
-  // Check React availability first
-  if (typeof React === 'undefined' || !React) {
-    console.warn('[ModernMoodSelector] React not available');
-    return null;
-  }
+interface ModernMoodSelectorProps {
+  onSubmit?: (data: { mood: number; message: string }) => void;
+  recentEntries?: MoodEntry[];
+}
 
-  const { todayMood, saveMood } = useEmployeeMoodSafe(employeeId);
-  const [selectedMood, setSelectedMood] = useSafeState<number | null>(null);
-  const [saving, setSaving] = useSafeState(false);
+const moodOptions = [
+  { level: 1, emoji: "😰", description: "Muito ansioso", color: "bg-red-50 border-red-200 text-red-700" },
+  { level: 2, emoji: "😔", description: "Triste", color: "bg-orange-50 border-orange-200 text-orange-700" },
+  { level: 3, emoji: "😐", description: "Neutro", color: "bg-gray-50 border-gray-200 text-gray-700" },
+  { level: 4, emoji: "😊", description: "Bem", color: "bg-green-50 border-green-200 text-green-700" },
+  { level: 5, emoji: "😄", description: "Excelente", color: "bg-blue-50 border-blue-200 text-blue-700" }
+];
 
-  const handleMoodSelect = async (mood: typeof MOOD_OPTIONS[number]) => {
-    // Se já tem humor registrado, mostrar informação
-    if (todayMood) {
-      return;
+export function ModernMoodSelector({ onSubmit, recentEntries = [] }: ModernMoodSelectorProps) {
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [message, setMessage] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
+
+  const handleSubmit = () => {
+    if (selectedMood && onSubmit) {
+      onSubmit({ mood: selectedMood, message });
+      setSelectedMood(null);
+      setMessage("");
     }
-
-    setSaving(true);
-    setSelectedMood(mood.score);
-    
-    const result = await saveMood(mood.score, mood.emoji, mood.description);
-    
-    setSaving(false);
-    setSelectedMood(null);
   };
 
-  if (todayMood) {
-    return (
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-lg">
-        <CardHeader className="text-center pb-3">
-          <div className="flex items-center justify-center mb-2">
-            <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
-            <CardTitle className="text-green-800">Humor Registrado!</CardTitle>
-          </div>
-          <CardDescription className="text-green-700">
-            {formatDate(new Date())}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-center">
-          <div className="bg-white/60 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="text-7xl mb-3">{todayMood.moodEmoji}</div>
-            <p className="text-xl font-semibold text-gray-800 mb-2">{todayMood.moodDescription}</p>
-            <p className="text-sm text-gray-600 mb-3">
-              Registrado às {new Date(todayMood.createdAt).toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-              <div className="flex items-center justify-center text-blue-700">
-                <Info className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">
-                  Você pode registrar seu humor uma vez por dia
-                </span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const selectedMoodOption = selectedMood ? moodOptions.find(m => m.level === selectedMood) : null;
+
+  // Simular entrada recente para mostrar histórico
+  const mockRecentEntry = recentEntries.length > 0 ? recentEntries[0] : null;
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center mb-2">
-          <Sparkles className="h-6 w-6 text-blue-600 mr-2" />
-          <CardTitle className="text-blue-800">Como você está hoje?</CardTitle>
-        </div>
-        <CardDescription className="text-blue-700">
-          Registre seu humor • {formatDate(new Date())}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-5 gap-2">
-          {MOOD_OPTIONS.map((mood) => (
-            <Button
-              key={mood.score}
-              variant="outline"
-              className={`h-20 flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:scale-105 border-2 bg-white/60 backdrop-blur-sm ${
-                selectedMood === mood.score 
-                  ? 'scale-110 shadow-lg' 
-                  : 'hover:shadow-md'
-              }`}
-              onClick={() => handleMoodSelect(mood)}
-              disabled={saving}
-              style={{
-                borderColor: selectedMood === mood.score ? mood.color : 'rgb(226 232 240)',
-                backgroundColor: selectedMood === mood.score ? `${mood.color}20` : undefined
-              }}
-            >
-              <span className="text-3xl mb-1">{mood.emoji}</span>
-              <span className="text-xs font-medium text-center leading-tight">{mood.description}</span>
-            </Button>
-          ))}
-        </div>
-        
-        {saving && (
-          <div className="text-center mt-6">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-lg">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-              Salvando seu humor...
-            </div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Como você está se sentindo hoje?
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-5 gap-3">
+            {moodOptions.map((option) => (
+              <button
+                key={option.level}
+                onClick={() => setSelectedMood(option.level)}
+                className={cn(
+                  "p-4 rounded-lg border-2 transition-all hover:scale-105 text-center",
+                  selectedMood === option.level
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/30",
+                  option.color
+                )}
+              >
+                <div className="text-3xl mb-2">{option.emoji}</div>
+                <div className="text-xs font-medium">{option.description}</div>
+                <div className="text-xs text-muted-foreground mt-1">{option.level}</div>
+              </button>
+            ))}
           </div>
-        )}
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-4">
-          <div className="flex items-center justify-center text-gray-600">
-            <Info className="h-4 w-4 mr-2" />
-            <span className="text-sm">
-              Você pode registrar seu humor apenas uma vez por dia
-            </span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          {selectedMoodOption && (
+            <div className="space-y-4">
+              <div className="text-center p-3 rounded-lg bg-muted">
+                <span className="text-2xl mr-2">{selectedMoodOption.emoji}</span>
+                <span className="font-medium">{selectedMoodOption.description}</span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Quer compartilhar mais detalhes? (opcional)
+                </label>
+                <Textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="O que está acontecendo? Como podemos te ajudar?"
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <Button onClick={handleSubmit} className="w-full">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Registrar Estado de Humor
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {mockRecentEntry && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Último Registro
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">{mockRecentEntry.emoji || "😊"}</div>
+              <div className="flex-1">
+                <div className="font-medium">{mockRecentEntry.description || "Bem"}</div>
+                {mockRecentEntry.message && (
+                  <p className="text-sm text-muted-foreground mt-1">{mockRecentEntry.message}</p>
+                )}
+                <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(mockRecentEntry.timestamp || Date.now()).toLocaleDateString('pt-BR')}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
