@@ -6,7 +6,6 @@ import { useUserRoleSafe } from '@/hooks/useUserRoleSafe';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -44,7 +43,6 @@ const cleanupAuthState = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
   const { session, user, loading: authLoading } = useAuthSession();
   
   // Use the safer version of useUserRole
@@ -105,9 +103,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.user) {
         console.log("[AuthProvider] Login bem-sucedido, redirecionando...");
         
-        // Aguardar um momento para o estado ser atualizado
+        // Aguardar um momento para o estado ser atualizado e usar window.location
         setTimeout(() => {
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/dashboard';
         }, 100);
       }
       
@@ -163,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (!role) {
-        navigate('/auth/login', { replace: true });
+        window.location.href = '/auth/login';
       }
       
       return authData.user;
