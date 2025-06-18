@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -6,6 +5,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -43,8 +43,10 @@ const cleanupAuthState = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const { session, user, loading: authLoading } = useAuthSession();
   
+  // Call useUserRole directly at the top level - no more useMemo wrapping
   const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
@@ -65,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isLoading = authLoading || roleLoading;
 
-  // Implementar ações de auth diretamente no contexto - SEM useNavigate
+  // Implementar ações de auth diretamente no contexto para evitar dependência circular
   const signIn = async (email: string, password: string) => {
     try {
       console.log("[AuthProvider] Iniciando processo de login");
@@ -92,11 +94,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (data.user) {
-        console.log("[AuthProvider] Login bem-sucedido");
-        toast({
-          title: "Login realizado com sucesso",
-          description: "Bem-vindo de volta!"
-        });
+        console.log("[AuthProvider] Login bem-sucedido, redirecionando...");
+        
+        // Aguardar um momento para o estado ser atualizado
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 100);
       }
       
       return;
@@ -150,6 +153,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "O usuário já pode fazer login com suas credenciais"
       });
       
+      if (!role) {
+        navigate('/auth/login', { replace: true });
+      }
+      
       return authData.user;
     } catch (error: any) {
       console.error("[AuthProvider] Erro completo no cadastro:", error);
@@ -177,15 +184,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Continuar mesmo se der erro
       }
       
-      toast({
-        title: "Logout realizado com sucesso", 
-        description: "Até breve!"
-      });
-      
-      // Forçar redirecionamento via window.location para garantir limpeza completa
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // Forçar redirecionamento e reload completo
+      window.location.href = '/auth/login';
     } catch (error: any) {
       console.error("[AuthProvider] Erro completo no logout:", error);
       toast({

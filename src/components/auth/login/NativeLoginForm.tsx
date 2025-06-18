@@ -12,18 +12,31 @@ export function NativeLoginForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
-  // Redirecionamento após login bem-sucedido
+  // Redirecionamento estável usando useEffect
+  useEffect(() => {
+    if (user && !loading && shouldRedirect) {
+      console.log('[NativeLoginForm] Executando redirecionamento seguro');
+      const timeoutId = setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100); // Pequeno delay para garantir estabilidade
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user, loading, shouldRedirect, navigate]);
+
+  // Verificação inicial de usuário logado
   useEffect(() => {
     if (user && !loading) {
-      console.log('[NativeLoginForm] Login detectado, redirecionando para dashboard');
-      navigate('/dashboard', { replace: true });
+      console.log('[NativeLoginForm] Usuário já logado, preparando redirecionamento');
+      setShouldRedirect(true);
     }
-  }, [user, loading, navigate]);
+  }, [user, loading]);
 
   const validateForm = () => {
     if (!formData.email) {
@@ -57,7 +70,13 @@ export function NativeLoginForm() {
     
     try {
       await signIn(formData.email, formData.password);
-      // O redirecionamento será feito pelo useEffect quando user for atualizado
+      
+      // Log de sucesso simples
+      console.log('Login realizado com sucesso!');
+      
+      // Definir flag para redirecionamento
+      setShouldRedirect(true);
+      
     } catch (error) {
       console.error("Erro no login:", error);
       let errorMessage = "Erro ao realizar login. Verifique suas credenciais.";
@@ -75,6 +94,7 @@ export function NativeLoginForm() {
       }
       
       setLoginError(errorMessage);
+      console.error('Erro no login:', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -85,8 +105,8 @@ export function NativeLoginForm() {
     if (loginError) setLoginError(null);
   };
 
-  // Mostrar loading se está autenticando ou usuário já está logado
-  if (user && !loading) {
+  // Se deve redirecionar, mostrar loading
+  if (shouldRedirect && user) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center space-y-2">

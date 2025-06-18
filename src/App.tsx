@@ -2,8 +2,8 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppRoutes } from "@/components/routing/AppRoutes";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
+import { SimpleRoutes } from "@/components/routing/SimpleRoutes";
 
 // QueryClient simples sem muita configuração
 const queryClient = new QueryClient({
@@ -16,14 +16,14 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log('[App] Sistema Unificado - Admin/Superadmin e Funcionários');
+  console.log('[App] Portal do Funcionário - Versão Final Estável');
   
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
+        <EmployeeAuthNativeProvider>
+          <SimpleRoutes />
+        </EmployeeAuthNativeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

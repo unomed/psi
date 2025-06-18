@@ -1,20 +1,20 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { AuthRoutes } from "./AuthRoutes";
 import { AdminRoutes } from "./AdminRoutes";
 import { SettingsRoutes } from "./SettingsRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminGuard } from "@/components/auth/AdminGuard";
-import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
+import { EmployeeGuard } from "@/components/auth/EmployeeGuard";
+import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
+import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import ChecklistPortal from "@/pages/ChecklistPortal";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
-import { EmployeeLoginPage } from "@/pages/EmployeeLoginPage";
-import { EmployeePortalPage } from "@/pages/EmployeePortalPage";
-import Login from "@/pages/auth/Login";
-import Index from "@/pages/Index";
+import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -25,7 +25,7 @@ export function AppRoutes() {
     currentPath: window.location.pathname
   });
 
-  // Loading melhorado
+  // Loading melhorado com detecção de problemas
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -41,49 +41,66 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      {/* Página inicial - seletor de sistema */}
-      <Route path="/" element={<Index />} />
-
-      {/* Login administrativo */}
-      <Route path="/auth/login" element={<Login />} />
-
-      {/* Rotas de funcionários - isoladas e com contexto próprio */}
-      <Route path="/auth/employee" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <EmployeeLoginPage />
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
+      {/* Rotas de autenticação - PRIORIDADE MÁXIMA com Error Boundary */}
+      <Route path="/auth/*" element={
+        <FormErrorBoundary>
+          <AuthRoutes />
+        </FormErrorBoundary>
       } />
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/register" element={<Navigate to="/auth/register" replace />} />
 
-      <Route path="/portal" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <EmployeePortalPage />
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-
-      {/* Rotas para checklist com validação */}
+      {/* Nova rota para checklist com validação */}
       <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
       <Route path="/checklist" element={<ChecklistPortal />} />
+
+      {/* ROTA ISOLADA PARA FUNCIONÁRIOS - SEM PROVIDERS PROBLEMÁTICOS */}
+      <Route path="/auth/employee" element={
+        <EmployeeErrorBoundary>
+          <EmployeeLoginIsolated />
+        </EmployeeErrorBoundary>
+      } />
+      
+      {/* Portal do funcionário com providers originais */}
+      <Route path="/employee-portal" element={
+        <EmployeeErrorBoundary>
+          <EmployeeAuthProvider>
+            <EmployeeGuard>
+              <EmployeePortal />
+            </EmployeeGuard>
+          </EmployeeAuthProvider>
+        </EmployeeErrorBoundary>
+      } />
+      
+      <Route path="/employee-portal/:templateId" element={
+        <EmployeeErrorBoundary>
+          <EmployeeAuthProvider>
+            <EmployeeGuard>
+              <EmployeePortal />
+            </EmployeeGuard>
+          </EmployeeAuthProvider>
+        </EmployeeErrorBoundary>
+      } />
 
       {/* Avaliações públicas com tokens - isoladas */}
       <Route path="/avaliacao/:token" element={
         <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
+          <EmployeeAuthProvider>
             <PublicAssessment />
-          </EmployeeAuthNativeProvider>
+          </EmployeeAuthProvider>
         </EmployeeErrorBoundary>
       } />
       
       <Route path="/assessment/:token" element={
         <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
+          <EmployeeAuthProvider>
             <PublicAssessment />
-          </EmployeeAuthNativeProvider>
+          </EmployeeAuthProvider>
         </EmployeeErrorBoundary>
       } />
+
+      {/* Redirecionamento do portal do funcionário */}
+      <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />
 
       {/* Rotas administrativas protegidas */}
       {user && (
@@ -112,8 +129,17 @@ export function AppRoutes() {
         </>
       )}
 
-      {/* Redirecionamento para usuários não autenticados */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Redirecionamento padrão corrigido para não interferir com rotas de funcionário */}
+      <Route 
+        path="/" 
+        element={
+          user ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/auth/login" replace />
+          )
+        } 
+      />
     </Routes>
   );
 }

@@ -1,10 +1,27 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Lock, AlertCircle } from "lucide-react";
-import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
+import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
+import { toast } from "sonner";
+import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
+import { EmployeeNativeLoginForm } from "./EmployeeNativeLoginForm";
+
+// Detectar se react-hook-form está disponível e funcionando
+const isReactHookFormAvailable = () => {
+  try {
+    // Verificar se podemos importar react-hook-form sem erro
+    const { useForm } = require('react-hook-form');
+    return typeof useForm === 'function';
+  } catch (error) {
+    console.warn('[EmployeeLoginForm] react-hook-form não disponível:', error);
+    return false;
+  }
+};
 
 interface EmployeeLoginFormProps {
   onLoginSuccess: (employeeData: any) => void;
@@ -14,7 +31,34 @@ interface EmployeeLoginFormProps {
   assessmentId?: string | null;
 }
 
-export function EmployeeLoginForm({ 
+export function EmployeeLoginForm(props: EmployeeLoginFormProps) {
+  const [useNativeForm, setUseNativeForm] = useState(false);
+
+  useEffect(() => {
+    // Verificar se devemos usar o formulário nativo
+    if (!isReactHookFormAvailable()) {
+      console.log('[EmployeeLoginForm] Usando formulário nativo devido a problemas com react-hook-form');
+      setUseNativeForm(true);
+    }
+  }, []);
+
+  // Se devemos usar o formulário nativo, renderizar diretamente
+  if (useNativeForm) {
+    return <EmployeeNativeLoginForm {...props} />;
+  }
+
+  // Tentar usar o formulário com react-hook-form dentro de um Error Boundary
+  return (
+    <FormErrorBoundary 
+      fallbackComponent={<EmployeeNativeLoginForm {...props} />}
+    >
+      <OriginalEmployeeLoginForm {...props} />
+    </FormErrorBoundary>
+  );
+}
+
+// Componente original que usa react-hook-form (mantido para compatibilidade)
+function OriginalEmployeeLoginForm({ 
   onLoginSuccess, 
   expectedEmployeeId,
   assessmentToken,
@@ -25,8 +69,7 @@ export function EmployeeLoginForm({
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
-  const { login } = useEmployeeAuthNative();
+  const { login } = useEmployeeAuth();
 
   const formatCPF = (value: string) => {
     const digits = value.replace(/\D/g, '');
@@ -73,15 +116,20 @@ export function EmployeeLoginForm({
         return;
       }
 
-      console.log(`[EmployeeLoginForm] Tentando login com CPF: ${cleanCpf.slice(0, 3)}***`);
+      console.log(`[EmployeeLogin] Tentando login com CPF: ${cleanCpf.slice(0, 3)}***`);
 
       const result = await login(cleanCpf, password);
       
       if (result.success) {
-        console.log("Login realizado com sucesso!");
+        if (expectedEmployeeId && assessmentId) {
+          toast.success("Login realizado com sucesso! Redirecionando para sua avaliação...");
+        } else {
+          toast.success("Login realizado com sucesso!");
+        }
+        
         onLoginSuccess(result);
       } else {
-        console.error(`[EmployeeLoginForm] Erro no login:`, result.error);
+        console.error(`[EmployeeLogin] Erro no login:`, result.error);
         setError(result.error || "Erro no login. Verifique suas credenciais.");
       }
     } catch (error) {
@@ -93,56 +141,50 @@ export function EmployeeLoginForm({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl">
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl text-center">
           Portal do Funcionário
         </CardTitle>
-        <p className="text-muted-foreground">
+        <p className="text-center text-muted-foreground">
           {assessmentId ? 
             "Faça login para acessar sua avaliação" : 
-            "Digite seu CPF e senha para continuar"
+            "Entre com seu CPF e senha"
           }
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="cpf" className="text-sm font-medium leading-none">
-              CPF
-            </label>
+            <Label htmlFor="cpf">CPF</Label>
             <div className="relative">
               <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 id="cpf"
                 type="text"
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={handleCpfChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pl-10"
                 required
                 maxLength={14}
-                disabled={isLoading}
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium leading-none">
-              Senha (últimos 4 dígitos do CPF)
-            </label>
+            <Label htmlFor="password">Senha</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
+              <Input
                 id="password"
                 type="password"
                 placeholder="0000"
                 value={password}
                 onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="pl-10"
                 required
                 maxLength={4}
-                disabled={isLoading}
               />
             </div>
           </div>
@@ -168,14 +210,7 @@ export function EmployeeLoginForm({
             className="w-full" 
             disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Entrando...
-              </>
-            ) : (
-              "Entrar"
-            )}
+            {isLoading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
       </CardContent>
