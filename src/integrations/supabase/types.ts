@@ -2417,6 +2417,7 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string | null
+          due_date: string | null
           employee_data: Json | null
           employee_id: string
           employee_name: string | null
@@ -2436,6 +2437,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          due_date?: string | null
           employee_data?: Json | null
           employee_id: string
           employee_name?: string | null
@@ -2455,6 +2457,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          due_date?: string | null
           employee_data?: Json | null
           employee_id?: string
           employee_name?: string | null
