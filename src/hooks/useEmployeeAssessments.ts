@@ -29,13 +29,13 @@ export function useEmployeeAssessments(employeeId: string) {
           .select(`
             id,
             template_id,
-            due_date,
+            scheduled_date,
             status,
             checklist_templates!inner(title)
           `)
           .eq('employee_id', employeeId)
           .eq('status', 'pending')
-          .order('due_date', { ascending: true });
+          .order('scheduled_date', { ascending: true });
 
         if (error) {
           console.error('[useEmployeeAssessments] Erro ao carregar avaliações:', error);
@@ -45,7 +45,7 @@ export function useEmployeeAssessments(employeeId: string) {
         const formattedAssessments = (data || []).map(assessment => ({
           id: assessment.id,
           templateTitle: assessment.checklist_templates?.title || 'Avaliação',
-          dueDate: assessment.due_date,
+          dueDate: assessment.scheduled_date,
           status: assessment.status
         }));
 

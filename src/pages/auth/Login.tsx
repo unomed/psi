@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/layout/AuthLayout';
-import { AdaptiveLoginForm } from '@/components/auth/login/AdaptiveLoginForm';
+import { LoginForm } from '@/components/auth/login/LoginForm';
 import { Shield } from 'lucide-react';
 
 export default function Login() {
@@ -23,7 +23,7 @@ export default function Login() {
       }
     >
       <div className="space-y-6">
-        {/* Formulário de Login Adaptativo */}
+        {/* Formulário de Login */}
         <div className="space-y-4">
           <div className="text-center">
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-primary/10 rounded-lg mb-3">
@@ -34,7 +34,7 @@ export default function Login() {
               Acesso completo ao sistema de gestão
             </p>
           </div>
-          <AdaptiveLoginForm />
+          <LoginForm />
         </div>
       </div>
     </AuthLayout>

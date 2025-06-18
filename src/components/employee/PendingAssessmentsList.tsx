@@ -7,9 +7,10 @@ import { useEmployeeAssessments } from "@/hooks/useEmployeeAssessments";
 
 interface PendingAssessmentsListProps {
   employeeId: string;
+  highlightAssessmentId?: string;
 }
 
-export function PendingAssessmentsList({ employeeId }: PendingAssessmentsListProps) {
+export function PendingAssessmentsList({ employeeId, highlightAssessmentId }: PendingAssessmentsListProps) {
   const { assessments, loading, error } = useEmployeeAssessments(employeeId);
 
   if (loading) {
@@ -56,7 +57,10 @@ export function PendingAssessmentsList({ employeeId }: PendingAssessmentsListPro
   return (
     <div className="space-y-3">
       {assessments.map((assessment) => (
-        <Card key={assessment.id}>
+        <Card 
+          key={assessment.id}
+          className={highlightAssessmentId === assessment.id ? "border-blue-500 bg-blue-50" : ""}
+        >
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="space-y-1">
