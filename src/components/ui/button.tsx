@@ -19,6 +19,16 @@ const buttonVariants = {
   },
 }
 
+// Helper function to get button classes
+const getButtonClasses = (options: { variant?: keyof typeof buttonVariants.variant; size?: keyof typeof buttonVariants.size } = {}) => {
+  const { variant = "default", size = "default" } = options;
+  return cn(
+    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none",
+    buttonVariants.variant[variant],
+    buttonVariants.size[size]
+  );
+};
+
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: keyof typeof buttonVariants.variant
   size?: keyof typeof buttonVariants.size
@@ -44,4 +54,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+export { Button, buttonVariants, getButtonClasses }
