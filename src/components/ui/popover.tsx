@@ -29,13 +29,13 @@ const Popover = React.forwardRef<
       {React.Children.map(children, child => {
         if (React.isValidElement(child)) {
           if (child.type === PopoverTrigger) {
-            return React.cloneElement(child as any, { 
+            return React.cloneElement(child as React.ReactElement<any>, { 
               onClick: () => handleOpenChange(!isOpen),
               ...child.props 
             });
           }
           if (child.type === PopoverContent) {
-            return isOpen ? React.cloneElement(child as any, child.props) : null;
+            return isOpen ? React.cloneElement(child as React.ReactElement<any>, child.props) : null;
           }
         }
         return child;
@@ -52,9 +52,10 @@ const PopoverTrigger = React.forwardRef<
   }
 >(({ className, asChild, children, ...props }, ref) => {
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, {
+    const childProps = children.props as any;
+    return React.cloneElement(children as React.ReactElement<any>, {
       ...props,
-      className: cn(className, children.props.className),
+      className: cn(className, childProps.className),
     });
   }
 
