@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useSafeState, useSafeEffect } from '@/hooks/useSafeReact';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Smartphone, X, Download, Plus } from 'lucide-react';
@@ -11,12 +11,18 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  // Check React availability first
+  if (typeof React === 'undefined' || !React) {
+    console.warn('[InstallPrompt] React not available');
+    return null;
+  }
 
-  useEffect(() => {
+  const [deferredPrompt, setDeferredPrompt] = useSafeState<BeforeInstallPromptEvent | null>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useSafeState(false);
+  const [isIOS, setIsIOS] = useSafeState(false);
+  const [isStandalone, setIsStandalone] = useSafeState(false);
+
+  useSafeEffect(() => {
     console.log('[InstallPrompt] Inicializando...');
     
     // Detectar se é iOS
@@ -40,12 +46,11 @@ export function InstallPrompt() {
     const dismissed = localStorage.getItem('pwa-install-dismissed');
     if (dismissed) {
       const dismissedTime = parseInt(dismissed);
-      const threeDaysAgo = Date.now() - (3 * 24 * 60 * 60 * 1000); // Reduzido para 3 dias
+      const threeDaysAgo = Date.now() - (3 * 24 * 60 * 60 * 1000);
       if (dismissedTime > threeDaysAgo) {
         console.log('[InstallPrompt] Foi dispensado recentemente');
         return;
       } else {
-        // Limpar se passou o tempo
         localStorage.removeItem('pwa-install-dismissed');
       }
     }
@@ -64,7 +69,7 @@ export function InstallPrompt() {
     const timer = setTimeout(() => {
       console.log('[InstallPrompt] Mostrando prompt após timeout');
       setShowInstallPrompt(true);
-    }, iOS ? 2000 : 1500); // Reduzido o tempo
+    }, iOS ? 2000 : 1500);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -90,7 +95,6 @@ export function InstallPrompt() {
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
     } else {
-      // Para dispositivos que não suportam o evento
       toast.info('Para instalar: use o menu do navegador > "Adicionar à tela inicial"');
     }
   };
@@ -98,7 +102,6 @@ export function InstallPrompt() {
   const handleDismiss = () => {
     console.log('[InstallPrompt] Prompt dispensado pelo usuário');
     setShowInstallPrompt(false);
-    // Lembrar que o usuário dispensou por 3 dias (reduzido)
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 

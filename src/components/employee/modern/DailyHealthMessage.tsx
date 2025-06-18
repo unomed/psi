@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useSafeState, useSafeEffect } from '@/hooks/useSafeReact';
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';
 import { useEmployeeData } from '@/hooks/useEmployeeData';
@@ -48,7 +48,13 @@ interface DailyHealthMessageProps {
 }
 
 export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
-  const [currentMessage, setCurrentMessage] = useState(0);
+  // Check React availability first
+  if (typeof React === 'undefined' || !React) {
+    console.warn('[DailyHealthMessage] React not available');
+    return null;
+  }
+
+  const [currentMessage, setCurrentMessage] = useSafeState(0);
   const { data: employeeData } = useEmployeeData(employeeId);
 
   const isBirthday = () => {
@@ -72,7 +78,7 @@ export function DailyHealthMessage({ employeeId }: DailyHealthMessageProps) {
     };
   };
 
-  useEffect(() => {
+  useSafeEffect(() => {
     if (!isBirthday()) {
       // Rotaciona a mensagem a cada carregamento baseado no dia
       const today = new Date().getDate();

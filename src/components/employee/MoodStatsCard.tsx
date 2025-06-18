@@ -2,14 +2,34 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { useEmployeeMood } from "@/hooks/useEmployeeMood";
+import { useEmployeeMoodSafe } from "@/hooks/useEmployeeMoodSafe";
 
 interface MoodStatsCardProps {
   employeeId: string;
 }
 
 export function MoodStatsCard({ employeeId }: MoodStatsCardProps) {
-  const { moodStats, loading } = useEmployeeMood(employeeId);
+  // Check React availability first
+  if (typeof React === 'undefined' || !React) {
+    console.warn('[MoodStatsCard] React not available');
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Estatísticas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600">
+            Sistema temporariamente indisponível.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { moodStats, loading } = useEmployeeMoodSafe(employeeId);
 
   if (loading) {
     return (

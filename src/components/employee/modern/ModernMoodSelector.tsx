@@ -1,9 +1,9 @@
 
-import { useState } from 'react';
+import { useSafeState } from '@/hooks/useSafeReact';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MOOD_OPTIONS } from '@/types/employee-auth';
-import { useEmployeeMood } from '@/hooks/useEmployeeMood';
+import { useEmployeeMoodSafe } from '@/hooks/useEmployeeMoodSafe';
 import { formatDate } from '@/utils/dateFormat';
 import { Sparkles, CheckCircle, Info } from 'lucide-react';
 
@@ -12,9 +12,15 @@ interface ModernMoodSelectorProps {
 }
 
 export function ModernMoodSelector({ employeeId }: ModernMoodSelectorProps) {
-  const { todayMood, saveMood } = useEmployeeMood(employeeId);
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
+  // Check React availability first
+  if (typeof React === 'undefined' || !React) {
+    console.warn('[ModernMoodSelector] React not available');
+    return null;
+  }
+
+  const { todayMood, saveMood } = useEmployeeMoodSafe(employeeId);
+  const [selectedMood, setSelectedMood] = useSafeState<number | null>(null);
+  const [saving, setSaving] = useSafeState(false);
 
   const handleMoodSelect = async (mood: typeof MOOD_OPTIONS[number]) => {
     // Se já tem humor registrado, mostrar informação
