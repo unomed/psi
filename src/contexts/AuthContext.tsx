@@ -43,16 +43,19 @@ const cleanupAuthState = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { session, user, loading: authLoading } = useAuthSession();
+  console.log("[AuthProvider] Inicializando AuthProvider");
   
+  const { session, user, loading: authLoading } = useAuthSession();
   const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
   // Fetch user role when session changes
   React.useEffect(() => {
     if (user?.id) {
+      console.log("[AuthProvider] Usuário detectado, buscando role");
       fetchUserRoleAndCompanies(user.id);
     } else {
+      console.log("[AuthProvider] Nenhum usuário, limpando cache");
       clearCache();
     }
   }, [user?.id, fetchUserRoleAndCompanies, clearCache]);
