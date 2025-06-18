@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCw, Heart, Brain, Sun, Gift } from 'lucide-react';
 import { useEmployeeData } from '@/hooks/useEmployeeData';
