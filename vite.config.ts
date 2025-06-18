@@ -31,43 +31,13 @@ export default defineConfig(({ mode }) => ({
     // FORÇAR RESOLUÇÃO para development e browser
     conditions: ['development', 'browser']
   },
-  // OTIMIZAÇÃO EXTREMA - Excluir TODAS as libs Radix UI temporariamente
+  // OTIMIZAÇÃO EXTREMA - Sem mais Radix UI
   optimizeDeps: {
     include: [
       'react', 
       'react-dom',
       'react-router-dom',
       '@tanstack/react-query'
-    ],
-    // EXCLUIR TODAS as libs Radix UI para eliminar conflitos
-    exclude: [
-      '@radix-ui/react-tooltip',
-      '@radix-ui/react-scroll-area', 
-      '@radix-ui/react-popover',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-checkbox',
-      '@radix-ui/react-switch',
-      '@radix-ui/react-label',
-      '@radix-ui/react-avatar',
-      '@radix-ui/react-accordion',
-      '@radix-ui/react-alert-dialog',
-      '@radix-ui/react-aspect-ratio',
-      '@radix-ui/react-collapsible',
-      '@radix-ui/react-context-menu',
-      '@radix-ui/react-hover-card',
-      '@radix-ui/react-menubar',
-      '@radix-ui/react-navigation-menu',
-      '@radix-ui/react-progress',
-      '@radix-ui/react-radio-group',
-      '@radix-ui/react-separator',
-      '@radix-ui/react-slider',
-      '@radix-ui/react-slot',
-      '@radix-ui/react-toast',
-      '@radix-ui/react-toggle',
-      '@radix-ui/react-toggle-group'
     ],
     force: true, // FORÇAR REBUILD COMPLETO
     esbuildOptions: {
