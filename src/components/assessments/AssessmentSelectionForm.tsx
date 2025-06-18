@@ -27,14 +27,14 @@ export function AssessmentSelectionForm({ companyId }: AssessmentSelectionFormPr
   const [generatedLink, setGeneratedLink] = useState("");
 
   const { employees } = useEmployees({ companyId: targetCompanyId });
-  const { templates } = useChecklistTemplates();
+  const { checklists } = useChecklistTemplates();
 
   const handleEmployeeChange = (employeeId: string) => {
     setSelectedEmployeeId(employeeId);
   };
 
   const handleTemplateChange = (templateId: string) => {
-    const template = templates.find(t => t.id === templateId);
+    const template = checklists.find(t => t.id === templateId);
     setSelectedTemplate(template || null);
   };
 
@@ -66,15 +66,14 @@ export function AssessmentSelectionForm({ companyId }: AssessmentSelectionFormPr
         </CardHeader>
         <CardContent className="space-y-6">
           <EmployeeSelector
-            employees={employees}
             selectedEmployee={selectedEmployeeId}
             onEmployeeChange={handleEmployeeChange}
           />
 
           <TemplateSelector
-            templates={templates}
-            selectedTemplate={selectedTemplate?.id || null}
-            onTemplateChange={handleTemplateChange}
+            templates={checklists}
+            selectedTemplateValue={selectedTemplate?.id || null}
+            onTemplateSelect={handleTemplateChange}
           />
 
           <div className="flex gap-4">

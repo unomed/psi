@@ -30,10 +30,10 @@ export function EmployeeSelectionStep({
   const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
   
   const { employees, isLoading: loadingEmployees } = useEmployees({ companyId });
-  const { templates, isLoading: loadingTemplates } = useChecklistTemplates();
+  const { checklists, isLoading: loadingTemplates } = useChecklistTemplates();
 
   const selectedEmployee = employees.find(emp => emp.id === selectedEmployeeId);
-  const selectedTemplate = templates.find(template => template.id === selectedTemplateId);
+  const selectedTemplate = checklists.find(template => template.id === selectedTemplateId);
 
   const canProceed = selectedEmployeeId && selectedTemplateId;
 
@@ -86,7 +86,7 @@ export function EmployeeSelectionStep({
               <SelectValue placeholder="Selecione um modelo" />
             </SelectTrigger>
             <SelectContent>
-              {templates.map((template) => (
+              {checklists.map((template) => (
                 <SelectItem key={template.id} value={template.id}>
                   {template.title}
                 </SelectItem>

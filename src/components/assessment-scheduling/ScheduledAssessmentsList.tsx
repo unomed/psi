@@ -158,40 +158,4 @@ export function ScheduledAssessmentsList({ companyId }: ScheduledAssessmentsList
       </CardContent>
     </Card>
   );
-
-  function getStatusColor(status: string) {
-    const colors = {
-      scheduled: "bg-blue-100 text-blue-800",
-      sent: "bg-yellow-100 text-yellow-800",
-      completed: "bg-green-100 text-green-800",
-      overdue: "bg-red-100 text-red-800"
-    };
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
-  }
-
-  function getStatusLabel(status: string) {
-    const labels = {
-      scheduled: "Agendada",
-      sent: "Enviada",
-      completed: "Concluída",
-      overdue: "Em Atraso"
-    };
-    return labels[status as keyof typeof labels] || status;
-  }
-
-  async function handleGenerateLink(assessment: any) {
-    // Implement generate link logic here
-  }
-
-  async function handleCopyLink(linkUrl: string) {
-    // Implement copy link logic here
-  }
-
-  async function handleSendEmail(assessmentId: string) {
-    // Implement send email logic here
-  }
-
-  async function handleDeleteAssessment(assessmentId: string) {
-    // Implement delete assessment logic here
-  }
 }
