@@ -14,7 +14,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarErrorBoundary>
       <NotificationProvider>
-        <SidebarProvider defaultOpen={true}>
+        <SidebarProvider>
           <div className="min-h-screen flex w-full bg-background">
             <AppSidebar />
             <div className="flex-1">
