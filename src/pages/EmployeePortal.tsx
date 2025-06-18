@@ -4,7 +4,7 @@ import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { EmployeeLoginForm } from "@/components/employee/EmployeeLoginForm";
 import { EmployeeModernDashboard } from "@/components/employee/modern/EmployeeModernDashboard";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
-import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
+import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { useEffect } from "react";
 
@@ -14,7 +14,7 @@ export default function EmployeePortal() {
   const navigate = useNavigate();
   const employeeIdFromUrl = searchParams.get("employee");
   const assessmentIdFromUrl = searchParams.get("assessment");
-  const { session, loading } = useEmployeeAuth();
+  const { session, loading } = useEmployeeAuthNative();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   console.log("[EmployeePortal] Parâmetros recebidos:", {

@@ -1,15 +1,9 @@
 
 import React from 'react';
-import { EmployeeAuthContext, useEmployeeAuthProvider } from '@/hooks/useEmployeeAuth';
+import { useEmployeeAuthNative, EmployeeAuthNativeProvider } from '@/contexts/EmployeeAuthNative';
 
-export function EmployeeAuthProvider({ children }: { children: React.ReactNode }) {
-  const auth = useEmployeeAuthProvider();
-  
-  return (
-    <EmployeeAuthContext.Provider value={auth}>
-      {children}
-    </EmployeeAuthContext.Provider>
-  );
-}
+// Re-exportar o provider nativo
+export { EmployeeAuthNativeProvider as EmployeeAuthProvider };
 
-export { useEmployeeAuth } from '@/hooks/useEmployeeAuth';
+// Re-exportar o hook nativo
+export { useEmployeeAuthNative as useEmployeeAuth };

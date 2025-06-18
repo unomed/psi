@@ -1,6 +1,6 @@
 
 import { Navigate } from 'react-router-dom';
-import { useEmployeeAuth } from '@/hooks/useEmployeeAuth';
+import { useEmployeeAuthNative } from '@/contexts/EmployeeAuthNative';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface EmployeeGuardProps {
@@ -8,7 +8,7 @@ interface EmployeeGuardProps {
 }
 
 export function EmployeeGuard({ children }: EmployeeGuardProps) {
-  const { session, loading } = useEmployeeAuth();
+  const { session, loading } = useEmployeeAuthNative();
 
   console.log('[EmployeeGuard] Verificando acesso de funcionário:', {
     hasSession: !!session,
@@ -26,7 +26,7 @@ export function EmployeeGuard({ children }: EmployeeGuardProps) {
 
   if (!session?.isAuthenticated) {
     console.log('[EmployeeGuard] Funcionário não autenticado, redirecionando');
-    return <Navigate to="/auth/employee" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   console.log('[EmployeeGuard] Acesso de funcionário concedido');

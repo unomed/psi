@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
+import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 import { EmployeeModernSidebar } from "./EmployeeModernSidebar";
 import { PendingAssessmentsList } from "../PendingAssessmentsList";
 import { MoodStatsCard } from "../MoodStatsCard";
@@ -27,7 +27,7 @@ export function EmployeeModernDashboard({
   assessmentId,
   expectedEmployeeId 
 }: EmployeeModernDashboardProps) {
-  const { session, logout } = useEmployeeAuth();
+  const { session, logout } = useEmployeeAuthNative();
   const [currentView, setCurrentView] = useState<'dashboard' | 'assessments' | 'history' | 'symptoms'>(
     // Se há um assessment específico, começar na aba de avaliações
     assessmentId ? 'assessments' : 'dashboard'
@@ -35,7 +35,7 @@ export function EmployeeModernDashboard({
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/auth/employee";
+    window.location.href = "/login";
   };
 
   const renderCurrentView = () => {

@@ -8,7 +8,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { EmployeeGuard } from "@/components/auth/EmployeeGuard";
-import { EmployeeAuthProvider } from "@/contexts/EmployeeAuthContext";
+import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
 import EmployeePortal from "@/pages/EmployeePortal";
 import PublicAssessment from "@/pages/PublicAssessment";
 import ChecklistPortal from "@/pages/ChecklistPortal";
@@ -54,53 +54,54 @@ export function AppRoutes() {
       <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
       <Route path="/checklist" element={<ChecklistPortal />} />
 
-      {/* ROTA ISOLADA PARA FUNCIONÁRIOS - SEM PROVIDERS PROBLEMÁTICOS */}
+      {/* ROTA ISOLADA PARA FUNCIONÁRIOS - SISTEMA NATIVO */}
       <Route path="/auth/employee" element={
         <EmployeeErrorBoundary>
           <EmployeeLoginIsolated />
         </EmployeeErrorBoundary>
       } />
       
-      {/* Portal do funcionário com providers originais */}
+      {/* Portal do funcionário com provider nativo */}
       <Route path="/employee-portal" element={
         <EmployeeErrorBoundary>
-          <EmployeeAuthProvider>
+          <EmployeeAuthNativeProvider>
             <EmployeeGuard>
               <EmployeePortal />
             </EmployeeGuard>
-          </EmployeeAuthProvider>
+          </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
       
       <Route path="/employee-portal/:templateId" element={
         <EmployeeErrorBoundary>
-          <EmployeeAuthProvider>
+          <EmployeeAuthNativeProvider>
             <EmployeeGuard>
               <EmployeePortal />
             </EmployeeGuard>
-          </EmployeeAuthProvider>
+          </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
 
-      {/* Avaliações públicas com tokens - isoladas */}
+      {/* Avaliações públicas com tokens - sistema nativo */}
       <Route path="/avaliacao/:token" element={
         <EmployeeErrorBoundary>
-          <EmployeeAuthProvider>
+          <EmployeeAuthNativeProvider>
             <PublicAssessment />
-          </EmployeeAuthProvider>
+          </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
       
       <Route path="/assessment/:token" element={
         <EmployeeErrorBoundary>
-          <EmployeeAuthProvider>
+          <EmployeeAuthNativeProvider>
             <PublicAssessment />
-          </EmployeeAuthProvider>
+          </EmployeeAuthNativeProvider>
         </EmployeeErrorBoundary>
       } />
 
       {/* Redirecionamento do portal do funcionário */}
       <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />
+      <Route path="/portal" element={<Navigate to="/employee-portal" replace />} />
 
       {/* Rotas administrativas protegidas */}
       {user && (
