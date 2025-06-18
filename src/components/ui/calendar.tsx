@@ -1,121 +1,65 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getButtonClasses } from "@/components/ui/button";
+import { DayPicker } from "react-day-picker";
 
-export interface CalendarProps extends Omit<React.ComponentProps<"div">, "onSelect"> {
-  mode?: "single" | "multiple" | "range";
-  selected?: Date | Date[] | { from?: Date; to?: Date };
-  onSelect?: (date: Date | Date[] | { from?: Date; to?: Date } | undefined) => void;
-  disabled?: (date: Date) => boolean;
-  showOutsideDays?: boolean;
-  initialFocus?: boolean;
-  defaultMonth?: Date;
-  numberOfMonths?: number;
-  locale?: any; // Using any for locale since it can be from date-fns
-}
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({
   className,
-  mode = "single",
-  selected,
-  onSelect,
-  disabled,
+  classNames,
   showOutsideDays = true,
-  initialFocus,
-  defaultMonth,
-  numberOfMonths = 1,
-  locale,
   ...props
 }: CalendarProps) {
-  const [currentMonth, setCurrentMonth] = React.useState(defaultMonth || new Date());
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = new Date(e.target.value);
-    if (!isNaN(date.getTime())) {
-      if (mode === "single") {
-        onSelect?.(date);
-      }
-    }
-  };
-
-  const formatDateForInput = (date: Date | undefined) => {
-    if (!date) return "";
-    return date.toISOString().split('T')[0];
-  };
-
-  const getSelectedDate = () => {
-    if (mode === "single" && selected instanceof Date) {
-      return formatDateForInput(selected);
-    }
-    return "";
-  };
-
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentMonth(prev => {
-      const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(prev.getMonth() - 1);
-      } else {
-        newDate.setMonth(prev.getMonth() + 1);
-      }
-      return newDate;
-    });
-  };
-
-  const formatMonthYear = (date: Date) => {
-    if (locale?.code === 'pt-BR' || locale?.formatLong) {
-      return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    }
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
-
   return (
-    <div className={cn("p-3 pointer-events-auto", className)} {...props}>
-      <div className="space-y-4">
-        <div className="flex justify-center pt-1 relative items-center">
-          <button
-            type="button"
-            className={cn(
-              getButtonClasses({ variant: "outline" }),
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1"
-            )}
-            onClick={() => navigateMonth('prev')}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          
-          <div className="text-sm font-medium">
-            {formatMonthYear(currentMonth)}
-          </div>
-          
-          <button
-            type="button"
-            className={cn(
-              getButtonClasses({ variant: "outline" }),
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1"
-            )}
-            onClick={() => navigateMonth('next')}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Selecionar data:</label>
-          <input
-            type="date"
-            value={getSelectedDate()}
-            onChange={handleDateChange}
-            className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-      </div>
-    </div>
+    <DayPicker
+      showOutsideDays={showOutsideDays}
+      className={cn("p-3 pointer-events-auto", className)}
+      classNames={{
+        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+        month: "space-y-4",
+        caption: "flex justify-center pt-1 relative items-center",
+        caption_label: "text-sm font-medium",
+        nav: "space-x-1 flex items-center",
+        nav_button: cn(
+          buttonVariants({ variant: "outline" }),
+          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+        ),
+        nav_button_previous: "absolute left-1",
+        nav_button_next: "absolute right-1",
+        table: "w-full border-collapse space-y-1",
+        head_row: "flex",
+        head_cell:
+          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+        row: "flex w-full mt-2",
+        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        day: cn(
+          buttonVariants({ variant: "ghost" }),
+          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+        ),
+        day_range_end: "day-range-end",
+        day_selected:
+          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        day_today: "bg-accent text-accent-foreground",
+        day_outside:
+          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+        day_disabled: "text-muted-foreground opacity-50",
+        day_range_middle:
+          "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_hidden: "invisible",
+        ...classNames,
+      }}
+      components={{
+        IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
+        IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+      }}
+      {...props}
+    />
   );
 }
-
 Calendar.displayName = "Calendar";
 
 export { Calendar };

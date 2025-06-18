@@ -1,6 +1,7 @@
 
 import * as React from "react";
 import type { SidebarContext as SidebarContextType } from "./types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -34,9 +35,7 @@ export function SidebarProvider({
   children,
   ...props
 }: SidebarProviderProps) {
-  // Remove mobile detection completely - always desktop layout
-  const isMobile = false;
-
+  const isMobile = useIsMobile();
   const [openMobile, setOpenMobile] = React.useState(false);
   const [_open, _setOpen] = React.useState(defaultOpen);
   

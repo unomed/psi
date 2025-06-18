@@ -77,7 +77,7 @@ export function useCompanyAccessCheck() {
       // Se recurso sem company_id, verificar se devemos filtrar ou não
       if (!resource.company_id) {
         // Recursos sem company_id só devem ser visíveis para superadmin
-        return false; // Mudança aqui: não permitir acesso se não for superadmin
+        return userRole === 'superadmin';
       }
       
       // Para todos os outros recursos, verificar se o usuário tem acesso à empresa

@@ -1,7 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { ToastErrorBoundary } from './toast-error-boundary';
 
-// Sistema de toast nativo independente
+// Lazy load do Toaster
+const LazyToaster = lazy(() => 
+  import('./toaster').then(module => ({ default: module.Toaster }))
+);
+
+// Sistema de toast nativo como fallback
 class NativeToastSystem {
   private static instance: NativeToastSystem;
   private container: HTMLElement | null = null;
@@ -66,9 +72,7 @@ class NativeToastSystem {
     }
 
     // Configurar função global
-    if (typeof window !== 'undefined') {
-      (window as any).showNativeToast = this.showToast.bind(this);
-    }
+    window.showNativeToast = this.showToast.bind(this);
     this.isInitialized = true;
   }
 
@@ -113,21 +117,83 @@ class NativeToastSystem {
   }
 }
 
-// Componente de toast com sistema nativo apenas
+// Componente de toast com verificação de estabilidade
 export function EnhancedToastSystem() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isReactStable, setIsReactStable] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [hasGivenUp, setHasGivenUp] = useState(false);
+  const maxRetries = 3;
 
   useEffect(() => {
-    try {
-      // Inicializar sistema nativo
-      NativeToastSystem.getInstance();
-      setIsInitialized(true);
-      console.log('[EnhancedToastSystem] Sistema nativo de toast inicializado');
-    } catch (error) {
-      console.error('[EnhancedToastSystem] Erro ao inicializar:', error);
-    }
-  }, []);
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
-  // Retorna null - o sistema funciona via DOM direto
-  return null;
+    const checkReactStability = () => {
+      try {
+        // Verificar se React e seus hooks estão funcionando
+        const hasReactHooks = typeof React !== 'undefined' && 
+                             React.useState && 
+                             React.useEffect && 
+                             React.useContext;
+        
+        const hasDocument = typeof document !== 'undefined' && 
+                           document.readyState === 'complete';
+        
+        if (hasReactHooks && hasDocument) {
+          console.log('[EnhancedToastSystem] React estável detectado');
+          if (mounted) setIsReactStable(true);
+          return;
+        }
+        
+        if (retryCount >= maxRetries) {
+          console.warn('[EnhancedToastSystem] Máximo de tentativas atingido, usando apenas sistema nativo');
+          if (mounted) setHasGivenUp(true);
+          return;
+        }
+        
+        // Retry com delay
+        const delay = 200 * Math.pow(1.5, retryCount);
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            setRetryCount(prev => prev + 1);
+          }
+        }, delay);
+        
+      } catch (error) {
+        console.error('[EnhancedToastSystem] Erro durante verificação:', error);
+        if (mounted) {
+          if (retryCount >= maxRetries) {
+            setHasGivenUp(true);
+          } else {
+            setRetryCount(prev => prev + 1);
+          }
+        }
+      }
+    };
+
+    // Inicializar sistema nativo primeiro
+    NativeToastSystem.getInstance();
+    
+    // Verificar estabilidade
+    timeoutId = setTimeout(checkReactStability, 100);
+    
+    return () => {
+      mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [retryCount]);
+
+  // Se desistimos ou React não está estável, só usar sistema nativo
+  if (hasGivenUp || !isReactStable) {
+    return null; // Sistema nativo já está configurado
+  }
+
+  // Tentar usar o Toaster do Radix
+  return (
+    <ToastErrorBoundary>
+      <Suspense fallback={null}>
+        <LazyToaster />
+      </Suspense>
+    </ToastErrorBoundary>
+  );
 }

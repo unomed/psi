@@ -1,97 +1,29 @@
-
 import * as React from "react"
+import * as PopoverPrimitive from "@radix-ui/react-popover"
+
 import { cn } from "@/lib/utils"
 
-// POPOVER NATIVO - SEM RADIX UI
-const Popover = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<"div"> & { 
-    children: React.ReactNode;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }
->(({ children, className, open, onOpenChange, ...props }, ref) => {
-  const [isOpen, setIsOpen] = React.useState(open || false);
+const Popover = PopoverPrimitive.Root
 
-  React.useEffect(() => {
-    if (open !== undefined) {
-      setIsOpen(open);
-    }
-  }, [open]);
-
-  const handleOpenChange = (newOpen: boolean) => {
-    setIsOpen(newOpen);
-    onOpenChange?.(newOpen);
-  };
-
-  return (
-    <div ref={ref} className={cn("relative inline-block", className)} {...props}>
-      {React.Children.map(children, child => {
-        if (React.isValidElement(child)) {
-          if (child.type === PopoverTrigger) {
-            return React.cloneElement(child as React.ReactElement<any>, { 
-              onClick: () => handleOpenChange(!isOpen),
-              ...child.props 
-            });
-          }
-          if (child.type === PopoverContent) {
-            return isOpen ? React.cloneElement(child as React.ReactElement<any>, child.props) : null;
-          }
-        }
-        return child;
-      })}
-    </div>
-  );
-});
-Popover.displayName = "Popover"
-
-const PopoverTrigger = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<"button"> & {
-    asChild?: boolean;
-  }
->(({ className, asChild, children, ...props }, ref) => {
-  if (asChild && React.isValidElement(children)) {
-    const childProps = children.props as any;
-    return React.cloneElement(children as React.ReactElement<any>, {
-      ...props,
-      className: cn(className, childProps.className),
-    });
-  }
-
-  return (
-    <button
-      ref={ref}
-      className={className}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-});
-PopoverTrigger.displayName = "PopoverTrigger"
+const PopoverTrigger = PopoverPrimitive.Trigger
 
 const PopoverContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<"div"> & {
-    align?: "center" | "start" | "end";
-    sideOffset?: number;
-  }
+  React.ElementRef<typeof PopoverPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md",
-      "absolute top-full mt-1",
-      align === "center" && "left-1/2 transform -translate-x-1/2",
-      align === "start" && "left-0",
-      align === "end" && "right-0",
-      className
-    )}
-    style={{ marginTop: sideOffset }}
-    {...props}
-  />
-));
-PopoverContent.displayName = "PopoverContent"
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        className
+      )}
+      {...props}
+    />
+  </PopoverPrimitive.Portal>
+))
+PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
 export { Popover, PopoverTrigger, PopoverContent }

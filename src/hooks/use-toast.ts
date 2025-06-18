@@ -1,5 +1,5 @@
 
-import React from "react"
+import * as React from "react"
 
 import type {
   ToastActionElement,
@@ -107,6 +107,7 @@ export const reducer = (state: State, action: Action): State => {
           t.id === toastId || toastId === undefined
             ? {
                 ...t,
+                open: false,
               }
             : t
         ),
@@ -154,6 +155,10 @@ function toast({ ...props }: Toast) {
     toast: {
       ...props,
       id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss()
+      },
     },
   })
 

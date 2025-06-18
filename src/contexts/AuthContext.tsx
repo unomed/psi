@@ -1,91 +1,214 @@
 
-import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useMemo } from 'react';
+import { Session, User } from '@supabase/supabase-js';
+import { useAuthSession } from '@/hooks/useAuthSession';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
+import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { AppRole } from '@/types/auth';
+import { toast } from '@/hooks/use-toast';
 
-// Interface completa do contexto de autenticação
 interface AuthContextType {
+  session: Session | null;
   user: User | null;
-  loading: boolean;
-  userRole: AppRole | null;
-  userCompanies: Array<{ companyId: string; companyName: string }>;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => Promise<User | undefined>;
   signOut: () => Promise<void>;
-  hasRole: (role: AppRole) => boolean;
-  hasCompanyAccess: (companyId: string) => boolean;
+  loading: boolean;
+  userRole: string | null;
+  userCompanies: { companyId: string; companyName: string; }[];
+  hasRole: (role: AppRole) => Promise<boolean>;
+  hasCompanyAccess: (companyId: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  console.log("[AuthProvider] Inicializando contexto completo");
+// Função para limpar completamente o estado de autenticação
+const cleanupAuthState = () => {
+  console.log("[AuthProvider] Limpando estado de autenticação");
   
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<AppRole | null>(null);
-  const [userCompanies, setUserCompanies] = useState<Array<{ companyId: string; companyName: string }>>([]);
+  // Limpar localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Limpar sessionStorage
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
+};
 
-  // Simular dados do usuário para desenvolvimento
-  useEffect(() => {
-    console.log('[AuthProvider] Simulando autenticação para desenvolvimento...');
-    
-    setTimeout(() => {
-      // Simular usuário logado para desenvolvimento com propriedades completas do tipo User
-      const mockUser = {
-        id: 'mock-user-id',
-        email: 'admin@test.com',
-        aud: 'authenticated',
-        app_metadata: {},
-        user_metadata: { full_name: 'Admin Test' },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        email_confirmed_at: new Date().toISOString(),
-        last_sign_in_at: new Date().toISOString(),
-        role: 'authenticated'
-      } as User;
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { session, user, loading: authLoading } = useAuthSession();
+  
+  const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
+  const { hasRole, hasCompanyAccess } = useRolePermissions();
+
+  // Fetch user role when session changes
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchUserRoleAndCompanies(user.id);
+    } else {
+      clearCache();
+    }
+  }, [user?.id, fetchUserRoleAndCompanies, clearCache]);
+
+  const isLoading = authLoading || roleLoading;
+
+  // Implementar ações de auth
+  const signIn = async (email: string, password: string) => {
+    try {
+      console.log("[AuthProvider] Iniciando processo de login");
       
-      setUser(mockUser);
-      setUserRole('admin');
-      setUserCompanies([
-        { companyId: '1', companyName: 'Empresa Teste 1' },
-        { companyId: '2', companyName: 'Empresa Teste 2' }
-      ]);
-      setLoading(false);
-    }, 100);
-  }, []);
+      // Limpar estado anterior
+      cleanupAuthState();
+      
+      // Tentar logout global primeiro
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        console.warn("[AuthProvider] Erro ao fazer logout prévio:", signOutError);
+      }
+      
+      const { error, data } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
+      
+      if (error) {
+        console.error("[AuthProvider] Erro no login:", error);
+        throw error;
+      }
+      
+      if (data.user) {
+        console.log("[AuthProvider] Login bem-sucedido");
+        toast({
+          title: "Login realizado com sucesso",
+          description: "Bem-vindo de volta!"
+        });
+      }
+      
+      return;
+    } catch (error: any) {
+      console.error("[AuthProvider] Erro completo no login:", error);
+      toast({
+        title: "Erro ao fazer login",
+        description: error.message || "Verifique suas credenciais e tente novamente",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
 
+  const signUp = async (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => {
+    try {
+      console.log("[AuthProvider] Iniciando processo de cadastro");
+      
+      const { data: authData, error: authError } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          },
+          emailRedirectTo: `${window.location.origin}/`
+        }
+      });
+      
+      if (authError) {
+        console.error("[AuthProvider] Erro no cadastro:", authError);
+        throw authError;
+      }
+      
+      if (authData.user && role) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: authData.user.id,
+            role: role as "superadmin" | "admin" | "evaluator"
+          });
+          
+        if (roleError) {
+          console.error("[AuthProvider] Erro ao atribuir papel:", roleError);
+        }
+      }
+      
+      toast({
+        title: "Cadastro realizado com sucesso",
+        description: "O usuário já pode fazer login com suas credenciais"
+      });
+      
+      return authData.user;
+    } catch (error: any) {
+      console.error("[AuthProvider] Erro completo no cadastro:", error);
+      toast({
+        title: "Erro ao criar conta",
+        description: error.message || "Verifique os dados informados e tente novamente",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      console.log("[AuthProvider] Iniciando processo de logout");
+      
+      // Limpar estado primeiro
+      cleanupAuthState();
+      
+      // Tentar logout no Supabase
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        console.warn("[AuthProvider] Erro no logout do Supabase:", signOutError);
+      }
+      
+      toast({
+        title: "Logout realizado com sucesso", 
+        description: "Até breve!"
+      });
+      
+      // Forçar redirecionamento
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+    } catch (error: any) {
+      console.error("[AuthProvider] Erro completo no logout:", error);
+      toast({
+        title: "Erro ao fazer logout",
+        description: error.message || "Tente novamente mais tarde",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Memoizar o valor do contexto
   const contextValue = useMemo(() => ({
+    session,
     user,
-    loading,
+    signIn,
+    signUp,
+    signOut,
+    loading: isLoading,
     userRole,
     userCompanies,
-    signIn: async (email: string, password: string) => {
-      console.log('[AuthProvider] SignIn simulado', { email });
-      // Implementação real viria aqui
-    },
-    signUp: async (email: string, password: string) => {
-      console.log('[AuthProvider] SignUp simulado', { email });
-      // Implementação real viria aqui
-    },
-    signOut: async () => {
-      console.log('[AuthProvider] SignOut simulado');
-      setUser(null);
-      setUserRole(null);
-      setUserCompanies([]);
-    },
-    hasRole: (role: AppRole) => {
-      return userRole === role || userRole === 'superadmin';
-    },
-    hasCompanyAccess: (companyId: string) => {
-      return userRole === 'superadmin' || 
-             userCompanies.some(company => company.companyId === companyId);
-    },
-  }), [user, loading, userRole, userCompanies]);
+    hasRole,
+    hasCompanyAccess,
+  }), [
+    session,
+    user,
+    isLoading,
+    userRole,
+    userCompanies,
+    hasRole,
+    hasCompanyAccess,
+  ]);
 
-  console.log("[AuthProvider] Renderizando com contexto completo...");
-  
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
