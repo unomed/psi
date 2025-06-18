@@ -6,16 +6,16 @@ import { EmployeePortalPage } from "@/pages/EmployeePortalPage";
 import { useEmployeeAuthNative } from "@/contexts/EmployeeAuthNative";
 
 export function SimpleRoutes() {
-  const { session, loading } = useEmployeeAuthNative();
-
-  console.log('[SimpleRoutes] Estado:', {
-    hasSession: !!session,
-    isAuthenticated: session?.isAuthenticated,
-    loading
+  const authData = useEmployeeAuthNative();
+  
+  console.log('[SimpleRoutes] Estado da autenticação:', {
+    hasSession: !!authData.session,
+    isAuthenticated: authData.session?.isAuthenticated,
+    loading: authData.loading
   });
 
-  // Loading simples
-  if (loading) {
+  // Loading state
+  if (authData.loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -26,17 +26,18 @@ export function SimpleRoutes() {
     );
   }
 
+  // Routes based on authentication status
+  const isAuthenticated = authData.session?.isAuthenticated || false;
+
   return (
     <Routes>
-      {/* Se não está autenticado, mostrar login */}
-      {!session?.isAuthenticated ? (
+      {!isAuthenticated ? (
         <>
           <Route path="/login" element={<EmployeeLoginPage />} />
           <Route path="/*" element={<Navigate to="/login" replace />} />
         </>
       ) : (
         <>
-          {/* Se está autenticado, mostrar portal */}
           <Route path="/portal" element={<EmployeePortalPage />} />
           <Route path="/*" element={<Navigate to="/portal" replace />} />
         </>

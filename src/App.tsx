@@ -5,18 +5,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
 import { SimpleRoutes } from "@/components/routing/SimpleRoutes";
 
-// QueryClient simples sem muita configuração
+// QueryClient configuração simples
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
     },
   },
 });
 
 function App() {
-  console.log('[App] Portal do Funcionário - Versão Final Estável');
+  console.log('[App] Portal do Funcionário - Iniciando aplicação');
   
   return (
     <QueryClientProvider client={queryClient}>

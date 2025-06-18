@@ -10,7 +10,7 @@ interface EmployeeAuthContextType {
   loading: boolean;
 }
 
-const EmployeeAuthContext = createContext<EmployeeAuthContextType | undefined>(undefined);
+const EmployeeAuthContext = createContext<EmployeeAuthContextType | null>(null);
 
 interface EmployeeAuthState {
   session: EmployeeSession | null;
@@ -36,7 +36,7 @@ export class EmployeeAuthNativeProvider extends Component<
   }
 
   componentDidMount() {
-    console.log('[EmployeeAuthNative] Inicializando provider simplificado');
+    console.log('[EmployeeAuthNative] Inicializando provider');
     this.loadStoredSession();
   }
 
@@ -163,9 +163,12 @@ export class EmployeeAuthNativeProvider extends Component<
   }
 }
 
-export function useEmployeeAuthNative() {
-  if (typeof React === 'undefined' || !React.useContext) {
-    console.warn('[useEmployeeAuthNative] React.useContext não disponível, usando fallback');
+// Hook seguro que não depende de React.useContext
+export function useEmployeeAuthNative(): EmployeeAuthContextType {
+  const context = React.useContext(EmployeeAuthContext);
+  
+  if (!context) {
+    console.warn('[useEmployeeAuthNative] Contexto não encontrado, retornando valores padrão');
     return {
       session: null,
       login: async () => ({ success: false, error: 'Sistema indisponível' }),
@@ -173,22 +176,8 @@ export function useEmployeeAuthNative() {
       loading: false
     };
   }
-
-  try {
-    const context = React.useContext(EmployeeAuthContext);
-    if (!context) {
-      throw new Error('useEmployeeAuthNative must be used within EmployeeAuthNativeProvider');
-    }
-    return context;
-  } catch (error) {
-    console.error('[useEmployeeAuthNative] Erro ao acessar contexto:', error);
-    return {
-      session: null,
-      login: async () => ({ success: false, error: 'Sistema indisponível' }),
-      logout: () => {},
-      loading: false
-    };
-  }
+  
+  return context;
 }
 
 export { EmployeeAuthContext };
