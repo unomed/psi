@@ -39,7 +39,7 @@ export default function Register() {
 
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true);
-    await signUp(data.email, data.password, data.fullName);
+    await signUp(data.email, data.password);
     setIsLoading(false);
   }
 

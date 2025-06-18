@@ -32,11 +32,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('[AuthProvider] Simulando autenticação para desenvolvimento...');
     
     setTimeout(() => {
-      // Simular usuário logado para desenvolvimento
+      // Simular usuário logado para desenvolvimento com propriedades completas do tipo User
       const mockUser = {
         id: 'mock-user-id',
         email: 'admin@test.com',
-        user_metadata: { full_name: 'Admin Test' }
+        aud: 'authenticated',
+        app_metadata: {},
+        user_metadata: { full_name: 'Admin Test' },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        email_confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        role: 'authenticated'
       } as User;
       
       setUser(mockUser);
