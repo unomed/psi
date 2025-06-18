@@ -1,8 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MoodLog, MoodStats } from '@/types/employee-auth';
-import { toast } from '@/hooks/use-toast';
+import { showSimpleToast } from '@/components/ui/simple-toast';
 
 export function useEmployeeMood(employeeId: string) {
   const [todayMood, setTodayMood] = useState<MoodLog | null>(null);
@@ -113,10 +113,9 @@ export function useEmployeeMood(employeeId: string) {
 
       // Verificar se já foi registrado humor hoje
       if (todayMood) {
-        toast({
-          title: "Humor já registrado hoje",
-          description: "Você já registrou seu humor hoje. Você pode registrar apenas uma vez por dia.",
-          variant: "default"
+        showSimpleToast({
+          message: "Humor já registrado hoje",
+          type: "info"
         });
         return { success: false, error: 'Humor já registrado hoje' };
       }
@@ -167,9 +166,9 @@ export function useEmployeeMood(employeeId: string) {
 
       console.log('[useEmployeeMood] Humor salvo com sucesso');
 
-      toast({
-        title: "Humor registrado!",
-        description: `Você está se sentindo ${moodDescription.toLowerCase()} hoje.`
+      showSimpleToast({
+        message: `Humor registrado! Você está se sentindo ${moodDescription.toLowerCase()} hoje.`,
+        type: "success"
       });
 
       await loadTodayMood();
@@ -184,10 +183,9 @@ export function useEmployeeMood(employeeId: string) {
         errorMessage = "Erro de autenticação. Faça login novamente.";
       }
       
-      toast({
-        title: "Erro ao registrar humor",
-        description: errorMessage,
-        variant: "destructive"
+      showSimpleToast({
+        message: `Erro ao registrar humor: ${errorMessage}`,
+        type: "error"
       });
       return { success: false, error: error.message };
     }
