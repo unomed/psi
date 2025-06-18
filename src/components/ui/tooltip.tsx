@@ -21,13 +21,13 @@ const Tooltip = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div"> & { children: React.ReactNode }
 >(({ children, className, ...props }, ref) => (
-  <div ref={ref} className={cn("relative inline-block", className)} {...props}>
+  <div ref={ref} className={cn("relative inline-block group", className)} {...props}>
     {children}
   </div>
 ))
 Tooltip.displayName = "Tooltip"
 
-// TRIGGER que suporta asChild
+// TRIGGER que suporta asChild - CORRIGIDO
 const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div"> & { 
@@ -36,8 +36,9 @@ const TooltipTrigger = React.forwardRef<
   }
 >(({ asChild = false, children, className, ...props }, ref) => {
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, {
-      ref,
+    // Corrigir tipagem para React.cloneElement
+    return React.cloneElement(children as React.ReactElement<any>, {
+      ...children.props,
       className: cn(children.props.className, className),
       ...props
     });
