@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,9 @@ const TEMPLATE_TYPES = [
   { value: "high_risk_alert", label: "Alerta de Alto Risco" },
   { value: "manager_notification", label: "Notificação para Gestor" },
   { value: "action_plan_created", label: "Plano de Ação Criado" }
-];
+] as const;
+
+type TemplateType = typeof TEMPLATE_TYPES[number]['value'];
 
 const VARIABLE_TAGS = [
   { tag: "{{employee_name}}", description: "Nome do funcionário" },
@@ -57,7 +58,7 @@ export function EmailTemplateManager({
     name: "",
     subject: "",
     body: "",
-    type: "",
+    type: "" as TemplateType | "",
     description: ""
   });
 
@@ -95,7 +96,7 @@ export function EmailTemplateManager({
       name: formData.name,
       subject: formData.subject,
       body: formData.body,
-      type: formData.type,
+      type: formData.type as EmailTemplate['type'],
       description: formData.description
     };
 
@@ -280,7 +281,7 @@ export function EmailTemplateManager({
                   <Label htmlFor="template-type">Tipo de Template</Label>
                   <Select 
                     value={formData.type} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+                    onValueChange={(value: TemplateType) => setFormData(prev => ({ ...prev, type: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar tipo" />

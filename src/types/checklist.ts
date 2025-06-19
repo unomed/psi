@@ -1,5 +1,5 @@
 
-import { DiscFactorType, DiscQuestion } from "./disc";
+import { DiscFactorType, DiscQuestion } from "@/types";
 
 // For Psicossocial, question is basic and grouped
 export interface PsicossocialQuestion {
@@ -32,5 +32,5 @@ export type ChecklistTemplateType = "disc" | "custom" | "psicossocial" | "srq20"
 // Define ChecklistQuestion as a union type
 export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion | PersonalLifeQuestion | Evaluation360Question;
 
-// Re-export types from disc and scale that are used with checklist
-export type { DiscQuestion } from "./disc";
+// Re-export types from main types file that are used with checklist
+export type { DiscQuestion, ChecklistTemplate, ChecklistResult } from "@/types";

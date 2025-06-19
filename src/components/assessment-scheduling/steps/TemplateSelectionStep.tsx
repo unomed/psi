@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, Users, Star } from "lucide-react";
@@ -46,7 +45,6 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
         cutoff_scores: template.cutoff_scores,
         is_active: template.is_active,
         version: template.version,
-        updated_at: template.updated_at ? new Date(template.updated_at) : undefined,
         created_by: template.created_by,
         created_at: template.created_at,
         updated_at: template.updated_at
