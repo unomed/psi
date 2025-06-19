@@ -290,6 +290,24 @@ export function AssessmentResponse() {
     );
   }
 
+  const templateForResults: ChecklistTemplate = {
+    id: template.id,
+    name: template.title,
+    title: template.title,
+    description: template.description || '',
+    category: template.type,
+    type: template.type,
+    scale_type: template.scale_type,
+    is_standard: false,
+    is_active: true,
+    estimated_time_minutes: 0,
+    version: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    questions: template.questions || [],
+    createdAt: new Date()
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
@@ -327,7 +345,7 @@ export function AssessmentResponse() {
           </CardHeader>
           <CardContent>
             <ChecklistResponseForm
-              template={assessment.template}
+              template={templateForResults}
               onSubmit={handleSubmitResponse}
               onCancel={handleCancel}
             />

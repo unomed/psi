@@ -1,193 +1,190 @@
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChecklistTemplate } from "@/types/checklist";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Loader2, Eye } from "lucide-react";
+import { useState } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Edit,
+  Copy,
+  Trash2,
+  Play,
+  Search,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
+import { ChecklistTemplate } from "@/types";
 
-export interface BaseTemplateTableProps {
+interface BaseTemplateTableProps {
   templates: ChecklistTemplate[];
-  caption: string;
-  onEditTemplate: (template: ChecklistTemplate) => void;
-  onDeleteTemplate: (template: ChecklistTemplate) => void;
-  onCopyTemplate: (template: ChecklistTemplate) => void;
-  onPreviewTemplate: (template: ChecklistTemplate) => void;
-  showCategories?: boolean;
+  onEdit: (template: ChecklistTemplate) => void;
+  onDelete: (template: ChecklistTemplate) => void;
+  onCopy: (template: ChecklistTemplate) => void;
+  onStart: (template: ChecklistTemplate) => void;
+  showActions?: boolean;
   isDeleting?: boolean;
 }
 
-export function BaseTemplateTable({
-  templates,
-  caption,
-  onEditTemplate,
-  onDeleteTemplate,
-  onPreviewTemplate,
-  showCategories = false,
-  isDeleting = false,
+export function BaseTemplateTable({ 
+  templates, 
+  onEdit, 
+  onDelete, 
+  onCopy, 
+  onStart,
+  showActions = true,
+  isDeleting = false 
 }: BaseTemplateTableProps) {
-  const renderFactorBadges = (template: ChecklistTemplate) => {
-    if (template.type === "disc") {
-      const dFactorCount = template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "D").length;
-      const iFactorCount = template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "I").length;
-      const sFactorCount = template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "S").length;
-      const cFactorCount = template.questions.filter(q => 'targetFactor' in q && q.targetFactor === "C").length;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<keyof ChecklistTemplate>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-      return (
-        <div className="flex flex-wrap gap-1">
-          <Badge variant="outline" className="bg-red-50">D: {dFactorCount}</Badge>
-          <Badge variant="outline" className="bg-yellow-50">I: {iFactorCount}</Badge>
-          <Badge variant="outline" className="bg-green-50">S: {sFactorCount}</Badge>
-          <Badge variant="outline" className="bg-blue-50">C: {cFactorCount}</Badge>
-        </div>
-      );
+  const filteredTemplates = templates.filter((template) =>
+    template.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const sortedTemplates = [...filteredTemplates].sort((a, b) => {
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
+
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    } else if (typeof aValue === "number" && typeof bValue === "number") {
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     }
-    return null;
-  };
 
-  const renderPsicossocialCategories = (template: ChecklistTemplate) => {
-    if (template.type === "psicossocial" || (template.type === "custom" && template.title.toLowerCase().includes("psicossocial"))) {
-      const categories = Array.from(new Set(template.questions.map(q => {
-        if ('category' in q) {
-          return q.category;
-        }
-        return 'Sem categoria';
-      })));
+    return 0;
+  });
 
-      return (
-        <div className="flex flex-wrap gap-1">
-          {categories.map(category => (
-            <Badge key={category} variant="outline" className="bg-purple-50">
-              {category}
-            </Badge>
-          ))}
-        </div>
-      );
+  const handleSort = (column: keyof ChecklistTemplate) => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortDirection("asc");
     }
-    return null;
   };
 
-  const getTemplateTypeDisplay = (template: ChecklistTemplate) => {
-    if (template.type === "disc") return "DISC";
-    if (template.type === "psicossocial") return "Psicossocial";
-    if (template.type === "custom" && template.title.toLowerCase().includes("psicossocial")) return "Psicossocial";
-    return "Personalizado";
-  };
-
-  const getTemplateTypeBadgeVariant = (template: ChecklistTemplate) => {
-    if (template.type === "disc") return "default";
-    if (template.type === "psicossocial" || (template.type === "custom" && template.title.toLowerCase().includes("psicossocial"))) return "secondary";
-    return "outline";
-  };
+  const filteredAndSortedTemplates = sortedTemplates;
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableCaption>{caption}</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Título</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Questões</TableHead>
-            <TableHead>Criado em</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {templates.map((template) => (
-            <TableRow key={template.id}>
-              <TableCell className="font-medium">
-                <div className="flex flex-col">
-                  <span>{template.title}</span>
-                  {template.description && (
-                    <span className="text-xs text-muted-foreground">{template.description}</span>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={getTemplateTypeBadgeVariant(template)}>
-                  {getTemplateTypeDisplay(template)}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {showCategories ? (
-                  template.type === "disc" ? renderFactorBadges(template) :
-                  (template.type === "psicossocial" || (template.type === "custom" && template.title.toLowerCase().includes("psicossocial"))) ? renderPsicossocialCategories(template) :
-                  <span className="text-xs text-muted-foreground">{template.questions.length} questões</span>
-                ) : (
-                  renderFactorBadges(template) || <span className="text-xs text-muted-foreground">{template.questions.length} questões</span>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Input
+          placeholder="Buscar templates..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+        <Search className="w-4 h-4 text-gray-500" />
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead 
+                className="cursor-pointer"
+                onClick={() => handleSort("name")}
+              >
+                Nome
+                {sortBy === "name" && (
+                  sortDirection === "asc" ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />
                 )}
-              </TableCell>
-              <TableCell>
-                {format(template.createdAt, "dd/MM/yyyy", { locale: ptBR })}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => onPreviewTemplate(template)}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Visualizar
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onEditTemplate(template)}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-destructive hover:bg-destructive/10"
-                        disabled={isDeleting}
-                      >
-                        {isDeleting ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Excluindo...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Excluir
-                          </>
-                        )}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Tem certeza que deseja excluir este modelo?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta ação não pode ser desfeita. Todos os dados relacionados a este modelo de checklist serão permanentemente removidos.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                          onClick={() => onDeleteTemplate(template)}
-                          disabled={isDeleting}
-                          className="bg-destructive hover:bg-destructive/90"
-                        >
-                          {isDeleting ? "Excluindo..." : "Excluir"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </TableCell>
+              </TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Perguntas</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Tempo Estimado</TableHead>
+              {showActions && <TableHead>Ações</TableHead>}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedTemplates.map((template) => (
+              <TableRow key={String(template.id)}>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{template.name || template.title}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {template.description}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={template.is_standard ? "default" : "secondary"}>
+                    {template.type || 'custom'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">
+                    {template.questions?.length || 0} perguntas
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={template.is_active ? "default" : "secondary"}>
+                    {template.is_active ? "Ativo" : "Inativo"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {template.estimated_time_minutes ? `${template.estimated_time_minutes} min` : "Não definido"}
+                </TableCell>
+                {showActions && (
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onStart(template)}
+                        title="Iniciar avaliação"
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEdit(template)}
+                        title="Editar"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onCopy(template)}
+                        title="Duplicar"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(template)}
+                        disabled={isDeleting}
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {filteredAndSortedTemplates.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          {searchTerm ? "Nenhum template encontrado com os critérios de busca." : "Nenhum template disponível."}
+        </div>
+      )}
     </div>
   );
 }

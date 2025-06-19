@@ -7,7 +7,6 @@ import { CheckCircle, FileText, Users, Briefcase, Target, Heart, RefreshCw, Brai
 import { PREDEFINED_PSYCHOSOCIAL_TEMPLATES, createPsychosocialTemplate } from "@/data/psychosocialQuestionnaires";
 import { STANDARD_QUESTIONNAIRE_TEMPLATES, createStandardTemplate } from "@/data/standardQuestionnaires";
 import { getDefaultQuestions } from "@/services/checklist/templateUtils";
-import { ScaleType } from "@/types";
 
 interface QuestionnaireTemplateSelectorProps {
   onSelectTemplate: (template: any) => void;
@@ -47,7 +46,9 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
       name: template.name,
       description: template.description,
       categories: template.questions
-        .filter((q): q is { category: string } => typeof q === 'object' && 'category' in q)
+        .filter((q): q is { category: string } => 
+          typeof q === 'object' && q !== null && 'category' in q
+        )
         .map(q => q.category)
         .filter((v, i, a) => a.indexOf(v) === i),
       type: 'standard'

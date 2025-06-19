@@ -31,6 +31,13 @@ export interface CompanyData {
   email?: string;
   phone?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  industry?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -129,8 +136,6 @@ export interface ScheduledAssessment {
   checklist_templates?: {
     title: string;
   } | null;
-  // Fix property name consistency
-  recurrenceType?: RecurrenceType;
 }
 
 export interface EmailTemplate {
@@ -208,8 +213,15 @@ export interface SimpleAuthContextType {
   user: any | null;
   session: any | null;
   loading: boolean;
+  userRole: AppRole | null;
+  userCompanies: CompanyAccess[];
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+}
+
+export interface CompanyAccess {
+  companyId: string;
+  companyName: string;
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====
@@ -224,4 +236,44 @@ export const generateEmployeePortalLink = (employeeId: string): string => {
 export const scheduleAssessmentReminders = async (assessmentId: string, dates: Date[]): Promise<void> => {
   console.log('Scheduling reminders for assessment:', assessmentId, dates);
   // Implementation would go here
+};
+
+// ===== BUSINESS RULES =====
+export const BUSINESS_RULES = {
+  ASSESSMENT: {
+    MAX_QUESTIONS_PER_TEMPLATE: 100,
+    MIN_QUESTIONS_PER_TEMPLATE: 1,
+    DEFAULT_EXPIRATION_DAYS: 30,
+    REMINDER_DAYS: [7, 3, 1]
+  },
+  RISK_ANALYSIS: {
+    SCORE_RANGES: {
+      LOW: { min: 0, max: 25 },
+      MEDIUM: { min: 26, max: 50 },
+      HIGH: { min: 51, max: 75 },
+      CRITICAL: { min: 76, max: 100 }
+    }
+  },
+  COMPANY: {
+    MAX_EMPLOYEES: 10000,
+    MAX_SECTORS: 50,
+    MAX_ROLES: 100
+  }
+};
+
+// ===== VALIDATION SCHEMAS =====
+export const VALIDATION_PATTERNS = {
+  EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  PHONE: /^\(\d{2}\)\s\d{4,5}-\d{4}$/,
+  CNPJ: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
+  CPF: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/
+};
+
+// ===== SYSTEM CONSTANTS =====
+export const SYSTEM_CONSTANTS = {
+  ITEMS_PER_PAGE: 10,
+  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+  SUPPORTED_FILE_TYPES: ['image/jpeg', 'image/png', 'application/pdf'],
+  SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
+  CACHE_DURATION: 5 * 60 * 1000 // 5 minutes
 };
