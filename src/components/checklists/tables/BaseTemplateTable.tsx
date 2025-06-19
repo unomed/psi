@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Table,
@@ -29,6 +30,12 @@ interface BaseTemplateTableProps {
   onStart: (template: ChecklistTemplate) => void;
   showActions?: boolean;
   isDeleting?: boolean;
+  caption?: string;
+  onEditTemplate?: (template: ChecklistTemplate) => void;
+  onDeleteTemplate?: (template: ChecklistTemplate) => void;
+  onCopyTemplate?: (template: ChecklistTemplate) => void;
+  onPreviewTemplate?: (template: ChecklistTemplate) => void;
+  showCategories?: boolean;
 }
 
 export function BaseTemplateTable({ 
@@ -38,11 +45,23 @@ export function BaseTemplateTable({
   onCopy, 
   onStart,
   showActions = true,
-  isDeleting = false 
+  isDeleting = false,
+  caption,
+  onEditTemplate,
+  onDeleteTemplate,
+  onCopyTemplate,
+  onPreviewTemplate,
+  showCategories = false
 }: BaseTemplateTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<keyof ChecklistTemplate>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  // Use the appropriate handlers
+  const handleEdit = onEditTemplate || onEdit;
+  const handleDelete = onDeleteTemplate || onDelete;
+  const handleCopy = onCopyTemplate || onCopy;
+  const handleStart = onPreviewTemplate || onStart;
 
   const filteredTemplates = templates.filter((template) =>
     template.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -88,6 +107,11 @@ export function BaseTemplateTable({
 
       <div className="rounded-md border">
         <Table>
+          {caption && (
+            <caption className="text-sm text-muted-foreground mt-4">
+              {caption}
+            </caption>
+          )}
           <TableHeader>
             <TableRow>
               <TableHead 
@@ -108,7 +132,7 @@ export function BaseTemplateTable({
           </TableHeader>
           <TableBody>
             {filteredAndSortedTemplates.map((template) => (
-              <TableRow key={String(template.id)}>
+              <TableRow key={template.id}>
                 <TableCell>
                   <div>
                     <div className="font-medium">{template.name || template.title}</div>
@@ -141,7 +165,7 @@ export function BaseTemplateTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onStart(template)}
+                        onClick={() => handleStart(template)}
                         title="Iniciar avaliação"
                       >
                         <Play className="h-4 w-4" />
@@ -149,7 +173,7 @@ export function BaseTemplateTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onEdit(template)}
+                        onClick={() => handleEdit(template)}
                         title="Editar"
                       >
                         <Edit className="h-4 w-4" />
@@ -157,7 +181,7 @@ export function BaseTemplateTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onCopy(template)}
+                        onClick={() => handleCopy(template)}
                         title="Duplicar"
                       >
                         <Copy className="h-4 w-4" />
@@ -165,7 +189,7 @@ export function BaseTemplateTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDelete(template)}
+                        onClick={() => handleDelete(template)}
                         disabled={isDeleting}
                         title="Excluir"
                       >

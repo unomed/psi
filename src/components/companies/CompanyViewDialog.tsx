@@ -1,5 +1,5 @@
 
-import { CompanyData } from "./CompanyCard";
+import { CompanyData } from "@/types";
 import {
   Dialog,
   DialogContent,
@@ -56,15 +56,15 @@ export function CompanyViewDialog({
             </div>
             <div className="space-y-1">
               <h3 className="font-medium text-muted-foreground">Nome do Contato</h3>
-              <p>{company.contactName}</p>
+              <p>{company.contact_name}</p>
             </div>
             <div className="space-y-1">
               <h3 className="font-medium text-muted-foreground">Email do Contato</h3>
-              <p>{company.contactEmail}</p>
+              <p>{company.contact_email}</p>
             </div>
             <div className="space-y-1">
               <h3 className="font-medium text-muted-foreground">Telefone do Contato</h3>
-              <p>{company.contactPhone}</p>
+              <p>{company.contact_phone}</p>
             </div>
             {company.notes && (
               <div className="col-span-2 space-y-1">

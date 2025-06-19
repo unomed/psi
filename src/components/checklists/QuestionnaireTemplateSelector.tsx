@@ -46,10 +46,7 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
       name: template.name,
       description: template.description,
       categories: template.questions
-        .filter((q): q is { category: string } => 
-          typeof q === 'object' && q !== null && 'category' in q
-        )
-        .map(q => q.category)
+        .map(q => typeof q === 'string' ? q : q.category || 'Geral')
         .filter((v, i, a) => a.indexOf(v) === i),
       type: 'standard'
     })),
@@ -118,7 +115,7 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
                   <p className="text-xs font-medium mb-2">Categorias/Fatores:</p>
                   <div className="flex flex-wrap gap-1">
                     {template.categories.slice(0, 3).map((category, index) => (
-                      <Badge key={`${template.id}-${index}`} variant="secondary" className="text-xs">
+                      <Badge key={`cat-${index}`} variant="secondary" className="text-xs">
                         {String(category).replace('_', ' ')}
                       </Badge>
                     ))}

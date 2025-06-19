@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,24 +52,6 @@ export function AssessmentResponse() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const mockTemplate: ChecklistTemplate = {
-    id: 'mock-template',
-    name: 'Avaliação de Bem-estar no Trabalho',
-    title: 'Avaliação de Bem-estar no Trabalho',
-    description: 'Questionário para avaliar o bem-estar dos funcionários no ambiente de trabalho',
-    category: 'psicossocial',
-    scale_type: 'likert5',
-    is_standard: true,
-    is_active: true,
-    estimated_time_minutes: 15,
-    version: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    createdAt: new Date(),
-    type: 'psicossocial',
-    questions: []
-  };
 
   useEffect(() => {
     if (!assessmentId || !session?.employee?.employeeId) {
@@ -291,20 +274,20 @@ export function AssessmentResponse() {
   }
 
   const templateForResults: ChecklistTemplate = {
-    id: template.id,
-    name: template.title,
-    title: template.title,
-    description: template.description || '',
-    category: template.type,
-    type: template.type,
-    scale_type: template.scale_type,
+    id: assessment.template.id,
+    name: assessment.template.title,
+    title: assessment.template.title,
+    description: assessment.template.description || '',
+    category: assessment.template.type,
+    type: assessment.template.type,
+    scale_type: assessment.template.scale_type,
     is_standard: false,
     is_active: true,
     estimated_time_minutes: 0,
     version: 1,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    questions: template.questions || [],
+    questions: assessment.template.questions || [],
     createdAt: new Date()
   };
 

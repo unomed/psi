@@ -34,9 +34,9 @@ export interface CompanyData {
   city?: string;
   state?: string;
   industry?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -91,9 +91,20 @@ export interface DiscQuestion extends ChecklistQuestion {
   weight?: number;
 }
 
-export interface PsicossocialQuestion extends ChecklistQuestion {
+// Simplified psychosocial question interface for templates
+export interface PsicossocialQuestion {
+  id: string;
+  text?: string;
+  question_text?: string;
   category: string;
   weight?: number;
+  // Optional fields for full compatibility
+  template_id?: string;
+  order_number?: number;
+  created_at?: string;
+  updated_at?: string;
+  target_factor?: string;
+  reverse_scored?: boolean;
 }
 
 export interface PersonalLifeQuestion extends ChecklistQuestion {
@@ -222,6 +233,8 @@ export interface SimpleAuthContextType {
   userCompanies: CompanyAccess[];
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  hasRole?: (role: AppRole) => boolean;
+  hasCompanyAccess?: (companyId: string) => boolean;
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====
