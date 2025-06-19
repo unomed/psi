@@ -4,11 +4,11 @@ export type AppRole = 'superadmin' | 'admin' | 'manager' | 'user' | 'employee';
 
 export type ScaleType = 'likert5' | 'binary' | 'percentage' | 'numeric' | 'likert' | 'yes_no' | 'psicossocial';
 
-export type AssessmentStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type AssessmentStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled' | 'sent';
 
-export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'none';
 
-export type ChecklistTemplateType = 'disc' | 'psicossocial' | 'stress' | 'custom';
+export type ChecklistTemplateType = 'disc' | 'psicossocial' | 'stress' | 'custom' | 'srq20' | 'phq9' | 'gad7' | 'mbi' | 'audit' | 'pss' | 'copsoq' | 'jcq' | 'eri' | 'personal_life' | 'evaluation_360';
 
 // ===== INTERFACES PRINCIPAIS =====
 export interface CompanyData {
@@ -27,6 +27,7 @@ export interface CompanyData {
 export interface ChecklistTemplate {
   id: string;
   name: string;
+  title?: string; // alias para name
   description?: string;
   category: string;
   scale_type: ScaleType;
@@ -43,7 +44,6 @@ export interface ChecklistTemplate {
   derived_from_id?: string;
   instructions?: string;
   type?: ChecklistTemplateType;
-  title?: string; // alias para name
   questions?: ChecklistQuestion[];
 }
 
@@ -57,6 +57,9 @@ export interface Question {
   question_type?: string;
   options?: any[];
   required?: boolean;
+  reverse_scored?: boolean;
+  target_factor?: string;
+  weight?: number;
 }
 
 export interface ChecklistQuestion extends Question {
@@ -97,8 +100,10 @@ export interface ScheduledAssessment {
   recurrence_type?: RecurrenceType;
   created_at: string;
   updated_at: string;
+  // Campos adicionais compatibilidade
   employeeId?: string;
   templateId?: string;
+  scheduledDate?: Date;
   sentAt?: Date | null;
   linkUrl?: string;
   completedAt?: Date | null;
