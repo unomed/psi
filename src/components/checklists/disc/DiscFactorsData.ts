@@ -16,7 +16,7 @@ export const DISC_FACTORS: Record<DiscFactorType, DiscFactor> = {
     characteristics: ["Sociável", "Comunicativo", "Otimista", "Persuasivo", "Gosta de interação"]
   },
   [DiscFactorType.S]: {
-    type: DiscFact orType.S,
+    type: DiscFactorType.S,
     name: "Estabilidade",
     description: "Foco em estabilidade, cooperação e harmonia",
     characteristics: ["Paciente", "Confiável", "Cooperativo", "Leal", "Busca harmonia"]
