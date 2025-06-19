@@ -82,6 +82,11 @@ export const getFactorBgColor = (factor: DiscFactorType): string => {
   return colors[factor] || 'bg-gray-50';
 };
 
+// Missing background color function
+export const getFactorBackgroundColor = (factor: DiscFactorType): string => {
+  return getFactorBgColor(factor);
+};
+
 export const getFactorByType = (type: DiscFactorType): DiscFactor => {
   return DISC_FACTORS.find(factor => factor.type === type) || DISC_FACTORS[0];
 };

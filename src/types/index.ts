@@ -208,7 +208,12 @@ export interface Company {
   updatedAt: Date;
 }
 
-// Auth context interface
+export interface CompanyAccess {
+  companyId: string;
+  companyName: string;
+}
+
+// Auth context interface - Fixed to include all required properties
 export interface SimpleAuthContextType {
   user: any | null;
   session: any | null;
@@ -217,11 +222,6 @@ export interface SimpleAuthContextType {
   userCompanies: CompanyAccess[];
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-}
-
-export interface CompanyAccess {
-  companyId: string;
-  companyName: string;
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====

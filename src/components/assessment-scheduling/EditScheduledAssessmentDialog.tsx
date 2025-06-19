@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,7 @@ export function EditScheduledAssessmentDialog({
     if (assessment) {
       setScheduledDate(assessment.scheduledDate);
       // Use the correct property name from the database
-      setRecurrenceType(assessment.recurrence_type || assessment.recurrenceType || "none");
+      setRecurrenceType(assessment.recurrence_type || "none");
       setPhoneNumber(assessment.phoneNumber || "");
     }
   }, [assessment]);
@@ -58,7 +57,7 @@ export function EditScheduledAssessmentDialog({
     // Reset form when closing
     if (assessment) {
       setScheduledDate(assessment.scheduledDate);
-      setRecurrenceType(assessment.recurrence_type || assessment.recurrenceType || "none");
+      setRecurrenceType(assessment.recurrence_type || "none");
       setPhoneNumber(assessment.phoneNumber || "");
     }
   };
