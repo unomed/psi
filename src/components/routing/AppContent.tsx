@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuth } from "@/hooks/useAuth";
@@ -18,14 +19,15 @@ import GestaoRiscos from '@/pages/GestaoRiscos';
 import AssessmentResults from '@/pages/AssessmentResults';
 import Faturamento from '@/pages/Faturamento';
 import AutomacaoGestores from '@/pages/AutomacaoGestores';
-import EmployeeDashboard from '@/components/employee/EmployeeDashboard';
+import { EmployeeDashboard } from '@/components/employee/EmployeeDashboard';
 import NR01Page from '@/pages/relatorios/NR01Page';
 import AutomacaoAvancadaPage from '@/pages/configuracoes/AutomacaoAvancadaPage';
 import AutomacaoPsicossocialPage from '@/pages/configuracoes/AutomacaoPsicossocialPage';
 import AuditoriaPage from '@/pages/configuracoes/AuditoriaPage';
 
 export function AppContent() {
-  const { isLoggedIn, user } = useAuth();
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   return (
     <Routes>

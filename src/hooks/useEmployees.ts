@@ -11,7 +11,7 @@ interface UseEmployeesParams {
 export function useEmployees(params: UseEmployeesParams = {}) {
   const { userCompanies, userRole } = useAuth();
   
-  return useQuery({
+  const query = useQuery({
     queryKey: ['employees', params.companyId],
     queryFn: async (): Promise<Employee[]> => {
       let query = supabase
@@ -63,4 +63,11 @@ export function useEmployees(params: UseEmployeesParams = {}) {
     },
     enabled: userRole === 'superadmin' || userCompanies.length > 0,
   });
+
+  return {
+    employees: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch
+  };
 }
