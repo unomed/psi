@@ -29,8 +29,10 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
       // Transform database response to match ChecklistTemplate interface
       return data.map(template => ({
         id: template.id,
+        name: template.title, // Map title to name
         title: template.title,
         description: template.description || '',
+        category: template.type || 'custom', // Map type to category
         type: template.type,
         questions: [],
         createdAt: new Date(template.created_at),

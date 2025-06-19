@@ -46,7 +46,10 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
       id: template.id,
       name: template.name,
       description: template.description,
-      categories: template.questions.map(q => 'category' in q ? q.category : 'Geral').filter((v, i, a) => a.indexOf(v) === i),
+      categories: template.questions
+        .filter((q): q is { category: string } => typeof q === 'object' && 'category' in q)
+        .map(q => q.category)
+        .filter((v, i, a) => a.indexOf(v) === i),
       type: 'standard'
     })),
     // Templates psicossociais existentes
@@ -113,9 +116,9 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
                 <div>
                   <p className="text-xs font-medium mb-2">Categorias/Fatores:</p>
                   <div className="flex flex-wrap gap-1">
-                    {template.categories.slice(0, 3).map((categoryId) => (
-                      <Badge key={categoryId} variant="secondary" className="text-xs">
-                        {categoryId.replace('_', ' ')}
+                    {template.categories.slice(0, 3).map((category, index) => (
+                      <Badge key={`${template.id}-${index}`} variant="secondary" className="text-xs">
+                        {String(category).replace('_', ' ')}
                       </Badge>
                     ))}
                     {template.categories.length > 3 && (

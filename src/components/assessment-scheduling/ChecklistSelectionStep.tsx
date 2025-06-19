@@ -116,8 +116,12 @@ export function ChecklistSelectionStep({
             template_id: savedTemplate.id,
             question_text: typeof question === 'string' ? question : question.text || question.question_text || '',
             order_number: index + 1,
-            target_factor: 'targetFactor' in question ? question.targetFactor : 'category' in question ? question.category : 'general',
-            weight: 'weight' in question ? question.weight : 1
+            target_factor: typeof question === 'object' && 'targetFactor' in question 
+              ? String(question.targetFactor) 
+              : typeof question === 'object' && 'category' in question 
+                ? String(question.category) 
+                : 'general',
+            weight: typeof question === 'object' && 'weight' in question ? Number(question.weight) : 1
           }));
 
           const { error: questionsError } = await supabase

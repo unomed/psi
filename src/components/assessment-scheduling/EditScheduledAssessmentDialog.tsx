@@ -29,7 +29,8 @@ export function EditScheduledAssessmentDialog({
   useEffect(() => {
     if (assessment) {
       setScheduledDate(assessment.scheduledDate);
-      setRecurrenceType(assessment.recurrenceType || "none");
+      // Use the correct property name from the database
+      setRecurrenceType(assessment.recurrence_type || assessment.recurrenceType || "none");
       setPhoneNumber(assessment.phoneNumber || "");
     }
   }, [assessment]);
@@ -57,7 +58,7 @@ export function EditScheduledAssessmentDialog({
     // Reset form when closing
     if (assessment) {
       setScheduledDate(assessment.scheduledDate);
-      setRecurrenceType(assessment.recurrenceType || "none");
+      setRecurrenceType(assessment.recurrence_type || assessment.recurrenceType || "none");
       setPhoneNumber(assessment.phoneNumber || "");
     }
   };

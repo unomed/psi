@@ -2,11 +2,22 @@
 // ===== TIPOS BASE =====
 export type AppRole = 'superadmin' | 'admin' | 'manager' | 'user' | 'employee';
 
-export type ScaleType = 'likert5' | 'binary' | 'percentage' | 'numeric' | 'likert' | 'yes_no' | 'psicossocial';
+export enum ScaleType {
+  Likert = 'likert5',
+  YesNo = 'binary',
+  Agree3 = 'percentage',
+  Frequency = 'numeric',
+  Importance = 'likert',
+  Probability = 'yes_no',
+  Impact = 'psicossocial',
+  RiskLevel = 'percentage',
+  Psicossocial = 'psicossocial',
+  Custom = 'custom'
+}
+
+export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'none' | 'semiannual' | 'annual';
 
 export type AssessmentStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled' | 'sent';
-
-export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'none';
 
 export type ChecklistTemplateType = 'disc' | 'psicossocial' | 'stress' | 'custom' | 'srq20' | 'phq9' | 'gad7' | 'mbi' | 'audit' | 'pss' | 'copsoq' | 'jcq' | 'eri' | 'personal_life' | 'evaluation_360';
 
@@ -30,7 +41,7 @@ export interface ChecklistTemplate {
   title?: string; // alias para name
   description?: string;
   category: string;
-  scale_type: ScaleType;
+  scale_type: ScaleType | string;
   is_standard: boolean;
   is_active: boolean;
   estimated_time_minutes: number;
@@ -118,6 +129,8 @@ export interface ScheduledAssessment {
   checklist_templates?: {
     title: string;
   } | null;
+  // Fix property name consistency
+  recurrenceType?: RecurrenceType;
 }
 
 export interface EmailTemplate {
@@ -188,6 +201,15 @@ export interface Company {
   contactPhone?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Auth context interface
+export interface SimpleAuthContextType {
+  user: any | null;
+  session: any | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====

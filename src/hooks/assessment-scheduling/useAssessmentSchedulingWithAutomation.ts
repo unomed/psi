@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Employee } from '@/types/employee';
 import { ChecklistTemplate, RecurrenceType, generateEmployeePortalLink, scheduleAssessmentReminders } from '@/types';
@@ -32,17 +31,38 @@ export function useAssessmentSchedulingWithAutomation() {
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [schedulingDetails, setSchedulingDetails] = useState<SchedulingDetails>({
+    recurrenceType: 'monthly',
+    phoneNumber: '',
+    sendEmail: true,
+    sendWhatsApp: false
+  });
 
   const updateAutomationConfig = useCallback((updates: Partial<AutomationConfig>) => {
     setAutomationConfig(prev => ({ ...prev, ...updates }));
   }, []);
 
   const updateSchedulingDetails = useCallback((details: Partial<SchedulingDetails>) => {
+    setSchedulingDetails(prev => ({ ...prev, ...details }));
     setAutomationConfig(prev => ({
       ...prev,
       schedulingDetails: { ...prev.schedulingDetails, ...details }
     }));
   }, []);
+
+  const scheduleAssessment = async (data: any) => {
+    setIsProcessing(true);
+    try {
+      // Implementation for scheduling assessment
+      console.log('Scheduling assessment:', data);
+      return data;
+    } catch (error) {
+      console.error('Error scheduling assessment:', error);
+      throw error;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const processAutomatedScheduling = async () => {
     if (!automationConfig.template || automationConfig.employees.length === 0) {
@@ -103,6 +123,10 @@ export function useAssessmentSchedulingWithAutomation() {
 
   return {
     automationConfig,
+    schedulingDetails,
+    setSchedulingDetails,
+    scheduleAssessment,
+    isLoading: isProcessing,
     updateAutomationConfig,
     updateSchedulingDetails,
     isProcessing,
