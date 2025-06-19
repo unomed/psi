@@ -1,6 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { FileText, Clock, Users, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,34 +33,23 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
         title: template.title,
         description: template.description || '',
         type: template.type,
-        questions: [], // Will be loaded separately if needed
+        questions: [],
         createdAt: new Date(template.created_at),
-        scaleType: template.scale_type,
-        isStandard: template.is_standard,
-        companyId: template.company_id,
-        derivedFromId: template.derived_from_id,
-        estimatedTimeMinutes: template.estimated_time_minutes,
-        instructions: template.instructions,
-        interpretationGuide: template.interpretation_guide,
-        maxScore: template.max_score,
-        cutoffScores: template.cutoff_scores,
-        isActive: template.is_active,
-        version: template.version,
-        updatedAt: template.updated_at ? new Date(template.updated_at) : undefined,
-        createdBy: template.created_by,
-        // Keep database field names for compatibility
-        estimated_time_minutes: template.estimated_time_minutes,
+        scale_type: template.scale_type,
         is_standard: template.is_standard,
         company_id: template.company_id,
         derived_from_id: template.derived_from_id,
-        scale_type: template.scale_type,
-        created_at: template.created_at,
-        updated_at: template.updated_at,
-        created_by: template.created_by,
-        is_active: template.is_active,
-        cutoff_scores: template.cutoff_scores,
+        estimated_time_minutes: template.estimated_time_minutes,
+        instructions: template.instructions,
+        interpretation_guide: template.interpretation_guide,
         max_score: template.max_score,
-        interpretation_guide: template.interpretation_guide
+        cutoff_scores: template.cutoff_scores,
+        is_active: template.is_active,
+        version: template.version,
+        updated_at: template.updated_at ? new Date(template.updated_at) : undefined,
+        created_by: template.created_by,
+        created_at: template.created_at,
+        updated_at: template.updated_at
       })) as ChecklistTemplate[];
     }
   });
@@ -93,7 +82,9 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
       custom: "Personalizada",
       percentile: "Percentil",
       stanine: "Stanine",
-      tscore: "T-Score"
+      tscore: "T-Score",
+      percentage: "Porcentagem",
+      numeric: "Numérico"
     };
     return scales[scaleType as keyof typeof scales] || scaleType;
   };
@@ -147,7 +138,7 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
               
               <CardContent className="pt-0">
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {template.isStandard && (
+                  {template.is_standard && (
                     <Badge variant="secondary" className="text-xs">
                       <Star className="h-3 w-3 mr-1" />
                       Padrão
@@ -156,9 +147,9 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
                   <Badge variant="outline" className="text-xs">
                     {getTemplateTypeLabel(template.type)}
                   </Badge>
-                  {template.scaleType && (
+                  {template.scale_type && (
                     <Badge variant="outline" className="text-xs">
-                      {getScaleTypeLabel(template.scaleType)}
+                      {getScaleTypeLabel(template.scale_type)}
                     </Badge>
                   )}
                 </div>
@@ -168,10 +159,10 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
                     <Users className="h-4 w-4" />
                     Questões disponíveis
                   </div>
-                  {template.estimatedTimeMinutes && (
+                  {template.estimated_time_minutes && (
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      ~{template.estimatedTimeMinutes} min
+                      ~{template.estimated_time_minutes} min
                     </div>
                   )}
                 </div>

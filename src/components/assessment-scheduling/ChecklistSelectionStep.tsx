@@ -73,12 +73,16 @@ export function ChecklistSelectionStep({
           title: existingTemplate.title,
           description: existingTemplate.description || "",
           type: templateData.type,
-          scaleType: templateData.scaleType,
-          questions: [], // As questões serão carregadas conforme necessário
+          scale_type: templateData.scaleType,
+          questions: [],
           createdAt: new Date(existingTemplate.created_at),
-          isStandard: existingTemplate.is_standard,
-          estimatedTimeMinutes: existingTemplate.estimated_time_minutes,
-          instructions: existingTemplate.instructions
+          is_standard: existingTemplate.is_standard,
+          estimated_time_minutes: existingTemplate.estimated_time_minutes,
+          instructions: existingTemplate.instructions,
+          created_at: existingTemplate.created_at,
+          updated_at: existingTemplate.updated_at,
+          is_active: existingTemplate.is_active,
+          version: existingTemplate.version || 1
         };
       } else {
         // Se não existe, criar e salvar o template
@@ -94,10 +98,10 @@ export function ChecklistSelectionStep({
             title: tempTemplate.title,
             description: tempTemplate.description,
             type: mapAppTemplateTypeToDb(tempTemplate.type),
-            scale_type: scaleTypeToDbScaleType(tempTemplate.scaleType),
+            scale_type: scaleTypeToDbScaleType(tempTemplate.scale_type),
             is_standard: true,
             is_active: true,
-            estimated_time_minutes: tempTemplate.estimatedTimeMinutes,
+            estimated_time_minutes: tempTemplate.estimated_time_minutes,
             instructions: tempTemplate.instructions
           } as any)
           .select()
@@ -112,9 +116,9 @@ export function ChecklistSelectionStep({
         if (tempTemplate.questions && tempTemplate.questions.length > 0) {
           const questionsToInsert = tempTemplate.questions.map((question, index) => ({
             template_id: savedTemplate.id,
-            question_text: question.text,
+            question_text: typeof question === 'string' ? question : question.text || question.question_text,
             order_number: index + 1,
-            target_factor: 'targetFactor' in question ? question.targetFactor : question.category || 'general',
+            target_factor: 'targetFactor' in question ? question.targetFactor : 'category' in question ? question.category : 'general',
             weight: 'weight' in question ? question.weight : 1
           }));
 
@@ -124,7 +128,6 @@ export function ChecklistSelectionStep({
 
           if (questionsError) {
             console.error('Erro ao salvar questões:', questionsError);
-            // Não falhar se as questões não forem salvas, pois o template principal já foi criado
           }
         }
 
@@ -133,12 +136,16 @@ export function ChecklistSelectionStep({
           title: savedTemplate.title,
           description: savedTemplate.description || "",
           type: tempTemplate.type,
-          scaleType: tempTemplate.scaleType,
-          questions: tempTemplate.questions,
+          scale_type: tempTemplate.scale_type,
+          questions: tempTemplate.questions || [],
           createdAt: new Date(savedTemplate.created_at),
-          isStandard: savedTemplate.is_standard,
-          estimatedTimeMinutes: savedTemplate.estimated_time_minutes,
-          instructions: savedTemplate.instructions
+          is_standard: savedTemplate.is_standard,
+          estimated_time_minutes: savedTemplate.estimated_time_minutes,
+          instructions: savedTemplate.instructions,
+          created_at: savedTemplate.created_at,
+          updated_at: savedTemplate.updated_at,
+          is_active: savedTemplate.is_active,
+          version: savedTemplate.version || 1
         };
       }
 

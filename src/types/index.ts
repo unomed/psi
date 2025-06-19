@@ -35,6 +35,64 @@ export interface Question {
 
 export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semiannual' | 'annual';
 
+export type AssessmentStatus = 'scheduled' | 'sent' | 'completed' | 'pending' | 'in_progress' | 'cancelled';
+
+export interface ScheduledAssessment {
+  id: string;
+  employeeId: string;
+  templateId: string;
+  scheduledDate: Date;
+  sentAt: Date | null;
+  linkUrl: string;
+  status: AssessmentStatus;
+  completedAt: Date | null;
+  recurrenceType?: RecurrenceType;
+  nextScheduledDate?: Date | null;
+  phoneNumber?: string;
+  company_id?: string;
+  employee_name?: string;
+  employees?: {
+    name: string;
+    email: string;
+    phone: string;
+  } | null;
+  checklist_templates?: {
+    title: string;
+  } | null;
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  description?: string;
+  type?: 'initial_invite' | 'reminder_3_days' | 'reminder_1_day' | 'final_reminder' | 'completion_confirmation' | 'high_risk_alert' | 'manager_notification' | 'action_plan_created';
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ChecklistResult {
+  id: string;
+  templateId: string;
+  employeeId?: string;
+  employeeName?: string;
+  results: {
+    D: number;
+    I: number;
+    S: number;
+    C: number;
+  } | Record<string, number>;
+  dominantFactor: string;
+  categorizedResults?: Record<string, number>;
+  completedAt: Date;
+  evaluatedEmployeeId?: string;
+  evaluatorEmployeeId?: string;
+  isAnonymous?: boolean;
+  personalFactors?: Record<string, any>;
+  riskCorrelation?: "work" | "personal" | "mixed" | "unknown";
+}
+
 export interface Company {
   id: string;
   name: string;

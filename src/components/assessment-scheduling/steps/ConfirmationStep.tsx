@@ -23,7 +23,10 @@ export function ConfirmationStep({ employee, template, details }: ConfirmationSt
   const getRecurrenceLabel = (type: RecurrenceType) => {
     const labels = {
       none: "Sem recorrência",
+      daily: "Diário",
+      weekly: "Semanal",
       monthly: "Mensal",
+      quarterly: "Trimestral",
       semiannual: "Semestral", 
       annual: "Anual"
     };
@@ -92,7 +95,7 @@ export function ConfirmationStep({ employee, template, details }: ConfirmationSt
               )}
               <div className="flex gap-2 mt-2">
                 <Badge variant="outline" className="text-xs">{template?.type}</Badge>
-                {template?.isStandard && (
+                {template?.is_standard && (
                   <Badge variant="secondary" className="text-xs">Padrão</Badge>
                 )}
               </div>
