@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +25,24 @@ interface AssessmentData {
   dueDate?: string;
 }
 
+interface ChecklistTemplate {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  category: string;
+  scale_type: string;
+  is_standard: boolean;
+  is_active: boolean;
+  estimated_time_minutes: number;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  createdAt: Date;
+  type: ChecklistTemplateType;
+  questions: any[];
+}
+
 export function AssessmentResponse() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
   const navigate = useNavigate();
@@ -34,6 +51,24 @@ export function AssessmentResponse() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const mockTemplate: ChecklistTemplate = {
+    id: 'mock-template',
+    name: 'Avaliação de Bem-estar no Trabalho',
+    title: 'Avaliação de Bem-estar no Trabalho',
+    description: 'Questionário para avaliar o bem-estar dos funcionários no ambiente de trabalho',
+    category: 'psicossocial',
+    scale_type: 'likert5',
+    is_standard: true,
+    is_active: true,
+    estimated_time_minutes: 15,
+    version: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    createdAt: new Date(),
+    type: 'psicossocial',
+    questions: []
+  };
 
   useEffect(() => {
     if (!assessmentId || !session?.employee?.employeeId) {

@@ -8,8 +8,6 @@ import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires"
 import { createStandardTemplate } from "@/data/standardQuestionnaires";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { scaleTypeToDbScaleType } from "@/types/scale";
-import { mapAppTemplateTypeToDb } from "@/services/checklist/utils";
 
 interface ChecklistSelectionStepProps {
   selectedChecklist: ChecklistTemplate | null;
@@ -50,14 +48,12 @@ export function ChecklistSelectionStep({
         throw new Error("Template não encontrado");
       }
 
-      const dbTemplateType = mapAppTemplateTypeToDb(templateData.type);
-
       // Primeiro verificar se o template já existe na base de dados
       const { data: existingTemplate, error: fetchError } = await supabase
         .from('checklist_templates')
         .select('*')
         .eq('title', templateData.name)
-        .eq('type', dbTemplateType as any)
+        .eq('type', templateData.type as any)
         .maybeSingle();
 
       if (fetchError) {
@@ -70,19 +66,21 @@ export function ChecklistSelectionStep({
         // Se já existe, usar o template existente
         finalTemplate = {
           id: existingTemplate.id,
+          name: existingTemplate.title,
           title: existingTemplate.title,
           description: existingTemplate.description || "",
-          type: templateData.type,
-          scale_type: templateData.scaleType,
+          category: templateData.type,
+          scale_type: templateData.scale_type,
           questions: [],
           createdAt: new Date(existingTemplate.created_at),
           is_standard: existingTemplate.is_standard,
-          estimated_time_minutes: existingTemplate.estimated_time_minutes,
+          is_active: existingTemplate.is_active,
+          estimated_time_minutes: existingTemplate.estimated_time_minutes || 15,
           instructions: existingTemplate.instructions,
           created_at: existingTemplate.created_at,
           updated_at: existingTemplate.updated_at,
-          is_active: existingTemplate.is_active,
-          version: existingTemplate.version || 1
+          version: existingTemplate.version || 1,
+          type: templateData.type
         };
       } else {
         // Se não existe, criar e salvar o template
@@ -95,10 +93,10 @@ export function ChecklistSelectionStep({
         const { data: savedTemplate, error: saveError } = await supabase
           .from('checklist_templates')
           .insert({
-            title: tempTemplate.title,
+            title: tempTemplate.name,
             description: tempTemplate.description,
-            type: mapAppTemplateTypeToDb(tempTemplate.type),
-            scale_type: scaleTypeToDbScaleType(tempTemplate.scale_type),
+            type: tempTemplate.type,
+            scale_type: tempTemplate.scale_type,
             is_standard: true,
             is_active: true,
             estimated_time_minutes: tempTemplate.estimated_time_minutes,
@@ -116,7 +114,7 @@ export function ChecklistSelectionStep({
         if (tempTemplate.questions && tempTemplate.questions.length > 0) {
           const questionsToInsert = tempTemplate.questions.map((question, index) => ({
             template_id: savedTemplate.id,
-            question_text: typeof question === 'string' ? question : question.text || question.question_text,
+            question_text: typeof question === 'string' ? question : question.text || question.question_text || '',
             order_number: index + 1,
             target_factor: 'targetFactor' in question ? question.targetFactor : 'category' in question ? question.category : 'general',
             weight: 'weight' in question ? question.weight : 1
@@ -133,24 +131,26 @@ export function ChecklistSelectionStep({
 
         finalTemplate = {
           id: savedTemplate.id,
+          name: savedTemplate.title,
           title: savedTemplate.title,
           description: savedTemplate.description || "",
-          type: tempTemplate.type,
+          category: tempTemplate.type,
           scale_type: tempTemplate.scale_type,
           questions: tempTemplate.questions || [],
           createdAt: new Date(savedTemplate.created_at),
           is_standard: savedTemplate.is_standard,
-          estimated_time_minutes: savedTemplate.estimated_time_minutes,
+          is_active: savedTemplate.is_active,
+          estimated_time_minutes: savedTemplate.estimated_time_minutes || 15,
           instructions: savedTemplate.instructions,
           created_at: savedTemplate.created_at,
           updated_at: savedTemplate.updated_at,
-          is_active: savedTemplate.is_active,
-          version: savedTemplate.version || 1
+          version: savedTemplate.version || 1,
+          type: tempTemplate.type
         };
       }
 
       onChecklistSelect(finalTemplate);
-      toast.success(`Template "${finalTemplate.title}" selecionado com sucesso!`);
+      toast.success(`Template "${finalTemplate.name}" selecionado com sucesso!`);
     } catch (error) {
       console.error('Erro ao processar template:', error);
       toast.error("Erro ao processar template selecionado");
@@ -173,7 +173,7 @@ export function ChecklistSelectionStep({
           <Card 
             key={template.id}
             className={`cursor-pointer transition-all hover:shadow-md ${
-              selectedChecklist?.title === template.name ? 'ring-2 ring-primary' : ''
+              selectedChecklist?.name === template.name ? 'ring-2 ring-primary' : ''
             } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
             onClick={() => handleTemplateSelect(template.id)}
           >
@@ -191,7 +191,7 @@ export function ChecklistSelectionStep({
                   </div>
                 </div>
                 
-                {selectedChecklist?.title === template.name && (
+                {selectedChecklist?.name === template.name && (
                   <Badge>Selecionado</Badge>
                 )}
               </div>
@@ -213,10 +213,10 @@ export function ChecklistSelectionStep({
                   <Users className="h-4 w-4" />
                   {template.questions.length} questões
                 </div>
-                {template.estimatedTimeMinutes && (
+                {template.estimated_time_minutes && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    ~{template.estimatedTimeMinutes} min
+                    ~{template.estimated_time_minutes} min
                   </div>
                 )}
               </div>

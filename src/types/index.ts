@@ -1,94 +1,50 @@
 
-// Enums and basic types
-export enum ScaleType {
-  Likert = "likert5",
-  YesNo = "binary",
-  Agree3 = "agree3",
-  Frequency = "frequency",
-  Importance = "importance",
-  Probability = "probability",
-  Impact = "impact",
-  RiskLevel = "risk_level",
-  Psicossocial = "psicossocial",
-  Custom = "custom"
-}
+// ===== TIPOS BASE =====
+export type AppRole = 'superadmin' | 'admin' | 'manager' | 'user' | 'employee';
 
-export enum DiscFactorType {
-  D = "D",
-  I = "I", 
-  S = "S",
-  C = "C"
-}
+export type ScaleType = 'likert5' | 'binary' | 'percentage' | 'numeric' | 'likert' | 'yes_no' | 'psicossocial';
 
-export type RecurrenceType = 'none' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'semiannual' | 'annual';
-export type AssessmentStatus = 'scheduled' | 'sent' | 'completed' | 'pending' | 'in_progress' | 'cancelled';
+export type AssessmentStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 
-// DISC Types
-export interface DiscFactor {
-  type: DiscFactorType;
+export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+
+export type ChecklistTemplateType = 'disc' | 'psicossocial' | 'stress' | 'custom';
+
+// ===== INTERFACES PRINCIPAIS =====
+export interface CompanyData {
+  id: string;
   name: string;
-  description: string;
-  characteristics: string[];
-}
-
-export interface DiscQuestion {
-  id: string;
-  text: string;
-  targetFactor: DiscFactorType;
-  weight?: number;
-}
-
-// Psychosocial Types
-export interface PsicossocialQuestion {
-  id: string;
-  text: string;
-  category: string;
-  weight?: number;
-}
-
-// Personal/Family Life Question
-export interface PersonalLifeQuestion {
-  id: string;
-  text: string;
-  category: string;
-  weight?: number;
-  isPrivate?: boolean;
-}
-
-// 360-degree evaluation question
-export interface Evaluation360Question {
-  id: string;
-  text: string;
-  category: string;
-  evaluationType: "colleague" | "manager" | "subordinate";
-  weight?: number;
-}
-
-// Union type for all question types
-export type ChecklistQuestion = DiscQuestion | PsicossocialQuestion | PersonalLifeQuestion | Evaluation360Question;
-
-// Main template interface
-export interface ChecklistTemplate {
-  id: string;
-  title: string;
-  description?: string;
-  type: 'custom' | 'srq20' | 'phq9' | 'gad7' | 'mbi' | 'audit' | 'pss' | 'copsoq' | 'jcq' | 'eri' | 'disc' | 'psicossocial' | 'personal_life' | 'evaluation_360';
-  scale_type: 'likert5' | 'binary' | 'percentage' | 'numeric';
-  company_id?: string;
-  created_by?: string;
-  is_active: boolean;
-  version: number;
-  max_score?: number;
-  cutoff_scores?: any;
-  instructions?: string;
-  interpretation_guide?: string;
-  estimated_time_minutes?: number;
-  is_standard?: boolean;
-  derived_from_id?: string;
-  questions?: ChecklistQuestion[];
-  createdAt: Date;
+  cnpj?: string;
+  razao_social?: string;
+  nome_fantasia?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ChecklistTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  scale_type: ScaleType;
+  is_standard: boolean;
+  is_active: boolean;
+  estimated_time_minutes: number;
+  version: number;
+  created_at: string;
+  updated_at: string;
+  createdAt?: Date; // compatibilidade
+  company_id?: string;
+  created_by?: string;
+  cutoff_scores?: any;
+  derived_from_id?: string;
+  instructions?: string;
+  type?: ChecklistTemplateType;
+  title?: string; // alias para name
+  questions?: ChecklistQuestion[];
 }
 
 export interface Question {
@@ -96,46 +52,58 @@ export interface Question {
   template_id: string;
   question_text: string;
   order_number: number;
-  target_factor?: string;
-  weight?: number;
-  reverse_scored?: boolean;
   created_at: string;
+  updated_at: string;
+  question_type?: string;
+  options?: any[];
+  required?: boolean;
 }
 
-export interface ChecklistResult {
-  id: string;
-  templateId: string;
-  employeeId?: string;
-  employeeName?: string;
-  results: {
-    D: number;
-    I: number;
-    S: number;
-    C: number;
-  } | Record<string, number>;
-  dominantFactor: string;
-  categorizedResults?: Record<string, number>;
-  completedAt: Date;
-  evaluatedEmployeeId?: string;
-  evaluatorEmployeeId?: string;
-  isAnonymous?: boolean;
-  personalFactors?: Record<string, any>;
-  riskCorrelation?: "work" | "personal" | "mixed" | "unknown";
+export interface ChecklistQuestion extends Question {
+  text?: string; // alias para question_text
+}
+
+export interface DiscQuestion extends ChecklistQuestion {
+  factor: 'D' | 'I' | 'S' | 'C';
+  statement: string;
+  targetFactor: DiscFactorType;
+  weight?: number;
+}
+
+export interface PsicossocialQuestion extends ChecklistQuestion {
+  category: string;
+  weight?: number;
+}
+
+export interface PersonalLifeQuestion extends ChecklistQuestion {
+  category: string;
+  weight?: number;
+  isPrivate?: boolean;
+}
+
+export interface Evaluation360Question extends ChecklistQuestion {
+  category: string;
+  evaluationType: "colleague" | "manager" | "subordinate";
+  weight?: number;
 }
 
 export interface ScheduledAssessment {
   id: string;
-  employeeId: string;
-  templateId: string;
-  scheduledDate: Date;
-  sentAt: Date | null;
-  linkUrl: string;
+  company_id: string;
+  checklist_template_id: string;
+  employee_ids: string[];
+  scheduled_date: string;
   status: AssessmentStatus;
-  completedAt: Date | null;
-  recurrenceType?: RecurrenceType;
+  recurrence_type?: RecurrenceType;
+  created_at: string;
+  updated_at: string;
+  employeeId?: string;
+  templateId?: string;
+  sentAt?: Date | null;
+  linkUrl?: string;
+  completedAt?: Date | null;
   nextScheduledDate?: Date | null;
   phoneNumber?: string;
-  company_id?: string;
   employee_name?: string;
   employees?: {
     name: string;
@@ -152,10 +120,51 @@ export interface EmailTemplate {
   name: string;
   subject: string;
   body: string;
-  description?: string;
   type?: 'initial_invite' | 'reminder_3_days' | 'reminder_1_day' | 'final_reminder' | 'completion_confirmation' | 'high_risk_alert' | 'manager_notification' | 'action_plan_created';
   created_at?: string;
   updated_at?: string;
+  description?: string;
+}
+
+export interface ChecklistResult {
+  id: string;
+  assessment_response_id?: string;
+  templateId: string;
+  template_id?: string;
+  employeeId?: string;
+  employee_id?: string;
+  employeeName?: string;
+  total_score?: number;
+  risk_level?: 'low' | 'medium' | 'high' | 'critical';
+  completed_at?: string;
+  completedAt: Date;
+  results: {
+    D: number;
+    I: number;
+    S: number;
+    C: number;
+  } | Record<string, number>;
+  dominantFactor: string;
+  categorizedResults?: Record<string, number>;
+  evaluatedEmployeeId?: string;
+  evaluatorEmployeeId?: string;
+  isAnonymous?: boolean;
+  personalFactors?: Record<string, any>;
+  riskCorrelation?: "work" | "personal" | "mixed" | "unknown";
+}
+
+export enum DiscFactorType {
+  D = 'D',
+  I = 'I', 
+  S = 'S',
+  C = 'C'
+}
+
+export interface DiscFactor {
+  type: DiscFactorType;
+  name: string;
+  description: string;
+  characteristics: string[];
 }
 
 export interface Company {
@@ -176,7 +185,7 @@ export interface Company {
   updatedAt: Date;
 }
 
-// Utility functions (mocked for now)
+// ===== FUNÇÕES UTILITÁRIAS =====
 export const generateUniqueAssessmentLink = (assessmentId: string): string => {
   return `${window.location.origin}/assessment/${assessmentId}?token=${Math.random().toString(36).substr(2, 9)}`;
 };

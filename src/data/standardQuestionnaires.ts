@@ -1,179 +1,177 @@
+import { ChecklistTemplate } from "@/types";
 
-import { ChecklistTemplate } from "@/types/checklist";
-import { ScaleType } from "@/types";
-import { DiscFactorType } from "@/types/disc";
-import { 
-  getDefaultDiscQuestions, 
-  getDefaultPsicossocialQuestions, 
-  getSRQ20Questions, 
-  getPHQ9Questions, 
-  getGAD7Questions,
-  getMBIQuestions,
-  getAUDITQuestions,
-  getPSSQuestions,
-  getPersonalLifeQuestions,
-  getEvaluation360ColleagueQuestions,
-  getEvaluation360ManagerQuestions
-} from "@/services/checklist/templateUtils";
+interface StandardTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: "disc" | "psicossocial" | "stress" | "custom";
+  scale_type: "likert5" | "binary" | "percentage" | "numeric" | "likert" | "yes_no" | "psicossocial";
+  estimated_time_minutes: number;
+  questions: (string | { text: string })[];
+  instructions?: string;
+}
 
-export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
-  {
-    id: "disc_standard",
-    name: "Avaliação DISC Padrão",
-    description: "Avaliação de perfil comportamental baseada na metodologia DISC",
-    type: "disc" as const,
-    scaleType: ScaleType.YesNo,
-    questions: [
-      {
-        id: crypto.randomUUID(),
-        text: "Sou uma pessoa que gosta de liderar projetos e tomar decisões importantes",
-        targetFactor: DiscFactorType.D,
-        weight: 2
-      },
-      {
-        id: crypto.randomUUID(),
-        text: "Prefiro trabalhar em equipe e colaborar com outras pessoas",
-        targetFactor: DiscFactorType.I,
-        weight: 2
-      },
-      {
-        id: crypto.randomUUID(),
-        text: "Valorizo a estabilidade e a consistência no trabalho",
-        targetFactor: DiscFactorType.S,
-        weight: 2
-      },
-      {
-        id: crypto.randomUUID(),
-        text: "Sou detalhista e gosto de seguir procedimentos estabelecidos",
-        targetFactor: DiscFactorType.C,
-        weight: 2
-      }
-    ],
-    estimatedTimeMinutes: 10,
-    instructions: "Responda de acordo com como você geralmente se comporta no ambiente de trabalho."
-  },
-  {
-    id: "psicossocial_mte",
-    name: "Avaliação Psicossocial - MTE Completa",
-    description: "Avaliação completa baseada no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego",
-    type: "psicossocial" as const,
-    scaleType: ScaleType.Psicossocial,
-    questions: getDefaultPsicossocialQuestions(),
-    estimatedTimeMinutes: 25,
-    instructions: "Avalie cada afirmação considerando sua experiência no trabalho nos últimos 6 meses."
-  },
-  {
-    id: "srq20_standard",
-    name: "SRQ-20 - Transtornos Mentais Comuns",
-    description: "Self-Reporting Questionnaire para identificação de transtornos mentais comuns",
-    type: "srq20" as const,
-    scaleType: ScaleType.YesNo,
-    questions: getSRQ20Questions(),
-    estimatedTimeMinutes: 8,
-    instructions: "Responda SIM se o sintoma esteve presente nos últimos 30 dias."
-  },
-  {
-    id: "phq9_standard",
-    name: "PHQ-9 - Questionário de Saúde Mental",
-    description: "Patient Health Questionnaire para avaliação de sintomas depressivos",
-    type: "phq9" as const,
-    scaleType: ScaleType.Frequency,
-    questions: getPHQ9Questions(),
-    estimatedTimeMinutes: 5,
-    instructions: "Indique com que frequência você foi incomodado por cada problema nas últimas 2 semanas."
-  },
-  {
-    id: "gad7_standard",
-    name: "GAD-7 - Transtorno de Ansiedade",
-    description: "Generalized Anxiety Disorder Scale para avaliação de ansiedade",
-    type: "gad7" as const,
-    scaleType: ScaleType.Frequency,
-    questions: getGAD7Questions(),
-    estimatedTimeMinutes: 5,
-    instructions: "Indique com que frequência você foi incomodado pelos seguintes problemas nas últimas 2 semanas."
-  },
-  {
-    id: "mbi_standard",
-    name: "MBI - Inventário de Burnout de Maslach",
-    description: "Avaliação de síndrome de burnout em três dimensões: exaustão emocional, despersonalização e realização pessoal",
-    type: "mbi" as const,
-    scaleType: ScaleType.Frequency,
-    questions: getMBIQuestions(),
-    estimatedTimeMinutes: 15,
-    instructions: "Indique com que frequência você experiencia cada situação descrita."
-  },
-  {
-    id: "audit_standard",
-    name: "AUDIT - Transtornos por Uso de Álcool",
-    description: "Alcohol Use Disorders Identification Test para identificação de problemas relacionados ao álcool",
-    type: "audit" as const,
-    scaleType: ScaleType.Frequency,
-    questions: getAUDITQuestions(),
-    estimatedTimeMinutes: 5,
-    instructions: "Responda honestamente sobre seus hábitos relacionados ao consumo de álcool."
-  },
-  {
-    id: "pss_standard",
-    name: "PSS - Escala de Estresse Percebido",
-    description: "Perceived Stress Scale para avaliação do nível de estresse percebido",
-    type: "pss" as const,
-    scaleType: ScaleType.Frequency,
-    questions: getPSSQuestions(),
-    estimatedTimeMinutes: 8,
-    instructions: "Pense em como você se sentiu e pensou durante o último mês."
-  },
-  {
-    id: "personal_life_standard",
-    name: "Questionário de Vida Pessoal e Familiar",
-    description: "Avaliação de fatores pessoais e familiares que podem influenciar o bem-estar no trabalho",
-    type: "personal_life" as const,
-    scaleType: ScaleType.Likert,
-    questions: getPersonalLifeQuestions(),
-    estimatedTimeMinutes: 12,
-    instructions: "Este questionário é confidencial. Responda honestamente sobre sua situação pessoal."
-  },
-  {
-    id: "evaluation_360_colleague",
-    name: "Avaliação 360° - Colegas de Trabalho",
-    description: "Avaliação de colegas de trabalho do mesmo nível hierárquico",
-    type: "evaluation_360" as const,
-    scaleType: ScaleType.Likert,
-    questions: getEvaluation360ColleagueQuestions(),
-    estimatedTimeMinutes: 10,
-    instructions: "Avalie seu colega de trabalho de forma honesta e construtiva. Suas respostas são anônimas.",
-    isAnonymous: true,
-    restrictToSector: true
-  },
-  {
-    id: "evaluation_360_manager",
-    name: "Avaliação 360° - Gestores",
-    description: "Avaliação de gestores e supervisores",
-    type: "evaluation_360" as const,
-    scaleType: ScaleType.Likert,
-    questions: getEvaluation360ManagerQuestions(),
-    estimatedTimeMinutes: 15,
-    instructions: "Avalie seu gestor de forma honesta e construtiva. Suas respostas são anônimas.",
-    isAnonymous: true,
-    restrictToSector: true
-  }
+const SRQ20_TEMPLATE: StandardTemplate = {
+  id: "srq20",
+  name: "SRQ-20 - Self-Reporting Questionnaire",
+  description: "Questionário de rastreamento de transtornos mentais comuns",
+  type: "psicossocial",
+  scale_type: "binary",
+  estimated_time_minutes: 5,
+  questions: [
+    "Você frequentemente tem dores de cabeça?",
+    "Você tem pouco apetite?",
+    "Você dorme mal?",
+    "Você se assusta facilmente?",
+    "Você se sente nervoso(a), tenso(a) ou preocupado(a)?",
+    "Você sente tremores nas mãos?",
+    "Você se sente cansado(a) o tempo todo?",
+    "Você tem problemas de digestão?",
+    "Você tem dificuldades para pensar claramente?",
+    "Você se sente infeliz?",
+    "Você chora mais do que de costume?",
+    "Você acha difícil aproveitar as coisas?",
+    "Você acha difícil tomar decisões?",
+    "Você acha difícil fazer suas tarefas?",
+    "Você se sente incapaz de desempenhar um papel útil na vida?",
+    "Você perdeu o interesse pelas coisas?",
+    "Você se sente uma pessoa inútil?",
+    "Você tem se sentido cansado(a)?",
+    "Você tem alguma dor ou desconforto no corpo?",
+    "Você se sente facilmente cansado(a)?"
+  ],
+  instructions: "Responda SIM ou NÃO para cada pergunta, considerando os últimos 30 dias."
+};
+
+const PHQ9_TEMPLATE: StandardTemplate = {
+  id: "phq9",
+  name: "PHQ-9 - Patient Health Questionnaire-9",
+  description: "Questionário de rastreamento de depressão",
+  type: "psicossocial",
+  scale_type: "likert5",
+  estimated_time_minutes: 5,
+  questions: [
+    "Pouco interesse ou prazer em fazer as coisas",
+    "Sentindo-se para baixo, deprimido(a) ou sem esperança",
+    "Dificuldade em adormecer ou permanecer dormindo, ou dormindo demais",
+    "Sentindo-se cansado(a) ou com pouca energia",
+    "Falta de apetite ou comendo demais",
+    "Sentindo-se mal consigo mesmo(a) - ou que você é um fracasso ou que decepcionou a si mesmo(a) ou à sua família",
+    "Dificuldade em se concentrar nas coisas, como ler um jornal ou assistir televisão",
+    "Movendo-se ou falando tão lentamente que outras pessoas poderiam ter notado? Ou o oposto; estando tão inquieto(a) que você está se movendo muito mais do que o normal",
+    "Pensamentos de que você estaria melhor morto(a) ou de se machucar de alguma forma"
+  ],
+  instructions: "Responda cada questão com base em como você se sentiu NAS ÚLTIMAS DUAS SEMANAS."
+};
+
+const GAD7_TEMPLATE: StandardTemplate = {
+  id: "gad7",
+  name: "GAD-7 - Generalized Anxiety Disorder 7-item scale",
+  description: "Questionário de rastreamento de ansiedade generalizada",
+  type: "psicossocial",
+  scale_type: "likert5",
+  estimated_time_minutes: 5,
+  questions: [
+    "Sentindo-se nervoso(a), ansioso(a) ou muito agitado(a)",
+    "Não conseguindo parar ou controlar a preocupação",
+    "Preocupando-se demais com diferentes coisas",
+    "Tendo dificuldade em relaxar",
+    "Estando tão inquieto(a) que é difícil ficar parado(a)",
+    "Tornando-se facilmente irritado(a) ou aborrecido(a)",
+    "Sentindo medo como se algo terrível pudesse acontecer"
+  ],
+  instructions: "Responda cada questão com base em como você se sentiu NAS ÚLTIMAS DUAS SEMANAS."
+};
+
+const MBI_TEMPLATE: StandardTemplate = {
+  id: "mbi",
+  name: "MBI - Maslach Burnout Inventory",
+  description: "Questionário de rastreamento de burnout",
+  type: "psicossocial",
+  scale_type: "likert5",
+  estimated_time_minutes: 10,
+  questions: [
+    "Eu me sinto emocionalmente esgotado(a) pelo meu trabalho",
+    "Eu me sinto esgotado(a) no final do dia de trabalho",
+    "Eu me sinto cansado(a) quando me levanto pela manhã e tenho que encarar outro dia de trabalho",
+    "Eu posso facilmente entender como meus pacientes se sentem em relação às coisas",
+    "Eu sinto que estou tratando alguns pacientes como se fossem objetos impessoais",
+    "Eu sinto que trabalhar com pessoas é estressante demais para mim",
+    "Eu sinto que estou dando demais às pessoas",
+    "Eu sinto que estou energizado(a) pelo meu trabalho",
+    "Eu sinto que estou fazendo uma contribuição efetiva para as coisas",
+    "Eu sinto que estou no limite",
+    "Eu sinto que estou ficando mais insensível com as pessoas desde que comecei a trabalhar",
+    "Eu me preocupo que este trabalho esteja me endurecendo emocionalmente",
+    "Eu me sinto muito enérgico(a)",
+    "Eu sinto que estou frustrado(a) com meu trabalho",
+    "Eu sinto que não me importo realmente com o que acontece com alguns pacientes",
+    "Eu sinto que trabalhar com pessoas é recompensador",
+    "Eu sinto que estou em muitas situações emocionais",
+    "Eu sinto que realizei muitas coisas valiosas neste trabalho",
+    "Eu sinto que não consigo mais ser compreensivo(a) com meus pacientes",
+    "Eu sinto que estou no limite"
+  ],
+  instructions: "Responda cada questão com base em como você se sente EM RELAÇÃO AO SEU TRABALHO."
+};
+
+const AUDIT_TEMPLATE: StandardTemplate = {
+  id: "audit",
+  name: "AUDIT - Alcohol Use Disorders Identification Test",
+  description: "Questionário de rastreamento de transtornos por uso de álcool",
+  type: "psicossocial",
+  scale_type: "likert5",
+  estimated_time_minutes: 5,
+  questions: [
+    "Com que frequência você costuma tomar alguma bebida que contenha álcool?",
+    "Quantas doses que contenham álcool você costuma tomar em um dia normal?",
+    "Com que frequência você toma seis ou mais doses em uma única ocasião?",
+    "Com que frequência, durante o ano passado, você descobriu que não foi capaz de parar de beber uma vez que havia começado?",
+    "Com que frequência, durante o ano passado, você deixou de fazer o que era esperado de você por causa da bebida?",
+    "Com que frequência, durante o ano passado, você precisou de uma primeira bebida pela manhã para se firmar depois de uma bebedeira?",
+    "Com que frequência, durante o ano passado, você teve um sentimento de culpa ou remorso depois de beber?",
+    "Com que frequência, durante o ano passado, você não conseguiu se lembrar do que aconteceu na noite anterior por causa da bebida?",
+    "Você ou outra pessoa já se machucou por causa da sua bebida?",
+    "Algum familiar, amigo, médico ou outro profissional de saúde já se mostrou preocupado com a sua bebida ou sugeriu que você a reduzisse?"
+  ],
+  instructions: "Responda cada questão com base em como você se sentiu NO ÚLTIMO ANO."
+};
+
+export const STANDARD_QUESTIONNAIRE_TEMPLATES: StandardTemplate[] = [
+  SRQ20_TEMPLATE,
+  PHQ9_TEMPLATE,
+  GAD7_TEMPLATE,
+  MBI_TEMPLATE,
+  AUDIT_TEMPLATE
 ];
 
-export function createStandardTemplate(templateId: string): ChecklistTemplate | null {
-  const template = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
-  if (!template) return null;
+export const createStandardTemplate = (templateId: string): ChecklistTemplate | null => {
+  const standardTemplate = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
+  if (!standardTemplate) return null;
 
   return {
-    id: crypto.randomUUID(),
-    title: template.name,
-    description: template.description,
-    type: template.type,
-    scaleType: template.scaleType,
-    questions: template.questions,
-    createdAt: new Date(),
-    isStandard: true,
-    estimatedTimeMinutes: template.estimatedTimeMinutes,
-    instructions: template.instructions,
-    isAnonymous: template.isAnonymous || false,
-    restrictToSector: template.restrictToSector || false
+    id: `standard-${templateId}`,
+    name: standardTemplate.name,
+    title: standardTemplate.name,
+    description: standardTemplate.description,
+    category: standardTemplate.type,
+    scale_type: standardTemplate.scale_type,
+    is_standard: true,
+    is_active: true,
+    estimated_time_minutes: standardTemplate.estimated_time_minutes,
+    version: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    instructions: standardTemplate.instructions,
+    type: standardTemplate.type,
+    questions: standardTemplate.questions.map((q, index) => ({
+      id: `q-${index}`,
+      template_id: `standard-${templateId}`,
+      question_text: typeof q === 'string' ? q : q.text || '',
+      text: typeof q === 'string' ? q : q.text || '',
+      order_number: index + 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }))
   };
-}
+};

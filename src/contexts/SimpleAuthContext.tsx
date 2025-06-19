@@ -1,201 +1,87 @@
 
-import React, { createContext, useContext, useEffect, useMemo } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { useAuthSessionSafe } from '@/hooks/useAuthSessionSafe';
-import { useUserRoleSimple } from '@/hooks/useUserRoleSimple';
-import { useRolePermissions } from '@/hooks/useRolePermissions';
-import { AppRole } from '@/types';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
+import { toast } from 'sonner';
+import { AppRole } from '@/types';
 
 interface SimpleAuthContextType {
-  session: Session | null;
   user: User | null;
+  userRole: AppRole | null;
+  userCompanies: any[];
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => Promise<User | undefined>;
   signOut: () => Promise<void>;
-  loading: boolean;
-  userRole: string | null;
-  userCompanies: { companyId: string; companyName: string; }[];
-  hasRole: (role: AppRole) => Promise<boolean>;
-  hasCompanyAccess: (companyId: string) => Promise<boolean>;
 }
 
 const SimpleAuthContext = createContext<SimpleAuthContextType | undefined>(undefined);
 
-// Função para limpar completamente o estado de autenticação
-const cleanupAuthState = () => {
-  console.log("[SimpleAuthProvider] Limpando estado de autenticação");
-  
-  try {
-    // Limpar localStorage
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Limpar sessionStorage
-    Object.keys(sessionStorage || {}).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        sessionStorage.removeItem(key);
-      }
-    });
-  } catch (error) {
-    console.warn("[SimpleAuthProvider] Erro ao limpar storage:", error);
-  }
-};
-
 export function SimpleAuthProvider({ children }: { children: React.ReactNode }) {
-  const { session, user, loading: authLoading } = useAuthSessionSafe();
-  
-  const { 
-    userRole, 
-    userCompanies, 
-    roleLoading, 
-    fetchUserRoleAndCompanies, 
-    clearCache,
-    isInitialized 
-  } = useUserRoleSimple();
-  
-  const { hasRole, hasCompanyAccess } = useRolePermissions();
+  const [user, setUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<AppRole | null>(null);
+  const [userCompanies, setUserCompanies] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user role when session changes - with safety checks
   useEffect(() => {
-    if (user?.id && isInitialized) {
-      const timeoutId = setTimeout(() => {
-        fetchUserRoleAndCompanies(user.id);
-      }, 100);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUserRole((session.user.user_metadata?.role as AppRole) || 'user');
+        setUserCompanies(session.user.user_metadata?.companies || []);
+      }
+      setIsLoading(false);
+    });
 
-      return () => clearTimeout(timeoutId);
-    } else if (!user && isInitialized) {
-      clearCache();
-    }
-  }, [user?.id, fetchUserRoleAndCompanies, clearCache, isInitialized]);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUserRole((session.user.user_metadata?.role as AppRole) || 'user');
+        setUserCompanies(session.user.user_metadata?.companies || []);
+      } else {
+        setUserRole(null);
+        setUserCompanies([]);
+      }
+      setIsLoading(false);
+    });
 
-  const isLoading = authLoading || roleLoading || !isInitialized;
+    return () => subscription.unsubscribe();
+  }, []);
 
-  // Implementar ações de auth sem dependências de router
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("[SimpleAuthProvider] Iniciando processo de login");
-      
-      cleanupAuthState();
-      
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (signOutError) {
-        console.warn("[SimpleAuthProvider] Erro ao fazer logout prévio:", signOutError);
-      }
-      
-      const { error, data } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      
-      if (error) {
-        console.error("[SimpleAuthProvider] Erro no login:", error);
-        throw error;
-      }
-      
-      if (data.user) {
-        console.log("[SimpleAuthProvider] Login bem-sucedido, redirecionando...");
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 100);
-      }
-      
-      return;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      toast.success('Login realizado com sucesso!');
     } catch (error: any) {
-      console.error("[SimpleAuthProvider] Erro completo no login:", error);
-      throw error;
-    }
-  };
-
-  const signUp = async (email: string, password: string, fullName: string, role?: AppRole, companyId?: string) => {
-    try {
-      console.log("[SimpleAuthProvider] Iniciando processo de cadastro");
-      
-      const { data: authData, error: authError } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          },
-          emailRedirectTo: `${window.location.origin}/`
-        }
-      });
-      
-      if (authError) {
-        console.error("[SimpleAuthProvider] Erro no cadastro:", authError);
-        throw authError;
-      }
-      
-      if (authData.user && role) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: authData.user.id,
-            role: role as "superadmin" | "admin" | "evaluator"
-          });
-          
-        if (roleError) {
-          console.error("[SimpleAuthProvider] Erro ao atribuir papel:", roleError);
-        }
-      }
-      
-      if (!role) {
-        window.location.href = '/auth/login';
-      }
-      
-      return authData.user;
-    } catch (error: any) {
-      console.error("[SimpleAuthProvider] Erro completo no cadastro:", error);
+      toast.error('Erro no login: ' + error.message);
       throw error;
     }
   };
 
   const signOut = async () => {
     try {
-      console.log("[SimpleAuthProvider] Iniciando processo de logout");
-      
-      cleanupAuthState();
-      
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (signOutError) {
-        console.warn("[SimpleAuthProvider] Erro no logout do Supabase:", signOutError);
-      }
-      
-      window.location.href = '/auth/login';
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success('Logout realizado com sucesso!');
     } catch (error: any) {
-      console.error("[SimpleAuthProvider] Erro completo no logout:", error);
+      toast.error('Erro no logout: ' + error.message);
+      throw error;
     }
   };
 
-  const contextValue = useMemo(() => ({
-    session,
+  const value = {
     user,
-    signIn,
-    signUp,
-    signOut,
-    loading: isLoading,
     userRole,
     userCompanies,
-    hasRole,
-    hasCompanyAccess,
-  }), [
-    session,
-    user,
     isLoading,
-    userRole,
-    userCompanies,
-    hasRole,
-    hasCompanyAccess,
-  ]);
+    signIn,
+    signOut
+  };
 
   return (
-    <SimpleAuthContext.Provider value={contextValue}>
+    <SimpleAuthContext.Provider value={value}>
       {children}
     </SimpleAuthContext.Provider>
   );
