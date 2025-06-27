@@ -1,6 +1,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SimpleAppContent } from "@/components/routing/SimpleAppContent";
+import { Toaster } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,6 +18,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SimpleAppContent />
+      <Toaster />
     </QueryClientProvider>
   );
 }

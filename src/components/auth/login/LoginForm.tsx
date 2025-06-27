@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useAuth } from '@/hooks/useAuth';
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { toast } from 'sonner';
 import { LoginError } from './components/LoginError';
 import { LoginInfo } from './components/LoginInfo';
@@ -12,7 +12,7 @@ import { LoginButton } from './components/LoginButton';
 import { loginSchema, type LoginFormValues } from './schemas/loginSchema';
 
 export function LoginForm() {
-  const { signIn, loading, user } = useAuth();
+  const { signIn, isLoading: authLoading, user } = useSimpleAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -28,11 +28,11 @@ export function LoginForm() {
 
   // Fallback de redirecionamento se o usuário já estiver logado
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !authLoading) {
       console.log('[LoginForm] Usuário já logado, redirecionando...');
       navigate('/dashboard', { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [user, authLoading, navigate]);
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
@@ -106,7 +106,7 @@ export function LoginForm() {
         {loginError && <LoginError error={loginError} />}
         {loginInfo && <LoginInfo info={loginInfo} />}
         
-        <LoginButton isLoading={isLoading} disabled={isLoading || loading} />
+        <LoginButton isLoading={isLoading} disabled={isLoading || authLoading} />
       </form>
     </Form>
   );

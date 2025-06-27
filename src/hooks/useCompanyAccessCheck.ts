@@ -1,11 +1,11 @@
 
-import { useAuth } from "@/contexts/AuthContext";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useCompanyAccessCheck() {
-  const { user, userRole, userCompanies } = useAuth();
+  const { user, userRole, userCompanies } = useSimpleAuth();
   const [checkingAccess, setCheckingAccess] = useState(false);
 
   // Verificar se um usuário pode acessar uma empresa específica
