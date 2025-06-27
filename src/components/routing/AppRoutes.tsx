@@ -18,15 +18,15 @@ import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
 import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
 
 export function AppRoutes() {
-  const { user, loading } = useSimpleAuth();
+  const { user, isLoading } = useSimpleAuth();
 
   console.log('[AppRoutes] Estado atual:', {
     hasUser: !!user,
-    loading,
+    isLoading,
     currentPath: window.location.pathname
   });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center space-y-4">

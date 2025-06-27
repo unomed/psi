@@ -23,18 +23,34 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[SimpleAuthContext] Inicializando contexto de autenticação');
+    
+    // Timeout de segurança para garantir que o loading seja definido como false
+    const safetyTimeout = setTimeout(() => {
+      console.log('[SimpleAuthContext] Timeout de segurança ativado - definindo loading como false');
+      setIsLoading(false);
+    }, 3000); // 3 segundos
+    
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('[SimpleAuthContext] Sessão inicial obtida:', { session, error });
+      clearTimeout(safetyTimeout); // Cancelar timeout se a sessão foi obtida
       setUser(session?.user ?? null);
       if (session?.user) {
         setUserRole((session.user.user_metadata?.role as AppRole) || 'user');
         setUserCompanies(session.user.user_metadata?.companies || []);
       }
       setIsLoading(false);
+      console.log('[SimpleAuthContext] Loading definido como false');
+    }).catch((error) => {
+      console.error('[SimpleAuthContext] Erro ao obter sessão inicial:', error);
+      clearTimeout(safetyTimeout);
+      setIsLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[SimpleAuthContext] Mudança de autenticação:', { event, session });
       setUser(session?.user ?? null);
       if (session?.user) {
         setUserRole((session.user.user_metadata?.role as AppRole) || 'user');
@@ -46,7 +62,10 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

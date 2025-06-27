@@ -1,7 +1,6 @@
 
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext";
 import { AppRoutes } from "@/components/routing/AppRoutes";
 
 // Error boundary simplificado
@@ -49,14 +48,12 @@ class SimpleAppErrorBoundary extends React.Component<
 }
 
 export function SimpleAppContent() {
-  console.log('[SimpleAppContent] Configurando contextos e roteamento simplificados');
+  console.log('[SimpleAppContent] Configurando roteamento simplificado');
   
   return (
     <SimpleAppErrorBoundary>
       <BrowserRouter>
-        <SimpleAuthProvider>
-          <AppRoutes />
-        </SimpleAuthProvider>
+        <AppRoutes />
       </BrowserRouter>
     </SimpleAppErrorBoundary>
   );

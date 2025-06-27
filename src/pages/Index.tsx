@@ -5,10 +5,10 @@ import { useSimpleAuth } from '@/contexts/SimpleAuthContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 const Index = () => {
-  const { user, loading } = useSimpleAuth();
+  const { user, isLoading } = useSimpleAuth();
 
   // Mostrar loading enquanto verifica autenticação
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center space-y-4">
