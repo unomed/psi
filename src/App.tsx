@@ -1,7 +1,7 @@
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SimpleAppContent } from "@/components/routing/SimpleAppContent";
 import { Toaster } from "@/components/ui/sonner";
+import { SimpleAuthProvider } from "@/contexts/SimpleAuthContext";
+import { SimpleAppContent } from "@/components/routing/SimpleAppContent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,12 +13,14 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log('[App] Sistema Principal - Iniciando aplicação');
+  console.log('[App] Portal do Funcionário - Sistema Principal');
   
   return (
     <QueryClientProvider client={queryClient}>
-      <SimpleAppContent />
-      <Toaster />
+      <SimpleAuthProvider>
+        <SimpleAppContent />
+        <Toaster />
+      </SimpleAuthProvider>
     </QueryClientProvider>
   );
 }
