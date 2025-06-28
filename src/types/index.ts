@@ -1,5 +1,48 @@
+export type {
+  ScaleType,
+  ChecklistTemplateType,
+  RecurrenceType,
+  AssessmentStatus
+} from './enums';
+
+export { DiscFactorType } from './enums';
+
+// Interfaces principais
+export type {
+  ChecklistTemplate,
+  Question,
+  ChecklistResult,
+  ChecklistQuestion,
+  DiscQuestion,
+  PsicossocialQuestion,
+  PersonalLifeQuestion,
+  Evaluation360Question
+} from './checklist';
+
+export type {
+  ScheduledAssessment,
+  EmailTemplate
+} from './assessment';
+
+export type {
+  Employee,
+  EmployeeFormData,
+  Role
+} from './employee';
+
+// Company types
+export type { Company } from './company';
+
+// App role type
 export type AppRole = "admin" | "manager" | "user" | "employee" | "evaluator" | "superadmin";
 
+// ✅ MANTER ALIASES PARA COMPATIBILIDADE:
+export interface DiscFactor {
+  type: DiscFactorType;
+  score: number;
+}
+
+// Legacy interfaces for compatibility - keep existing structure
 export interface ScheduledAssessment {
   id: string;
   employeeId: string;
@@ -28,6 +71,19 @@ export interface ScheduledAssessment {
   created_at: string;
   updatedAt?: string;
   updated_at?: string;
+  recurrenceType?: RecurrenceType;
+  phoneNumber?: string;
+  sentAt?: Date | null;
+  completedAt?: Date | null;
+  nextScheduledDate?: Date | null;
+  employees?: {
+    name: string;
+    email: string;
+    phone: string;
+  } | null;
+  checklist_templates?: {
+    title: string;
+  } | null;
 }
 
 export interface ChecklistTemplate {
@@ -50,10 +106,9 @@ export interface ChecklistTemplate {
   updated_at: string;
   createdAt?: Date;
   updatedAt?: Date;
+  questions?: Question[];
+  category?: string;
 }
-
-export type ChecklistTemplateType = "disc" | "psicossocial" | "custom" | "evaluation_360";
-export type ScaleType = "likert_5" | "likert_7" | "binary" | "custom";
 
 export interface ChecklistResult {
   id: string;
@@ -63,4 +118,6 @@ export interface ChecklistResult {
   score: number;
   completedAt: string;
   analysis?: any;
+  employeeName?: string;
+  dominantFactor?: string;
 }
