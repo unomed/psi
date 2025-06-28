@@ -37,7 +37,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             company_id,
             employee_name,
             created_at,
-            updated_at,
             checklist_templates(title)
           `);
         
@@ -64,7 +63,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           next_scheduled_date: item.next_scheduled_date,
           phone_number: item.phone_number,
           created_at: item.created_at,
-          updated_at: item.updated_at,
+          updated_at: item.created_at, // Use created_at as fallback
           // Legacy fields for compatibility
           employeeId: item.employee_id,
           templateId: item.template_id,

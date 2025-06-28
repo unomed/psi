@@ -23,13 +23,14 @@ export function useEmailSending() {
       templateId: string; 
       emailTemplate: any; 
     }) => {
-      // Buscar dados dos agendamentos com JOIN correto
+      // Buscar dados dos agendamentos
       const { data: assessments, error } = await supabase
         .from('scheduled_assessments')
         .select(`
           id,
           employee_id,
           template_id,
+          employee_name,
           checklist_templates!inner(title)
         `)
         .in('id', assessmentIds);
@@ -88,6 +89,7 @@ export function useEmailSending() {
 
   return {
     sendEmails: sendEmails.mutate,
+    sendChecklistEmails: sendEmails.mutate, // Add alias for compatibility
     isSending: sendEmails.isPending
   };
 }

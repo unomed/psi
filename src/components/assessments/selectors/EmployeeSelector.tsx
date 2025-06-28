@@ -22,7 +22,7 @@ export function EmployeeSelector({
   selectedEmployee,
   onEmployeeChange,
 }: EmployeeSelectorProps) {
-  const { employees, isLoading } = useEmployees();
+  const { data: employees, isLoading } = useEmployees();
 
   const baseFilteredEmployees = selectedRole
     ? (employees || []).filter(emp => emp.role_id === selectedRole)
@@ -81,4 +81,3 @@ export function EmployeeSelector({
     </div>
   );
 }
-
