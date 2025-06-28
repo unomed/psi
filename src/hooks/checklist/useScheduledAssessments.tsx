@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RecurrenceType, ScheduledAssessment, AssessmentStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,8 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             phone_number,
             company_id,
             employee_name,
+            created_at,
+            updated_at,
             checklist_templates(title)
           `);
         
@@ -50,30 +53,34 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           return [];
         }
         
-        const assessmentData = data.map((item) => {
-          let employeeDetails = {
+        const assessmentData = data.map((item) => ({
+          id: item.id,
+          company_id: item.company_id,
+          checklist_template_id: item.template_id,
+          employee_ids: [item.employee_id],
+          scheduled_date: item.scheduled_date,
+          status: item.status as AssessmentStatus,
+          recurrence_type: item.recurrence_type as RecurrenceType | undefined,
+          next_scheduled_date: item.next_scheduled_date,
+          phone_number: item.phone_number,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          // Legacy fields for compatibility
+          employeeId: item.employee_id,
+          templateId: item.template_id,
+          scheduledDate: new Date(item.scheduled_date),
+          sentAt: item.sent_at ? new Date(item.sent_at) : null,
+          linkUrl: item.link_url || '',
+          completedAt: item.completed_at ? new Date(item.completed_at) : null,
+          nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
+          phoneNumber: item.phone_number || undefined,
+          employees: {
             name: item.employee_name || 'Funcionário não encontrado',
             email: '',
             phone: ''
-          };
-          
-          return {
-            id: item.id,
-            employeeId: item.employee_id,
-            templateId: item.template_id,
-            scheduledDate: new Date(item.scheduled_date),
-            sentAt: item.sent_at ? new Date(item.sent_at) : null,
-            linkUrl: item.link_url || '',
-            status: item.status as AssessmentStatus,
-            completedAt: item.completed_at ? new Date(item.completed_at) : null,
-            recurrenceType: item.recurrence_type as RecurrenceType | undefined,
-            nextScheduledDate: item.next_scheduled_date ? new Date(item.next_scheduled_date) : null,
-            phoneNumber: item.phone_number || undefined,
-            company_id: item.company_id,
-            employees: employeeDetails,
-            checklist_templates: item.checklist_templates
-          };
-        });
+          },
+          checklist_templates: item.checklist_templates
+        }));
         
         return assessmentData;
       } catch (error) {
@@ -93,7 +100,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           template_id: assessmentData.templateId,
           scheduled_date: assessmentData.scheduledDate.toISOString(),
           status: assessmentData.status,
-          recurrence_type: assessmentData.recurrenceType,
+          recurrence_type: assessmentData.recurrence_type,
           next_scheduled_date: assessmentData.nextScheduledDate?.toISOString(),
           phone_number: assessmentData.phoneNumber,
           company_id: assessmentData.company_id,
@@ -122,11 +129,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
         .select('id')
         .eq('scheduled_assessment_id', assessmentId);
       
-      const { data: relatedResponses } = await supabase
-        .from('assessment_responses')
-        .select('id')
-        .eq('template_id', assessmentId); // Verificar se há responses relacionadas por template
-      
       let deletedCount = 0;
       
       // Deletar emails relacionados primeiro
@@ -145,80 +147,25 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
         console.log(`${relatedEmails.length} emails relacionados deletados`);
       }
       
-      // Deletar respostas relacionadas se existirem
-      if (relatedResponses && relatedResponses.length > 0) {
-        const { error: responsesError } = await supabase
-          .from('assessment_responses')
-          .delete()
-          .in('id', relatedResponses.map(r => r.id));
-        
-        if (responsesError) {
-          console.error("Erro ao deletar respostas relacionadas:", responsesError);
-          // Não falhar aqui, pois pode ser uma ligação diferente
-        } else {
-          deletedCount += relatedResponses.length;
-          console.log(`${relatedResponses.length} respostas relacionadas deletadas`);
-        }
-      }
-      
-      // Finalmente, deletar o agendamento
-      const { error: assessmentError } = await supabase
+      // Deletar a avaliação principal
+      const { error: deleteError } = await supabase
         .from('scheduled_assessments')
         .delete()
         .eq('id', assessmentId);
-
-      if (assessmentError) {
-        console.error("Erro ao deletar agendamento:", assessmentError);
-        throw new Error("Erro ao deletar agendamento principal");
+      
+      if (deleteError) {
+        console.error("Erro ao deletar avaliação:", deleteError);
+        throw deleteError;
       }
       
-      console.log("Agendamento principal deletado com sucesso");
-      
-      const successMessage = deletedCount > 0 
-        ? `Avaliação excluída com sucesso! ${deletedCount} registros relacionados também foram removidos.`
-        : "Avaliação excluída com sucesso!";
-      
-      toast.success(successMessage);
+      console.log(`Avaliação ${assessmentId} deletada com sucesso`);
+      toast.success("Avaliação deletada com sucesso!");
       refetch();
       return true;
     } catch (error) {
-      console.error("Error deleting assessment:", error);
-      toast.error(error instanceof Error ? error.message : "Erro ao excluir avaliação");
+      console.error("Erro ao deletar avaliação:", error);
+      toast.error("Erro ao deletar avaliação");
       return false;
-    }
-  };
-
-  const handleSendEmail = async (assessmentId: string) => {
-    try {
-      const { error } = await supabase
-        .from('scheduled_assessments')
-        .update({ 
-          status: 'sent',
-          sent_at: new Date().toISOString()
-        })
-        .eq('id', assessmentId);
-
-      if (error) throw error;
-      
-      toast.success("Email enviado com sucesso!");
-      refetch();
-      return true;
-    } catch (error) {
-      console.error("Error sending email:", error);
-      toast.error("Erro ao enviar email");
-      return false;
-    }
-  };
-
-  const handleShareAssessment = async (assessmentId: string) => {
-    try {
-      toast.success("Link compartilhado com sucesso!");
-      refetch();
-      return "link-gerado";
-    } catch (error) {
-      console.error("Error sharing assessment:", error);
-      toast.error("Erro ao compartilhar avaliação");
-      return null;
     }
   };
 
@@ -227,8 +174,6 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
     isLoading,
     refetch,
     handleScheduleAssessment,
-    handleDeleteAssessment,
-    handleSendEmail,
-    handleShareAssessment
+    handleDeleteAssessment
   };
 }

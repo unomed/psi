@@ -1,6 +1,5 @@
-
 // ===== TIPOS BASE =====
-export type AppRole = 'superadmin' | 'admin' | 'manager' | 'user' | 'employee';
+export type AppRole = 'admin' | 'manager' | 'user' | 'employee' | 'superadmin' | 'evaluator';
 
 export enum ScaleType {
   Likert = 'likert5',
@@ -226,16 +225,12 @@ export interface CompanyAccess {
 
 // Auth context interface - Fixed to include all required properties
 export interface SimpleAuthContextType {
-  user: any | null;
-  session: any | null;
-  loading: boolean;
-  isLoading: boolean; // Adicionar para compatibilidade
+  user: User | null;
   userRole: AppRole | null;
-  userCompanies: CompanyAccess[];
+  userCompanies: any[];
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  hasRole?: (role: AppRole) => boolean;
-  hasCompanyAccess?: (companyId: string) => boolean;
 }
 
 // ===== FUNÇÕES UTILITÁRIAS =====

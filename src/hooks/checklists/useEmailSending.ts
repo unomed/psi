@@ -13,7 +13,7 @@ const generateAssessmentLink = (assessmentId: string, token?: string): string =>
 };
 
 export function useEmailSending() {
-  const sendAssessmentEmails = useMutation({
+  const sendEmails = useMutation({
     mutationFn: async ({ 
       assessmentIds, 
       templateId, 
@@ -23,31 +23,43 @@ export function useEmailSending() {
       templateId: string; 
       emailTemplate: any; 
     }) => {
-      // Buscar dados dos agendamentos
+      // Buscar dados dos agendamentos com JOIN correto
       const { data: assessments, error } = await supabase
         .from('scheduled_assessments')
         .select(`
           id,
           employee_id,
-          employees!inner(name, email),
+          template_id,
           checklist_templates!inner(title)
         `)
         .in('id', assessmentIds);
 
       if (error) throw error;
 
+      // Buscar dados dos funcionários separadamente
+      const employeeIds = assessments.map(a => a.employee_id);
+      const { data: employees, error: employeeError } = await supabase
+        .from('employees')
+        .select('id, name, email')
+        .in('id', employeeIds);
+
+      if (employeeError) throw employeeError;
+
       // Enviar emails para cada avaliação
       const emailPromises = assessments.map(async (assessment) => {
+        const employee = employees.find(e => e.id === assessment.employee_id);
+        if (!employee) return;
+
         const link = generateAssessmentLink(assessment.id);
         
         // Substituir variáveis no template
         const personalizedSubject = emailTemplate.subject
-          .replace('{{employee_name}}', assessment.employees.name)
-          .replace('{{assessment_title}}', assessment.checklist_templates.title);
+          .replace('{{employee_name}}', employee.name)
+          .replace('{{assessment_title}}', assessment.checklist_templates?.title || '');
           
         const personalizedBody = emailTemplate.body
-          .replace('{{employee_name}}', assessment.employees.name)
-          .replace('{{assessment_title}}', assessment.checklist_templates.title)
+          .replace('{{employee_name}}', employee.name)
+          .replace('{{assessment_title}}', assessment.checklist_templates?.title || '')
           .replace('{{assessment_link}}', link);
 
         // Salvar email enviado
@@ -55,7 +67,7 @@ export function useEmailSending() {
           .from('assessment_emails')
           .insert({
             scheduled_assessment_id: assessment.id,
-            recipient_email: assessment.employees.email,
+            recipient_email: employee.email,
             subject: personalizedSubject,
             body: personalizedBody,
             sent_at: new Date().toISOString()
@@ -75,7 +87,7 @@ export function useEmailSending() {
   });
 
   return {
-    sendEmails: sendAssessmentEmails.mutate,
-    isSending: sendAssessmentEmails.isPending
+    sendEmails: sendEmails.mutate,
+    isSending: sendEmails.isPending
   };
 }

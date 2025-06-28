@@ -9,7 +9,7 @@ export function useAssessmentEmployeeOperations() {
     queryFn: getPeriodicitySettings
   });
 
-  const { employees } = useEmployees();
+  const { data: employees } = useEmployees();
 
   const getSelectedEmployeeName = (employeeId: string | null) => {
     if (!employeeId || !employees) return "";

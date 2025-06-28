@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
 import { calculateNextScheduledDate as calcNextDate } from "@/services/assessmentHandlerService";
@@ -24,7 +25,7 @@ export function useScheduleOperations({
   setActiveTab: (tab: string) => void;
   companyId?: string;
 }) {
-  const { employees } = useEmployees({ companyId });
+  const { data: employees } = useEmployees(companyId);
 
   const handleScheduleAssessment = () => {
     if (!selectedEmployee || !selectedTemplate) {
@@ -49,7 +50,7 @@ export function useScheduleOperations({
     }
     
     try {
-      const employee = employees.find(e => e.id === selectedEmployee);
+      const employee = employees?.find(e => e.id === selectedEmployee);
       if (!employee) {
         toast.error("Funcionário não encontrado.");
         return;
@@ -58,17 +59,23 @@ export function useScheduleOperations({
       const nextDate = calcNextDate(scheduledDate!, recurrenceType);
       
       const newScheduledAssessment = {
+        company_id: employee.company_id,
+        checklist_template_id: selectedTemplate.id,
+        employee_ids: [selectedEmployee],
+        scheduled_date: scheduledDate!.toISOString(),
+        status: "scheduled" as const,
+        recurrence_type: recurrenceType,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        // Legacy fields for compatibility
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
         scheduledDate: scheduledDate!,
         sentAt: null,
         linkUrl: "",
-        status: "scheduled" as const,
         completedAt: null,
-        recurrenceType: recurrenceType,
         nextScheduledDate: nextDate,
         phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined,
-        company_id: employee.company_id,
         employees: {
           name: employee.name,
           email: employee.email || '',

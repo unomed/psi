@@ -48,7 +48,7 @@ export function useEmployees(companyId?: string) {
       return (data || []).map(emp => ({
         ...emp,
         employee_type: (emp.employee_type === 'candidato' ? 'candidato' : 'funcionario') as 'funcionario' | 'candidato',
-        employee_tags: emp.employee_tags || []
+        employee_tags: Array.isArray(emp.employee_tags) ? emp.employee_tags : []
       }));
     },
     enabled: true

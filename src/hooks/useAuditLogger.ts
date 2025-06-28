@@ -1,3 +1,4 @@
+
 import { useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +32,7 @@ export function useAuditLogger() {
       const { error } = await supabase
         .from('audit_logs')
         .insert({
+          user_id: user.id,
           action_type: entry.action_type,
           module: entry.module,
           resource_type: entry.resource_type,
