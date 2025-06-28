@@ -19,7 +19,7 @@ export function useChecklistData() {
       const { data, error } = await supabase
         .from('checklist_templates')
         .insert({
-          title: template.title,
+          title: template.title || template.name,
           description: template.description,
           type: template.type,
           scale_type: template.scale_type,
@@ -52,7 +52,7 @@ export function useChecklistData() {
     mutationFn: async ({ id, template }: { id: string; template: Partial<ChecklistTemplate> }) => {
       const updateData: Record<string, any> = {};
       
-      if (template.title) updateData.title = template.title;
+      if (template.title || template.name) updateData.title = template.title || template.name;
       if (template.description) updateData.description = template.description;
       if (template.type) updateData.type = template.type;
       if (template.scale_type) updateData.scale_type = template.scale_type;
@@ -109,7 +109,7 @@ export function useChecklistData() {
       const { data, error } = await supabase
         .from('checklist_templates')
         .insert({
-          title: `${template.title} (Cópia)`,
+          title: `${template.title || template.name} (Cópia)`,
           description: template.description,
           type: template.type,
           scale_type: template.scale_type,
@@ -177,6 +177,6 @@ export function useChecklistData() {
     handleSaveAssessmentResult,
     handleSendEmail,
     refetchChecklists: refetch,
-    refetch: refetchScheduled
+    refetchScheduledAssessments: refetchScheduled
   };
 }

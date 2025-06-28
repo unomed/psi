@@ -1,129 +1,86 @@
 
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from './useAuth';
+import { AppRole } from '@/types';
 
-export function useCompanyAccessCheck() {
-  const { user, userRole, userCompanies } = useSimpleAuth();
-  const [checkingAccess, setCheckingAccess] = useState(false);
+interface CompanyAccessResult {
+  hasAccess: boolean;
+  isLoading: boolean;
+  companyIds: string[];
+  userRole: AppRole | null;
+}
 
-  // Verificar se um usuário pode acessar uma empresa específica
-  const verifyCompanyAccess = async (companyId: string): Promise<boolean> => {
-    if (!user) {
-      console.log('[useCompanyAccessCheck] Usuário não autenticado, acesso negado');
-      return false;
-    }
-    
-    setCheckingAccess(true);
-    
-    try {
-      console.log('[useCompanyAccessCheck] Verificando acesso do usuário à empresa:', companyId);
-      console.log('[useCompanyAccessCheck] Perfil do usuário:', userRole);
-      console.log('[useCompanyAccessCheck] Empresas do usuário:', userCompanies);
-      
-      // Superadmin tem acesso a todas as empresas
-      if (userRole === 'superadmin') {
-        console.log('[useCompanyAccessCheck] Usuário é superadmin, acesso concedido');
-        setCheckingAccess(false);
-        return true;
-      }
-      
-      // Para outros perfis, verificar as empresas associadas ao usuário
-      const companyIds = userCompanies.map(company => company.companyId);
-      const hasAccess = companyIds.includes(companyId);
-      
-      console.log('[useCompanyAccessCheck] Empresas associadas ao usuário:', companyIds);
-      console.log('[useCompanyAccessCheck] Usuário tem acesso à empresa?', hasAccess);
-      
-      setCheckingAccess(false);
-      return hasAccess;
-    } catch (error) {
-      console.error('[useCompanyAccessCheck] Erro ao verificar acesso:', error);
-      toast.error('Erro ao verificar permissões de acesso');
-      setCheckingAccess(false);
-      return false;
-    }
-  };
+export function useCompanyAccessCheck(requiredCompanyId?: string): CompanyAccessResult {
+  const { user, userRole, userCompanies, isLoading } = useAuth();
 
-  // Filtrar recursos baseado no acesso à empresa - com filtragem estrita
-  const filterResourcesByCompany = <T extends { company_id?: string }>(
-    resources: T[]
-  ): T[] => {
-    if (!user) {
-      console.log('[useCompanyAccessCheck] Usuário não autenticado, retornando lista vazia');
-      return [];
-    }
-    
-    // APENAS superadmin deve ter acesso a todos os recursos
-    if (userRole === 'superadmin') {
-      console.log('[useCompanyAccessCheck] Usuário é superadmin, retornando todos os recursos');
-      return resources;
-    }
-    
-    // Para outros perfis, filtrar SEMPRE pelos IDs de empresas do usuário
-    const userCompanyIds = userCompanies.map(company => company.companyId);
-    
-    if (userCompanyIds.length === 0) {
-      console.log('[useCompanyAccessCheck] Usuário não tem empresas associadas, retornando lista vazia');
-      return [];
-    }
-    
-    console.log('[useCompanyAccessCheck] Filtrando recursos por empresa');
-    console.log('[useCompanyAccessCheck] Perfil do usuário:', userRole);
-    console.log('[useCompanyAccessCheck] Empresas do usuário:', userCompanyIds);
-    
-    const filteredResources = resources.filter(resource => {
-      // Se recurso sem company_id, verificar se devemos filtrar ou não
-      if (!resource.company_id) {
-        // Recursos sem company_id só devem ser visíveis para superadmin
-        return userRole === 'superadmin';
-      }
-      
-      // Para todos os outros recursos, verificar se o usuário tem acesso à empresa
-      const hasAccess = userCompanyIds.includes(resource.company_id);
-      
-      if (!hasAccess) {
-        console.log('[useCompanyAccessCheck] Recurso filtrado - sem acesso:', resource);
-      }
-      
-      return hasAccess;
-    });
-    
-    console.log('[useCompanyAccessCheck] Recursos filtrados:', filteredResources.length, 'de', resources.length);
-    return filteredResources;
-  };
+  // If loading, return loading state
+  if (isLoading) {
+    return {
+      hasAccess: false,
+      isLoading: true,
+      companyIds: [],
+      userRole: null
+    };
+  }
 
-  // Verificar se o usuário tem pelo menos uma empresa associada
-  const hasAnyCompanyAccess = (): boolean => {
-    if (!user) return false;
-    
-    // Superadmin tem acesso a todas as empresas
-    if (userRole === 'superadmin') return true;
-    
-    // Para outros perfis, verificar se tem pelo menos uma empresa associada
-    return userCompanies.length > 0;
-  };
+  // If no user, no access
+  if (!user) {
+    return {
+      hasAccess: false,
+      isLoading: false,
+      companyIds: [],
+      userRole: null
+    };
+  }
 
-  // Obter a primeira empresa acessível pelo usuário
-  const getFirstAccessibleCompany = (): string | null => {
-    if (!user) return null;
-    
-    // Se for superadmin e não tiver empresas, buscar todas as empresas
-    if (userRole === 'superadmin' && userCompanies.length === 0) {
-      // Aqui você pode implementar uma busca de todas as empresas
-      return null;
-    }
-    
-    // Para outros casos, retornar a primeira empresa do usuário
-    return userCompanies.length > 0 ? userCompanies[0].companyId : null;
-  };
+  const companyIds = userCompanies?.map(c => String(c.companyId)) || [];
+
+  // Superadmin has access to everything
+  if (userRole === 'superadmin') {
+    return {
+      hasAccess: true,
+      isLoading: false,
+      companyIds,
+      userRole
+    };
+  }
+
+  // If no specific company required, check if user has any company access
+  if (!requiredCompanyId) {
+    return {
+      hasAccess: companyIds.length > 0,
+      isLoading: false,
+      companyIds,
+      userRole
+    };
+  }
+
+  // Check if user has access to the specific company
+  const hasAccess = companyIds.includes(requiredCompanyId);
 
   return {
-    verifyCompanyAccess,
-    filterResourcesByCompany,
-    hasAnyCompanyAccess,
-    getFirstAccessibleCompany,
-    checkingAccess
+    hasAccess,
+    isLoading: false,
+    companyIds,
+    userRole
   };
+}
+
+// Helper function for easy boolean check
+export function useHasCompanyAccess(companyId?: string): boolean {
+  const { hasAccess } = useCompanyAccessCheck(companyId);
+  return hasAccess;
+}
+
+// Helper function to get user's company IDs
+export function useUserCompanyIds(): string[] {
+  const { companyIds } = useCompanyAccessCheck();
+  return companyIds;
+}
+
+// Helper function to check if user is superadmin or has company access
+export function useCanAccessCompany(companyId?: string): boolean {
+  const { userRole } = useAuth();
+  const { hasAccess } = useCompanyAccessCheck(companyId);
+  
+  return userRole === 'superadmin' || hasAccess;
 }

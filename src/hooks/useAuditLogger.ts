@@ -58,11 +58,13 @@ export function useAuditLogger() {
         billing: 'billing'
       };
 
+      const mappedModule = moduleMapping[data.module] || 'settings';
+
       const { error } = await supabase
         .from('audit_logs')
         .insert({
           action_type: data.action,
-          module: moduleMapping[data.module] || 'settings',
+          module: mappedModule,
           resource_type: data.resourceType,
           resource_id: data.resourceId,
           description: data.description,

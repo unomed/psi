@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -7,7 +8,8 @@ interface Role {
   id: string;
   name: string;
   description?: string;
-  companyId: string;
+  company_id: string;
+  sector_id: string;
 }
 
 export function useRoleManagement(companyId?: string) {
@@ -46,7 +48,14 @@ export function useRoleManagement(companyId?: string) {
     mutationFn: async (newRole: Omit<Role, 'id'>) => {
       const { data, error } = await supabase
         .from('roles')
-        .insert([newRole]);
+        .insert({
+          name: newRole.name,
+          description: newRole.description,
+          company_id: newRole.company_id,
+          sector_id: newRole.sector_id
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error("Error creating role:", error);
@@ -68,8 +77,15 @@ export function useRoleManagement(companyId?: string) {
     mutationFn: async (updatedRole: Role) => {
       const { data, error } = await supabase
         .from('roles')
-        .update(updatedRole)
-        .eq('id', updatedRole.id);
+        .update({
+          name: updatedRole.name,
+          description: updatedRole.description,
+          company_id: updatedRole.company_id,
+          sector_id: updatedRole.sector_id
+        })
+        .eq('id', updatedRole.id)
+        .select()
+        .single();
 
       if (error) {
         console.error("Error updating role:", error);

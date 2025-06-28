@@ -16,7 +16,7 @@ export interface Employee {
   sector_id: string;
   role_id: string;
   employee_type: 'funcionario' | 'candidato';
-  employee_tags: string[]; // Keep for backward compatibility
+  employee_tags: string[];
   role?: {
     id: string;
     name: string;
@@ -47,7 +47,7 @@ export interface EmployeeFormData {
   sector_id: string;
   role_id: string;
   employee_type: 'funcionario' | 'candidato';
-  employee_tags: string[]; // Keep for backward compatibility
+  employee_tags: string[];
 }
 
 export interface Role {
