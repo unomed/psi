@@ -45,11 +45,24 @@ export function useAuditLogger() {
 
   const logAudit = useMutation({
     mutationFn: async (data: AuditLogData) => {
+      // Map our module types to database enum values
+      const moduleMapping: Record<AuditModule, string> = {
+        authentication: 'auth',
+        users: 'users', 
+        companies: 'companies',
+        employees: 'employees',
+        assessments: 'assessments',
+        checklists: 'assessments', // Map checklists to assessments since it's not in the enum
+        reports: 'reports',
+        settings: 'settings',
+        billing: 'billing'
+      };
+
       const { error } = await supabase
         .from('audit_logs')
         .insert({
           action_type: data.action,
-          module: data.module,
+          module: moduleMapping[data.module] || 'settings',
           resource_type: data.resourceType,
           resource_id: data.resourceId,
           description: data.description,

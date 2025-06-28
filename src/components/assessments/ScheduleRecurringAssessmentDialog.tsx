@@ -33,7 +33,7 @@ export function ScheduleRecurringAssessmentDialog({
   const [localSelectedEmployee, setLocalSelectedEmployee] = useState<string | null>(selectedEmployeeId);
   const [localSelectedTemplate, setLocalSelectedTemplate] = useState<ChecklistTemplate | null>(selectedTemplate);
   
-  const { employees, isLoading } = useEmployees();
+  const { data: employees, isLoading } = useEmployees();
 
   const selectedEmployee = employees?.find(emp => emp.id === localSelectedEmployee);
 

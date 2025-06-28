@@ -1,5 +1,5 @@
 // ===== TIPOS BASE =====
-export type AppRole = 'admin' | 'manager' | 'user' | 'employee' | 'superadmin' | 'evaluator';
+export type AppRole = 'admin' | 'manager' | 'user' | 'employee' | 'evaluator' | 'superadmin';
 
 export enum ScaleType {
   Likert = 'likert5',
