@@ -1,150 +1,146 @@
-import { useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 
-export type AuditAction = 'create' | 'read' | 'update' | 'delete' | 'login' | 'logout' | 'export' | 'import' | 'email_send' | 'permission_change' | 'assessment_complete' | 'report_generate';
+import { useMemo, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
-export type AuditModule = 'auth' | 'companies' | 'employees' | 'roles' | 'sectors' | 'assessments' | 'reports' | 'billing' | 'settings' | 'risks';
+type AuditAction = 'create' | 'update' | 'delete' | 'view' | 'login' | 'logout' | 'export' | 'import';
+type AuditModule = 'auth' | 'companies' | 'employees' | 'assessments' | 'reports' | 'settings' | 'templates';
 
-interface AuditLogData {
-  action: AuditAction;
+interface AuditLogEntry {
+  action_type: AuditAction;
   module: AuditModule;
-  resourceType?: string;
-  resourceId?: string;
+  resource_type?: string;
+  resource_id?: string;
   description: string;
-  oldValues?: any;
-  newValues?: any;
-  companyId?: string;
-  metadata?: any;
+  old_values?: Record<string, any>;
+  new_values?: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
-// Hook seguro que não quebra se usado fora do AuthProvider
 export function useAuditLogger() {
-  // SEMPRE usar os hooks - nunca condicionalmente
-  const authContext = useAuth();
-  
-  // Extrair valores de forma segura usando useMemo
-  const { user, userCompanies } = useMemo(() => {
-    // Se o contexto não estiver disponível, usar valores nulos
-    if (!authContext) {
-      return { user: null, userCompanies: [] };
-    }
-    return {
-      user: authContext.user,
-      userCompanies: authContext.userCompanies || []
-    };
-  }, [authContext]);
+  const { user, userRole, userCompanies } = useAuth();
 
-  const logAction = useCallback(async (data: AuditLogData) => {
-    // Se não há usuário, não registrar log
-    if (!user) {
-      console.log('[useAuditLogger] Sem usuário autenticado, pulando log de auditoria');
-      return;
-    }
+  const getUserIp = useMemo(() => {
+    // In a real application, you'd get this from a service
+    return '127.0.0.1'; // Placeholder
+  }, []);
+
+  const logAction = useCallback(async (entry: AuditLogEntry) => {
+    if (!user) return;
 
     try {
-      // Capturar IP e User Agent
-      const userAgent = navigator.userAgent;
-      
-      // Determinar company_id se não fornecido
-      let companyId = data.companyId;
-      if (!companyId && userCompanies.length === 1) {
-        companyId = userCompanies[0].companyId;
+      const { error } = await supabase
+        .from('audit_logs')
+        .insert({
+          user_id: user.id,
+          action_type: entry.action_type,
+          module: entry.module,
+          resource_type: entry.resource_type,
+          resource_id: entry.resource_id,
+          description: entry.description,
+          old_values: entry.old_values,
+          new_values: entry.new_values,
+          metadata: {
+            ...entry.metadata,
+            user_role: userRole,
+            user_companies: userCompanies,
+            user_agent: navigator.userAgent,
+          },
+          ip_address: getUserIp,
+          company_id: userCompanies[0]?.companyId || null,
+        });
+
+      if (error) {
+        console.error('Failed to log audit entry:', error);
       }
-
-      await supabase.rpc('create_audit_log', {
-        p_action_type: data.action,
-        p_module: data.module,
-        p_resource_type: data.resourceType,
-        p_resource_id: data.resourceId,
-        p_description: data.description,
-        p_old_values: data.oldValues ? JSON.stringify(data.oldValues) : null,
-        p_new_values: data.newValues ? JSON.stringify(data.newValues) : null,
-        p_company_id: companyId,
-        p_metadata: {
-          user_agent: userAgent,
-          timestamp: new Date().toISOString(),
-          ...data.metadata
-        }
-      });
     } catch (error) {
-      console.error('Erro ao registrar log de auditoria:', error);
+      console.error('Error logging audit entry:', error);
     }
-  }, [user, userCompanies]);
+  }, [user, userRole, userCompanies, getUserIp]);
 
-  const logLogin = useCallback((method: string = 'email') => {
-    logAction({
-      action: 'login',
+  const logLogin = useCallback((metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'login',
       module: 'auth',
-      description: `Usuário fez login via ${method}`,
-      metadata: { login_method: method }
+      description: 'User logged in',
+      metadata,
     });
   }, [logAction]);
 
-  const logLogout = useCallback(() => {
-    logAction({
-      action: 'logout',
+  const logLogout = useCallback((metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'logout',
       module: 'auth',
-      description: 'Usuário fez logout'
+      description: 'User logged out',
+      metadata,
     });
   }, [logAction]);
 
-  const logCreate = useCallback((module: AuditModule, resourceType: string, resourceId: string, data: any, companyId?: string) => {
-    logAction({
-      action: 'create',
+  const logCreate = useCallback((module: AuditModule, resourceType: string, resourceId: string, newValues: Record<string, any>, metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'create',
       module,
-      resourceType,
-      resourceId,
-      description: `Criado ${resourceType} ${resourceId}`,
-      newValues: data,
-      companyId
+      resource_type: resourceType,
+      resource_id: resourceId,
+      description: `Created ${resourceType}`,
+      new_values: newValues,
+      metadata,
     });
   }, [logAction]);
 
-  const logUpdate = useCallback((module: AuditModule, resourceType: string, resourceId: string, oldData: any, newData: any, companyId?: string) => {
-    logAction({
-      action: 'update',
+  const logUpdate = useCallback((module: AuditModule, resourceType: string, resourceId: string, oldValues: Record<string, any>, newValues: Record<string, any>, metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'update',
       module,
-      resourceType,
-      resourceId,
-      description: `Atualizado ${resourceType} ${resourceId}`,
-      oldValues: oldData,
-      newValues: newData,
-      companyId
+      resource_type: resourceType,
+      resource_id: resourceId,
+      description: `Updated ${resourceType}`,
+      old_values: oldValues,
+      new_values: newValues,
+      metadata,
     });
   }, [logAction]);
 
-  const logDelete = useCallback((module: AuditModule, resourceType: string, resourceId: string, data: any, companyId?: string) => {
-    logAction({
-      action: 'delete',
+  const logDelete = useCallback((module: AuditModule, resourceType: string, resourceId: string, oldValues: Record<string, any>, metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'delete',
       module,
-      resourceType,
-      resourceId,
-      description: `Excluído ${resourceType} ${resourceId}`,
-      oldValues: data,
-      companyId
+      resource_type: resourceType,
+      resource_id: resourceId,
+      description: `Deleted ${resourceType}`,
+      old_values: oldValues,
+      metadata,
     });
   }, [logAction]);
 
-  const logView = useCallback((module: AuditModule, resourceType: string, resourceId?: string, companyId?: string) => {
-    logAction({
-      action: 'read',
+  const logView = useCallback((module: AuditModule, resourceType: string, resourceId?: string, metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'view',
       module,
-      resourceType,
-      resourceId,
-      description: `Visualizou ${resourceType}${resourceId ? ` ${resourceId}` : ''}`,
-      companyId
+      resource_type: resourceType,
+      resource_id: resourceId,
+      description: `Viewed ${resourceType}`,
+      metadata,
     });
   }, [logAction]);
 
-  const logExport = useCallback((module: AuditModule, exportType: string, filters?: any, companyId?: string) => {
-    logAction({
-      action: 'export',
+  const logExport = useCallback((module: AuditModule, resourceType: string, metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'export',
       module,
-      resourceType: exportType,
-      description: `Exportou dados de ${exportType}`,
-      metadata: { filters },
-      companyId
+      resource_type: resourceType,
+      description: `Exported ${resourceType}`,
+      metadata,
+    });
+  }, [logAction]);
+
+  const logImport = useCallback((module: AuditModule, resourceType: string, metadata?: Record<string, any>) => {
+    return logAction({
+      action_type: 'import',
+      module,
+      resource_type: resourceType,
+      description: `Imported ${resourceType}`,
+      metadata,
     });
   }, [logAction]);
 
@@ -156,6 +152,7 @@ export function useAuditLogger() {
     logUpdate,
     logDelete,
     logView,
-    logExport
+    logExport,
+    logImport,
   };
 }

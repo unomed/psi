@@ -25,10 +25,10 @@ export function TemplatesTable({
     <BaseTemplateTable
       templates={discTemplates}
       caption="Lista de modelos de checklist disponíveis"
-      onEditTemplate={onEditTemplate}
-      onDeleteTemplate={onDeleteTemplate}
-      onCopyTemplate={onCopyTemplate}
-      onPreviewTemplate={onStartAssessment}
+      onEdit={onEditTemplate}
+      onDelete={onDeleteTemplate}
+      onCopy={onCopyTemplate}
+      onStart={onStartAssessment}
       showCategories={false}
       isDeleting={isDeleting}
     />

@@ -229,6 +229,7 @@ export interface SimpleAuthContextType {
   user: any | null;
   session: any | null;
   loading: boolean;
+  isLoading: boolean; // Adicionar para compatibilidade
   userRole: AppRole | null;
   userCompanies: CompanyAccess[];
   signIn: (email: string, password: string) => Promise<void>;

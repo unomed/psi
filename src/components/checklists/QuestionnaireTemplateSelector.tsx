@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, FileText, Users, Briefcase, Target, Heart, RefreshCw, Brain, Activity } from "lucide-react";
 import { PREDEFINED_PSYCHOSOCIAL_TEMPLATES, createPsychosocialTemplate } from "@/data/psychosocialQuestionnaires";
 import { STANDARD_QUESTIONNAIRE_TEMPLATES, createStandardTemplate } from "@/data/standardQuestionnaires";
-import { getDefaultQuestions } from "@/services/checklist/templateUtils";
 
 interface QuestionnaireTemplateSelectorProps {
   onSelectTemplate: (template: any) => void;
@@ -46,7 +45,14 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
       name: template.name,
       description: template.description,
       categories: template.questions
-        .map(q => typeof q === 'string' ? q : q.category || 'Geral')
+        .map(q => {
+          if (typeof q === 'string') {
+            return q;
+          } else if (q && typeof q === 'object' && 'category' in q) {
+            return q.category || 'Geral';
+          }
+          return 'Geral';
+        })
         .filter((v, i, a) => a.indexOf(v) === i),
       type: 'standard'
     })),

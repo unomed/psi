@@ -23,10 +23,10 @@ export function AllTemplatesTable({
     <BaseTemplateTable
       templates={templates}
       caption="Todos os modelos cadastrados (incluindo Psicossocial e Personalizado)"
-      onEditTemplate={onEditTemplate}
-      onDeleteTemplate={onDeleteTemplate}
-      onCopyTemplate={onCopyTemplate}
-      onPreviewTemplate={onStartAssessment}
+      onEdit={onEditTemplate}
+      onDelete={onDeleteTemplate}
+      onCopy={onCopyTemplate}
+      onStart={onStartAssessment}
       showCategories={true}
       isDeleting={isDeleting}
     />

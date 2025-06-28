@@ -49,7 +49,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         .from('user_companies')
         .select(`
           company_id,
-          companies (
+          companies!inner (
             id,
             name
           )
@@ -58,6 +58,7 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
       if (companiesError) {
         console.error('[SimpleAuthContext] Erro ao buscar empresas:', companiesError);
+        setUserCompanies([]);
       } else if (companies) {
         const userCompaniesData = companies.map(uc => ({
           companyId: uc.company_id,
