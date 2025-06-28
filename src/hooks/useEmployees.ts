@@ -22,6 +22,17 @@ interface Employee {
   role_id: string;
   created_at: string;
   updated_at: string;
+  // Add the missing relational properties
+  role?: {
+    id: string;
+    name: string;
+    risk_level?: string;
+    required_tags?: string[];
+  };
+  sectors?: {
+    id: string;
+    name: string;
+  };
 }
 
 export function useEmployees(companyId?: string) {
@@ -30,7 +41,11 @@ export function useEmployees(companyId?: string) {
     queryFn: async (): Promise<Employee[]> => {
       let query = supabase
         .from('employees')
-        .select('*')
+        .select(`
+          *,
+          role:roles(id, name, risk_level, required_tags),
+          sectors(id, name)
+        `)
         .order('name');
 
       if (companyId) {

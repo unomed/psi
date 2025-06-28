@@ -1,47 +1,138 @@
 
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Employee, EmployeeFormData } from "@/types/employee";
 
-export function useEmployeeOperations() {
+export function useEmployeeOperations(companyId?: string) {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  
   const queryClient = useQueryClient();
 
-  const createEmployees = useMutation({
-    mutationFn: async (employees: any[]) => {
-      // Garantir que todos os campos obrigatórios estão presentes
-      const employeesData = employees.map(emp => ({
-        company_id: emp.company_id,
-        sector_id: emp.sector_id,
-        role_id: emp.role_id,
-        name: emp.name,
-        email: emp.email,
-        cpf: emp.cpf,
-        start_date: emp.start_date || new Date().toISOString().split('T')[0],
-        status: emp.status || 'active',
-        employee_type: 'funcionario' as const,
-        employee_tags: emp.employee_tags || []
-      }));
-
-      const { data, error } = await supabase
+  const createMutation = useMutation({
+    mutationFn: async (data: EmployeeFormData) => {
+      const { data: result, error } = await supabase
         .from('employees')
-        .insert(employeesData)
-        .select();
-
+        .insert([data])
+        .select()
+        .single();
+      
       if (error) throw error;
-      return data;
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success('Funcionários criados com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['employees', companyId] });
+      toast.success('Funcionário criado com sucesso!');
+      setIsCreateDialogOpen(false);
     },
     onError: (error: any) => {
-      console.error('Erro ao criar funcionários:', error);
-      toast.error(`Erro ao criar funcionários: ${error.message}`);
+      toast.error('Erro ao criar funcionário: ' + error.message);
     }
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<EmployeeFormData> }) => {
+      const { data: result, error } = await supabase
+        .from('employees')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees', companyId] });
+      toast.success('Funcionário atualizado com sucesso!');
+      setIsEditDialogOpen(false);
+      setSelectedEmployee(null);
+    },
+    onError: (error: any) => {
+      toast.error('Erro ao atualizar funcionário: ' + error.message);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees', companyId] });
+      toast.success('Funcionário deletado com sucesso!');
+      setIsDeleteDialogOpen(false);
+      setSelectedEmployee(null);
+    },
+    onError: (error: any) => {
+      toast.error('Erro ao deletar funcionário: ' + error.message);
+    }
+  });
+
+  const handleCreate = (data: EmployeeFormData) => {
+    createMutation.mutate(data);
+  };
+
+  const handleEdit = (data: EmployeeFormData) => {
+    if (selectedEmployee) {
+      updateMutation.mutate({ id: selectedEmployee.id, data });
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedEmployee) {
+      deleteMutation.mutate(selectedEmployee.id);
+    }
+  };
+
+  const handleCreateClick = () => {
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleEditClick = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleViewClick = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsViewDialogOpen(true);
+  };
+
   return {
-    createEmployees: createEmployees.mutate,
-    isCreating: createEmployees.isPending
+    isCreateDialogOpen,
+    setIsCreateDialogOpen,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    isViewDialogOpen,
+    setIsViewDialogOpen,
+    selectedEmployee,
+    handleCreate,
+    handleEdit,
+    handleDelete,
+    handleCreateClick,
+    handleEditClick,
+    handleDeleteClick,
+    handleViewClick,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending
   };
 }
