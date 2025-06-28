@@ -7,18 +7,22 @@ interface CompanyAccessResult {
   isLoading: boolean;
   companyIds: string[];
   userRole: AppRole | null;
+  filterResourcesByCompany: <T extends { company_id?: string }>(resources: T[]) => T[];
+  verifyCompanyAccess: (companyId: string) => Promise<boolean>;
 }
 
 export function useCompanyAccessCheck(requiredCompanyId?: string): CompanyAccessResult {
-  const { user, userRole, userCompanies, isLoading } = useAuth();
+  const { user, userRole, userCompanies, loading } = useAuth();
 
   // If loading, return loading state
-  if (isLoading) {
+  if (loading) {
     return {
       hasAccess: false,
       isLoading: true,
       companyIds: [],
-      userRole: null
+      userRole: null,
+      filterResourcesByCompany: () => [],
+      verifyCompanyAccess: async () => false
     };
   }
 
@@ -28,11 +32,31 @@ export function useCompanyAccessCheck(requiredCompanyId?: string): CompanyAccess
       hasAccess: false,
       isLoading: false,
       companyIds: [],
-      userRole: null
+      userRole: null,
+      filterResourcesByCompany: () => [],
+      verifyCompanyAccess: async () => false
     };
   }
 
   const companyIds = userCompanies?.map(c => String(c.companyId)) || [];
+
+  // Filter resources by company access
+  const filterResourcesByCompany = <T extends { company_id?: string }>(resources: T[]): T[] => {
+    if (userRole === 'superadmin') {
+      return resources;
+    }
+    return resources.filter(resource => 
+      resource.company_id && companyIds.includes(resource.company_id)
+    );
+  };
+
+  // Verify company access
+  const verifyCompanyAccess = async (companyId: string): Promise<boolean> => {
+    if (userRole === 'superadmin') {
+      return true;
+    }
+    return companyIds.includes(companyId);
+  };
 
   // Superadmin has access to everything
   if (userRole === 'superadmin') {
@@ -40,7 +64,9 @@ export function useCompanyAccessCheck(requiredCompanyId?: string): CompanyAccess
       hasAccess: true,
       isLoading: false,
       companyIds,
-      userRole
+      userRole,
+      filterResourcesByCompany,
+      verifyCompanyAccess
     };
   }
 
@@ -50,7 +76,9 @@ export function useCompanyAccessCheck(requiredCompanyId?: string): CompanyAccess
       hasAccess: companyIds.length > 0,
       isLoading: false,
       companyIds,
-      userRole
+      userRole,
+      filterResourcesByCompany,
+      verifyCompanyAccess
     };
   }
 
@@ -61,7 +89,9 @@ export function useCompanyAccessCheck(requiredCompanyId?: string): CompanyAccess
     hasAccess,
     isLoading: false,
     companyIds,
-    userRole
+    userRole,
+    filterResourcesByCompany,
+    verifyCompanyAccess
   };
 }
 

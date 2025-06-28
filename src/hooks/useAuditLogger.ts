@@ -18,7 +18,7 @@ type AuditActionType =
   | "report_generate";
 
 type AuditModule = 
-  | "authentication" 
+  | "auth" 
   | "users" 
   | "companies" 
   | "employees" 
@@ -26,7 +26,8 @@ type AuditModule =
   | "checklists" 
   | "reports" 
   | "settings" 
-  | "billing";
+  | "billing"
+  | "risks";
 
 interface AuditLogData {
   action: AuditActionType;
@@ -47,24 +48,25 @@ export function useAuditLogger() {
     mutationFn: async (data: AuditLogData) => {
       // Map our module types to database enum values
       const moduleMapping: Record<AuditModule, string> = {
-        authentication: 'auth',
-        users: 'users', 
+        auth: 'auth',
+        users: 'auth', 
         companies: 'companies',
         employees: 'employees',
         assessments: 'assessments',
-        checklists: 'assessments', // Map checklists to assessments since it's not in the enum
+        checklists: 'assessments',
         reports: 'reports',
         settings: 'settings',
-        billing: 'billing'
+        billing: 'billing',
+        risks: 'risks'
       };
 
-      const mappedModule = moduleMapping[data.module] || 'settings';
+      const mappedModule = moduleMapping[data.module];
 
       const { error } = await supabase
         .from('audit_logs')
         .insert({
           action_type: data.action,
-          module: mappedModule,
+          module: mappedModule as any,
           resource_type: data.resourceType,
           resource_id: data.resourceId,
           description: data.description,

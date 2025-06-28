@@ -111,7 +111,7 @@ export function EmployeeMultiSelector({
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{employee.name}</div>
                 <div className="text-sm text-muted-foreground truncate">
-                  {employee.email} • {employee.role?.name} • {employee.sectors?.name}
+                  {employee.email} • {employee.role?.name || 'Sem função'} • {employee.sectors?.name || 'Sem setor'}
                 </div>
               </div>
             </div>

@@ -117,6 +117,7 @@ export function EmploymentFields({
           </FormItem>
         )}
       />
+      
       <FormField
         control={form.control}
         name="sector_id"

@@ -14,7 +14,7 @@ export default function Funcionarios() {
   const [isTagManagementOpen, setIsTagManagementOpen] = useState(false);
   
   const { selectedCompany, handleCompanyChange, userCompanies } = useEmployeeCompanyFilter();
-  const { employees, isLoading } = useEmployees();
+  const { data: employees, isLoading } = useEmployees(selectedCompany);
   
   const {
     isCreateDialogOpen,
