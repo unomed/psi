@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,11 +31,11 @@ export function ShareAssessmentDialog({
 }: ShareAssessmentDialogProps) {
   const { userCompanies } = useAuth();
   const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
-  const { employees } = useEmployees({ companyId });
+  const { data: employees } = useEmployees(companyId);
   
   const getSelectedEmployeeName = () => {
     if (!assessment) return "";
-    const employee = employees.find(emp => emp.id === assessment.employeeId);
+    const employee = employees?.find(emp => emp.id === assessment.employeeId);
     return employee?.name || "";
   };
 

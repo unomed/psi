@@ -47,7 +47,7 @@ export function AssessmentSelectionForm({
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [generatedLink, setGeneratedLink] = useState("");
 
-  const { employees } = useEmployees({ companyId: targetCompanyId });
+  const { data: employees } = useEmployees(targetCompanyId);
   const { checklists, isLoading: internalIsLoading } = useChecklistTemplates();
 
   // Use external or internal state

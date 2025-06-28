@@ -14,9 +14,12 @@ describe('usePermissionCheck', () => {
       user: { id: '1', email: 'test@example.com' } as any,
       userRole: 'admin' as any,
       userCompanies: [],
-      isLoading: false,
+      loading: false,
+      session: { user: { id: '1', email: 'test@example.com' } as any, isAuthenticated: true },
       signIn: jest.fn(),
       signOut: jest.fn(),
+      hasRole: jest.fn(),
+      hasCompanyAccess: jest.fn(),
     });
   });
 
@@ -30,9 +33,12 @@ describe('usePermissionCheck', () => {
       user: { id: '1', email: 'test@example.com' } as any,
       userRole: 'user' as any,
       userCompanies: [],
-      isLoading: false,
+      loading: false,
+      session: { user: { id: '1', email: 'test@example.com' } as any, isAuthenticated: true },
       signIn: jest.fn(),
       signOut: jest.fn(),
+      hasRole: jest.fn(),
+      hasCompanyAccess: jest.fn(),
     });
 
     const { result } = renderHook(() => usePermissionCheck());

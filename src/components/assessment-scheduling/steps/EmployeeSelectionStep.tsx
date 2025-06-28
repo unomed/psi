@@ -24,7 +24,7 @@ export function EmployeeSelectionStep({ selectedEmployee, onEmployeeSelect }: Em
   const [selectedSector, setSelectedSector] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<string>("");
 
-  const { employees, isLoading: loadingEmployees } = useEmployees();
+  const { data: employees, isLoading: loadingEmployees } = useEmployees();
   const { companies } = useCompanies();
   const { sectors } = useSectors();
   const { roles } = useRoles();

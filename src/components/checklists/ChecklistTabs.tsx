@@ -1,3 +1,4 @@
+
 import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
 import { ScheduledAssessment } from "@/types/assessment";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,7 +45,7 @@ export function ChecklistTabs({
   onRefreshScheduled,
   isDeleting = false
 }: ChecklistTabsProps) {
-  const { sendChecklistEmails } = useEmailSending();
+  const { sendEmails } = useEmailSending();
   const { userRole } = useAuth();
 
   const handleSendEmails = async (data: {
@@ -53,7 +54,20 @@ export function ChecklistTabs({
     subject: string;
     body: string;
   }) => {
-    await sendChecklistEmails(data);
+    // Transform data to match useEmailSending interface
+    const emailTemplate = {
+      subject: data.subject,
+      body: data.body
+    };
+    
+    const assessmentIds = data.employees.map(emp => emp.id);
+    
+    await sendEmails({
+      assessmentIds,
+      templateId: data.templateId,
+      emailTemplate
+    });
+    
     onRefreshScheduled();
   };
 

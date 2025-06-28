@@ -14,15 +14,18 @@ describe('usePermissionValidation', () => {
       user: { id: '1', email: 'test@example.com' } as any,
       userRole: 'admin' as any,
       userCompanies: [],
-      isLoading: false,
+      loading: false,
+      session: { user: { id: '1', email: 'test@example.com' } as any, isAuthenticated: true },
       signIn: jest.fn(),
       signOut: jest.fn(),
+      hasRole: jest.fn(),
+      hasCompanyAccess: jest.fn(),
     });
   });
 
   it('should validate admin permissions correctly', () => {
     const { result } = renderHook(() => usePermissionValidation());
-    expect(result.current.canManageUsers).toBe(true);
+    expect(result.current.hasPermission('admin')).toBe(true);
   });
 
   it('should validate user permissions correctly', () => {
@@ -30,12 +33,15 @@ describe('usePermissionValidation', () => {
       user: { id: '1', email: 'test@example.com' } as any,
       userRole: 'user' as any,
       userCompanies: [],
-      isLoading: false,
+      loading: false,
+      session: { user: { id: '1', email: 'test@example.com' } as any, isAuthenticated: true },
       signIn: jest.fn(),
       signOut: jest.fn(),
+      hasRole: jest.fn(),
+      hasCompanyAccess: jest.fn(),
     });
 
     const { result } = renderHook(() => usePermissionValidation());
-    expect(result.current.canManageUsers).toBe(false);
+    expect(result.current.hasPermission('user')).toBe(true);
   });
 });

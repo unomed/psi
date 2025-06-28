@@ -22,13 +22,13 @@ export function EmployeeMultiSelector({
   companyId 
 }: EmployeeMultiSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const { employees, isLoading } = useEmployees({ companyId });
+  const { data: employees, isLoading } = useEmployees(companyId);
 
-  const filteredEmployees = employees.filter(emp => 
+  const filteredEmployees = employees?.filter(emp => 
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.cpf.includes(searchTerm)
-  );
+  ) || [];
 
   const isSelected = (employee: Employee) => 
     selectedEmployees.some(emp => emp.id === employee.id);

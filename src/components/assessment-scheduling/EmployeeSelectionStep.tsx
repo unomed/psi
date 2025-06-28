@@ -29,10 +29,10 @@ export function EmployeeSelectionStep({
   const { userCompanies } = useAuth();
   const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
   
-  const { employees, isLoading: loadingEmployees } = useEmployees({ companyId });
+  const { data: employees, isLoading: loadingEmployees } = useEmployees(companyId);
   const { checklists, isLoading: loadingTemplates } = useChecklistTemplates();
 
-  const selectedEmployee = employees.find(emp => emp.id === selectedEmployeeId);
+  const selectedEmployee = employees?.find(emp => emp.id === selectedEmployeeId);
   const selectedTemplate = checklists.find(template => template.id === selectedTemplateId);
 
   const canProceed = selectedEmployeeId && selectedTemplateId;
@@ -67,7 +67,7 @@ export function EmployeeSelectionStep({
               <SelectValue placeholder="Selecione um funcionário" />
             </SelectTrigger>
             <SelectContent>
-              {employees.map((employee) => (
+              {employees?.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
                   {employee.name} - {employee.email}
                 </SelectItem>

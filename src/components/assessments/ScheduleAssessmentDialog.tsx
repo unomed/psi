@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -34,17 +35,17 @@ export function ScheduleAssessmentDialog({
 }: ScheduleAssessmentDialogProps) {
   const { userCompanies } = useAuth();
   const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
-  const { employees } = useEmployees({ companyId });
+  const { data: employees } = useEmployees(companyId);
   
   const getSelectedEmployeeName = () => {
     if (!selectedEmployeeId) return "";
-    const employee = employees.find(emp => emp.id === selectedEmployeeId);
+    const employee = employees?.find(emp => emp.id === selectedEmployeeId);
     return employee?.name || "";
   };
 
   const getSelectedEmployeeEmail = () => {
     if (!selectedEmployeeId) return "";
-    const employee = employees.find(emp => emp.id === selectedEmployeeId);
+    const employee = employees?.find(emp => emp.id === selectedEmployeeId);
     return employee?.email || "";
   };
 

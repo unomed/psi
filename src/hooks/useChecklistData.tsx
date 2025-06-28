@@ -13,7 +13,23 @@ export function useChecklistData() {
     mutationFn: async (template: Omit<ChecklistTemplate, 'id'>) => {
       const { data, error } = await supabase
         .from('checklist_templates')
-        .insert(template)
+        .insert({
+          title: template.title,
+          description: template.description,
+          type: template.type,
+          scale_type: template.scale_type,
+          is_active: template.is_active,
+          is_standard: template.is_standard,
+          derived_from_id: template.derived_from_id,
+          company_id: template.company_id,
+          instructions: template.instructions,
+          estimated_time_minutes: template.estimated_time_minutes,
+          interpretation_guide: template.interpretation_guide,
+          cutoff_scores: template.cutoff_scores,
+          max_score: template.max_score,
+          version: template.version,
+          created_by: template.created_by
+        })
         .select()
         .single();
       
@@ -31,9 +47,27 @@ export function useChecklistData() {
 
   const updateTemplate = useMutation({
     mutationFn: async ({ id, template }: { id: string; template: Partial<ChecklistTemplate> }) => {
+      const updateData: Record<string, any> = {};
+      
+      if (template.title) updateData.title = template.title;
+      if (template.description) updateData.description = template.description;
+      if (template.type) updateData.type = template.type;
+      if (template.scale_type) updateData.scale_type = template.scale_type;
+      if (template.is_active !== undefined) updateData.is_active = template.is_active;
+      if (template.is_standard !== undefined) updateData.is_standard = template.is_standard;
+      if (template.derived_from_id) updateData.derived_from_id = template.derived_from_id;
+      if (template.company_id) updateData.company_id = template.company_id;
+      if (template.instructions) updateData.instructions = template.instructions;
+      if (template.estimated_time_minutes) updateData.estimated_time_minutes = template.estimated_time_minutes;
+      if (template.interpretation_guide) updateData.interpretation_guide = template.interpretation_guide;
+      if (template.cutoff_scores) updateData.cutoff_scores = template.cutoff_scores;
+      if (template.max_score) updateData.max_score = template.max_score;
+      if (template.version) updateData.version = template.version;
+      if (template.created_by) updateData.created_by = template.created_by;
+      
       const { data, error } = await supabase
         .from('checklist_templates')
-        .update(template)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -70,17 +104,25 @@ export function useChecklistData() {
 
   const copyTemplate = useMutation({
     mutationFn: async (template: ChecklistTemplate) => {
-      const newTemplate = {
-        ...template,
-        title: `${template.title} (Cópia)`,
-        is_standard: false,
-        derived_from_id: template.id
-      };
-      delete (newTemplate as any).id;
-      
       const { data, error } = await supabase
         .from('checklist_templates')
-        .insert(newTemplate)
+        .insert({
+          title: `${template.title} (Cópia)`,
+          description: template.description,
+          type: template.type,
+          scale_type: template.scale_type,
+          is_active: template.is_active,
+          is_standard: false,
+          derived_from_id: template.id,
+          company_id: template.company_id,
+          instructions: template.instructions,
+          estimated_time_minutes: template.estimated_time_minutes,
+          interpretation_guide: template.interpretation_guide,
+          cutoff_scores: template.cutoff_scores,
+          max_score: template.max_score,
+          version: template.version,
+          created_by: template.created_by
+        })
         .select()
         .single();
       
