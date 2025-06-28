@@ -33,6 +33,7 @@ export function AppRoutes() {
           <LoadingSpinner size="lg" />
           <div className="text-muted-foreground">
             <p>Verificando autenticação...</p>
+            <p className="text-sm mt-2">Conectando com banco de dados...</p>
           </div>
         </div>
       </div>

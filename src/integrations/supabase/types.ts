@@ -3150,6 +3150,10 @@ export type Database = {
         Args: { employee_id_value: string }
         Returns: undefined
       }
+      test_assessment_processing: {
+        Args: { assessment_id: string }
+        Returns: Json
+      }
       update_action_plan: {
         Args: { plan_id: string; plan_data: Json }
         Returns: string

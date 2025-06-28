@@ -22,6 +22,56 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
   const [userCompanies, setUserCompanies] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Função para buscar dados do usuário do banco
+  const fetchUserData = async (userId: string) => {
+    try {
+      console.log('[SimpleAuthContext] Buscando dados do usuário:', userId);
+      
+      // Buscar role do usuário
+      const { data: userRoles, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (roleError) {
+        console.error('[SimpleAuthContext] Erro ao buscar role:', roleError);
+      } else if (userRoles && userRoles.length > 0) {
+        setUserRole(userRoles[0].role as AppRole);
+        console.log('[SimpleAuthContext] Role encontrada:', userRoles[0].role);
+      } else {
+        setUserRole('user'); // Role padrão
+        console.log('[SimpleAuthContext] Nenhuma role encontrada, usando padrão: user');
+      }
+
+      // Buscar empresas do usuário
+      const { data: companies, error: companiesError } = await supabase
+        .from('user_companies')
+        .select(`
+          company_id,
+          companies (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', userId);
+
+      if (companiesError) {
+        console.error('[SimpleAuthContext] Erro ao buscar empresas:', companiesError);
+      } else if (companies) {
+        const userCompaniesData = companies.map(uc => ({
+          companyId: uc.company_id,
+          companyName: uc.companies?.name || 'Nome não encontrado'
+        }));
+        setUserCompanies(userCompaniesData);
+        console.log('[SimpleAuthContext] Empresas encontradas:', userCompaniesData);
+      }
+
+    } catch (error) {
+      console.error('[SimpleAuthContext] Erro geral ao buscar dados do usuário:', error);
+    }
+  };
+
   useEffect(() => {
     console.log('[SimpleAuthContext] Inicializando contexto de autenticação');
     
@@ -29,17 +79,22 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
     const safetyTimeout = setTimeout(() => {
       console.log('[SimpleAuthContext] Timeout de segurança ativado - definindo loading como false');
       setIsLoading(false);
-    }, 3000); // 3 segundos
+    }, 5000); // 5 segundos
     
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       console.log('[SimpleAuthContext] Sessão inicial obtida:', { session, error });
-      clearTimeout(safetyTimeout); // Cancelar timeout se a sessão foi obtida
-      setUser(session?.user ?? null);
+      clearTimeout(safetyTimeout);
+      
       if (session?.user) {
-        setUserRole((session.user.user_metadata?.role as AppRole) || 'user');
-        setUserCompanies(session.user.user_metadata?.companies || []);
+        setUser(session.user);
+        await fetchUserData(session.user.id);
+      } else {
+        setUser(null);
+        setUserRole(null);
+        setUserCompanies([]);
       }
+      
       setIsLoading(false);
       console.log('[SimpleAuthContext] Loading definido como false');
     }).catch((error) => {
@@ -51,14 +106,19 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[SimpleAuthContext] Mudança de autenticação:', { event, session });
-      setUser(session?.user ?? null);
+      
       if (session?.user) {
-        setUserRole((session.user.user_metadata?.role as AppRole) || 'user');
-        setUserCompanies(session.user.user_metadata?.companies || []);
+        setUser(session.user);
+        // Defer database calls to prevent deadlocks
+        setTimeout(() => {
+          fetchUserData(session.user.id);
+        }, 0);
       } else {
+        setUser(null);
         setUserRole(null);
         setUserCompanies([]);
       }
+      
       setIsLoading(false);
     });
 
@@ -70,10 +130,12 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('[SimpleAuthContext] Tentando fazer login...');
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast.success('Login realizado com sucesso!');
     } catch (error: any) {
+      console.error('[SimpleAuthContext] Erro no login:', error);
       toast.error('Erro no login: ' + error.message);
       throw error;
     }
@@ -81,10 +143,12 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
   const signOut = async () => {
     try {
+      console.log('[SimpleAuthContext] Fazendo logout...');
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       toast.success('Logout realizado com sucesso!');
     } catch (error: any) {
+      console.error('[SimpleAuthContext] Erro no logout:', error);
       toast.error('Erro no logout: ' + error.message);
       throw error;
     }

@@ -4,10 +4,10 @@ import { LoginForm } from './LoginForm';
 import { NativeLoginForm } from './NativeLoginForm';
 
 // Function to check if react-hook-form is stable
-const isReactHookFormStable = () => {
+const isReactHookFormStable = async () => {
   try {
-    // Check if we can access react-hook-form without errors
-    const { useForm } = require('react-hook-form');
+    // Use dynamic import instead of require
+    const { useForm } = await import('react-hook-form');
     return typeof useForm === 'function';
   } catch (error) {
     console.warn('[AdaptiveLoginForm] react-hook-form não disponível:', error);
@@ -16,12 +16,12 @@ const isReactHookFormStable = () => {
 };
 
 // Function to check if React context is working properly
-const checkStability = () => {
+const checkStability = async () => {
   try {
     // Test if React hooks are accessible
     React.useState;
     React.useContext;
-    return isReactHookFormStable();
+    return await isReactHookFormStable();
   } catch (error) {
     console.warn('[AdaptiveLoginForm] Problemas com React context:', error);
     return false;
@@ -34,9 +34,9 @@ export function AdaptiveLoginForm() {
 
   useEffect(() => {
     // Check stability in a safe way
-    const checkAndDecide = () => {
+    const checkAndDecide = async () => {
       try {
-        const isStable = checkStability();
+        const isStable = await checkStability();
         setUseNativeForm(!isStable);
         setIsReady(true);
         
@@ -51,7 +51,10 @@ export function AdaptiveLoginForm() {
     };
 
     // Small delay to ensure React context is ready
-    const timer = setTimeout(checkAndDecide, 100);
+    const timer = setTimeout(() => {
+      checkAndDecide();
+    }, 100);
+    
     return () => clearTimeout(timer);
   }, []);
 

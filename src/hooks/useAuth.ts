@@ -1,40 +1,23 @@
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
-import { SimpleAuthContextType, AppRole, CompanyAccess } from '@/types';
-
-const AuthContext = createContext<SimpleAuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  userRole: null,
-  userCompanies: [],
-  signIn: async () => {},
-  signOut: async () => {}
-});
-
-export function useAuth(): SimpleAuthContextType {
-  const context = useContext(AuthContext);
-  if (!context) {
-    // Return a mock context with all required properties if provider is not available
-    return {
-      user: null,
-      session: null,
-      loading: false,
-      userRole: null,
-      userCompanies: [],
-      signIn: async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      },
-      signOut: async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-      }
-    };
-  }
-  return context;
+// Compatibility hook that maps SimpleAuth to legacy useAuth interface
+export function useAuth() {
+  const { user, userRole, userCompanies, isLoading, signIn, signOut } = useSimpleAuth();
+  
+  return {
+    user,
+    session: user ? { user, isAuthenticated: true } : null,
+    loading: isLoading,
+    userRole,
+    userCompanies,
+    signIn,
+    signOut,
+    // Additional methods for compatibility
+    hasRole: (role: string) => userRole === role,
+    hasCompanyAccess: (companyId: string) => 
+      userRole === 'superadmin' || userCompanies.some(c => c.companyId === companyId)
+  };
 }
 
-export const AuthProvider = AuthContext.Provider;
+// Keep the provider export for backward compatibility
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => children;

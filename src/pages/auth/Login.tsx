@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AuthLayout from '@/components/layout/AuthLayout';
 import { AdaptiveLoginForm } from '@/components/auth/login/AdaptiveLoginForm';
 import { Shield } from 'lucide-react';
+import { DatabaseStatus } from '@/components/ui/database-status';
 
 export default function Login() {
   return (
@@ -18,6 +19,9 @@ export default function Login() {
                 Cadastre-se
               </Link>
             </p>
+          </div>
+          <div className="flex justify-center">
+            <DatabaseStatus />
           </div>
         </div>
       }
