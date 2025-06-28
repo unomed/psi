@@ -44,28 +44,34 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         console.log('[SimpleAuthContext] Nenhuma role encontrada, usando padrão: user');
       }
 
-      // Buscar empresas do usuário
-      const { data: companies, error: companiesError } = await supabase
+      // Buscar empresas do usuário com query corrigida
+      const { data: userCompaniesData, error: companiesError } = await supabase
         .from('user_companies')
-        .select(`
-          company_id,
-          companies!inner (
-            id,
-            name
-          )
-        `)
+        .select('company_id')
         .eq('user_id', userId);
 
       if (companiesError) {
-        console.error('[SimpleAuthContext] Erro ao buscar empresas:', companiesError);
+        console.error('[SimpleAuthContext] Erro ao buscar user_companies:', companiesError);
         setUserCompanies([]);
-      } else if (companies) {
-        const userCompaniesData = companies.map(uc => ({
-          companyId: uc.company_id,
-          companyName: uc.companies?.name || 'Nome não encontrado'
-        }));
-        setUserCompanies(userCompaniesData);
-        console.log('[SimpleAuthContext] Empresas encontradas:', userCompaniesData);
+      } else if (userCompaniesData && userCompaniesData.length > 0) {
+        // Buscar os nomes das empresas separadamente
+        const companyIds = userCompaniesData.map(uc => uc.company_id);
+        const { data: companies, error: companyNamesError } = await supabase
+          .from('companies')
+          .select('id, name')
+          .in('id', companyIds);
+
+        if (companyNamesError) {
+          console.error('[SimpleAuthContext] Erro ao buscar nomes das empresas:', companyNamesError);
+          setUserCompanies([]);
+        } else if (companies) {
+          const userCompaniesWithNames = companies.map(company => ({
+            companyId: company.id,
+            companyName: company.name
+          }));
+          setUserCompanies(userCompaniesWithNames);
+          console.log('[SimpleAuthContext] Empresas encontradas:', userCompaniesWithNames);
+        }
       }
 
     } catch (error) {

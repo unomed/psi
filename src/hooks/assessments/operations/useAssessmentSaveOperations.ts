@@ -66,19 +66,26 @@ export function useAssessmentSaveOperations() {
         
       console.log("Próxima data calculada:", nextDate);
       
-      // Criar objeto de avaliação agendada
+      // Criar objeto de avaliação agendada com campos corretos
       const newScheduledAssessment: Omit<ScheduledAssessment, "id"> = {
+        company_id: employeeData.company_id,
+        checklist_template_id: selectedTemplate.id,
+        employee_ids: [selectedEmployee],
+        scheduled_date: scheduledDate!.toISOString(),
+        status: "scheduled",
+        recurrence_type: recurrenceType,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        // Campos de compatibilidade legacy
         employeeId: selectedEmployee,
         templateId: selectedTemplate.id,
         scheduledDate: scheduledDate!,
         sentAt: null,
         linkUrl: "",
-        status: "scheduled",
         completedAt: null,
-        recurrenceType: recurrenceType,
         nextScheduledDate: nextDate,
         phoneNumber: phoneNumber.trim() !== "" ? phoneNumber : undefined,
-        company_id: employeeData.company_id // Incluir o ID da empresa
+        employee_name: employeeData.name
       };
       
       // Salvar no banco de dados
