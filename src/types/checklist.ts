@@ -18,8 +18,8 @@ export interface Question {
 
 export interface ChecklistTemplate {
   id: string;
-  title: string;                          // ✅ Campo correto do banco
-  name?: string;                          // ✅ Manter para compatibilidade
+  title?: string;                         // ✅ OPCIONAL para compatibilidade
+  name?: string;                          // ✅ OPCIONAL para compatibilidade
   description?: string;
   type: ChecklistTemplateType;
   scale_type: ScaleType;
@@ -56,6 +56,7 @@ export interface ChecklistResult {
   // ✅ ADICIONAR - propriedades faltando:
   employeeName?: string;                  // ✅ Usado no código
   dominantFactor?: string;                // ✅ Usado no código
+  results?: any;                          // ✅ ADICIONAR - usado no código
 }
 
 // Aliases for compatibility

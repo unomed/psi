@@ -27,7 +27,15 @@ export type ChecklistTemplateType =
   | 'custom'
   | 'stress';          // ✅ ADICIONAR - valor faltando
 
-export type RecurrenceType = 'none' | 'monthly' | 'quarterly' | 'semiannual' | 'annual';
+export type RecurrenceType = 
+  | 'none' 
+  | 'daily'           // ✅ ADICIONAR
+  | 'weekly'          // ✅ ADICIONAR
+  | 'monthly' 
+  | 'quarterly' 
+  | 'semiannual' 
+  | 'annual'
+  | 'yearly';         // ✅ ADICIONAR
 
 export type AssessmentStatus = 'scheduled' | 'sent' | 'completed' | 'in_progress';
 

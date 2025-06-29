@@ -10,8 +10,8 @@ export interface ScheduledAssessment {
   scheduledDate: Date | string;           // ✅ Manter para compatibilidade
   scheduled_date: string;                 // ✅ Nome correto do banco
   status: AssessmentStatus;
-  sentAt?: Date | null;
-  completedAt?: Date | null;
+  sentAt?: Date | string | null;          // ✅ Flexibilidade Date/string
+  completedAt?: Date | string | null;     // ✅ Flexibilidade Date/string
   linkUrl?: string;
   link_url?: string;
   company_id: string;
@@ -19,23 +19,23 @@ export interface ScheduledAssessment {
   updated_at: string;
   createdAt?: string;                     // ✅ Manter para compatibilidade
   
-  // ✅ ADICIONAR - propriedades faltando:
-  recurrenceType?: RecurrenceType;        // ✅ Compatibility field
-  recurrence_type?: RecurrenceType;       // ✅ Usado no código
-  phoneNumber?: string;                   // ✅ Usado no código
-  employee_name?: string;                 // ✅ Usado no código
-  nextScheduledDate?: Date | null;        // ✅ Compatibility
-  next_scheduled_date?: string | null;    // ✅ Database field
-  dueDate?: string;                       // ✅ Compatibility
-  due_date?: string;                      // ✅ Database field
-  isRecurring?: boolean;                  // ✅ Compatibility
-  is_recurring?: boolean;                 // ✅ Database field
-  recurrencePattern?: string;             // ✅ Compatibility
-  recurrence_pattern?: string;            // ✅ Database field
-  portalToken?: string;                   // ✅ Compatibility
-  portal_token?: string;                  // ✅ Database field
-  companyId?: string;                     // ✅ Compatibility
-  updatedAt?: string;                     // ✅ Compatibility
+  // ✅ ADICIONAR - propriedades faltando com AMBAS as convenções:
+  recurrenceType?: RecurrenceType;        // ✅ camelCase - Compatibility field
+  recurrence_type?: RecurrenceType;       // ✅ snake_case - Usado no código
+  phoneNumber?: string;                   // ✅ camelCase - Usado no código
+  employee_name?: string;                 // ✅ snake_case - Usado no código
+  nextScheduledDate?: Date | string | null; // ✅ camelCase - Compatibility
+  next_scheduled_date?: string | null;    // ✅ snake_case - Database field
+  dueDate?: string;                       // ✅ camelCase - Compatibility
+  due_date?: string;                      // ✅ snake_case - Database field
+  isRecurring?: boolean;                  // ✅ camelCase - Compatibility
+  is_recurring?: boolean;                 // ✅ snake_case - Database field
+  recurrencePattern?: string;             // ✅ camelCase - Compatibility
+  recurrence_pattern?: string;            // ✅ snake_case - Database field
+  portalToken?: string;                   // ✅ camelCase - Compatibility
+  portal_token?: string;                  // ✅ snake_case - Database field
+  companyId?: string;                     // ✅ camelCase - Compatibility
+  updatedAt?: string;                     // ✅ camelCase - Compatibility
   
   // ✅ Relacionamentos opcionais:
   employees?: {
@@ -55,7 +55,7 @@ export interface EmailTemplate {
   subject: string;
   body: string;
   description?: string;
-  type?: string;
+  type?: string;                          // ✅ Permitir qualquer string
   created_at?: string;
   updated_at?: string;
   variables?: any;
