@@ -1,14 +1,15 @@
 
-// Tipos principais do sistema - VERSÃO CONSOLIDADA
+// Tipos principais do sistema - VERSÃO CORRIGIDA E UNIFICADA
 export type ScaleType = "likert" | "yes_no" | "custom" | "frequency" | "numeric" | "likert5" | "binary" | "percentage" | "psicossocial" | "likert_5";
 
 export type ChecklistTemplateType = "psicossocial" | "disc" | "custom" | "360" | "standard" | "stress";
 
 export type RiskLevel = "baixo" | "medio" | "alto" | "critico";
 
-// Tipos adicionais necessários
-export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "yearly";
+// Tipos de recorrência COMPLETOS
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "yearly" | "semiannual" | "annual";
 
+// Interface ScheduledAssessment COMPLETA com todas as propriedades necessárias
 export interface ScheduledAssessment {
   id: string;
   template_id: string;
@@ -17,8 +18,34 @@ export interface ScheduledAssessment {
   status: string;
   recurrence_type?: RecurrenceType;
   created_at?: string;
+  
+  // Propriedades adicionais para compatibilidade
+  templateId?: string; // camelCase para compatibilidade
+  employeeId?: string; // camelCase para compatibilidade
+  scheduledDate?: Date; // camelCase para compatibilidade
+  recurrenceType?: RecurrenceType; // camelCase para compatibilidade
+  phoneNumber?: string;
+  phone_number?: string;
+  linkUrl?: string;
+  link_url?: string;
+  sentAt?: Date | null;
+  sent_at?: string | null;
+  completedAt?: Date | null;
+  completed_at?: string | null;
+  company_id?: string;
+  
+  // Objetos relacionados
+  employees?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  checklist_templates?: {
+    title: string;
+  };
 }
 
+// Interface EmailTemplate COMPLETA
 export interface EmailTemplate {
   id: string;
   name: string;
@@ -26,16 +53,23 @@ export interface EmailTemplate {
   body: string;
   variables?: any;
   created_at?: string;
+  
+  // Propriedades adicionais
+  type?: string;
+  description?: string;
 }
 
+// Interface ChecklistResult COMPLETA
 export interface ChecklistResult {
   id: string;
   template_id: string;
   employee_id: string;
   employee_name?: string;
+  employeeName?: string; // camelCase para compatibilidade
   responses: Record<string, any>;
   results: Record<string, number>;
   dominant_factor?: string;
+  dominantFactor?: string; // camelCase para compatibilidade
   raw_score?: number;
   normalized_score?: number;
   percentile?: number;
@@ -49,10 +83,12 @@ export interface ChecklistResult {
   notes?: string;
 }
 
+// Interface DiscFactor COMPLETA
 export interface DiscFactor {
   name: string;
   description: string;
   characteristics: string[];
+  type: DiscFactorType; // Adicionada propriedade type
 }
 
 export type DiscFactorType = "D" | "I" | "S" | "C";

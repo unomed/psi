@@ -47,13 +47,18 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
     }
   };
 
+  // Use tanto employee_name quanto employeeName para compatibilidade
+  const employeeName = result.employee_name || result.employeeName || "Funcionário";
+  // Use tanto dominant_factor quanto dominantFactor para compatibilidade
+  const dominantFactor = result.dominant_factor || result.dominantFactor || "D";
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Resultado DISC - {result.employeeName}</span>
-            <Badge variant="secondary">{getFactorName(result.dominantFactor)}</Badge>
+            <span>Resultado DISC - {employeeName}</span>
+            <Badge variant="secondary">{getFactorName(dominantFactor)}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -67,7 +72,7 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div 
                     className={`h-3 rounded-full ${
-                      factor === result.dominantFactor ? 'bg-blue-600' : 'bg-gray-400'
+                      factor === dominantFactor ? 'bg-blue-600' : 'bg-gray-400'
                     }`}
                     style={{ width: `${percentage}%` }}
                   />
@@ -83,15 +88,15 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Perfil Dominante: {getFactorName(result.dominantFactor)}</CardTitle>
+          <CardTitle>Perfil Dominante: {getFactorName(dominantFactor)}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-600">
-            {getFactorDescription(result.dominantFactor)}
+            {getFactorDescription(dominantFactor)}
           </p>
           <div className="mt-4 p-3 bg-blue-50 rounded-md">
             <p className="text-sm">
-              <strong>Pontuação:</strong> {percentages[result.dominantFactor as keyof typeof percentages]}% do perfil total
+              <strong>Pontuação:</strong> {percentages[dominantFactor as keyof typeof percentages]}% do perfil total
             </p>
           </div>
         </CardContent>

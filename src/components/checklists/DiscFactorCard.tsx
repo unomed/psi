@@ -27,12 +27,15 @@ export function DiscFactorCard({ factor, className }: DiscFactorCardProps) {
     );
   }
 
+  // Garantir que factor.type existe
+  const factorType = factor.type || 'D';
+
   return (
-    <Card className={cn("border", getFactorBackgroundColor(factor.type), className)}>
+    <Card className={cn("border", getFactorBackgroundColor(factorType), className)}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
-          <span className={cn("text-3xl font-bold", getFactorColor(factor.type))}>
-            {factor.type}
+          <span className={cn("text-3xl font-bold", getFactorColor(factorType))}>
+            {factorType}
           </span>
           <span>{factor.name}</span>
         </CardTitle>

@@ -13,6 +13,11 @@ export function ChecklistResultItem({
   template, 
   onViewResult 
 }: ChecklistResultItemProps) {
+  // Use tanto employee_name quanto employeeName para compatibilidade
+  const employeeName = result.employee_name || result.employeeName || "Anônimo";
+  // Use tanto dominant_factor quanto dominantFactor para compatibilidade
+  const dominantFactor = result.dominant_factor || result.dominantFactor || "N/A";
+
   return (
     <div 
       className="flex justify-between items-center p-4 border rounded-lg hover:bg-accent/50 cursor-pointer"
@@ -21,7 +26,7 @@ export function ChecklistResultItem({
       <div>
         <h3 className="font-medium">{template?.title || "Avaliação"}</h3>
         <p className="text-sm text-muted-foreground">
-          {result.employeeName || "Anônimo"} - Perfil dominante: {result.dominantFactor}
+          {employeeName} - Perfil dominante: {dominantFactor}
         </p>
       </div>
       <Button variant="ghost" size="sm">

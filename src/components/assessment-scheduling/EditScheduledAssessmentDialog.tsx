@@ -28,10 +28,12 @@ export function EditScheduledAssessmentDialog({
 
   useEffect(() => {
     if (assessment) {
-      setScheduledDate(assessment.scheduledDate);
-      // Use recurrenceType (camelCase) consistently
-      setRecurrenceType(assessment.recurrenceType || "none");
-      setPhoneNumber(assessment.phoneNumber || "");
+      // Use scheduled_date (snake_case) que é a propriedade real do banco
+      const dateValue = assessment.scheduledDate || assessment.scheduled_date;
+      setScheduledDate(dateValue ? new Date(dateValue) : undefined);
+      // Use recurrence_type (snake_case) que é a propriedade real do banco
+      setRecurrenceType(assessment.recurrenceType || assessment.recurrence_type || "none");
+      setPhoneNumber(assessment.phoneNumber || assessment.phone_number || "");
     }
   }, [assessment]);
 
@@ -57,9 +59,10 @@ export function EditScheduledAssessmentDialog({
     onClose();
     // Reset form when closing
     if (assessment) {
-      setScheduledDate(assessment.scheduledDate);
-      setRecurrenceType(assessment.recurrenceType || "none");
-      setPhoneNumber(assessment.phoneNumber || "");
+      const dateValue = assessment.scheduledDate || assessment.scheduled_date;
+      setScheduledDate(dateValue ? new Date(dateValue) : undefined);
+      setRecurrenceType(assessment.recurrenceType || assessment.recurrence_type || "none");
+      setPhoneNumber(assessment.phoneNumber || assessment.phone_number || "");
     }
   };
 

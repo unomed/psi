@@ -1,50 +1,52 @@
 
 import { RecurrenceType } from "@/types";
 
-export const getRecurrenceLabel = (recurrence: RecurrenceType): string => {
-  const labels: Record<RecurrenceType, string> = {
-    none: 'Sem recorrência',
-    daily: 'Diário',
-    weekly: 'Semanal',
-    monthly: 'Mensal',
-    quarterly: 'Trimestral',
-    yearly: 'Anual',
-    semiannual: 'Semestral',
-    annual: 'Anual'
-  };
-  
-  return labels[recurrence] || 'Não definido';
+export const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
+  none: "Sem recorrência",
+  daily: "Diário", 
+  weekly: "Semanal",
+  monthly: "Mensal",
+  quarterly: "Trimestral",
+  yearly: "Anual",
+  semiannual: "Semestral",
+  annual: "Anual"
 };
 
-export const getNextRecurrenceDate = (baseDate: Date, recurrence: RecurrenceType): Date | null => {
-  const date = new Date(baseDate);
-  
-  switch (recurrence) {
-    case 'daily':
-      date.setDate(date.getDate() + 1);
-      return date;
-    case 'weekly':
-      date.setDate(date.getDate() + 7);
-      return date;
-    case 'monthly':
-      date.setMonth(date.getMonth() + 1);
-      return date;
-    case 'quarterly':
-      date.setMonth(date.getMonth() + 3);
-      return date;
-    case 'semiannual':
-      date.setMonth(date.getMonth() + 6);
-      return date;
-    case 'yearly':
-    case 'annual':
-      date.setFullYear(date.getFullYear() + 1);
-      return date;
-    case 'none':
+export const getRecurrenceLabel = (recurrence: RecurrenceType): string => {
+  return RECURRENCE_LABELS[recurrence] || "Desconhecido";
+};
+
+export const calculateNextAssessmentDate = (
+  currentDate: Date,
+  recurrenceType: RecurrenceType
+): Date | null => {
+  if (recurrenceType === "none") return null;
+
+  const nextDate = new Date(currentDate);
+
+  switch (recurrenceType) {
+    case "daily":
+      nextDate.setDate(nextDate.getDate() + 1);
+      break;
+    case "weekly":
+      nextDate.setDate(nextDate.getDate() + 7);
+      break;
+    case "monthly":
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      break;
+    case "quarterly":
+      nextDate.setMonth(nextDate.getMonth() + 3);
+      break;
+    case "semiannual":
+      nextDate.setMonth(nextDate.getMonth() + 6);
+      break;
+    case "annual":
+    case "yearly":
+      nextDate.setFullYear(nextDate.getFullYear() + 1);
+      break;
     default:
       return null;
   }
-};
 
-export const isValidRecurrenceType = (type: string): type is RecurrenceType => {
-  return ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'none', 'semiannual', 'annual'].includes(type);
+  return nextDate;
 };
