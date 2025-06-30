@@ -13,6 +13,7 @@ export interface BaseTemplateTableProps {
   onStart: (template: ChecklistTemplate) => void;
   showCategories?: boolean;
   isDeleting?: boolean;
+  caption?: string;
 }
 
 export function BaseTemplateTable({
@@ -22,7 +23,8 @@ export function BaseTemplateTable({
   onCopy,
   onStart,
   showCategories = false,
-  isDeleting = false
+  isDeleting = false,
+  caption
 }: BaseTemplateTableProps) {
   const getTypeLabel = (type: string) => {
     const typeLabels: Record<string, string> = {
@@ -47,6 +49,11 @@ export function BaseTemplateTable({
 
   return (
     <div className="rounded-md border">
+      {caption && (
+        <div className="p-4 border-b">
+          <h3 className="font-medium">{caption}</h3>
+        </div>
+      )}
       <Table>
         <TableHeader>
           <TableRow>

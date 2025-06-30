@@ -1,145 +1,103 @@
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Search, Download } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { ptBR } from "date-fns/locale";
+import { Mail, RefreshCw } from "lucide-react";
+import { ScheduledAssessment } from "@/types";
 
-interface EmailRecord {
-  id: string;
-  recipient: string;
-  subject: string;
-  status: 'sent' | 'failed' | 'pending';
-  sentAt: Date;
-  templateName?: string;
-  errorMessage?: string;
+export interface EmailHistoryTableProps {
+  scheduledAssessments?: ScheduledAssessment[];
+  assessments?: ScheduledAssessment[];
+  onResendEmail?: (assessmentId: string) => void;
+  onRefresh?: () => void;
 }
 
-interface EmailHistoryTableProps {
-  emailHistory: EmailRecord[];
-}
+export function EmailHistoryTable({ 
+  scheduledAssessments = [], 
+  assessments = [],
+  onResendEmail, 
+  onRefresh 
+}: EmailHistoryTableProps) {
+  const emailHistory = scheduledAssessments.length > 0 ? scheduledAssessments : assessments;
 
-export function EmailHistoryTable({ emailHistory }: EmailHistoryTableProps) {
-  const [filterDate, setFilterDate] = useState<Date>();
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredHistory = emailHistory.filter((record) => {
-    const matchesDate = !filterDate || 
-      format(record.sentAt, 'yyyy-MM-dd') === format(filterDate, 'yyyy-MM-dd');
-    const matchesSearch = !searchTerm || 
-      record.recipient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.subject.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesDate && matchesSearch;
-  });
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'sent': return 'default';
-      case 'failed': return 'destructive';
-      case 'pending': return 'secondary';
-      default: return 'secondary';
-    }
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      sent: "bg-green-100 text-green-800",
+      pending: "bg-yellow-100 text-yellow-800",
+      failed: "bg-red-100 text-red-800",
+      scheduled: "bg-blue-100 text-blue-800"
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
-  const exportToCsv = () => {
-    const csvContent = [
-      ['Destinatário', 'Assunto', 'Status', 'Data de Envio', 'Template', 'Erro'].join(','),
-      ...filteredHistory.map(record => [
-        record.recipient,
-        record.subject,
-        record.status,
-        format(record.sentAt, 'dd/MM/yyyy HH:mm'),
-        record.templateName || '',
-        record.errorMessage || ''
-      ].map(field => `"${field}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `historico-emails-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    link.click();
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      sent: "Enviado",
+      pending: "Pendente",
+      failed: "Falhou",
+      scheduled: "Agendado"
+    };
+    return labels[status] || status;
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Histórico de E-mails</CardTitle>
-        <div className="flex gap-4 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por destinatário ou assunto..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[240px] justify-start text-left font-normal",
-                  !filterDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {filterDate ? format(filterDate, "dd/MM/yyyy") : "Filtrar por data"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={filterDate}
-                onSelect={setFilterDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Button onClick={exportToCsv} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Histórico de E-mails</h3>
+        {onRefresh && (
+          <Button variant="outline" size="sm" onClick={onRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Atualizar
           </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
+        )}
+      </div>
+      
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Destinatário</TableHead>
-              <TableHead>Assunto</TableHead>
+              <TableHead>Funcionário</TableHead>
+              <TableHead>Template</TableHead>
+              <TableHead>Data Agendada</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Data de Envio</TableHead>
-              <TableHead>Template</TableHead>
-              <TableHead>Ações</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredHistory.map((record) => (
-              <TableRow key={record.id}>
-                <TableCell>{record.recipient}</TableCell>
-                <TableCell>{record.subject}</TableCell>
+            {emailHistory.map((assessment) => (
+              <TableRow key={assessment.id}>
+                <TableCell className="font-medium">
+                  {assessment.employees?.name || assessment.employee_name || "N/A"}
+                </TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(record.status)}>
-                    {record.status === 'sent' ? 'Enviado' : 
-                     record.status === 'failed' ? 'Falhou' : 'Pendente'}
+                  {assessment.checklist_templates?.title || "Template não encontrado"}
+                </TableCell>
+                <TableCell>
+                  {format(assessment.scheduledDate, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                </TableCell>
+                <TableCell>
+                  <Badge className={getStatusColor(assessment.status)}>
+                    {getStatusLabel(assessment.status)}
                   </Badge>
                 </TableCell>
-                <TableCell>{format(record.sentAt, 'dd/MM/yyyy HH:mm')}</TableCell>
-                <TableCell>{record.templateName || '-'}</TableCell>
                 <TableCell>
-                  {record.status === 'failed' && record.errorMessage && (
-                    <Button variant="ghost" size="sm">
-                      Ver Erro
+                  {assessment.sentAt 
+                    ? format(assessment.sentAt, "dd/MM/yyyy HH:mm", { locale: ptBR })
+                    : "-"
+                  }
+                </TableCell>
+                <TableCell className="text-right">
+                  {onResendEmail && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onResendEmail(assessment.id)}
+                      title="Reenviar E-mail"
+                    >
+                      <Mail className="h-4 w-4" />
                     </Button>
                   )}
                 </TableCell>
@@ -147,7 +105,13 @@ export function EmailHistoryTable({ emailHistory }: EmailHistoryTableProps) {
             ))}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+        
+        {emailHistory.length === 0 && (
+          <div className="text-center p-8 text-muted-foreground">
+            Nenhum histórico de e-mail encontrado
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -31,7 +31,8 @@ export function useEmployees(companyId?: string) {
         ...emp,
         role: Array.isArray(emp.roles) ? emp.roles[0] : emp.roles,
         sectors: Array.isArray(emp.sectors) ? emp.sectors[0] : emp.sectors,
-        employee_type: emp.employee_type as 'funcionario' | 'candidato' // Fixed type casting
+        employee_type: emp.employee_type as 'funcionario' | 'candidato',
+        employee_tags: Array.isArray(emp.employee_tags) ? emp.employee_tags : []
       }));
     },
     enabled: !!companyId

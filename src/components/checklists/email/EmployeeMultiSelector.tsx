@@ -1,148 +1,135 @@
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
 import { Employee } from "@/types";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useAuth } from "@/hooks/useAuth";
+import { Search } from "lucide-react";
 
-interface EmployeeMultiSelectorProps {
-  onEmployeeSelect: (employees: Employee[]) => void;
+export interface EmployeeMultiSelectorProps {
+  selectedEmployees?: Employee[];
+  onSelectionChange?: (employees: Employee[]) => void;
+  onEmployeesChange?: (employees: Employee[]) => void;
 }
 
-export function EmployeeMultiSelector({ onEmployeeSelect }: EmployeeMultiSelectorProps) {
-  const { userCompanies } = useAuth();
-  const companyId = userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined;
-  const { data: employees = [] } = useEmployees(companyId);
-  
-  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([]);
-  const [selectedCompany, setSelectedCompany] = useState<string>("");
-  const [selectedSector, setSelectedSector] = useState<string>("");
-  const [selectedRole, setSelectedRole] = useState<string>("");
+export function EmployeeMultiSelector({ 
+  selectedEmployees = [], 
+  onSelectionChange,
+  onEmployeesChange 
+}: EmployeeMultiSelectorProps) {
+  const { user } = useAuth();
+  const { data: employees, isLoading } = useEmployees(user?.user_metadata?.companyId);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [internalSelected, setInternalSelected] = useState<Employee[]>(selectedEmployees);
 
-  // Get unique companies, sectors, and roles
-  const companies = Array.from(new Set(employees.map(emp => emp.company_id)));
-  const sectors = Array.from(new Set(employees.map(emp => emp.sector_id)));
-  const roles = Array.from(new Set(employees.map(emp => emp.role_id)));
+  useEffect(() => {
+    setInternalSelected(selectedEmployees);
+  }, [selectedEmployees]);
 
-  // Filter employees based on selections
-  const filteredEmployees = employees.filter(emp => {
-    if (selectedCompany && emp.company_id !== selectedCompany) return false;
-    if (selectedSector && emp.sector_id !== selectedSector) return false;
-    if (selectedRole && emp.role_id !== selectedRole) return false;
-    return true;
-  });
+  const filteredEmployees = employees?.filter(employee =>
+    employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    employee.cpf.includes(searchTerm) ||
+    employee.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
-  const handleEmployeeSelect = (employeeId: string) => {
-    const employee = employees.find(emp => emp.id === employeeId);
-    if (employee && !selectedEmployees.find(emp => emp.id === employeeId)) {
-      const newSelection = [...selectedEmployees, employee];
-      setSelectedEmployees(newSelection);
-      onEmployeeSelect(newSelection);
+  const handleEmployeeToggle = (employee: Employee, checked: boolean) => {
+    let updatedSelection: Employee[];
+    
+    if (checked) {
+      updatedSelection = [...internalSelected, employee];
+    } else {
+      updatedSelection = internalSelected.filter(e => e.id !== employee.id);
     }
-  };
-
-  const handleRemoveEmployee = (employeeId: string) => {
-    const newSelection = selectedEmployees.filter(emp => emp.id !== employeeId);
-    setSelectedEmployees(newSelection);
-    onEmployeeSelect(newSelection);
+    
+    setInternalSelected(updatedSelection);
+    onSelectionChange?.(updatedSelection);
+    onEmployeesChange?.(updatedSelection);
   };
 
   const handleSelectAll = () => {
-    const newSelection = filteredEmployees.filter(emp => 
-      !selectedEmployees.find(selected => selected.id === emp.id)
-    );
-    const combined = [...selectedEmployees, ...newSelection];
-    setSelectedEmployees(combined);
-    onEmployeeSelect(combined);
+    const allSelected = filteredEmployees;
+    setInternalSelected(allSelected);
+    onSelectionChange?.(allSelected);
+    onEmployeesChange?.(allSelected);
   };
+
+  const handleClearAll = () => {
+    setInternalSelected([]);
+    onSelectionChange?.([]);
+    onEmployeesChange?.([]);
+  };
+
+  if (isLoading) {
+    return <div className="text-center p-4">Carregando funcionários...</div>;
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Selecionar Funcionários</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Selecionar Funcionários</span>
+          <span className="text-sm font-normal text-muted-foreground">
+            {internalSelected.length} selecionado(s)
+          </span>
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
-          <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-            <SelectTrigger>
-              <SelectValue placeholder="Empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Todas as empresas</SelectItem>
-              {companies.map((companyId) => (
-                <SelectItem key={companyId} value={companyId}>
-                  {companyId}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedSector} onValueChange={setSelectedSector}>
-            <SelectTrigger>
-              <SelectValue placeholder="Setor" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Todos os setores</SelectItem>
-              {sectors.map((sectorId) => (
-                <SelectItem key={sectorId} value={sectorId}>
-                  {sectorId}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger>
-              <SelectValue placeholder="Cargo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Todos os cargos</SelectItem>
-              {roles.map((roleId) => (
-                <SelectItem key={roleId} value={roleId}>
-                  {roleId}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar funcionários..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
         <div className="flex gap-2">
-          <Select onValueChange={handleEmployeeSelect}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecionar funcionário..." />
-            </SelectTrigger>
-            <SelectContent>
-              {filteredEmployees.map((employee) => (
-                <SelectItem key={employee.id} value={employee.id}>
-                  {employee.name} - {employee.email}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Button onClick={handleSelectAll} variant="outline">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleSelectAll}
+          >
             Selecionar Todos
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleClearAll}
+          >
+            Limpar Seleção
           </Button>
         </div>
 
-        {selectedEmployees.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Funcionários Selecionados ({selectedEmployees.length})</h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedEmployees.map((employee) => (
-                <Badge key={employee.id} variant="secondary" className="flex items-center gap-1">
-                  {employee.name}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => handleRemoveEmployee(employee.id)}
-                  />
-                </Badge>
-              ))}
+        <div className="max-h-60 overflow-y-auto space-y-2">
+          {filteredEmployees.map((employee) => (
+            <div key={employee.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded">
+              <Checkbox
+                id={`employee-${employee.id}`}
+                checked={internalSelected.some(e => e.id === employee.id)}
+                onCheckedChange={(checked) => handleEmployeeToggle(employee, checked as boolean)}
+              />
+              <label
+                htmlFor={`employee-${employee.id}`}
+                className="flex-1 cursor-pointer"
+              >
+                <div className="font-medium">{employee.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  {employee.email} • {employee.cpf}
+                </div>
+              </label>
             </div>
+          ))}
+        </div>
+
+        {filteredEmployees.length === 0 && (
+          <div className="text-center p-4 text-muted-foreground">
+            Nenhum funcionário encontrado
           </div>
         )}
       </CardContent>
