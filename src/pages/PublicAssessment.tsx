@@ -53,8 +53,13 @@ export default function PublicAssessment() {
 
         if ('template' in response && response.template) {
           console.log("[PublicAssessment] Validação bem-sucedida:", response.template);
-          setTemplate(response.template);
-          // Usar nome padrão já que employeeName não está disponível no response
+          // Convert template to match expected type
+          const convertedTemplate: ChecklistTemplate = {
+            ...response.template,
+            category: response.template.category || "custom",
+            createdAt: new Date(response.template.created_at || Date.now())
+          };
+          setTemplate(convertedTemplate);
           setEmployeeName("Funcionário");
           setIsLoading(false);
         } else {

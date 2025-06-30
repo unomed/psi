@@ -1,3 +1,4 @@
+
 import { ChecklistTemplate } from "@/types";
 
 // Placeholder for template data
@@ -16,4 +17,9 @@ export function getDefaultTemplates(): ChecklistTemplate[] {
 
 export function createDefaultTemplate(type: string): Partial<ChecklistTemplate> {
   return DEFAULT_PSICOSSOCIAL_TEMPLATE;
+}
+
+export async function initializeDefaultTemplates(): Promise<void> {
+  console.log("Initializing default templates...");
+  // Implementation will be added when needed
 }

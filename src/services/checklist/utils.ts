@@ -6,13 +6,13 @@ export function stringToDiscFactorType(str: string): DiscFactorType {
   if (upperStr === 'D' || upperStr === 'I' || upperStr === 'S' || upperStr === 'C') {
     return upperStr as DiscFactorType;
   }
-  return 'D'; // Default fallback
+  return 'D' as DiscFactorType; // Default fallback
 }
 
 export function calculateDominantFactor(scores: Record<string, number>): DiscFactorType {
-  const factors: DiscFactorType[] = ['D', 'I', 'S', 'C'];
+  const factors: DiscFactorType[] = ['D' as DiscFactorType, 'I' as DiscFactorType, 'S' as DiscFactorType, 'C' as DiscFactorType];
   let maxScore = -1;
-  let dominant: DiscFactorType = 'D';
+  let dominant: DiscFactorType = 'D' as DiscFactorType;
   
   factors.forEach(factor => {
     if (scores[factor] > maxScore) {

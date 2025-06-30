@@ -71,7 +71,7 @@ export function AssessmentHandlerRoot({
   };
 
   const handleTemplateSelect = (templateId: string) => {
-    const template = templates.find(t => t.id === templateId);
+    const template = (templates as ChecklistTemplate[]).find(t => t.id === templateId);
     if (template) {
       setSelectedTemplate(template);
     }
@@ -94,7 +94,7 @@ export function AssessmentHandlerRoot({
           data={{
             selectedEmployee,
             selectedTemplate,
-            templates,
+            templates: templates as ChecklistTemplate[],
             isTemplatesLoading: isLoading,
             scheduledDate
           }}

@@ -16,3 +16,7 @@ export async function fetchTemplates(): Promise<ChecklistTemplate[]> {
   // Implementation for fetching templates
   return [];
 }
+
+export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
+  return fetchTemplates();
+}

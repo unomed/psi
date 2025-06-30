@@ -6,14 +6,14 @@ interface ChecklistTemplatesListProps {
   templates: ChecklistTemplate[];
   isLoading: boolean;
   onEditTemplate: (template: ChecklistTemplate) => void;
-  onStartAssessment: (template: ChecklistTemplate) => void;
+  onPreviewTemplate: (template: ChecklistTemplate) => void;
 }
 
 export function ChecklistTemplatesList({ 
   templates, 
   isLoading, 
   onEditTemplate, 
-  onStartAssessment 
+  onPreviewTemplate 
 }: ChecklistTemplatesListProps) {
   if (isLoading) {
     return <div>Carregando templates...</div>;
@@ -36,7 +36,7 @@ export function ChecklistTemplatesList({
             key={template.id}
             template={template}
             onEdit={() => onEditTemplate(template)}
-            onStartAssessment={() => onStartAssessment(template)}
+            onPreview={() => onPreviewTemplate(template)}
           />
         ))}
       </div>

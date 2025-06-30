@@ -1,3 +1,4 @@
+
 import { DiscFactorType } from './disc';
 
 export interface ChecklistQuestion {
@@ -50,8 +51,3 @@ export interface ChecklistResult {
   completed_at: string;
   createdBy: string;
 }
-
-export type { ChecklistTemplate } from './templates';
-export type { ChecklistResult } from './results';
-export type { ChecklistQuestion } from './questions';
-export type { ScaleType } from './scale';
