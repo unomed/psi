@@ -1,16 +1,13 @@
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { ScheduledAssessment, RecurrenceType } from "@/types";
+import { ScheduledAssessment } from "@/types";
 
-export function useScheduledAssessments(companyId?: string) {
-  const queryClient = useQueryClient();
-
-  const { data: scheduledAssessments, isLoading, error } = useQuery({
-    queryKey: ['scheduledAssessments', companyId],
+export function useScheduledAssessments() {
+  const { data: scheduledAssessments, isLoading, refetch } = useQuery({
+    queryKey: ['scheduled-assessments'],
     queryFn: async (): Promise<ScheduledAssessment[]> => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('scheduled_assessments')
         .select(`
           *,
@@ -24,12 +21,6 @@ export function useScheduledAssessments(companyId?: string) {
           )
         `)
         .order('scheduled_date', { ascending: false });
-
-      if (companyId) {
-        query = query.eq('company_id', companyId);
-      }
-
-      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching scheduled assessments:', error);
@@ -51,43 +42,20 @@ export function useScheduledAssessments(companyId?: string) {
         completed_at: item.completed_at,
         linkUrl: item.link_url || '',
         link_url: item.link_url,
-        recurrenceType: (item.recurrence_type as RecurrenceType) || 'none', // Fixed type casting
         company_id: item.company_id,
         employee_name: item.employee_name,
         employees: Array.isArray(item.employees) ? item.employees[0] : item.employees,
         checklist_templates: Array.isArray(item.checklist_templates) ? item.checklist_templates[0] : item.checklist_templates,
         checklist_template_id: item.template_id,
         employee_ids: [item.employee_id],
-        created_at: item.created_at,
-        updated_at: item.updated_at
+        created_at: item.created_at
       }));
-    }
-  });
-
-  const deleteAssessmentMutation = useMutation({
-    mutationFn: async (assessmentId: string) => {
-      const { error } = await supabase
-        .from('scheduled_assessments')
-        .delete()
-        .eq('id', assessmentId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduledAssessments'] });
-      toast.success("Agendamento excluído com sucesso!");
-    },
-    onError: (error: any) => {
-      console.error("Erro ao excluir agendamento:", error);
-      toast.error("Erro ao excluir agendamento");
     }
   });
 
   return {
     scheduledAssessments: scheduledAssessments || [],
     isLoading,
-    error,
-    deleteAssessment: deleteAssessmentMutation.mutate,
-    isDeleting: deleteAssessmentMutation.isPending
+    refetch
   };
 }

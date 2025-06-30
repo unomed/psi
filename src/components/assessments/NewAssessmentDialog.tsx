@@ -87,7 +87,7 @@ export function NewAssessmentDialog({
 
           <AssessmentDialogFooter
             onSave={handleSave}
-            disabled={!selectedEmployee || !selectedTemplate || dateError}
+            disabled={!selectedEmployee || !selectedTemplate || !!dateError}
           />
         </div>
       </DialogContent>

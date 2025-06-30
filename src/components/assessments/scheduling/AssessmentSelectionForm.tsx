@@ -1,13 +1,14 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChecklistTemplate } from "@/types";
 import { useEmployees } from "@/hooks/useEmployees";
 import { useChecklistTemplates } from "@/hooks/checklist/useChecklistTemplates";
-import { EmployeeSelector } from "./selectors/EmployeeSelector";
-import { TemplateSelector } from "./selectors/TemplateSelector";
-import { ScheduleAssessmentDialog } from "./ScheduleAssessmentDialog";
-import { GenerateLinkDialog } from "./GenerateLinkDialog";
+import { EmployeeSelector } from "../selectors/EmployeeSelector";
+import { TemplateSelector } from "../selectors/TemplateSelector";
+import { ScheduleAssessmentDialog } from "../ScheduleAssessmentDialog";
+import { GenerateLinkDialog } from "../GenerateLinkDialog";
 import { useAuth } from "@/hooks/useAuth";
 
 interface AssessmentSelectionFormProps {
@@ -101,7 +102,6 @@ export function AssessmentSelectionForm({
     setIsScheduleDialogOpen(false);
   };
 
-  const canSchedule = selectedEmployeeId && selectedTemplate && scheduledDate;
   const canGenerateLink = selectedEmployeeId && selectedTemplate;
 
   return (

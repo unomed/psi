@@ -42,7 +42,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
     <div className="max-w-2xl mx-auto">
       <Card>
         <PsicossocialProgressHeader
-          title={template.title}
+          title={template.title || template.name}
           currentQuestionIndex={currentQuestionIndex}
           totalQuestions={questions.length}
           progress={progress}
