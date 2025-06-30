@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +43,31 @@ export default function AssessmentPage() {
           return;
         }
         
+        // Parse cutoff_scores if it's a JSON string
+        let cutoffScores = { high: 80, medium: 60, low: 40 };
+        if (response.template.cutoff_scores) {
+          if (typeof response.template.cutoff_scores === 'string') {
+            try {
+              cutoffScores = JSON.parse(response.template.cutoff_scores);
+            } catch {
+              // Keep default values if parsing fails
+            }
+          } else if (typeof response.template.cutoff_scores === 'object' && response.template.cutoff_scores !== null) {
+            cutoffScores = response.template.cutoff_scores as { high: number; medium: number; low: number };
+          }
+        }
+
+        // Map questions to ChecklistQuestion format
+        const mappedQuestions = (response.template.questions || []).map((q: any) => ({
+          id: q.id,
+          template_id: q.template_id,
+          question_text: q.question_text,
+          text: q.question_text, // Add required text field
+          order_number: q.order_number,
+          created_at: q.created_at,
+          updated_at: q.updated_at || q.created_at // Add required updated_at field with fallback
+        }));
+        
         // Complete the template with required properties
         const completeTemplate: ChecklistTemplate = {
           ...response.template,
@@ -53,8 +77,8 @@ export default function AssessmentPage() {
           estimated_time_minutes: 15,
           version: 1,
           createdAt: new Date(response.template.created_at),
-          cutoff_scores: response.template.cutoff_scores || { high: 80, medium: 60, low: 40 },
-          questions: response.template.questions || []
+          cutoff_scores: cutoffScores,
+          questions: mappedQuestions
         };
 
         setTemplate(completeTemplate);
@@ -109,7 +133,9 @@ export default function AssessmentPage() {
           employeeName: result.employee_name,
           responses: result.response_data as Record<string, any>,
           results: result.factors_scores as Record<string, number>,
-          completedAt: new Date(result.completed_at)
+          completedAt: new Date(result.completed_at),
+          score: result.raw_score || 0, // Add required score field
+          createdBy: result.created_by || "" // Add required createdBy field
         };
         
         setResult(completeResult);

@@ -54,14 +54,39 @@ export default function PublicAssessment() {
         if ('template' in response && response.template) {
           console.log("[PublicAssessment] Validação bem-sucedida:", response.template);
           
+          // Parse cutoff_scores if it's a JSON string
+          let cutoffScores = { high: 80, medium: 60, low: 40 };
+          if (response.template.cutoff_scores) {
+            if (typeof response.template.cutoff_scores === 'string') {
+              try {
+                cutoffScores = JSON.parse(response.template.cutoff_scores);
+              } catch {
+                // Keep default values if parsing fails
+              }
+            } else if (typeof response.template.cutoff_scores === 'object' && response.template.cutoff_scores !== null) {
+              cutoffScores = response.template.cutoff_scores as { high: number; medium: number; low: number };
+            }
+          }
+
+          // Map questions to ChecklistQuestion format
+          const mappedQuestions = (response.template.questions || []).map((q: any) => ({
+            id: q.id,
+            template_id: q.template_id,
+            question_text: q.question_text,
+            text: q.question_text, // Add required text field
+            order_number: q.order_number,
+            created_at: q.created_at,
+            updated_at: q.updated_at || q.created_at // Add required updated_at field with fallback
+          }));
+          
           // Complete template with required properties
           const convertedTemplate: ChecklistTemplate = {
             ...response.template,
             name: response.template.title,
             category: "custom" as const,
             createdAt: new Date(response.template.created_at || Date.now()),
-            cutoff_scores: response.template.cutoff_scores || { high: 80, medium: 60, low: 40 },
-            questions: response.template.questions || [],
+            cutoff_scores: cutoffScores,
+            questions: mappedQuestions,
             is_standard: false,
             is_active: true,
             estimated_time_minutes: 15,
