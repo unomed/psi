@@ -10,7 +10,7 @@ import AutomacaoAvancadaPage from "@/pages/configuracoes/AutomacaoAvancadaPage";
 import { AssessmentResponse } from "@/components/employee/AssessmentResponse";
 import NotFound from "@/pages/NotFound";
 
-// Importar versões simplificadas para páginas com problemas
+// Importar APENAS versões simplificadas para TODAS as páginas com problemas
 import FuncoesSimplified from "@/pages/FuncoesSimplified";
 import ChecklistsSimplified from "@/pages/ChecklistsSimplified";
 import AvaliacoesSimplified from "@/pages/AvaliacoesSimplified";
@@ -19,6 +19,10 @@ import PlanoAcaoSimplified from "@/pages/PlanoAcaoSimplified";
 import GestaoRiscosSimplified from "@/pages/GestaoRiscosSimplified";
 import ResultadosSimplified from "@/pages/ResultadosSimplified";
 import AgendamentosSimplified from "@/pages/AgendamentosSimplified";
+import FaturamentoSimplified from "@/pages/FaturamentoSimplified";
+import PerfilSimplified from "@/pages/PerfilSimplified";
+import AutomacaoGestoresSimplified from "@/pages/AutomacaoGestoresSimplified";
+import CandidatosSimplified from "@/pages/CandidatosSimplified";
 
 function AssessmentResponseWrapper() {
   const { templateId, employeeId } = useParams();
@@ -42,18 +46,18 @@ export function AppRoutes() {
       <Route path="/" element={<Dashboard />} />
       <Route path="/dashboard" element={<Dashboard />} />
       
-      {/* Páginas funcionais */}
+      {/* Páginas FUNCIONAIS - mantidas */}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/funcionarios" element={<Funcionarios />} />
       <Route path="/setores" element={<Setores />} />
       
-      {/* Páginas simplificadas temporárias */}
+      {/* TODAS as outras páginas usam versões simplificadas */}
       <Route path="/funcoes" element={<FuncoesSimplified />} />
       <Route path="/templates" element={<ChecklistsSimplified />} />
       <Route path="/checklists" element={<ChecklistsSimplified />} />
       <Route path="/avaliacoes" element={<AvaliacoesSimplified />} />
-      <Route path="/candidatos/avaliacoes" element={<AvaliacoesSimplified />} />
-      <Route path="/candidatos/comparacao" element={<AvaliacoesSimplified />} />
+      <Route path="/candidatos/avaliacoes" element={<CandidatosSimplified />} />
+      <Route path="/candidatos/comparacao" element={<CandidatosSimplified />} />
       <Route path="/resultados" element={<ResultadosSimplified />} />
       <Route path="/agendamentos" element={<AgendamentosSimplified />} />
       <Route path="/agendamento-avaliacoes" element={<AgendamentosSimplified />} />
@@ -61,13 +65,15 @@ export function AppRoutes() {
       <Route path="/relatorios" element={<RelatoriosSimplified />} />
       <Route path="/plano-acao" element={<PlanoAcaoSimplified />} />
       <Route path="/gestao-riscos" element={<GestaoRiscosSimplified />} />
-      <Route path="/automacao-gestores" element={<GestaoRiscosSimplified />} />
+      <Route path="/automacao-gestores" element={<AutomacaoGestoresSimplified />} />
+      <Route path="/faturamento" element={<FaturamentoSimplified />} />
+      <Route path="/perfil" element={<PerfilSimplified />} />
       
       {/* Páginas específicas que funcionam */}
       <Route path="/relatorios/nr01" element={<NR01Page />} />
       <Route path="/configuracoes/automacao-avancada" element={<AutomacaoAvancadaPage />} />
       
-      {/* Rotas de avaliação */}
+      {/* Rotas de avaliação - simplificadas por enquanto */}
       <Route path="/assessment/:templateId/:employeeId" element={<AssessmentResponseWrapper />} />
       
       {/* Fallback */}
