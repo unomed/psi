@@ -57,7 +57,9 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
           <PsicossocialQuestionCard
             question={currentQuestion}
             response={responses[String(currentQuestion.id || "")] || ""}
-            onResponseChange={handleQuestionResponse}
+            onResponseChange={(questionId: string, value: string | number) => {
+              handleResponseChange(String(value));
+            }}
           />
 
           <PsicossocialNavigationButtons

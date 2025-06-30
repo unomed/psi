@@ -80,18 +80,18 @@ export default function Funcionarios() {
       )}
 
       <EmployeeDialogs
-        isCreateDialogOpen={isCreateDialogOpen}
-        setIsCreateDialogOpen={setIsCreateDialogOpen}
-        isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
-        isDeleteDialogOpen={isDeleteDialogOpen}
-        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-        isViewDialogOpen={isViewDialogOpen}
-        setIsViewDialogOpen={setIsViewDialogOpen}
+        createDialogOpen={isCreateDialogOpen}
+        setCreateDialogOpen={setIsCreateDialogOpen}
+        editDialogOpen={isEditDialogOpen}
+        setEditDialogOpen={setIsEditDialogOpen}
+        deleteDialogOpen={isDeleteDialogOpen}
+        setDeleteDialogOpen={setIsDeleteDialogOpen}
+        viewDialogOpen={isViewDialogOpen}
+        setViewDialogOpen={setIsViewDialogOpen}
         selectedEmployee={selectedEmployee}
-        handleCreate={handleCreate}
-        handleEdit={handleEdit}
-        handleDelete={handleDelete}
+        onCreate={handleCreate}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
         companyId={selectedCompany}
       />
 

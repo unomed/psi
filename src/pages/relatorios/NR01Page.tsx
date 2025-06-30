@@ -97,8 +97,8 @@ export default function NR01Page() {
                 filters={{
                   companyId: companyId || "",
                   dateRange: {
-                    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-                    end: new Date()
+                    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    to: new Date()
                   }
                 }}
               />
@@ -125,8 +125,8 @@ export default function NR01Page() {
                 filters={{
                   companyId: companyId || "",
                   dateRange: {
-                    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-                    end: new Date()
+                    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    to: new Date()
                   }
                 }}
               />

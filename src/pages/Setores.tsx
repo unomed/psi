@@ -104,12 +104,9 @@ export default function Setores() {
         </Card>
       ) : filteredSectors && filteredSectors.length > 0 ? (
         <SectorGrid
-          sectors={filteredSectors.map(sector => ({
-            ...sector,
-            companyId: sector.companyId || companyId || ""
-          }))}
-          onEdit={handleEditSector}
-          onDelete={handleDeleteSector}
+          sectors={filteredSectors}
+          onViewDetails={handleEditSector}
+          onDeleteSector={handleDeleteSector}
         />
       ) : (
         <Card>
@@ -132,7 +129,7 @@ export default function Setores() {
           </DialogHeader>
           <SectorForm
             onSubmit={handleSubmit}
-            initialValues={selectedSector}
+            sector={selectedSector}
             isEditMode={isEditMode}
           />
         </DialogContent>

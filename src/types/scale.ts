@@ -7,27 +7,27 @@ export type DbScaleType = "likert5" | "likert7" | "binary" | "range10" | "freque
 // Mapping between app scale types and DB scale types
 export const scaleTypeToDbScaleType = (scaleType: ScaleType): DbScaleType => {
   switch (scaleType) {
-    case ScaleType.Likert:
+    case "likert":
       return "likert5";
-    case ScaleType.YesNo:
+    case "yesno":
       return "binary";
-    case ScaleType.Agree3:
+    case "agree3":
       return "custom";
-    case ScaleType.Custom:
+    case "custom":
       return "custom";
-    case ScaleType.Frequency:
+    case "frequency":
       return "frequency";
-    case ScaleType.Importance:
+    case "importance":
       return "custom";
-    case ScaleType.Probability:
+    case "probability":
       return "custom";
-    case ScaleType.Impact:
+    case "impact":
       return "custom";
-    case ScaleType.RiskLevel:
+    case "riskLevel":
       return "custom";
-    case ScaleType.Psicossocial:
+    case "psicossocial":
       return "custom";
-    case ScaleType.Numeric:
+    case "numeric":
       return "numeric";
     default:
       return "likert5";
@@ -39,21 +39,21 @@ export const dbScaleTypeToScaleType = (dbScaleType: DbScaleType | string): Scale
   switch (dbScaleType) {
     case "likert5":
     case "likert7":
-      return ScaleType.Likert;
+      return "likert";
     case "binary":
-      return ScaleType.YesNo;
+      return "yesno";
     case "frequency":
-      return ScaleType.Frequency;
+      return "frequency";
     case "numeric":
-      return ScaleType.Numeric;
+      return "numeric";
     case "stanine":
     case "percentile":
     case "tscore":
     case "range10":
-      return ScaleType.Custom;
+      return "custom";
     case "custom":
-      return ScaleType.Custom;
+      return "custom";
     default:
-      return ScaleType.Likert;
+      return "likert";
   }
 };

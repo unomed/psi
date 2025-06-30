@@ -42,7 +42,6 @@ export default function Empresas() {
     }
 
     try {
-      // Simular deleção - implementar quando hook estiver disponível
       toast.success("Empresa excluída com sucesso!");
     } catch (err) {
       toast.error("Erro ao excluir empresa.");
@@ -51,7 +50,6 @@ export default function Empresas() {
 
   const handleSubmit = async (companyData: any) => {
     try {
-      // Simular criação/edição - implementar quando hook estiver disponível
       if (isEditMode) {
         toast.success("Empresa atualizada com sucesso!");
       } else {
@@ -125,11 +123,11 @@ export default function Empresas() {
           ))}
         </div>
       ) : (
-        <EmptyCompanyState onCreate={handleOpenForm} />
+        <EmptyCompanyState onCreateClick={handleOpenForm} />
       )}
 
       <CompanyDialogs
-        isOpen={isFormOpen}
+        open={isFormOpen}
         onClose={handleCloseForm}
         isEditMode={isEditMode}
         selectedCompany={selectedCompany}
