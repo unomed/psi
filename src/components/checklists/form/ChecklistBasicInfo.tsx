@@ -90,7 +90,10 @@ export function ChecklistBasicInfo({
           )}
         />
 
-        <ScaleTypeSelector value={scaleType} onChange={onScaleTypeChange} />
+        <ScaleTypeSelector 
+          value={scaleType} 
+          onChange={onScaleTypeChange} 
+        />
       </div>
     </>
   );

@@ -1,10 +1,11 @@
+
 import { ChecklistTemplate } from "@/types";
 
 interface StandardTemplate {
   id: string;
   name: string;
   description: string;
-  type: "disc" | "psicossocial" | "stress" | "custom";
+  type: "disc" | "psicossocial" | "custom";
   scale_type: "likert5" | "binary" | "percentage" | "numeric" | "likert" | "yes_no" | "psicossocial";
   estimated_time_minutes: number;
   questions: (string | { text: string })[];
@@ -145,6 +146,9 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES: StandardTemplate[] = [
   AUDIT_TEMPLATE
 ];
 
+// Export para compatibilidade com código existente
+export const standardQuestionnaires = STANDARD_QUESTIONNAIRE_TEMPLATES;
+
 export const createStandardTemplate = (templateId: string): ChecklistTemplate | null => {
   const standardTemplate = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
   if (!standardTemplate) return null;
@@ -154,7 +158,7 @@ export const createStandardTemplate = (templateId: string): ChecklistTemplate | 
     name: standardTemplate.name,
     title: standardTemplate.name,
     description: standardTemplate.description,
-    category: standardTemplate.type,
+    category: standardTemplate.type === 'custom' ? 'default' : standardTemplate.type,
     scale_type: standardTemplate.scale_type,
     is_standard: true,
     is_active: true,
@@ -172,6 +176,7 @@ export const createStandardTemplate = (templateId: string): ChecklistTemplate | 
       order_number: index + 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
-    }))
+    })),
+    cutoff_scores: { high: 80, medium: 60, low: 40 }
   };
 };

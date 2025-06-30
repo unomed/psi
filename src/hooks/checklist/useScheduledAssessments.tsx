@@ -35,7 +35,7 @@ export function useScheduledAssessments() {
         template_id: item.template_id,
         scheduledDate: new Date(item.scheduled_date),
         scheduled_date: item.scheduled_date,
-        status: item.status,
+        status: (item.status as "scheduled" | "sent" | "completed" | "pending") || "scheduled",
         sentAt: item.sent_at ? new Date(item.sent_at) : null,
         sent_at: item.sent_at,
         completedAt: item.completed_at ? new Date(item.completed_at) : null,

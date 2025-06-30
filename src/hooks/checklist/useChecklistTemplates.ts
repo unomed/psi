@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChecklistTemplate } from '@/types';
-import { standardQuestionnaires } from '@/data/standardQuestionnaires';
+import { STANDARD_QUESTIONNAIRE_TEMPLATES } from '@/data/standardQuestionnaires';
 
 export function useChecklistTemplates() {
   const [templates, setTemplates] = useState<ChecklistTemplate[]>([]);
@@ -12,32 +12,33 @@ export function useChecklistTemplates() {
     const loadTemplates = async () => {
       try {
         // Convert the standardQuestionnaires to proper ChecklistTemplate format
-        const convertedTemplates: ChecklistTemplate[] = standardQuestionnaires.map(template => ({
-          ...template,
-          cutoff_scores: typeof template.cutoff_scores === 'object' && template.cutoff_scores !== null 
-            ? template.cutoff_scores as { high: number; medium: number; low: number; }
-            : { high: 80, medium: 60, low: 40 }
+        const convertedTemplates: ChecklistTemplate[] = STANDARD_QUESTIONNAIRE_TEMPLATES.map(template => ({
+          id: `standard-${template.id}`,
+          name: template.name,
+          title: template.name,
+          description: template.description,
+          category: template.type === 'stress' ? 'psicossocial' : template.type === 'custom' ? 'default' : template.type,
+          type: template.type === 'stress' ? 'psicossocial' : template.type,
+          scale_type: template.scale_type,
+          is_standard: true,
+          is_active: true,
+          estimated_time_minutes: template.estimated_time_minutes,
+          version: 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          cutoff_scores: { high: 80, medium: 60, low: 40 },
+          questions: template.questions.map((q, index) => ({
+            id: `q-${index}`,
+            template_id: `standard-${template.id}`,
+            question_text: typeof q === 'string' ? q : q.text || '',
+            text: typeof q === 'string' ? q : q.text || '',
+            order_number: index + 1,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }))
         }));
 
-        // Normalize scale types
-        const normalizedTemplates = convertedTemplates.map(template => {
-          let normalizedScaleType = template.scale_type;
-          
-          if (normalizedScaleType === 'likert5') {
-            normalizedScaleType = 'likert5';
-          } else if (normalizedScaleType === 'likert7') {
-            normalizedScaleType = 'likert7';
-          } else {
-            normalizedScaleType = 'likert5';
-          }
-
-          return {
-            ...template,
-            scale_type: normalizedScaleType
-          };
-        });
-
-        setTemplates(normalizedTemplates);
+        setTemplates(convertedTemplates);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load templates');
       } finally {
@@ -129,6 +130,7 @@ export function useChecklistTemplates() {
 
   return {
     templates,
+    checklists: templates, // Alias para compatibilidade
     isLoading,
     error,
     getTemplatesByCategory,
@@ -142,5 +144,16 @@ export function useChecklistTemplates() {
     createTemplate,
     updateTemplate,
     deleteTemplate
+  };
+}
+
+export function useChecklistOperations() {
+  const { createTemplate, updateTemplate, deleteTemplate } = useChecklistTemplates();
+  
+  return {
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    isDeleting: false
   };
 }
