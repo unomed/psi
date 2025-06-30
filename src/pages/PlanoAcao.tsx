@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -90,6 +89,11 @@ export default function PlanoAcao() {
       status: 'all',
       dateRange: undefined
     });
+  };
+
+  const handleCreatePlanFromDialog = (planData: any) => {
+    console.log("Criando plano:", planData);
+    // Aqui você implementaria a lógica para criar o plano
   };
 
   return (
@@ -247,9 +251,7 @@ export default function PlanoAcao() {
       <CreateActionPlanDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
-        companyId={companyId}
-        selectedPlan={selectedPlan}
-        isEditMode={isEditMode}
+        onCreatePlan={handleCreatePlanFromDialog}
       />
     </div>
   );
