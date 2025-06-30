@@ -1,6 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
-import { ChecklistResult } from "@/types/checklist";
+import { supabase } from "@/integrations/supabase/client";
+import { ChecklistResult } from "@/types";
 import { fetchAssessmentResults } from "@/services/checklist";
 
 export function useChecklistResults() {

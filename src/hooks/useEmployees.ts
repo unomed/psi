@@ -11,16 +11,8 @@ export function useEmployees(companyId?: string) {
         .from('employees')
         .select(`
           *,
-          roles:role_id (
-            id,
-            name,
-            risk_level,
-            required_tags
-          ),
-          sectors:sector_id (
-            id,
-            name
-          )
+          roles!inner(id, name, risk_level, required_tags),
+          sectors!inner(id, name)
         `)
         .order('name');
 
@@ -35,10 +27,11 @@ export function useEmployees(companyId?: string) {
         throw error;
       }
 
-      return (data || []).map(item => ({
-        ...item,
-        role: Array.isArray(item.roles) ? item.roles[0] : item.roles,
-        sectors: Array.isArray(item.sectors) ? item.sectors[0] : item.sectors
+      return (data || []).map(emp => ({
+        ...emp,
+        role: Array.isArray(emp.roles) ? emp.roles[0] : emp.roles,
+        sectors: Array.isArray(emp.sectors) ? emp.sectors[0] : emp.sectors,
+        employee_type: emp.employee_type as 'funcionario' | 'candidato' // Fixed type casting
       }));
     },
     enabled: !!companyId

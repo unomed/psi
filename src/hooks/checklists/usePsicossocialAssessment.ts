@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { ChecklistTemplate, PsicossocialQuestion } from "@/types/checklist";
+import { useState, useMemo } from "react";
+import { ChecklistTemplate, PsicossocialQuestion } from "@/types";
 import { toast } from "sonner";
 
 interface UsePsicossocialAssessmentProps {

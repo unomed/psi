@@ -1,6 +1,6 @@
 
 import { ClipboardCheck, Clock, Pencil, Eye } from "lucide-react";
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

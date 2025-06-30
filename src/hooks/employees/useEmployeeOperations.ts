@@ -1,9 +1,8 @@
-
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Employee } from "@/types/employee";
+import { Employee } from "@/types";
 
 export function useEmployeeOperations(selectedCompany?: string) {
   const queryClient = useQueryClient();

@@ -1,247 +1,135 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOut, ClipboardList, BarChart3, Calendar } from "lucide-react";
-import { useEmployeeAuth } from "@/hooks/useEmployeeAuth";
-import { PendingAssessmentsList } from "./PendingAssessmentsList";
-import { MoodSelector } from "./MoodSelector";
-import { MoodStatsCard } from "./MoodStatsCard";
-import { fetchAssessmentByToken } from "@/services/assessment/results";
-import { ChecklistTemplate } from "@/types/checklist";
-import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
-import { AssessmentComplete } from "@/components/assessments/AssessmentComplete";
-import { submitAssessmentResult } from "@/services/assessment/results";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Calendar, Clock, CheckCircle2, AlertTriangle, ChevronRight } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { ChecklistTemplate } from "@/types";
+import { AssessmentResponse } from "./AssessmentResponse";
 
-interface EmployeeDashboardProps {
-  assessmentToken?: string | null;
+interface DashboardProps {
   templateId?: string;
+  employeeId?: string;
 }
 
-export function EmployeeDashboard({ assessmentToken, templateId }: EmployeeDashboardProps) {
-  const { session, logout } = useEmployeeAuth();
-  const navigate = useNavigate();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'assessment' | 'completed'>('dashboard');
-  const [assessmentTemplate, setAssessmentTemplate] = useState<ChecklistTemplate | null>(null);
-  const [assessmentResult, setAssessmentResult] = useState<any>(null);
-  const [isLoadingAssessment, setIsLoadingAssessment] = useState(false);
+export function EmployeeDashboard() {
+  const [template, setTemplate] = useState<ChecklistTemplate | null>(null);
+  const [completed, setCompleted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const { templateId, employeeId } = useParams<DashboardProps>();
 
   useEffect(() => {
-    const loadAssessment = async () => {
-      if (assessmentToken && session?.isAuthenticated) {
-        setIsLoadingAssessment(true);
-        try {
-          const response = await fetchAssessmentByToken(assessmentToken);
-          
-          if (response.error) {
-            toast.error(response.error);
-          } else if ('template' in response && response.template) {
-            setAssessmentTemplate(response.template);
-            setCurrentView('assessment');
-          }
-        } catch (error) {
-          console.error("Erro ao carregar avaliação:", error);
-          toast.error("Erro ao carregar avaliação");
-        } finally {
-          setIsLoadingAssessment(false);
-        }
-      }
-    };
+    if (templateId) {
+      fetchTemplate(templateId);
+    }
+  }, [templateId]);
 
-    loadAssessment();
-  }, [assessmentToken, session?.isAuthenticated]);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
-
-  const handleSubmitAssessment = async (resultData: any) => {
-    if (!assessmentTemplate || !session?.employee) return;
-
+  const fetchTemplate = async (templateId: string) => {
     try {
-      const assessmentResult = {
-        templateId: assessmentTemplate.id,
-        employeeName: session.employee.employeeName,
-        employeeId: session.employee.employeeId,
-        results: resultData.results,
-        dominantFactor: resultData.dominantFactor,
-        categorizedResults: resultData.categorizedResults || {},
-        responses: resultData.responses,
-        linkId: null,
-        assessmentId: null
-      };
+      const { data, error } = await supabase
+        .from('checklist_templates')
+        .select('*')
+        .eq('id', templateId)
+        .single();
 
-      const result = await submitAssessmentResult(assessmentResult);
-      
-      if (result.error) {
-        toast.error(result.error);
+      if (error) {
+        console.error("Erro ao buscar template:", error);
         return;
       }
 
-      setAssessmentResult({
-        ...assessmentResult,
-        id: result.result?.id || "",
-        completedAt: new Date()
+      setTemplate({
+        id: data.id,
+        name: data.title,
+        title: data.title,
+        description: data.description,
+        type: data.type,
+        scale_type: data.scale_type,
+        is_active: data.is_active,
+        is_standard: data.is_standard || false,
+        estimated_time_minutes: data.estimated_time_minutes,
+        version: data.version,
+        company_id: data.company_id,
+        created_by: data.created_by,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        category: 'default'
       });
-      setCurrentView('completed');
-      toast.success("Avaliação concluída com sucesso!");
     } catch (error) {
-      console.error("Erro ao enviar avaliação:", error);
-      toast.error("Erro ao enviar avaliação. Tente novamente.");
+      console.error("Erro ao buscar template:", error);
     }
   };
 
-  const handleBackToDashboard = () => {
-    setCurrentView('dashboard');
-    setAssessmentTemplate(null);
-    setAssessmentResult(null);
-  };
-
-  if (isLoadingAssessment) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span>Carregando avaliação...</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (currentView === 'assessment' && assessmentTemplate) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Avaliação: {assessmentTemplate.title}</CardTitle>
-                    <p className="text-muted-foreground mt-1">
-                      {assessmentTemplate.description}
-                    </p>
-                  </div>
-                  <Button variant="outline" onClick={handleBackToDashboard}>
-                    Voltar ao Dashboard
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <DiscAssessmentForm
-                  template={assessmentTemplate}
-                  onSubmit={handleSubmitAssessment}
-                  onCancel={handleBackToDashboard}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (currentView === 'completed' && assessmentResult) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <AssessmentComplete 
-              result={assessmentResult}
-              onClose={handleBackToDashboard}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">
-                Olá, {session?.employee?.employeeName}
-              </h1>
-              <p className="text-muted-foreground">
-                {session?.employee?.companyName}
-              </p>
-            </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Avaliações Pendentes */}
-          <div className="lg:col-span-2">
-            <PendingAssessmentsList employeeId={session?.employee?.employeeId || ""} />
-          </div>
-
-          {/* Humor do Dia */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="mr-2 h-5 w-5" />
-                  Como você está hoje?
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <MoodSelector employeeId={session?.employee?.employeeId || ""} />
-              </CardContent>
-            </Card>
-
-            <MoodStatsCard employeeId={session?.employee?.employeeId || ""} />
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8">
+    <div className="container py-10">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Left Side - Assessment Progress */}
+        <div className="lg:col-span-3">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="mr-2 h-5 w-5" />
-                Ações Rápidas
+              <CardTitle className="text-2xl font-bold">
+                {template?.title || "Carregando..."}
               </CardTitle>
+              <CardDescription>
+                Responda as perguntas abaixo para completar a avaliação.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button variant="outline" className="justify-start h-auto p-4">
-                  <ClipboardList className="mr-3 h-5 w-5" />
-                  <div className="text-left">
-                    <div className="font-medium">Ver Histórico</div>
-                    <div className="text-sm text-muted-foreground">
-                      Avaliações anteriores
-                    </div>
-                  </div>
-                </Button>
-                <Button variant="outline" className="justify-start h-auto p-4">
-                  <BarChart3 className="mr-3 h-5 w-5" />
-                  <div className="text-left">
-                    <div className="font-medium">Meus Relatórios</div>
-                    <div className="text-sm text-muted-foreground">
-                      Resultados pessoais
-                    </div>
-                  </div>
-                </Button>
+              {template && employeeId ? (
+                <AssessmentResponse
+                  template={template}
+                  employeeId={employeeId}
+                  onComplete={() => setCompleted(true)}
+                  onProgress={(p: number) => setProgress(p)}
+                />
+              ) : (
+                <p>Carregando questionário...</p>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-between items-center">
+              <Button disabled={!completed}>
+                Salvar e Continuar Mais Tarde
+              </Button>
+              <div className="flex items-center space-x-2">
+                <span>Progresso:</span>
+                <Progress value={progress} className="w-40" />
+                <span>{Math.round(progress)}%</span>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+
+        {/* Right Side - Quick Overview */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Visão Geral</CardTitle>
+              <CardDescription>Informações rápidas sobre a avaliação.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span>Data de Início: Hoje</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>Tempo Estimado: 30 minutos</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+                <span>Status: {completed ? "Concluído" : "Em Andamento"}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                <span>Risco: Médio</span>
               </div>
             </CardContent>
+            <CardFooter>
+              <Button variant="secondary" className="w-full justify-start">
+                Ver Detalhes <ChevronRight className="ml-auto h-4 w-4" />
+              </Button>
+            </CardFooter>
           </Card>
         </div>
       </div>

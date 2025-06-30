@@ -1,6 +1,7 @@
-
 import { useState } from "react";
-import { ChecklistTemplate } from "@/types/checklist";
+import { useNavigate } from "react-router-dom";
+import { ChecklistTemplate } from "@/types";
+import { toast } from "sonner";
 
 export function useAssessmentSelection() {
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);

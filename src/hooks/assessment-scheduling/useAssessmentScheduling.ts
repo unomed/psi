@@ -1,6 +1,6 @@
-
-import { useState } from 'react';
-import { Employee } from '@/types/employee';
+import { useState } from "react";
+import { Employee } from "@/types";
+import { useEmployees } from "@/hooks/useEmployees";
 import { ChecklistTemplate, RecurrenceType, generateUniqueAssessmentLink } from '@/types';
 
 interface SchedulingDetails {

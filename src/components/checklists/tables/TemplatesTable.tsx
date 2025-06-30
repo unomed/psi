@@ -1,5 +1,5 @@
 
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 import { BaseTemplateTable } from "./BaseTemplateTable";
 
 interface TemplatesTableProps {

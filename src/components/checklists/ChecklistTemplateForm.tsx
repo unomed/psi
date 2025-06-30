@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +20,7 @@ import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { ChecklistTemplate } from '@/types/checklist';
+import { ChecklistTemplate } from '@/types';
 
 const formSchema = z.object({
   title: z.string().min(2, {

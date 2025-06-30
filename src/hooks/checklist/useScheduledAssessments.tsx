@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ScheduledAssessment } from "@/types";
+import { ScheduledAssessment, RecurrenceType } from "@/types";
 
 export function useScheduledAssessments(companyId?: string) {
   const queryClient = useQueryClient();
@@ -51,7 +51,7 @@ export function useScheduledAssessments(companyId?: string) {
         completed_at: item.completed_at,
         linkUrl: item.link_url || '',
         link_url: item.link_url,
-        recurrenceType: item.recurrence_type, // Map snake_case to camelCase
+        recurrenceType: (item.recurrence_type as RecurrenceType) || 'none', // Fixed type casting
         company_id: item.company_id,
         employee_name: item.employee_name,
         employees: Array.isArray(item.employees) ? item.employees[0] : item.employees,

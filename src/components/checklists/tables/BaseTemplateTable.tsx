@@ -1,117 +1,74 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Edit, Trash2, Copy, Play, Eye } from "lucide-react";
-import { ChecklistTemplate } from "@/types/checklist";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MoreHorizontal, Pencil, Trash2, Copy, Play, Eye } from "lucide-react";
+import { ChecklistTemplate } from "@/types";
 
-export interface BaseTemplateTableProps {
+interface BaseTemplateTableProps {
   templates: ChecklistTemplate[];
-  caption?: string;
-  onEdit: (template: ChecklistTemplate) => void;
-  onDelete: (template: ChecklistTemplate) => void;
-  onCopy: (template: ChecklistTemplate) => void;
-  onStart: (template: ChecklistTemplate) => void;
-  showCategories?: boolean;
+  onEditTemplate: (template: ChecklistTemplate) => void;
+  onDeleteTemplate: (template: ChecklistTemplate) => void;
+  onCopyTemplate: (template: ChecklistTemplate) => void;
+  onStartAssessment: (template: ChecklistTemplate) => void;
   isDeleting?: boolean;
 }
 
 export function BaseTemplateTable({
   templates,
-  caption,
-  onEdit,
-  onDelete,
-  onCopy,
-  onStart,
-  showCategories = false,
-  isDeleting = false,
+  onEditTemplate,
+  onDeleteTemplate,
+  onCopyTemplate,
+  onStartAssessment,
+  isDeleting = false
 }: BaseTemplateTableProps) {
-  if (templates.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <p className="text-muted-foreground">Nenhum template encontrado</p>
-      </Card>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <Table>
-        {caption && (
-          <caption className="text-sm text-muted-foreground mb-4">
-            {caption}
-          </caption>
-        )}
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Descrição</TableHead>
-            {showCategories && <TableHead>Categoria</TableHead>}
-            <TableHead>Tipo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {templates.map((template) => (
-            <TableRow key={template.id}>
-              <TableCell className="font-medium">{template.name || template.title}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {template.description}
-              </TableCell>
-              {showCategories && (
-                <TableCell>
-                  <Badge variant="outline">{template.category}</Badge>
-                </TableCell>
-              )}
-              <TableCell>
-                <Badge variant={template.type === 'disc' ? 'default' : 'secondary'}>
-                  {template.type}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={template.is_active ? 'default' : 'secondary'}>
-                  {template.is_active ? 'Ativo' : 'Inativo'}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onStart(template)}
-                  >
-                    <Play className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(template)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onCopy(template)}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDelete(template)}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
+    <Card>
+      <CardHeader>
+        <CardTitle>Modelos de Avaliação</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Título</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {templates.map((template) => (
+              <TableRow key={template.id}>
+                <TableCell className="font-medium">{template.title}</TableCell>
+                <TableCell>{template.type}</TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Eye className="h-4 w-4 mr-2" onClick={() => onEditTemplate(template)} />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Pencil className="h-4 w-4 mr-2" onClick={() => onEditTemplate(template)} />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Copy className="h-4 w-4 mr-2" onClick={() => onCopyTemplate(template)} />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Play className="h-4 w-4 mr-2" onClick={() => onStartAssessment(template)} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-2"
+                    disabled={isDeleting}
+                    onClick={() => onDeleteTemplate(template)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

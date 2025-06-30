@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -132,7 +133,7 @@ export function useChecklistData() {
           title: templateData.name, // Usar name como title no banco
           description: templateData.description,
           type: dbType, // Usar tipo mapeado
-          scale_type: templateData.scale_type,
+          scale_type: 'likert5', // Fixed: usar valor válido do banco
           is_active: templateData.is_active,
           is_standard: templateData.is_standard || false,
           estimated_time_minutes: templateData.estimated_time_minutes,
@@ -167,7 +168,7 @@ export function useChecklistData() {
           title: template.name, // Usar name como title no banco
           description: template.description,
           type: dbType,
-          scale_type: template.scale_type,
+          scale_type: 'likert5', // Fixed: usar valor válido do banco
           is_active: template.is_active,
           estimated_time_minutes: template.estimated_time_minutes,
           version: template.version

@@ -1,6 +1,4 @@
-
-import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
-import { ScheduledAssessment } from "@/types/assessment";
+import { ChecklistTemplate, ChecklistResult, ScheduledAssessment } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChecklistEmptyState } from "@/components/checklists/ChecklistEmptyState";
 import { ClipboardCheck, ClipboardList, Mail, History } from "lucide-react";

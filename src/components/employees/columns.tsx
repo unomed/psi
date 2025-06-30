@@ -1,8 +1,8 @@
-
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Employee } from "@/types/employee";
+import { Employee } from "@/types";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
 
 // Mapping para tradução dos status

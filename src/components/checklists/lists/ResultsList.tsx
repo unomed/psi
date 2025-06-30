@@ -1,6 +1,5 @@
-
-import { ChecklistResult, ChecklistTemplate } from "@/types/checklist";
-import { ChecklistResultItem } from "@/components/checklists/ChecklistResultItem";
+import { ChecklistResult, ChecklistTemplate } from "@/types";
+import { ChecklistResultItem } from "../ChecklistResultItem";
 
 interface ResultsListProps {
   results: ChecklistResult[];

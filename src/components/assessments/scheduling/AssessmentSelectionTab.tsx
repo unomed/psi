@@ -1,104 +1,101 @@
-
-import React from "react";
-import { ChecklistTemplate } from "@/types/checklist";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChecklistTemplate } from "@/types";
+import { Button } from "@/components/ui/button";
 import { AssessmentSelectionForm } from "./AssessmentSelectionForm";
+import { ScheduleAssessmentDialog } from "./ScheduleAssessmentDialog";
+import { GenerateLinkDialog } from "./GenerateLinkDialog";
 
 interface AssessmentSelectionTabProps {
-  selectedEmployee: string | null;
-  selectedTemplate: ChecklistTemplate | null;
-  templates: ChecklistTemplate[];
-  isTemplatesLoading: boolean;
-  onEmployeeSelect?: (employeeId: string) => void;
-  onTemplateSelect: (templateId: string) => void;
-  selectedCompany?: string | null;
-  selectedSector?: string | null;
-  selectedRole?: string | null;
-  onCompanyChange?: (companyId: string) => void;
-  onSectorChange?: (sectorId: string) => void;
-  onRoleChange?: (roleId: string) => void;
-  onNext?: () => void;
-  onEmployeeChange?: (employeeId: string) => void;
+  companyId?: string;
 }
 
-export function AssessmentSelectionTab({
-  selectedEmployee,
-  selectedTemplate,
-  templates,
-  isTemplatesLoading,
-  onEmployeeSelect,
-  onTemplateSelect,
-  selectedCompany,
-  selectedSector,
-  selectedRole,
-  onCompanyChange,
-  onSectorChange,
-  onRoleChange,
-  onNext,
-  onEmployeeChange
-}: AssessmentSelectionTabProps) {
-  // Use either onEmployeeSelect or onEmployeeChange based on what's provided
-  const handleEmployeeChange = (employeeId: string) => {
-    // Validate employeeId before proceeding
-    const validEmployeeId = employeeId && employeeId.trim() !== "" ? employeeId : "";
-    
-    if (onEmployeeChange) {
-      onEmployeeChange(validEmployeeId);
-    } else if (onEmployeeSelect) {
-      onEmployeeSelect(validEmployeeId);
+export function AssessmentSelectionTab({ companyId }: AssessmentSelectionTabProps) {
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState("");
+
+  const handleEmployeeSelect = (employeeId: string) => {
+    setSelectedEmployeeId(employeeId);
+  };
+
+  const handleTemplateSelect = (template: ChecklistTemplate) => {
+    setSelectedTemplate(template);
+  };
+
+  const handleScheduleAssessment = () => {
+    setIsScheduleDialogOpen(true);
+  };
+
+  const handleGenerateLink = () => {
+    if (selectedEmployeeId && selectedTemplate) {
+      const link = `${window.location.origin}/portal/${selectedTemplate.id}?employee=${selectedEmployeeId}`;
+      setGeneratedLink(link);
+      setIsLinkDialogOpen(true);
     }
   };
 
-  const handleCompanyChange = (companyId: string) => {
-    // Validate companyId before proceeding
-    const validCompanyId = companyId && companyId.trim() !== "" ? companyId : "";
-    if (onCompanyChange) {
-      onCompanyChange(validCompanyId);
-    }
+  const handleSaveScheduledAssessment = () => {
+    // Implement save logic here
+    setIsScheduleDialogOpen(false);
   };
 
-  const handleSectorChange = (sectorId: string) => {
-    // Validate sectorId before proceeding
-    const validSectorId = sectorId && sectorId.trim() !== "" ? sectorId : "";
-    if (onSectorChange) {
-      onSectorChange(validSectorId);
-    }
-  };
-
-  const handleRoleChange = (roleId: string) => {
-    // Validate roleId before proceeding
-    const validRoleId = roleId && roleId.trim() !== "" ? roleId : "";
-    if (onRoleChange) {
-      onRoleChange(validRoleId);
-    }
-  };
-
-  const handleTemplateSelect = (templateId: string) => {
-    // Validate templateId before proceeding
-    const validTemplateId = templateId && templateId.trim() !== "" ? templateId : "";
-    if (validTemplateId) {
-      onTemplateSelect(validTemplateId);
-    }
-  };
+  const canSchedule = selectedEmployeeId && selectedTemplate && scheduledDate;
+  const canGenerateLink = selectedEmployeeId && selectedTemplate;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Nova Avaliação</h2>
-      
-      <AssessmentSelectionForm
-        selectedEmployee={selectedEmployee}
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Nova Avaliação</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <AssessmentSelectionForm
+            companyId={companyId}
+            selectedEmployeeId={selectedEmployeeId}
+            selectedTemplate={selectedTemplate}
+            onEmployeeSelect={handleEmployeeSelect}
+            onTemplateSelect={handleTemplateSelect}
+          />
+
+          <div className="flex gap-4">
+            <Button
+              onClick={handleScheduleAssessment}
+              disabled={!canSchedule}
+            >
+              Agendar Avaliação
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleGenerateLink}
+              disabled={!canGenerateLink}
+            >
+              Gerar Link
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <ScheduleAssessmentDialog
+        isOpen={isScheduleDialogOpen}
+        onClose={() => setIsScheduleDialogOpen(false)}
+        selectedEmployeeId={selectedEmployeeId}
         selectedTemplate={selectedTemplate}
-        templates={templates}
-        isTemplatesLoading={isTemplatesLoading}
-        onEmployeeSelect={handleEmployeeChange}
-        onTemplateSelect={handleTemplateSelect}
-        selectedCompany={selectedCompany}
-        selectedSector={selectedSector}
-        selectedRole={selectedRole}
-        onCompanyChange={handleCompanyChange}
-        onSectorChange={handleSectorChange}
-        onRoleChange={handleRoleChange}
-        onNext={onNext}
+        scheduledDate={scheduledDate}
+        onDateSelect={setScheduledDate}
+        onSave={handleSaveScheduledAssessment}
       />
-    </div>
+
+      <GenerateLinkDialog
+        isOpen={isLinkDialogOpen}
+        onClose={() => setIsLinkDialogOpen(false)}
+        selectedEmployeeId={selectedEmployeeId}
+        selectedTemplate={selectedTemplate}
+        generatedLink={generatedLink}
+      />
+    </>
   );
 }

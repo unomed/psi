@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ChecklistTemplate } from "@/types/checklist";
+import { ChecklistTemplate } from "@/types";
 import { AssessmentSelectionForm } from "@/components/assessments/AssessmentSelectionForm";
 import { useChecklistTemplates } from "@/hooks/checklist/useChecklistTemplates";
 import { useNavigate } from "react-router-dom";

@@ -1,6 +1,6 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChecklistTemplate, ChecklistResult } from "@/types/checklist";
+import { ChecklistTemplate, ChecklistResult } from "@/types";
 import { ChecklistTemplateWorkflow } from "./ChecklistTemplateWorkflow";
 import { DiscResultDisplay } from "@/components/checklists/DiscResultDisplay";
 import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";

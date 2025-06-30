@@ -1,6 +1,5 @@
-
-import { PsicossocialQuestion } from "@/types/checklist";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PsicossocialQuestion } from "@/types";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 

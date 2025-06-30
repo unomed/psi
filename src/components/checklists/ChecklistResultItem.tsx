@@ -1,5 +1,5 @@
 
-import { ChecklistResult, ChecklistTemplate } from "@/types/checklist";
+import { ChecklistResult, ChecklistTemplate } from "@/types";
 import { Button } from "@/components/ui/button";
 
 interface ChecklistResultItemProps {
