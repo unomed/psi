@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, ChecklistResult } from "@/types";
 import { mapDbTemplateTypeToApp } from "@/services/checklist/templateUtils";
@@ -16,7 +17,6 @@ export async function fetchAssessmentByToken(token: string) {
           description,
           type,
           scale_type,
-          questions,
           cutoff_scores,
           created_at,
           updated_at
@@ -49,6 +49,17 @@ export async function fetchAssessmentByToken(token: string) {
 
     console.log("[fetchAssessmentByToken] Link válido encontrado:", linkData);
 
+    // Buscar questões do template separadamente
+    const { data: questions, error: questionsError } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('template_id', linkData.checklist_templates.id)
+      .order('order_number');
+
+    if (questionsError) {
+      console.error("[fetchAssessmentByToken] Erro ao buscar questões:", questionsError);
+    }
+
     // Converter template para o formato esperado
     const template = {
       id: linkData.checklist_templates.id,
@@ -56,7 +67,7 @@ export async function fetchAssessmentByToken(token: string) {
       description: linkData.checklist_templates.description || "",
       type: linkData.checklist_templates.type,
       scale_type: linkData.checklist_templates.scale_type,
-      questions: linkData.checklist_templates.questions || [],
+      questions: questions || [],
       cutoff_scores: linkData.checklist_templates.cutoff_scores || { high: 80, medium: 60, low: 40 },
       created_at: linkData.checklist_templates.created_at,
       updated_at: linkData.checklist_templates.updated_at,

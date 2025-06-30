@@ -36,8 +36,8 @@ export async function updateTemplate(
     if (templateData.cutoffScores) dbUpdateData.cutoff_scores = templateData.cutoffScores;
     if (templateData.estimatedTimeMinutes) dbUpdateData.estimated_time_minutes = templateData.estimatedTimeMinutes;
     if (templateData.isActive !== undefined) dbUpdateData.is_active = templateData.isActive;
-    if (templateData.company_id) dbUpdateData.company_id = templateData.company_id;
-    if (templateData.is_standard !== undefined) dbUpdateData.is_standard = templateData.is_standard;
+    if (templateData.companyId) dbUpdateData.company_id = templateData.companyId;
+    if (templateData.isStandard !== undefined) dbUpdateData.is_standard = templateData.isStandard;
 
     dbUpdateData.updated_at = new Date().toISOString();
 
@@ -86,6 +86,7 @@ export async function updateTemplate(
     const result: ChecklistTemplate = {
       id: finalTemplate.id,
       title: finalTemplate.title,
+      name: finalTemplate.title,
       description: finalTemplate.description || '',
       category: finalTemplate.type as any,
       scale_type: finalTemplate.scale_type as any,
@@ -98,7 +99,9 @@ export async function updateTemplate(
       createdAt: new Date(finalTemplate.created_at),
       company_id: finalTemplate.company_id,
       created_by: finalTemplate.created_by,
-      cutoff_scores: finalTemplate.cutoff_scores || { high: 80, medium: 60, low: 40 },
+      cutoff_scores: typeof finalTemplate.cutoff_scores === 'object' && finalTemplate.cutoff_scores !== null
+        ? finalTemplate.cutoff_scores as { high: number; medium: number; low: number }
+        : { high: 80, medium: 60, low: 40 },
       derived_from_id: finalTemplate.derived_from_id,
       instructions: finalTemplate.instructions,
       type: finalTemplate.type,

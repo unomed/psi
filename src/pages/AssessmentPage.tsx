@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,17 +39,31 @@ export default function AssessmentPage() {
           return;
         }
         
-        // Type guard para verificar se a resposta tem template
         if (!('template' in response) || !response.template) {
           setError("Modelo de avaliação não encontrado");
           return;
         }
         
-        setTemplate(response.template);
-        setAssessmentId(response.assessmentId);
-        setLinkId(response.linkId);
+        // Complete the template with required properties
+        const completeTemplate: ChecklistTemplate = {
+          ...response.template,
+          name: response.template.title,
+          is_standard: false,
+          is_active: true,
+          estimated_time_minutes: 15,
+          version: 1,
+          createdAt: new Date(response.template.created_at),
+          cutoff_scores: response.template.cutoff_scores || { high: 80, medium: 60, low: 40 },
+          questions: response.template.questions || []
+        };
+
+        setTemplate(completeTemplate);
         
-        console.log("Assessment loaded successfully:", { template: response.template, assessmentId: response.assessmentId, linkId: response.linkId });
+        if ('linkData' in response && response.linkData) {
+          setLinkId(response.linkData.id);
+        }
+        
+        console.log("Assessment loaded successfully:", { template: completeTemplate, linkId });
       } catch (err) {
         console.error("Error loading assessment:", err);
         setError("Erro ao carregar avaliação. Por favor, tente novamente.");
@@ -86,7 +101,18 @@ export default function AssessmentPage() {
           await markLinkAsUsed(token);
         }
         
-        setResult(result);
+        // Complete the result with required properties
+        const completeResult: ChecklistResult = {
+          ...result,
+          templateId: result.template_id,
+          employeeId: result.employee_id,
+          employeeName: result.employee_name,
+          responses: result.response_data as Record<string, any>,
+          results: result.factors_scores as Record<string, number>,
+          completedAt: new Date(result.completed_at)
+        };
+        
+        setResult(completeResult);
         setAssessmentCompleted(true);
         toast.success("Avaliação concluída com sucesso!");
       }
