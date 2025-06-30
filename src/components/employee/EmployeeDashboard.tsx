@@ -60,7 +60,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
     if (assessment?.checklist_templates) {
       const templateData = assessment.checklist_templates;
       
-      // Create template with safe property access
+      // Create template with safe property access and type conversion
       const template: ChecklistTemplate = {
         id: templateData.id || '',
         name: templateData.title || templateData.name || '',
@@ -72,9 +72,16 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
         is_active: templateData.is_active ?? true,
         is_standard: templateData.is_standard ?? false,
         estimated_time_minutes: templateData.estimated_time_minutes || 15,
-        version: templateData.version || '1.0',
+        version: parseInt(templateData.version?.toString() || '1'),
         created_at: templateData.created_at || new Date().toISOString(),
-        updated_at: templateData.updated_at || new Date().toISOString()
+        updated_at: templateData.updated_at || new Date().toISOString(),
+        company_id: templateData.company_id,
+        created_by: templateData.created_by,
+        cutoff_scores: templateData.cutoff_scores,
+        derived_from_id: templateData.derived_from_id,
+        instructions: templateData.instructions,
+        interpretation_guide: templateData.interpretation_guide,
+        max_score: templateData.max_score
       };
       
       setActiveAssessment(template);

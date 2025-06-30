@@ -39,8 +39,8 @@ interface EmployeeFormProps {
 
 export function EmployeeForm({ onSubmit, onClose, employee }: EmployeeFormProps) {
   const { companies } = useCompanies();
-  const { data: sectors } = useSectors();
-  const { data: roles } = useRoles();
+  const { sectors } = useSectors();
+  const { roles } = useRoles();
 
   const form = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),

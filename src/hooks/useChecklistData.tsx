@@ -29,7 +29,7 @@ export function useChecklistData() {
         is_active: item.is_active ?? true,
         is_standard: item.is_standard ?? false,
         estimated_time_minutes: item.estimated_time_minutes || 15,
-        version: item.version?.toString() || '1.0',
+        version: parseInt(item.version?.toString() || '1'),
         created_at: item.created_at,
         updated_at: item.updated_at,
         company_id: item.company_id,
@@ -38,7 +38,7 @@ export function useChecklistData() {
         derived_from_id: item.derived_from_id,
         instructions: item.instructions,
         interpretation_guide: item.interpretation_guide,
-        max_score: item.max_score
+        max_score: item.max_score || 100
       }));
     }
   });

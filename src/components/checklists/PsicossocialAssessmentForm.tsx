@@ -51,14 +51,14 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
         <CardContent className="space-y-6">
           <PsicossocialQuestionCard
             question={currentQuestion}
-            response={responses[currentQuestion.id.toString()] || ""}
+            response={responses[currentQuestion.id?.toString() || ""] || ""}
             onResponseChange={handleResponseChange}
           />
 
           <PsicossocialNavigationButtons
             currentQuestionIndex={currentQuestionIndex}
             totalQuestions={questions.length}
-            hasResponse={!!responses[currentQuestion.id.toString()]}
+            hasResponse={!!responses[currentQuestion.id?.toString() || ""]}
             isSubmitting={isSubmitting}
             onPrevious={handlePrevious}
             onNext={handleNext}

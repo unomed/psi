@@ -61,7 +61,7 @@ export function NewAssessmentDialog({
             selectedEmployee={selectedEmployee}
             selectedTemplate={selectedTemplate}
             onCompanyChange={setSelectedCompany}
-            onSectorChange={setSelectedSector}
+            onSectorChange={setSelectedS ector}
             onRoleChange={setSelectedRole}
             onEmployeeChange={onEmployeeSelect}
             onTemplateSelect={onTemplateSelect}
