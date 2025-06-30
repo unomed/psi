@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -15,7 +16,6 @@ export default function Register() {
   const [role, setRole] = useState('user');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signUp } = useAuth();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -28,7 +28,7 @@ export default function Register() {
     }
 
     try {
-      const signUpResult = await signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password,
         options: {
@@ -39,8 +39,8 @@ export default function Register() {
         },
       });
 
-      if (signUpResult.error) {
-        toast.error(`Erro ao registrar: ${signUpResult.error.message}`);
+      if (error) {
+        toast.error(`Erro ao registrar: ${error.message}`);
       } else {
         toast.success('Registro realizado com sucesso! Verifique seu email para confirmar.');
         navigate('/login');

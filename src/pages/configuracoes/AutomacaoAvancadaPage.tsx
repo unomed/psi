@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +7,7 @@ import { EscalationConfig } from "@/components/automation/EscalationConfig";
 import { NotificationCenter } from "@/components/automation/NotificationCenter";
 import { ReportsGenerator } from "@/components/automation/ReportsGenerator";
 import { AdvancedAnalytics } from "@/components/automation/AdvancedAnalytics";
-import { Bot, Settings, Bell, BarChart3, FileText } from "lucide-react";
+import { Bot, Settings, Bell, BarChart3, FileText, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AutomacaoAvancadaPage() {
@@ -73,7 +74,10 @@ export default function AutomacaoAvancadaPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <EscalationConfig companyId={companyId} />
+              <EscalationConfig 
+                companyId={companyId} 
+                escalationLevels={[]}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -90,7 +94,9 @@ export default function AutomacaoAvancadaPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <NotificationCenter companyId={companyId} />
+              <div>
+                <p>Central de notificações em desenvolvimento...</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

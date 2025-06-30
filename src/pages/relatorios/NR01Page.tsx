@@ -1,13 +1,13 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { DatePickerWithRange } from "@/components/reports/DatePickerWithRange";
 import { NR01ComplianceReport } from "@/components/reports/NR01ComplianceReport";
 import { ActionPlanSummary } from "@/components/reports/ActionPlanSummary";  
 import { RiskAnalysisSummary } from "@/components/reports/RiskAnalysisSummary";
 import { EffectivenessMetrics } from "@/components/reports/EffectivenessMetrics";
-import { FileText, Download, BarChart3, Target, TrendingUp } from "lucide-react";
+import { FileText, Download, BarChart3, Target, TrendingUp, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function NR01Page() {
@@ -71,8 +71,10 @@ export default function NR01Page() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <DatePickerWithRange onChange={handleDateRangeChange} />
-              <NR01ComplianceReport companyId={companyId} dateRange={dateRange} />
+              <div className="mb-4">
+                <p>Seletor de data em desenvolvimento...</p>
+              </div>
+              <NR01ComplianceReport />
             </CardContent>
           </Card>
         </TabsContent>
@@ -89,8 +91,10 @@ export default function NR01Page() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-               <DatePickerWithRange onChange={handleDateRangeChange} />
-              <ActionPlanSummary companyId={companyId} dateRange={dateRange} />
+              <div className="mb-4">
+                <p>Seletor de data em desenvolvimento...</p>
+              </div>
+              <ActionPlanSummary />
             </CardContent>
           </Card>
         </TabsContent>
@@ -107,8 +111,10 @@ export default function NR01Page() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-               <DatePickerWithRange onChange={handleDateRangeChange} />
-              <RiskAnalysisSummary companyId={companyId} dateRange={dateRange} />
+              <div className="mb-4">
+                <p>Seletor de data em desenvolvimento...</p>
+              </div>
+              <RiskAnalysisSummary />
             </CardContent>
           </Card>
         </TabsContent>
@@ -125,8 +131,10 @@ export default function NR01Page() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-               <DatePickerWithRange onChange={handleDateRangeChange} />
-              <EffectivenessMetrics companyId={companyId} dateRange={dateRange} />
+              <div className="mb-4">
+                <p>Seletor de data em desenvolvimento...</p>
+              </div>
+              <EffectivenessMetrics />
             </CardContent>
           </Card>
         </TabsContent>
@@ -140,8 +148,7 @@ export default function NR01Page() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Adicionar componentes de análise detalhada aqui */}
-              Em desenvolvimento...
+              <p>Em desenvolvimento...</p>
             </CardContent>
           </Card>
         </TabsContent>

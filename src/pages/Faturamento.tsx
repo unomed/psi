@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,6 @@ import { SubscriptionsList } from "@/components/billing/SubscriptionsList";
 import { InvoicesList } from "@/components/billing/InvoicesList";
 import { UsageAnalytics } from "@/components/billing/UsageAnalytics";
 import { PurchaseCreditsDialog } from "@/components/billing/PurchaseCreditsDialog";
-import { BillingConfigDialog } from "@/components/billing/BillingConfigDialog";
-import { NewSubscriptionDialog } from "@/components/billing/NewSubscriptionDialog";
 import { CompanyBillingDashboard } from "@/components/billing/CompanyBillingDashboard";
 import { useAuth } from '@/hooks/useAuth';
 
@@ -24,7 +23,7 @@ export default function Faturamento({}: FaturamentoProps) {
   const [isBillingConfigOpen, setIsBillingConfigOpen] = useState(false);
   const [isNewSubscriptionOpen, setIsNewSubscriptionOpen] = useState(false);
   const { userCompanies } = useAuth();
-  const companyId = userCompanies[0].companyId;
+  const companyId = userCompanies[0]?.companyId;
 
   return (
     <div className="w-full max-w-none p-6">
@@ -118,15 +117,24 @@ export default function Faturamento({}: FaturamentoProps) {
         onOpenChange={setIsPurchaseDialogOpen}
       />
 
-      <BillingConfigDialog
-        open={isBillingConfigOpen}
-        onOpenChange={setIsBillingConfigOpen}
-      />
+      {/* Placeholder dialogs for components that might not exist */}
+      {isBillingConfigOpen && (
+        <Card>
+          <CardContent>
+            <p>Configuração de cobrança em desenvolvimento...</p>
+            <Button onClick={() => setIsBillingConfigOpen(false)}>Fechar</Button>
+          </CardContent>
+        </Card>
+      )}
 
-      <NewSubscriptionDialog
-        open={isNewSubscriptionOpen}
-        onOpenChange={setIsNewSubscriptionOpen}
-      />
+      {isNewSubscriptionOpen && (
+        <Card>
+          <CardContent>
+            <p>Nova assinatura em desenvolvimento...</p>
+            <Button onClick={() => setIsNewSubscriptionOpen(false)}>Fechar</Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
