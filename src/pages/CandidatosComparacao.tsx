@@ -1,31 +1,32 @@
 
-import { useState } from "react";
-import { useEmployeeCompanyFilter } from "@/hooks/employees/useEmployeeCompanyFilter";
-import { EmployeeCompanySelector } from "@/components/employees/EmployeeCompanySelector";
-import { CandidateComparison } from "@/components/candidates/CandidateComparison";
-import { CandidateErrorBoundary } from "@/components/ui/candidate-error-boundary";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CandidatosComparacao() {
-  const { selectedCompany, handleCompanyChange, userCompanies } = useEmployeeCompanyFilter();
-
   return (
-    <CandidateErrorBoundary>
-      <div className="space-y-8">
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Comparação de Candidatos</h1>
-          <p className="text-muted-foreground mt-2">
-            Compare candidatos com base em competências comportamentais e adequação às funções.
+          <h1 className="text-3xl font-bold">Comparação de Candidatos</h1>
+          <p className="text-muted-foreground">
+            Compare perfis comportamentais de candidatos
           </p>
         </div>
-        
-        <EmployeeCompanySelector
-          selectedCompany={selectedCompany}
-          onCompanyChange={handleCompanyChange}
-          userCompanies={userCompanies}
-        />
-        
-        <CandidateComparison selectedCompany={selectedCompany} />
       </div>
-    </CandidateErrorBoundary>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Análise Comparativa</CardTitle>
+          <CardDescription>
+            Compare candidatos com base em competências comportamentais
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Funcionalidade em desenvolvimento...
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
