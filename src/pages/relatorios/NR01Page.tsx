@@ -15,6 +15,9 @@ export default function NR01Page() {
   const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
   const [activeTab, setActiveTab] = useState("compliance");
 
+  const periodStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const periodEnd = new Date();
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -71,8 +74,8 @@ export default function NR01Page() {
               </div>
               <NR01ComplianceReport 
                 companyId={companyId || ""}
-                periodStart={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
-                periodEnd={new Date()}
+                periodStart={periodStart.toISOString()}
+                periodEnd={periodEnd.toISOString()}
               />
             </CardContent>
           </Card>
@@ -95,11 +98,13 @@ export default function NR01Page() {
               </div>
               <ActionPlanSummary 
                 filters={{
-                  companyId: companyId || "",
+                  selectedCompany: companyId || "",
                   dateRange: {
-                    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-                    to: new Date()
-                  }
+                    from: periodStart,
+                    to: periodEnd
+                  },
+                  selectedSector: "",
+                  selectedRole: ""
                 }}
               />
             </CardContent>
@@ -123,11 +128,13 @@ export default function NR01Page() {
               </div>
               <RiskAnalysisSummary 
                 filters={{
-                  companyId: companyId || "",
+                  selectedCompany: companyId || "",
                   dateRange: {
-                    from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-                    to: new Date()
-                  }
+                    from: periodStart,
+                    to: periodEnd
+                  },
+                  selectedSector: "",
+                  selectedRole: ""
                 }}
               />
             </CardContent>

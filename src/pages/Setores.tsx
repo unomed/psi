@@ -105,8 +105,7 @@ export default function Setores() {
       ) : filteredSectors && filteredSectors.length > 0 ? (
         <SectorGrid
           sectors={filteredSectors}
-          onViewDetails={handleEditSector}
-          onDeleteSector={handleDeleteSector}
+          onSectorClick={handleEditSector}
         />
       ) : (
         <Card>
@@ -129,8 +128,8 @@ export default function Setores() {
           </DialogHeader>
           <SectorForm
             onSubmit={handleSubmit}
-            sector={selectedSector}
-            isEditMode={isEditMode}
+            initialData={selectedSector}
+            isEdit={isEditMode}
           />
         </DialogContent>
       </Dialog>

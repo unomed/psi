@@ -39,7 +39,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
   }
 
   const handleQuestionResponse = (questionId: string, value: string | number) => {
-    // Convert to string to ensure type consistency
+    // Explicitly convert to string to ensure type consistency
     handleResponseChange(String(value));
   };
 
@@ -58,6 +58,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
             question={currentQuestion}
             response={responses[String(currentQuestion.id || "")] || ""}
             onResponseChange={(questionId: string, value: string | number) => {
+              // Explicitly convert to string for type safety
               handleResponseChange(String(value));
             }}
           />

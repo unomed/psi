@@ -128,10 +128,10 @@ export default function Empresas() {
 
       <CompanyDialogs
         open={isFormOpen}
-        onClose={handleCloseForm}
         isEditMode={isEditMode}
         selectedCompany={selectedCompany}
         onSubmit={handleSubmit}
+        onClose={handleCloseForm}
       />
     </div>
   );

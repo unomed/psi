@@ -80,19 +80,14 @@ export default function Funcionarios() {
       )}
 
       <EmployeeDialogs
-        createDialogOpen={isCreateDialogOpen}
-        setCreateDialogOpen={setIsCreateDialogOpen}
-        editDialogOpen={isEditDialogOpen}
-        setEditDialogOpen={setIsEditDialogOpen}
-        deleteDialogOpen={isDeleteDialogOpen}
-        setDeleteDialogOpen={setIsDeleteDialogOpen}
-        viewDialogOpen={isViewDialogOpen}
-        setViewDialogOpen={setIsViewDialogOpen}
-        selectedEmployee={selectedEmployee}
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        companyId={selectedCompany}
+        isOpen={isCreateDialogOpen || isEditDialogOpen || isViewDialogOpen}
+        onClose={() => {
+          setIsCreateDialogOpen(false);
+          setIsEditDialogOpen(false);
+          setIsViewDialogOpen(false);
+        }}
+        onSubmit={isEditDialogOpen ? handleEdit : handleCreate}
+        employee={selectedEmployee}
       />
 
       <TagManagementDialog
