@@ -30,6 +30,7 @@ import { NR01FiltersSection } from "@/components/action-plans/nr01/NR01FiltersSe
 import { NR01RiskStatistics } from "@/components/action-plans/nr01/NR01RiskStatistics";
 import { CreateActionPlanDialog } from "@/components/action-plans/nr01/CreateActionPlanDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { DateRange } from "react-day-picker";
 
 export default function PlanoAcao() {
   const { userCompanies } = useAuth();
@@ -38,7 +39,29 @@ export default function PlanoAcao() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
+  // Add filters state for NR01FiltersSection
+  const [filters, setFilters] = useState({
+    riskLevel: 'all',
+    sector: 'all',
+    status: 'all',
+    dateRange: undefined as DateRange | undefined
+  });
+
   const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
+
+  // Mock data for risk statistics
+  const riskStats = {
+    totalAnalyses: 0,
+    riskLevels: {
+      baixo: 0,
+      medio: 0,
+      alto: 0,
+      critico: 0
+    }
+  };
+
+  // Mock sectors data
+  const sectors: Array<{ id: string; name: string }> = [];
 
   const handleCreatePlan = () => {
     setSelectedPlan(null);
@@ -54,6 +77,19 @@ export default function PlanoAcao() {
 
   const handleViewDetails = (plan: any) => {
     console.log("Visualizando detalhes do plano:", plan);
+  };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      riskLevel: 'all',
+      sector: 'all',
+      status: 'all',
+      dateRange: undefined
+    });
   };
 
   return (
@@ -103,13 +139,22 @@ export default function PlanoAcao() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <NR01RiskStatistics companyId={companyId} />
-              <NR01FiltersSection />
+              <NR01RiskStatistics 
+                riskStats={riskStats}
+                activePlansCount={0}
+              />
+              <NR01FiltersSection 
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={handleClearFilters}
+                riskStats={riskStats}
+                sectors={sectors}
+                resultCount={0}
+              />
               <NR01ActionPlansList 
-                companyId={companyId}
-                onCreatePlan={handleCreatePlan}
-                onEditPlan={handleEditPlan}
-                onViewDetails={handleViewDetails}
+                actionPlans={[]}
+                onPlanSelect={handleViewDetails}
+                onCreateFromRisk={handleCreatePlan}
               />
             </CardContent>
           </Card>
@@ -200,8 +245,8 @@ export default function PlanoAcao() {
       </Tabs>
 
       <CreateActionPlanDialog
-        isOpen={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
         companyId={companyId}
         selectedPlan={selectedPlan}
         isEditMode={isEditMode}
