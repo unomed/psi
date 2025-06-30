@@ -119,7 +119,7 @@ export interface EmailTemplate {
   subject: string;
   body: string;
   description?: string;
-  variables?: Record<string, string>;
+  variables?: Record<string, string> | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -382,10 +382,10 @@ export interface DiscFactor {
 export interface DiscQuestion {
   id: string;
   text: string;
+  question_text: string;
   targetFactor: DiscFactorType;
   weight: number;
   template_id?: string;
-  question_text?: string;
   order_number?: number;
   created_at?: string;
   updated_at?: string;

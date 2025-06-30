@@ -229,28 +229,44 @@ export async function fetchAssessmentByToken(token: string) {
 
     // PASSO 6: Transformar questões
     console.log("Passo 6: Transformando questões...");
-    let questions: (DiscQuestion | PsicossocialQuestion)[] = [];
+    let questions: any[] = [];
     
     if (templateType === "disc") {
       questions = (questionsData || []).map(q => ({
         id: q.id,
         text: q.question_text,
+        question_text: q.question_text,
         targetFactor: q.target_factor as any,
-        weight: q.weight || 1
+        weight: q.weight || 1,
+        template_id: q.template_id,
+        order_number: q.order_number,
+        created_at: q.created_at,
+        updated_at: q.updated_at
       }));
     } else if (templateType === "psicossocial") {
       questions = (questionsData || []).map(q => ({
         id: q.id,
         text: q.question_text,
-        category: q.target_factor || "Geral"
+        question_text: q.question_text,
+        category: q.target_factor || "Geral",
+        weight: q.weight || 1,
+        template_id: q.template_id,
+        order_number: q.order_number,
+        created_at: q.created_at,
+        updated_at: q.updated_at
       }));
     } else {
       questions = (questionsData || []).map(q => ({
         id: q.id,
         text: q.question_text,
+        question_text: q.question_text,
         targetFactor: q.target_factor as any,
-        weight: q.weight || 1
-      })) as DiscQuestion[];
+        weight: q.weight || 1,
+        template_id: q.template_id,
+        order_number: q.order_number,
+        created_at: q.created_at,
+        updated_at: q.updated_at
+      }));
     }
 
     console.log("Questões transformadas:", questions.length);
@@ -259,30 +275,41 @@ export async function fetchAssessmentByToken(token: string) {
     console.log("Passo 7: Montando template completo...");
     const template: ChecklistTemplate = {
       id: templateData.id,
+      name: templateData.title,
       title: templateData.title,
       description: templateData.description || "",
+      category: templateType === "disc" ? "disc" : templateType === "psicossocial" ? "psicossocial" : "default",
       type: templateType,
-      questions,
+      questions: questions.map(q => ({
+        id: q.id,
+        template_id: q.template_id,
+        question_text: q.question_text,
+        text: q.text,
+        order_number: q.order_number,
+        created_at: q.created_at,
+        updated_at: q.updated_at
+      })),
       createdAt: new Date(templateData.created_at),
-      updatedAt: templateData.updated_at ? new Date(templateData.updated_at) : undefined,
-      scaleType: templateData.scale_type as any,
-      isStandard: templateData.is_standard,
-      companyId: templateData.company_id,
-      derivedFromId: templateData.derived_from_id,
-      estimatedTimeMinutes: templateData.estimated_time_minutes,
-      maxScore: templateData.max_score,
-      cutoffScores: templateData.cutoff_scores,
-      interpretationGuide: templateData.interpretation_guide,
-      isActive: templateData.is_active,
+      updated_at: templateData.updated_at,
+      scale_type: templateData.scale_type as any,
+      is_standard: templateData.is_standard,
+      is_active: templateData.is_active,
+      estimated_time_minutes: templateData.estimated_time_minutes,
       version: templateData.version,
-      createdBy: templateData.created_by,
-      instructions: templateData.instructions
+      created_at: templateData.created_at,
+      company_id: templateData.company_id,
+      created_by: templateData.created_by,
+      cutoff_scores: templateData.cutoff_scores,
+      derived_from_id: templateData.derived_from_id,
+      instructions: templateData.instructions,
+      interpretation_guide: templateData.interpretation_guide,
+      max_score: templateData.max_score
     };
 
     console.log("Template completo montado:", {
       id: template.id,
       title: template.title,
-      questionsCount: template.questions.length
+      questionsCount: template.questions?.length || 0
     });
 
     const result = {
@@ -297,7 +324,7 @@ export async function fetchAssessmentByToken(token: string) {
     console.log("Resultado final:", {
       template_id: result.template.id,
       employee_id: result.employeeId,
-      questions_count: result.template.questions.length
+      questions_count: result.template.questions?.length || 0
     });
     
     return result;

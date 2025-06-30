@@ -16,7 +16,7 @@ export function useCompanies() {
       
       return (data || []).map(company => ({
         ...company,
-        notes: company.notes || '', // Ensure notes field exists
+        notes: '', // Default empty notes since field doesn't exist in DB
         createdAt: new Date(company.created_at),
         updatedAt: new Date(company.updated_at)
       }));

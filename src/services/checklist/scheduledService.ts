@@ -20,6 +20,10 @@ export async function fetchScheduledAssessments(): Promise<ScheduledAssessment[]
 
   return data.map(assessment => ({
     id: assessment.id,
+    employee_id: assessment.employee_id,
+    template_id: assessment.template_id,
+    scheduled_date: assessment.scheduled_date,
+    status: assessment.status as "scheduled" | "sent" | "completed" | "pending",
     employeeId: assessment.employee_id,
     templateId: assessment.template_id,
     scheduledDate: new Date(assessment.scheduled_date),
@@ -27,7 +31,6 @@ export async function fetchScheduledAssessments(): Promise<ScheduledAssessment[]
     completedAt: assessment.completed_at ? new Date(assessment.completed_at) : null,
     nextScheduledDate: assessment.next_scheduled_date ? new Date(assessment.next_scheduled_date) : null,
     linkUrl: assessment.link_url || "",
-    status: assessment.status as "scheduled" | "sent" | "completed",
     recurrenceType: assessment.recurrence_type as "none" | "monthly" | "semiannual" | "annual" | undefined,
     phoneNumber: assessment.phone_number
   }));
@@ -39,16 +42,16 @@ export async function saveScheduledAssessment(
   const { data, error } = await supabase
     .from('scheduled_assessments')
     .insert({
-      employee_id: assessment.employeeId,
-      template_id: assessment.templateId,
-      scheduled_date: assessment.scheduledDate.toISOString(),
+      employee_id: assessment.employee_id || assessment.employeeId,
+      template_id: assessment.template_id || assessment.templateId,
+      scheduled_date: assessment.scheduled_date || assessment.scheduledDate?.toISOString(),
       status: assessment.status,
-      recurrence_type: assessment.recurrenceType,
-      next_scheduled_date: assessment.nextScheduledDate?.toISOString(),
-      phone_number: assessment.phoneNumber,
-      link_url: assessment.linkUrl,
-      sent_at: assessment.sentAt?.toISOString(),
-      completed_at: assessment.completedAt?.toISOString()
+      recurrence_type: assessment.recurrence_type || assessment.recurrenceType,
+      next_scheduled_date: assessment.next_scheduled_date || assessment.nextScheduledDate?.toISOString(),
+      phone_number: assessment.phone_number || assessment.phoneNumber,
+      link_url: assessment.link_url || assessment.linkUrl,
+      sent_at: assessment.sent_at || assessment.sentAt?.toISOString(),
+      completed_at: assessment.completed_at || assessment.completedAt?.toISOString()
     })
     .select()
     .single();

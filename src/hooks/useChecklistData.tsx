@@ -85,7 +85,7 @@ export function useChecklistData() {
         completedAt: new Date(result.completed_at),
         completed_at: result.completed_at,
         createdBy: result.created_by || '',
-        risk_level: result.risk_level,
+        risk_level: result.classification || 'normal',
         employee_name: Array.isArray(result.employees) ? result.employees[0]?.name : result.employees?.name,
         template_title: Array.isArray(result.checklist_templates) ? result.checklist_templates[0]?.title : result.checklist_templates?.title
       })) || [];
@@ -125,7 +125,7 @@ export function useChecklistData() {
         linkUrl: item.link_url || '',
         link_url: item.link_url,
         company_id: item.company_id,
-        employee_name: item.employee_name || (Array.isArray(item.employees) ? item.employees[0]?.name : item.employees?.name),
+        employee_name: item.employee_name || (Array.isArray(item.employees) ? item.employees[0]?.name : item.employees?.name || 'Funcionário'),
         employees: Array.isArray(item.employees) ? item.employees[0] : item.employees,
         checklist_templates: Array.isArray(item.checklist_templates) ? item.checklist_templates[0] : item.checklist_templates,
         checklist_template_id: item.template_id,

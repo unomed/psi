@@ -17,8 +17,8 @@ export function useChecklistTemplates() {
           name: template.name,
           title: template.name,
           description: template.description,
-          category: template.type === 'stress' ? 'psicossocial' : template.type === 'custom' ? 'default' : template.type,
-          type: template.type === 'stress' ? 'psicossocial' : template.type,
+          category: template.type === 'custom' ? 'default' : template.type,
+          type: template.type === 'custom' ? 'psicossocial' : template.type,
           scale_type: template.scale_type,
           is_standard: true,
           is_active: true,
@@ -77,8 +77,8 @@ export function useChecklistTemplates() {
     return templates.filter(template => template.type === 'disc');
   };
 
-  const getStressTemplates = () => {
-    return templates.filter(template => template.type === 'custom');
+  const getCustomQuestionnaires = () => {
+    return templates.filter(template => template.type === 'psicossocial');
   };
 
   const createTemplate = async (templateData: Partial<ChecklistTemplate>) => {
@@ -140,7 +140,7 @@ export function useChecklistTemplates() {
     getTemplateById,
     getPsicossocialTemplates,
     getDiscTemplates,
-    getStressTemplates,
+    getCustomQuestionnaires,
     createTemplate,
     updateTemplate,
     deleteTemplate

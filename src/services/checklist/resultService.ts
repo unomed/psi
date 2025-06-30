@@ -5,34 +5,36 @@ import { DiscFactorType } from "@/types/disc";
 import { stringToDiscFactorType } from "./utils";
 
 export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | "completedAt">): Promise<string> {
-  const dominantFactorString = result.dominantFactor.toString();
+  const dominantFactorString = result.dominant_factor?.toString() || result.dominantFactor?.toString() || '';
   
   // Verificar se o employee_id é válido
-  if (!result.employeeName) {
+  if (!result.employee_name && !result.employeeName) {
     throw new Error('Employee name is required to save assessment');
   }
+  
+  const employeeName = result.employee_name || result.employeeName || '';
   
   // Buscar funcionário por nome para obter o ID correto
   const { data: employee, error: empError } = await supabase
     .from('employees')
     .select('id')
-    .eq('name', result.employeeName)
+    .eq('name', employeeName)
     .eq('status', 'active')
     .single();
   
   if (empError || !employee) {
-    throw new Error(`Employee "${result.employeeName}" not found or is inactive`);
+    throw new Error(`Employee "${employeeName}" not found or is inactive`);
   }
   
   const { data, error } = await supabase
     .from('assessment_responses')
     .insert({
-      template_id: result.templateId,
+      template_id: result.template_id || result.templateId,
       employee_id: employee.id, // Usar o ID correto do funcionário
-      employee_name: result.employeeName,
+      employee_name: employeeName,
       dominant_factor: dominantFactorString,
       factors_scores: result.results,
-      response_data: {},
+      response_data: result.responses,
       completed_at: new Date().toISOString()
     })
     .select()
@@ -76,11 +78,20 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
 
     return {
       id: result.id,
+      template_id: result.template_id,
+      employee_id: result.employee_id,
       templateId: result.template_id,
+      employeeId: result.employee_id,
       employeeName: result.employee?.name || result.employee_name || "Anônimo",
+      employee_name: result.employee?.name || result.employee_name || "Anônimo",
+      responses: result.response_data || {},
       results: factorScores,
       dominantFactor: dominantFactor,
-      completedAt: new Date(result.completed_at)
+      dominant_factor: result.dominant_factor,
+      score: result.raw_score || 0,
+      completedAt: new Date(result.completed_at),
+      completed_at: result.completed_at,
+      createdBy: result.created_by || ''
     };
   });
 }

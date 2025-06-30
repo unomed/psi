@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { ChecklistResult, ChecklistTemplate, ScheduledAssessment, RecurrenceType } from "@/types";
 import { saveScheduledAssessment } from "@/services/checklist";
@@ -55,14 +56,14 @@ export const handleSaveAssessment = async (
       
       // If that fails, try to save as a scheduled assessment
       await saveScheduledAssessment({
-        employeeId: selectedEmployee,
-        templateId: selectedTemplate.id,
-        scheduledDate: new Date(),
+        employee_id: selectedEmployee,
+        template_id: selectedTemplate.id,
+        scheduled_date: new Date().toISOString(),
         status: "scheduled",
-        sentAt: null,
-        completedAt: null,
-        linkUrl: "",
-        recurrenceType: "none"
+        sent_at: null,
+        completed_at: null,
+        link_url: "",
+        recurrence_type: "none"
       });
       
       toast.success("Avaliação salva como agendada (não foi possível salvar como resposta)");
