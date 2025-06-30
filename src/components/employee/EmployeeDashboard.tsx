@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { AssessmentResponse } from "./AssessmentResponse";
 import { ChecklistTemplate, ScheduledAssessment } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 
 interface EmployeeDashboardProps {
   employeeId: string;
@@ -60,7 +59,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
     if (assessment?.checklist_templates) {
       const templateData = assessment.checklist_templates;
       
-      // Create template with safe property access and type conversion
+      // Create template with proper type handling
       const template: ChecklistTemplate = {
         id: templateData.id || '',
         name: templateData.title || templateData.name || '',
@@ -72,7 +71,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
         is_active: templateData.is_active ?? true,
         is_standard: templateData.is_standard ?? false,
         estimated_time_minutes: templateData.estimated_time_minutes || 15,
-        version: parseInt(templateData.version?.toString() || '1'),
+        version: typeof templateData.version === 'string' ? parseInt(templateData.version) : (templateData.version || 1),
         created_at: templateData.created_at || new Date().toISOString(),
         updated_at: templateData.updated_at || new Date().toISOString(),
         company_id: templateData.company_id,
@@ -80,7 +79,6 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
         cutoff_scores: templateData.cutoff_scores,
         derived_from_id: templateData.derived_from_id,
         instructions: templateData.instructions,
-        interpretation_guide: templateData.interpretation_guide,
         max_score: templateData.max_score
       };
       
@@ -128,7 +126,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
                 <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h3 className="font-medium">
-                      {assessment.checklist_templates?.title || assessment.checklist_templates?.name || 'Avaliação'}
+                      {assessment.checklist_templates?.title || 'Avaliação'}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Agendada para: {assessment.scheduledDate.toLocaleDateString()}

@@ -74,7 +74,7 @@ export function NewAssessmentDialog({
             <AssessmentDateSection
               scheduledDate={scheduledDate}
               onDateSelect={handleDateSelect}
-              dateError={dateError}
+              dateError={!!dateError}
             />
 
             <AssessmentPeriodicitySection

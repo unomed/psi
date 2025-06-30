@@ -29,12 +29,12 @@ export function useChecklistTemplates() {
         title: template.title,
         description: template.description || '',
         category: 'default' as const,
-        type: template.type as any,
-        scale_type: template.scale_type as any,
+        type: template.type === 'stress' ? 'custom' : template.type as any,
+        scale_type: template.scale_type as any || 'likert_5',
         is_standard: template.is_standard || false,
         is_active: template.is_active,
         estimated_time_minutes: template.estimated_time_minutes || 15,
-        version: parseInt(template.version?.toString() || '1'),
+        version: typeof template.version === 'string' ? parseInt(template.version) : (template.version || 1),
         created_at: template.created_at,
         updated_at: template.updated_at,
         company_id: template.company_id,
@@ -42,7 +42,6 @@ export function useChecklistTemplates() {
         cutoff_scores: template.cutoff_scores,
         derived_from_id: template.derived_from_id,
         instructions: template.instructions,
-        interpretation_guide: template.interpretation_guide,
         max_score: template.max_score,
         questions: template.questions?.map((q: any) => ({
           id: q.id,
@@ -72,7 +71,7 @@ export function useChecklistOperations() {
     mutationFn: async (data: Omit<ChecklistTemplate, "id" | "created_at" | "updated_at">) => {
       const { data: result, error } = await supabase
         .from('checklist_templates')
-        .insert([{
+        .insert({
           title: data.title || data.name,
           description: data.description,
           type: data.type,
@@ -84,9 +83,8 @@ export function useChecklistOperations() {
           created_by: data.created_by,
           cutoff_scores: data.cutoff_scores,
           instructions: data.instructions,
-          interpretation_guide: data.interpretation_guide,
           max_score: data.max_score
-        }])
+        })
         .select()
         .single();
 
@@ -117,7 +115,6 @@ export function useChecklistOperations() {
           estimated_time_minutes: data.estimated_time_minutes,
           cutoff_scores: data.cutoff_scores,
           instructions: data.instructions,
-          interpretation_guide: data.interpretation_guide,
           max_score: data.max_score
         })
         .eq('id', data.id)
