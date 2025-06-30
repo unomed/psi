@@ -1,36 +1,43 @@
 
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const NotFound = () => {
-  const location = useLocation();
+export default function NotFound() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-psi-blue-50 to-psi-teal-50">
-      <div className="text-center space-y-6 max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <h1 className="text-6xl font-bold text-psi-blue-700">404</h1>
-        <p className="text-xl text-gray-600 mb-6">Página não encontrada</p>
-        <p className="text-gray-500">
-          A página que você está procurando não existe ou foi movida.
-        </p>
-        <Button onClick={() => navigate("/")} className="mt-6">
-          <Home className="mr-2 h-4 w-4" />
-          Voltar ao Dashboard
-        </Button>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-600" />
+          </div>
+          <CardTitle className="text-2xl">Página não encontrada</CardTitle>
+          <CardDescription>
+            A página que você está procurando não existe.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center space-y-6">
+          <div className="space-y-2">
+            <p className="text-gray-600">Erro 404</p>
+            <p className="text-sm text-gray-500">
+              Verifique se o endereço está correto ou volte para a página inicial.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Button onClick={() => navigate('/dashboard')} className="w-full">
+              <Home className="h-4 w-4 mr-2" />
+              Voltar ao Dashboard
+            </Button>
+            <Button variant="outline" onClick={() => navigate(-1)} className="w-full">
+              Voltar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default NotFound;
+}

@@ -9,24 +9,12 @@ export const scaleTypeToDbScaleType = (scaleType: ScaleType): DbScaleType => {
   switch (scaleType) {
     case "likert":
       return "likert5";
-    case "yesno":
+    case "yes_no":
       return "binary";
-    case "agree3":
-      return "custom";
     case "custom":
       return "custom";
     case "frequency":
       return "frequency";
-    case "importance":
-      return "custom";
-    case "probability":
-      return "custom";
-    case "impact":
-      return "custom";
-    case "riskLevel":
-      return "custom";
-    case "psicossocial":
-      return "custom";
     case "numeric":
       return "numeric";
     default:
@@ -41,7 +29,7 @@ export const dbScaleTypeToScaleType = (dbScaleType: DbScaleType | string): Scale
     case "likert7":
       return "likert";
     case "binary":
-      return "yesno";
+      return "yes_no";
     case "frequency":
       return "frequency";
     case "numeric":
@@ -50,7 +38,6 @@ export const dbScaleTypeToScaleType = (dbScaleType: DbScaleType | string): Scale
     case "percentile":
     case "tscore":
     case "range10":
-      return "custom";
     case "custom":
       return "custom";
     default:

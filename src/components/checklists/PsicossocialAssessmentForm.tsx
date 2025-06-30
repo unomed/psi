@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChecklistTemplate } from "@/types";
@@ -38,11 +37,6 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
     );
   }
 
-  const handleQuestionResponse = (questionId: string, value: string | number) => {
-    // Explicitly convert to string to ensure type consistency
-    handleResponseChange(String(value));
-  };
-
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
@@ -58,7 +52,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
             question={currentQuestion}
             response={responses[String(currentQuestion.id || "")] || ""}
             onResponseChange={(questionId: string, value: string | number) => {
-              // Explicitly convert to string for type safety
+              // Sempre converter para string para garantir compatibilidade de tipos
               handleResponseChange(String(value));
             }}
           />

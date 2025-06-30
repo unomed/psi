@@ -1,46 +1,91 @@
 
-import { Link } from 'react-router-dom';
-import AuthLayout from '@/components/layout/AuthLayout';
-import { AdaptiveLoginForm } from '@/components/auth/login/AdaptiveLoginForm';
-import { Shield } from 'lucide-react';
-import { DatabaseStatus } from '@/components/ui/database-status';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Login() {
-  return (
-    <AuthLayout
-      title="Acesso ao Sistema"
-      description="Faça login para acessar o sistema de gestão"
-      footer={
-        <div className="w-full space-y-4">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Não tem uma conta de administrador?{" "}
-              <Link to="/auth/register" className="underline text-primary">
-                Cadastre-se
-              </Link>
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <DatabaseStatus />
-          </div>
-        </div>
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsLoading(true);
+
+    if (!email || !password) {
+      toast.error('Por favor, preencha todos os campos.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        toast.error(`Erro ao fazer login: ${error.message}`);
+      } else {
+        toast.success('Login realizado com sucesso!');
+        navigate('/dashboard');
       }
-    >
-      <div className="space-y-6">
-        {/* Formulário de Login */}
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-primary/10 rounded-lg mb-3">
-              <Shield className="w-6 h-6 text-primary" />
+    } catch (error: any) {
+      toast.error(`Erro ao fazer login: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Card className="w-[450px]">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">PSI Safe</CardTitle>
+          <CardDescription>
+            Faça login para acessar o sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seuemail@exemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-            <h3 className="text-lg font-semibold">Administrador do Sistema</h3>
-            <p className="text-sm text-muted-foreground">
-              Acesso completo ao sistema de gestão
-            </p>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button disabled={isLoading} type="submit" className="w-full mt-4">
+              {isLoading ? 'Carregando...' : 'Entrar'}
+            </Button>
+          </form>
+          <div className="text-sm text-muted-foreground text-center">
+            Não tem uma conta?{' '}
+            <Link to="/auth/register" className="text-primary underline">
+              Criar conta
+            </Link>
           </div>
-          <AdaptiveLoginForm />
-        </div>
-      </div>
-    </AuthLayout>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
