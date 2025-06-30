@@ -24,35 +24,49 @@ export function useChecklistTemplates() {
       }
 
       // Transform database response to match ChecklistTemplate interface
-      return data?.map(template => ({
-        id: template.id,
-        name: template.title,
-        title: template.title,
-        description: template.description || '',
-        category: 'default' as const,
-        type: template.type === 'custom' ? 'custom' : (template.type === 'psicossocial' ? 'psicossocial' : template.type),
-        scale_type: template.scale_type || 'likert_5',
-        is_standard: template.is_standard || false,
-        is_active: template.is_active,
-        estimated_time_minutes: template.estimated_time_minutes || 15,
-        version: typeof template.version === 'string' ? parseInt(template.version) : (template.version || 1),
-        created_at: template.created_at,
-        updated_at: template.updated_at,
-        company_id: template.company_id,
-        created_by: template.created_by,
-        cutoff_scores: template.cutoff_scores,
-        derived_from_id: template.derived_from_id,
-        instructions: template.instructions,
-        questions: template.questions?.map((q: any) => ({
-          id: q.id,
-          template_id: q.template_id,
-          question_text: q.question_text,
-          text: q.question_text,
-          order_number: q.order_number,
-          created_at: q.created_at,
-          updated_at: q.updated_at
-        })) || []
-      })) || [];
+      return data?.map(template => {
+        // Map database scale types to frontend scale types
+        let scaleType = template.scale_type || 'likert5';
+        if (scaleType === 'likert7') {
+          scaleType = 'likert'; // Map likert7 to likert for compatibility
+        }
+        if (scaleType === 'likert_5') {
+          scaleType = 'likert5';
+        }
+        if (scaleType === 'likert_7') {
+          scaleType = 'likert';
+        }
+
+        return {
+          id: template.id,
+          name: template.title,
+          title: template.title,
+          description: template.description || '',
+          category: 'default' as const,
+          type: template.type === 'custom' ? 'custom' : (template.type === 'psicossocial' ? 'psicossocial' : template.type),
+          scale_type: scaleType as any,
+          is_standard: template.is_standard || false,
+          is_active: template.is_active,
+          estimated_time_minutes: template.estimated_time_minutes || 15,
+          version: typeof template.version === 'string' ? parseInt(template.version) : (template.version || 1),
+          created_at: template.created_at,
+          updated_at: template.updated_at,
+          company_id: template.company_id,
+          created_by: template.created_by,
+          cutoff_scores: template.cutoff_scores,
+          derived_from_id: template.derived_from_id,
+          instructions: template.instructions,
+          questions: template.questions?.map((q: any) => ({
+            id: q.id,
+            template_id: q.template_id,
+            question_text: q.question_text,
+            text: q.question_text,
+            order_number: q.order_number,
+            created_at: q.created_at,
+            updated_at: q.updated_at
+          })) || []
+        };
+      }) || [];
     }
   });
 
@@ -71,9 +85,16 @@ export function useChecklistOperations() {
     mutationFn: async (data: Omit<ChecklistTemplate, "id" | "created_at" | "updated_at">) => {
       // Map frontend types to database types
       const dbType: DbTemplateType = data.type === 'stress' ? 'custom' : data.type as DbTemplateType;
-      const dbScaleType: DbScaleType = (data.scale_type === 'likert_5' ? 'likert5' : 
-                                       data.scale_type === 'likert_7' ? 'likert7' : 
-                                       data.scale_type || 'likert5') as DbScaleType;
+      let dbScaleType: DbScaleType = 'likert5';
+      
+      // Map scale types correctly
+      if (data.scale_type === 'likert') {
+        dbScaleType = 'likert5';
+      } else if (data.scale_type === 'likert5') {
+        dbScaleType = 'likert5';
+      } else {
+        dbScaleType = data.scale_type as DbScaleType;
+      }
 
       const { data: result, error } = await supabase
         .from('checklist_templates')
@@ -110,9 +131,16 @@ export function useChecklistOperations() {
     mutationFn: async (data: ChecklistTemplate) => {
       // Map frontend types to database types
       const dbType: DbTemplateType = data.type === 'stress' ? 'custom' : data.type as DbTemplateType;
-      const dbScaleType: DbScaleType = (data.scale_type === 'likert_5' ? 'likert5' : 
-                                       data.scale_type === 'likert_7' ? 'likert7' : 
-                                       data.scale_type || 'likert5') as DbScaleType;
+      let dbScaleType: DbScaleType = 'likert5';
+      
+      // Map scale types correctly
+      if (data.scale_type === 'likert') {
+        dbScaleType = 'likert5';
+      } else if (data.scale_type === 'likert5') {
+        dbScaleType = 'likert5';
+      } else {
+        dbScaleType = data.scale_type as DbScaleType;
+      }
 
       const { data: result, error } = await supabase
         .from('checklist_templates')

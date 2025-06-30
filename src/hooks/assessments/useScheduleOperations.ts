@@ -60,6 +60,8 @@ export function useScheduleOperations({
       
       const newScheduledAssessment = {
         company_id: employee.company_id,
+        template_id: selectedTemplate.id, // Add required template_id
+        employee_id: selectedEmployee, // Add required employee_id
         checklist_template_id: selectedTemplate.id,
         employee_ids: [selectedEmployee],
         scheduled_date: scheduledDate!.toISOString(),

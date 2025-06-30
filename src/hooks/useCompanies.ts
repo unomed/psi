@@ -31,10 +31,11 @@ export function useCompanies() {
         city: company.city,
         state: company.state,
         industry: company.industry,
-        logoUrl: company.logo_url,
-        contactName: company.contact_name,
-        contactEmail: company.contact_email,
-        contactPhone: company.contact_phone,
+        logo_url: company.logo_url,
+        contact_name: company.contact_name,
+        contact_email: company.contact_email,
+        contact_phone: company.contact_phone,
+        notes: company.notes, // Add notes mapping
         createdAt: new Date(company.created_at),
         updatedAt: new Date(company.updated_at),
         created_at: company.created_at,
@@ -56,10 +57,11 @@ export function useCompanies() {
           city: companyData.city,
           state: companyData.state,
           industry: companyData.industry,
-          logo_url: companyData.logoUrl,
-          contact_name: companyData.contactName,
-          contact_email: companyData.contactEmail,
-          contact_phone: companyData.contactPhone
+          logo_url: companyData.logo_url,
+          contact_name: companyData.contact_name,
+          contact_email: companyData.contact_email,
+          contact_phone: companyData.contact_phone,
+          notes: companyData.notes
         })
         .select()
         .single();
@@ -90,10 +92,11 @@ export function useCompanies() {
           city: companyData.city,
           state: companyData.state,
           industry: companyData.industry,
-          logo_url: companyData.logoUrl,
-          contact_name: companyData.contactName,
-          contact_email: companyData.contactEmail,
-          contact_phone: companyData.contactPhone
+          logo_url: companyData.logo_url,
+          contact_name: companyData.contact_name,
+          contact_email: companyData.contact_email,
+          contact_phone: companyData.contact_phone,
+          notes: companyData.notes
         })
         .eq('id', id)
         .select()

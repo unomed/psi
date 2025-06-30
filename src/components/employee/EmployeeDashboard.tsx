@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { CalendarIcon, ChevronDown, ChevronUp, Clock, User2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,7 +30,7 @@ function AssessmentCard({ assessment }: AssessmentCardProps) {
         <CardTitle>{assessment.checklist_templates?.title}</CardTitle>
         <CardDescription>
           <Clock className="mr-2 h-4 w-4 inline-block" />
-          {assessment.checklist_templates?.instructions}
+          {assessment.checklist_templates?.title || "Avaliação disponível"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -39,7 +40,11 @@ function AssessmentCard({ assessment }: AssessmentCardProps) {
   );
 }
 
-export function EmployeeDashboard() {
+interface EmployeeDashboardProps {
+  employeeId?: string;
+}
+
+export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAssessments, setPendingAssessments] = useState<ScheduledAssessment[]>([]);
   const [completedAssessments, setCompletedAssessments] = useState<ScheduledAssessment[]>([]);
@@ -72,7 +77,10 @@ export function EmployeeDashboard() {
       employee_id: "emp-1",
       scheduled_date: new Date().toISOString(),
       status: "pending",
-      // Propriedades de compatibilidade
+      company_id: "company-1",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      // Propriedades de compatibilidade legacy
       templateId: "template-1",
       employeeId: "emp-1", 
       scheduledDate: new Date(),

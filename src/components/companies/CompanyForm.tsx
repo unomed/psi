@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,7 +48,18 @@ export function CompanyForm({ onSubmit, initialData, onClose, isEdit = false }: 
   const handleSubmit = async (data: CompanyFormData) => {
     const companyData: CompanyData = {
       id: initialData?.id || '',
-      ...data,
+      name: data.name, // Required field - ensure it's always provided
+      cnpj: data.cnpj, // Required field - ensure it's always provided
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      industry: data.industry,
+      contact_name: data.contact_name,
+      contact_email: data.contact_email,
+      contact_phone: data.contact_phone,
+      notes: data.notes,
     };
     await onSubmit(companyData);
   };
