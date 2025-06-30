@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { ChecklistHeader } from "@/components/checklists/ChecklistHeader";
 import { ChecklistTabs } from "@/components/checklists/ChecklistTabs";
@@ -58,11 +59,11 @@ export default function Checklists() {
     setIsResultDialogOpen(true);
   };
 
-  const handleSubmitTemplate = async (data: Omit<ChecklistTemplate, "id" | "createdAt"> | ChecklistTemplate) => {
+  const handleSubmitTemplate = async (data: Omit<ChecklistTemplate, "id" | "created_at" | "updated_at"> | ChecklistTemplate) => {
     if (isEditing && selectedTemplate) {
       await updateTemplate({ ...data, id: selectedTemplate.id } as ChecklistTemplate);
     } else {
-      await createTemplate(data as Omit<ChecklistTemplate, "id" | "createdAt">);
+      await createTemplate(data as Omit<ChecklistTemplate, "id" | "created_at" | "updated_at">);
     }
     setIsFormDialogOpen(false);
     refetchChecklists();

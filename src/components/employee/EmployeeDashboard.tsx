@@ -63,8 +63,8 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
       // Create template with safe property access
       const template: ChecklistTemplate = {
         id: templateData.id || '',
-        name: templateData.title || '',
-        title: templateData.title || '',
+        name: templateData.title || templateData.name || '',
+        title: templateData.title || templateData.name || '',
         description: templateData.description || '',
         category: 'default',
         type: templateData.type || 'custom',
@@ -121,7 +121,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
                 <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h3 className="font-medium">
-                      {assessment.checklist_templates?.title || 'Avaliação'}
+                      {assessment.checklist_templates?.title || assessment.checklist_templates?.name || 'Avaliação'}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Agendada para: {assessment.scheduledDate.toLocaleDateString()}

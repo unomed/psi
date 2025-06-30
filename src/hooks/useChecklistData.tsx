@@ -17,7 +17,29 @@ export function useChecklistData() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      return (data || []).map(item => ({
+        id: item.id,
+        name: item.title || '',
+        title: item.title || '',
+        description: item.description || '',
+        category: 'default' as const,
+        type: item.type || 'custom',
+        scale_type: item.scale_type || 'likert_5',
+        is_active: item.is_active ?? true,
+        is_standard: item.is_standard ?? false,
+        estimated_time_minutes: item.estimated_time_minutes || 15,
+        version: item.version?.toString() || '1.0',
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        company_id: item.company_id,
+        created_by: item.created_by,
+        cutoff_scores: item.cutoff_scores,
+        derived_from_id: item.derived_from_id,
+        instructions: item.instructions,
+        interpretation_guide: item.interpretation_guide,
+        max_score: item.max_score
+      }));
     }
   });
 
@@ -49,9 +71,11 @@ export function useChecklistData() {
           ? item.checklist_templates[0]?.title 
           : item.checklist_templates?.title,
         responses: item.response_data || {},
+        results: item.response_data || {},
         score: item.raw_score || 0,
         completedAt: new Date(item.completed_at),
-        createdBy: item.created_by || ''
+        createdBy: item.created_by || '',
+        dominantFactor: item.dominant_factor || 'N/A'
       }));
     }
   });

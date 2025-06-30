@@ -1,23 +1,23 @@
 
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface ChecklistHeaderProps {
-  onCreateNew: () => void;
+  onCreateTemplate: () => void;
 }
 
-export function ChecklistHeader({ onCreateNew }: ChecklistHeaderProps) {
+export function ChecklistHeader({ onCreateTemplate }: ChecklistHeaderProps) {
   return (
     <div className="flex justify-between items-center">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Checklists</h1>
-        <p className="text-muted-foreground mt-2">
-          Modelos de avaliação psicossocial e questionários para identificação de riscos.
+        <h1 className="text-3xl font-bold tracking-tight">Checklists e Avaliações</h1>
+        <p className="text-muted-foreground">
+          Gerencie templates, realize avaliações e visualize resultados
         </p>
       </div>
-      <Button onClick={onCreateNew}>
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Novo Checklist
+      <Button onClick={onCreateTemplate}>
+        <Plus className="h-4 w-4 mr-2" />
+        Novo Template
       </Button>
     </div>
   );
