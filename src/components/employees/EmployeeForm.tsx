@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -31,10 +32,11 @@ import { employeeFormSchema } from "./employeeFormSchema";
 interface EmployeeFormProps {
   employee?: Employee;
   onSubmit: (data: EmployeeFormData) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onClose?: () => void;
 }
 
-export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps) {
+export function EmployeeForm({ employee, onSubmit, onCancel, onClose }: EmployeeFormProps) {
   const { companies } = useCompanies();
   const { sectors } = useSectors();
   const { roles } = useRoles();
@@ -59,9 +61,16 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
       employee_type: employee?.employee_type || "funcionario",
       special_conditions: employee?.special_conditions || "",
       photo_url: employee?.photo_url || "",
-      employee_tags: employee?.employee_tags || []
+      employee_tags: typeof employee?.employee_tags === 'string' 
+        ? employee.employee_tags 
+        : JSON.stringify(employee?.employee_tags || [])
     }
   });
+
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    if (onClose) onClose();
+  };
 
   const statusOptions = [
     { value: "ativo", label: "Ativo" },
@@ -422,7 +431,11 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
                 <FormItem>
                   <FormLabel>Tags do Funcionário (JSON)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Tags do funcionário em formato JSON" {...field} />
+                    <Textarea 
+                      placeholder="Tags do funcionário em formato JSON" 
+                      value={field.value || ""} 
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -430,7 +443,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel }: EmployeeFormProps
             />
 
             <CardFooter className="flex justify-between">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancelar
               </Button>
               <Button type="submit">Salvar</Button>

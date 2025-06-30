@@ -57,19 +57,19 @@ export function useChecklistData() {
   });
 
   const { data: results = [], isLoading: resultsLoading } = useQuery({
-    queryKey: ['assessment-results'],
+    queryKey: ['assessment-responses'],
     queryFn: async (): Promise<ChecklistResult[]> => {
       const { data, error } = await supabase
-        .from('assessment_results')
+        .from('assessment_responses')
         .select(`
           *,
           employees:employee_id (name),
           checklist_templates:template_id (title)
         `)
-        .order('created_at', { ascending: false });
+        .order('completed_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching assessment results:', error);
+        console.error('Error fetching assessment responses:', error);
         throw error;
       }
 
@@ -77,11 +77,15 @@ export function useChecklistData() {
         id: result.id,
         employee_id: result.employee_id,
         template_id: result.template_id,
-        results: result.results,
-        score: result.score || 0,
+        templateId: result.template_id,
+        employeeId: result.employee_id,
+        responses: result.response_data || {},
+        results: result.response_data || {},
+        score: result.raw_score || 0,
+        completedAt: new Date(result.completed_at),
+        completed_at: result.completed_at,
+        createdBy: result.created_by || '',
         risk_level: result.risk_level,
-        created_at: result.created_at,
-        updated_at: result.updated_at,
         employee_name: Array.isArray(result.employees) ? result.employees[0]?.name : result.employees?.name,
         template_title: Array.isArray(result.checklist_templates) ? result.checklist_templates[0]?.title : result.checklist_templates?.title
       })) || [];

@@ -19,7 +19,7 @@ export const employeeFormSchema = z.object({
   employee_type: z.string().optional(),
   special_conditions: z.string().optional(),
   photo_url: z.string().optional(),
-  employee_tags: z.any().optional()
+  employee_tags: z.string().optional()
 });
 
 export type EmployeeFormData = z.infer<typeof employeeFormSchema>;

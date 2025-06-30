@@ -99,7 +99,7 @@ export type ScaleType =
   | "tscore"
   | "range10";
 
-export type AppRole = "superadmin" | "admin" | "user" | "employee" | "profissionais";
+export type AppRole = "superadmin" | "admin" | "user" | "employee" | "profissionais" | "evaluator";
 
 export type EmailTemplateType = 
   | ""
@@ -131,7 +131,7 @@ export interface ChecklistTemplate {
   name: string;
   title: string;
   description: string;
-  category: "default" | "psicossocial";
+  category: "default" | "psicossocial" | "disc" | "custom" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri" | "personal_life" | "evaluation_360";
   type:
   | "custom"
   | "psicossocial"
@@ -232,7 +232,7 @@ export interface EmployeeFormData {
   employee_type?: string;
   special_conditions?: string;
   photo_url?: string;
-  employee_tags?: Json;
+  employee_tags?: string; // Changed from Json to string for form compatibility
 }
 
 export interface RoleData {
@@ -253,14 +253,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "semiannual" | "annual";
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "semiannual" | "annual" | "yearly";
 
 export interface PeriodicitySettings {
   id: string;
-  default_periodicity: PeriodicityType;
-  risk_high_periodicity: PeriodicityType;
-  risk_medium_periodicity: PeriodicityType;
-  risk_low_periodicity: PeriodicityType;
+  default_periodicity: RecurrenceType;
+  risk_high_periodicity: RecurrenceType;
+  risk_medium_periodicity: RecurrenceType;
+  risk_low_periodicity: RecurrenceType;
 }
 
 export interface Settings {
