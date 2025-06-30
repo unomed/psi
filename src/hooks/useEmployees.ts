@@ -1,28 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Employee {
-  id: string;
-  name: string;
-  cpf: string;
-  email?: string;
-  phone?: string;
-  birth_date?: string;
-  gender?: string;
-  address?: string;
-  start_date: string;
-  status: string;
-  special_conditions?: string;
-  photo_url?: string;
-  employee_type: 'funcionario' | 'candidato';
-  employee_tags: any[];
-  company_id: string;
-  sector_id: string;
-  role_id: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Employee } from "@/types";
 
 export function useEmployees(companyId?: string) {
   return useQuery({
@@ -30,7 +9,19 @@ export function useEmployees(companyId?: string) {
     queryFn: async (): Promise<Employee[]> => {
       let query = supabase
         .from('employees')
-        .select('*')
+        .select(`
+          *,
+          roles:role_id (
+            id,
+            name,
+            risk_level,
+            required_tags
+          ),
+          sectors:sector_id (
+            id,
+            name
+          )
+        `)
         .order('name');
 
       if (companyId) {
@@ -40,17 +31,16 @@ export function useEmployees(companyId?: string) {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Erro ao buscar funcionários:', error);
+        console.error('Error fetching employees:', error);
         throw error;
       }
 
-      // Garantir tipagem correta
-      return (data || []).map(emp => ({
-        ...emp,
-        employee_type: (emp.employee_type === 'candidato' ? 'candidato' : 'funcionario') as 'funcionario' | 'candidato',
-        employee_tags: Array.isArray(emp.employee_tags) ? emp.employee_tags : []
+      return (data || []).map(item => ({
+        ...item,
+        role: Array.isArray(item.roles) ? item.roles[0] : item.roles,
+        sectors: Array.isArray(item.sectors) ? item.sectors[0] : item.sectors
       }));
     },
-    enabled: true
+    enabled: !!companyId
   });
 }

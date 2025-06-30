@@ -2,13 +2,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface PurchaseCreditsDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function PurchaseCreditsDialog({ isOpen, onClose }: PurchaseCreditsDialogProps) {
+export function PurchaseCreditsDialog({ open, onOpenChange }: PurchaseCreditsDialogProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Comprar Créditos</DialogTitle>

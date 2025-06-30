@@ -2,7 +2,7 @@
 // ===== TIPOS BASE =====
 export type AppRole = 'admin' | 'manager' | 'user' | 'employee' | 'evaluator' | 'superadmin';
 
-// Corrigir ScaleType para string union type
+// ScaleType como string literal
 export type ScaleType = 
   | 'psicossocial'
   | 'binary' 
@@ -17,11 +17,80 @@ export type ScaleType =
 
 export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'none' | 'semiannual' | 'annual';
 
+// AssessmentStatus como string literal
 export type AssessmentStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'scheduled' | 'sent';
 
 export type ChecklistTemplateType = 'disc' | 'psicossocial' | 'stress' | 'custom' | 'srq20' | 'phq9' | 'gad7' | 'mbi' | 'audit' | 'pss' | 'copsoq' | 'jcq' | 'eri' | 'personal_life' | 'evaluation_360';
 
 // ===== INTERFACES PRINCIPAIS =====
+
+// Employee interface completa
+export interface Employee {
+  id: string;
+  name: string;
+  cpf: string;
+  email?: string;
+  phone?: string;
+  birth_date?: string;
+  gender?: string;
+  address?: string;
+  start_date: string;
+  status: string;
+  special_conditions?: string;
+  photo_url?: string;
+  company_id: string;
+  sector_id: string;
+  role_id: string;
+  employee_type: 'funcionario' | 'candidato';
+  employee_tags: string[];
+  // Propriedades que o código espera
+  role?: {
+    id: string;
+    name: string;
+    risk_level?: string;
+    required_tags?: string[];
+  };
+  sectors?: {
+    id: string;
+    name: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployeeFormData {
+  name: string;
+  cpf: string;
+  email?: string;
+  phone?: string;
+  birth_date?: string;
+  gender?: string;
+  address?: string;
+  start_date: string;
+  status: string;
+  special_conditions?: string;
+  photo_url?: string;
+  company_id: string;
+  sector_id: string;
+  role_id: string;
+  employee_type: 'funcionario' | 'candidato';
+  employee_tags: string[];
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  company_id: string;
+  sector_id: string;
+  required_skills?: string[];
+  risk_level?: string;
+  required_tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+// Company interfaces
 export interface CompanyData {
   id: string;
   name: string;
@@ -49,6 +118,33 @@ export interface CompanyData {
   updatedAt?: Date;
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  cnpj: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  industry?: string;
+  logoUrl?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  // Compatibilidade com CompanyData
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CompanyAccess {
+  companyId: string;
+  companyName: string;
+}
+
+// ChecklistTemplate interface
 export interface ChecklistTemplate {
   id: string;
   name: string;
@@ -126,26 +222,29 @@ export interface Evaluation360Question extends ChecklistQuestion {
   weight?: number;
 }
 
+// ScheduledAssessment - interface única consolidada
 export interface ScheduledAssessment {
   id: string;
-  company_id: string;
-  checklist_template_id: string;
-  employee_ids: string[];
-  scheduled_date: string;
-  status: AssessmentStatus;
-  recurrence_type?: RecurrenceType;
-  created_at: string;
-  updated_at: string;
-  // Campos adicionais compatibilidade
-  employeeId: string; // Tornar obrigatório
-  templateId?: string;
-  scheduledDate?: Date;
-  sentAt?: Date | null;
-  linkUrl?: string;
-  completedAt?: Date | null;
+  employeeId: string; // Obrigatório
+  templateId: string;
+  scheduledDate: Date;
+  sentAt: Date | null;
+  linkUrl: string;
+  status: string; // Flexível para aceitar qualquer string
+  completedAt: Date | null;
+  recurrenceType?: RecurrenceType;
   nextScheduledDate?: Date | null;
   phoneNumber?: string;
+  company_id?: string;
   employee_name?: string;
+  // Campos snake_case para compatibilidade com banco
+  employee_id?: string;
+  template_id?: string;
+  scheduled_date?: string;
+  sent_at?: string;
+  completed_at?: string;
+  link_url?: string;
+  // Dados relacionados opcionais
   employees?: {
     name: string;
     email: string;
@@ -154,6 +253,11 @@ export interface ScheduledAssessment {
   checklist_templates?: {
     title: string;
   } | null;
+  // Outros campos necessários
+  checklist_template_id?: string;
+  employee_ids?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface EmailTemplate {
@@ -167,6 +271,7 @@ export interface EmailTemplate {
   description?: string;
 }
 
+// ChecklistResult com results flexível
 export interface ChecklistResult {
   id: string;
   assessment_response_id?: string;
@@ -179,12 +284,7 @@ export interface ChecklistResult {
   risk_level?: 'low' | 'medium' | 'high' | 'critical';
   completed_at?: string;
   completedAt: Date;
-  results: {
-    D: number;
-    I: number;
-    S: number;
-    C: number;
-  } | Record<string, number>;
+  results: any; // Flexível para aceitar qualquer tipo
   dominantFactor: string;
   categorizedResults?: Record<string, number>;
   evaluatedEmployeeId?: string;
@@ -192,6 +292,8 @@ export interface ChecklistResult {
   isAnonymous?: boolean;
   personalFactors?: Record<string, any>;
   riskCorrelation?: "work" | "personal" | "mixed" | "unknown";
+  responses?: any;
+  score?: number;
 }
 
 export enum DiscFactorType {
@@ -207,32 +309,6 @@ export interface DiscFactor {
   description: string;
   characteristics: string[];
   score?: number; // Tornar opcional
-}
-
-export interface Company {
-  id: string;
-  name: string;
-  cnpj: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  industry?: string;
-  logoUrl?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  // Compatibilidade com CompanyData
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface CompanyAccess {
-  companyId: string;
-  companyName: string;
 }
 
 // Auth context interface - Fixed to include all required properties
@@ -328,3 +404,9 @@ export const CHECKLIST_TYPES = {
   CUSTOM: 'custom',
   STRESS: 'stress'
 } as const;
+
+// Date range type
+export interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
+}

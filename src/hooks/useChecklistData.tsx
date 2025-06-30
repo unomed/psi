@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,7 +101,7 @@ export function useChecklistData() {
         template_id: item.template_id,
         scheduledDate: new Date(item.scheduled_date),
         scheduled_date: item.scheduled_date,
-        status: item.status,
+        status: item.status, // String flexível
         sentAt: item.sent_at ? new Date(item.sent_at) : null,
         sent_at: item.sent_at,
         completedAt: item.completed_at ? new Date(item.completed_at) : null,
@@ -124,12 +123,15 @@ export function useChecklistData() {
   // Create template mutation
   const createTemplate = useMutation({
     mutationFn: async (templateData: Omit<ChecklistTemplate, "id" | "createdAt">) => {
+      // Mapear tipo corretamente
+      const dbType = templateData.type === 'stress' ? 'psicossocial' : templateData.type;
+      
       const { data, error } = await supabase
         .from('checklist_templates')
         .insert({
           title: templateData.name, // Usar name como title no banco
           description: templateData.description,
-          type: templateData.type,
+          type: dbType, // Usar tipo mapeado
           scale_type: templateData.scale_type,
           is_active: templateData.is_active,
           is_standard: templateData.is_standard || false,
@@ -157,12 +159,14 @@ export function useChecklistData() {
   // Update template mutation
   const updateTemplate = useMutation({
     mutationFn: async (template: ChecklistTemplate) => {
+      const dbType = template.type === 'stress' ? 'psicossocial' : template.type;
+      
       const { data, error } = await supabase
         .from('checklist_templates')
         .update({
           title: template.name, // Usar name como title no banco
           description: template.description,
-          type: template.type,
+          type: dbType,
           scale_type: template.scale_type,
           is_active: template.is_active,
           estimated_time_minutes: template.estimated_time_minutes,
