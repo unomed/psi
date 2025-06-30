@@ -9,7 +9,6 @@ import Checklists from "@/pages/Checklists";
 import AssessmentResults from "@/pages/AssessmentResults";
 import GestaoRiscos from "@/pages/GestaoRiscos";
 import PlanoAcao from "@/pages/PlanoAcao";
-import Relatorios from "@/pages/Relatorios";
 import NR01Page from "@/pages/relatorios/NR01Page";
 import Faturamento from "@/pages/Faturamento";
 import AssessmentPage from "@/pages/AssessmentPage";
@@ -41,7 +40,6 @@ export function AdminRoutes() {
       <Route path="/gestao-riscos" element={<GestaoRiscos />} />
       <Route path="/plano-acao" element={<PlanoAcao />} />
       <Route path="/agendamentos" element={<AssessmentScheduling />} />
-      <Route path="/relatorios" element={<Relatorios />} />
       <Route path="/relatorios/nr01" element={<NR01Page />} />
       
       {/* PORTAIS - Rotas padronizadas em português */}
@@ -58,7 +56,6 @@ export function AdminRoutes() {
       <Route path="/psychosocial-risks" element={<Navigate to="/gestao-riscos" replace />} />
       <Route path="/action-plans" element={<Navigate to="/plano-acao" replace />} />
       <Route path="/assessment-scheduling" element={<Navigate to="/agendamentos" replace />} />
-      <Route path="/reports" element={<Navigate to="/relatorios" replace />} />
       <Route path="/billing" element={<Navigate to="/faturamento" replace />} />
     </Routes>
   );

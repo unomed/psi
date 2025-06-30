@@ -76,6 +76,11 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
 
     const dominantFactor = stringToDiscFactorType(result.dominant_factor || "D");
 
+    // Garantir que responses seja sempre Record<string, any>
+    const responses = result.response_data && typeof result.response_data === 'object' 
+      ? result.response_data as Record<string, any>
+      : {};
+
     return {
       id: result.id,
       template_id: result.template_id,
@@ -84,7 +89,7 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
       employeeId: result.employee_id,
       employeeName: result.employee?.name || result.employee_name || "Anônimo",
       employee_name: result.employee?.name || result.employee_name || "Anônimo",
-      responses: result.response_data || {},
+      responses: responses,
       results: factorScores,
       dominantFactor: dominantFactor,
       dominant_factor: result.dominant_factor,

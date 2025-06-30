@@ -8,7 +8,6 @@ import Funcoes from "@/pages/Funcoes";
 import Setores from "@/pages/Setores";
 import Checklists from "@/pages/Checklists";
 import Avaliacoes from "@/pages/Avaliacoes";
-import Relatorios from "@/pages/Relatorios";
 import PlanoAcao from "@/pages/PlanoAcao";
 import Faturamento from "@/pages/Faturamento";
 import AssessmentScheduling from "@/pages/AssessmentScheduling";
@@ -36,7 +35,6 @@ export function AppContent() {
       <Route path="/avaliacoes" element={<Avaliacoes />} />
       <Route path="/agendamento-avaliacoes" element={<AssessmentScheduling />} />
       <Route path="/resultados-avaliacoes" element={<AssessmentResults />} />
-      <Route path="/relatorios" element={<Relatorios />} />
       <Route path="/plano-acao" element={<PlanoAcao />} />
       <Route path="/faturamento" element={<Faturamento />} />
       <Route path="/gestao-riscos" element={<GestaoRiscos />} />
