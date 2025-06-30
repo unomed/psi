@@ -2,12 +2,44 @@
 // Tipos principais do sistema - VERSÃO CORRIGIDA E UNIFICADA
 export type ScaleType = "likert" | "yes_no" | "custom" | "frequency" | "numeric" | "likert5" | "binary" | "percentage" | "psicossocial" | "likert_5";
 
-export type ChecklistTemplateType = "psicossocial" | "disc" | "custom" | "360" | "standard" | "stress";
+export type ChecklistTemplateType = "psicossocial" | "disc" | "custom" | "360" | "standard" | "stress" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri" | "personal_life" | "evaluation_360";
 
 export type RiskLevel = "baixo" | "medio" | "alto" | "critico";
 
 // Tipos de recorrência COMPLETOS
 export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "yearly" | "semiannual" | "annual";
+
+// App Role type
+export type AppRole = "superadmin" | "admin" | "evaluator" | "profissionais";
+
+// Company Data type
+export interface CompanyData {
+  id: string;
+  name: string;
+  cnpj: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  industry?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  logo_url?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// DiscFactorType como enum E union type para funcionar tanto como tipo quanto valor
+export enum DiscFactorType {
+  D = "D",
+  I = "I", 
+  S = "S",
+  C = "C"
+}
+
+export type DiscFactorTypeUnion = "D" | "I" | "S" | "C";
 
 // Interface ScheduledAssessment COMPLETA com todas as propriedades necessárias
 export interface ScheduledAssessment {
@@ -33,6 +65,7 @@ export interface ScheduledAssessment {
   completedAt?: Date | null;
   completed_at?: string | null;
   company_id?: string;
+  employee_name?: string;
   
   // Objetos relacionados
   employees?: {
@@ -45,7 +78,7 @@ export interface ScheduledAssessment {
   };
 }
 
-// Interface EmailTemplate COMPLETA
+// Interface EmailTemplate COMPLETA com type mais flexível
 export interface EmailTemplate {
   id: string;
   name: string;
@@ -54,8 +87,8 @@ export interface EmailTemplate {
   variables?: any;
   created_at?: string;
   
-  // Propriedades adicionais
-  type?: string;
+  // Propriedades adicionais - type mais flexível
+  type?: string; // Aceita qualquer string
   description?: string;
 }
 
@@ -78,9 +111,12 @@ export interface ChecklistResult {
   classification?: string;
   factors_scores?: Record<string, number>;
   categorized_results?: Record<string, number>;
+  categorizedResults?: Record<string, number>; // camelCase para compatibilidade
   completed_at?: string;
+  completedAt?: string; // camelCase para compatibilidade
   created_by?: string;
   notes?: string;
+  templateId?: string; // camelCase para compatibilidade
 }
 
 // Interface DiscFactor COMPLETA
@@ -88,10 +124,8 @@ export interface DiscFactor {
   name: string;
   description: string;
   characteristics: string[];
-  type: DiscFactorType; // Adicionada propriedade type
+  type: DiscFactorType; // Usa o enum
 }
-
-export type DiscFactorType = "D" | "I" | "S" | "C";
 
 export interface ChecklistTemplate {
   id: string;
@@ -145,6 +179,7 @@ export interface PsicossocialQuestion {
   weight?: number;
   order_number?: number;
   reverse_scored?: boolean;
+  created_at?: string; // Adicionado
 }
 
 export interface DiscQuestion {
@@ -154,7 +189,7 @@ export interface DiscQuestion {
   text?: string; // Para compatibilidade
   factor: string;
   statement: string;
-  targetFactor: string;
+  targetFactor: DiscFactorType;
   weight: number;
   order_number: number;
   reverse_scored?: boolean;
@@ -197,6 +232,7 @@ export interface EmployeeFormData {
   birth_date?: string;
   gender?: string;
   address?: string;
+  photo_url?: string; // Adicionado
   special_conditions?: string;
   employee_tags?: any[];
 }

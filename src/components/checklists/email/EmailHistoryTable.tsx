@@ -76,7 +76,9 @@ export function EmailHistoryTable({
                   {assessment.checklist_templates?.title || "Template não encontrado"}
                 </TableCell>
                 <TableCell>
-                  {format(assessment.scheduledDate, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                  {assessment.scheduledDate ? format(assessment.scheduledDate, "dd/MM/yyyy HH:mm", { locale: ptBR }) : 
+                   assessment.scheduled_date ? format(new Date(assessment.scheduled_date), "dd/MM/yyyy HH:mm", { locale: ptBR }) : 
+                   "Data não disponível"}
                 </TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(assessment.status)}>
@@ -84,10 +86,9 @@ export function EmailHistoryTable({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {assessment.sentAt 
-                    ? format(assessment.sentAt, "dd/MM/yyyy HH:mm", { locale: ptBR })
-                    : "-"
-                  }
+                  {assessment.sentAt ? format(assessment.sentAt, "dd/MM/yyyy HH:mm", { locale: ptBR }) :
+                   assessment.sent_at ? format(new Date(assessment.sent_at), "dd/MM/yyyy HH:mm", { locale: ptBR }) :
+                   "-"}
                 </TableCell>
                 <TableCell className="text-right">
                   {onResendEmail && (

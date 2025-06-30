@@ -1,3 +1,4 @@
+
 import { ChecklistResult, ChecklistTemplate } from "@/types";
 import { ChecklistResultItem } from "../ChecklistResultItem";
 
@@ -11,7 +12,9 @@ export function ResultsList({ results, templates, onViewResult }: ResultsListPro
   return (
     <div className="space-y-4">
       {results.map((result) => {
-        const template = templates.find(t => t.id === result.templateId);
+        // Use tanto template_id quanto templateId para compatibilidade
+        const templateId = result.template_id || result.templateId;
+        const template = templates.find(t => t.id === templateId);
         return (
           <ChecklistResultItem
             key={result.id}

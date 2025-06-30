@@ -10,7 +10,8 @@ interface PsicossocialResultDisplayProps {
 }
 
 export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayProps) {
-  const categoryResults = result.categorizedResults || {};
+  // Use tanto categorized_results quanto categorizedResults para compatibilidade
+  const categoryResults = result.categorized_results || result.categorizedResults || {};
   
   const getRiskLevel = (score: number) => {
     if (score <= 40) return { level: "Baixo", color: "bg-green-500", icon: CheckCircle, variant: "default" as const };
@@ -47,20 +48,25 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
     return recommendations[category]?.[riskLevel.level] || ["Mantenha acompanhamento regular"];
   };
 
+  // Use tanto completed_at quanto completedAt para compatibilidade
+  const completedDate = result.completed_at || result.completedAt;
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-center">Resultado da Avaliação Psicossocial</CardTitle>
           <p className="text-center text-muted-foreground">
-            Concluída em {new Date(result.completedAt).toLocaleDateString()}
+            Concluída em {completedDate ? new Date(completedDate).toLocaleDateString() : 'Data não disponível'}
           </p>
         </CardHeader>
       </Card>
 
       {/* Resultados por Categoria */}
       <div className="space-y-4">
-        {Object.entries(categoryResults).map(([category, score]) => {
+        {Object.entries(categoryResults).map(([category, scoreValue]) => {
+          // Garantir que score é um número
+          const score = typeof scoreValue === 'number' ? scoreValue : Number(scoreValue) || 0;
           const risk = getRiskLevel(score);
           const Icon = risk.icon;
           const recommendations = getRecommendations(category, score);
@@ -111,7 +117,7 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
         <CardContent>
           <div className="p-4 bg-blue-50 rounded-lg">
             <p className="text-sm">
-              <strong>Área de maior atenção:</strong> {result.dominantFactor}
+              <strong>Área de maior atenção:</strong> {result.dominant_factor || result.dominantFactor || 'Não identificada'}
             </p>
             <p className="text-sm mt-2 text-muted-foreground">
               Recomendamos acompanhamento regular e implementação das orientações específicas para cada categoria.

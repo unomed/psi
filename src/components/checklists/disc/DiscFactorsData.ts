@@ -102,4 +102,7 @@ export const calculateFactorPercentage = (score: number, maxScore: number = 100)
 };
 
 // Compatibility exports
-export const discFactors = DISC_FACTORS;
+export const discFactors: Record<DiscFactorType, DiscFactor> = DISC_FACTORS.reduce((acc, factor) => {
+  acc[factor.type] = factor;
+  return acc;
+}, {} as Record<DiscFactorType, DiscFactor>);

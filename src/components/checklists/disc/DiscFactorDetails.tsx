@@ -9,7 +9,7 @@ interface DiscFactorDetailsProps {
 
 export function DiscFactorDetails({ dominantFactor }: DiscFactorDetailsProps) {
   // Convert dominantFactor string to DiscFactorType if valid, or handle non-DISC factors
-  const isValidDiscFactor = (factor: string): factor is DiscFactorType => {
+  const isValidDiscFactor = (factor: string): factor is keyof typeof DiscFactorType => {
     return Object.values(DiscFactorType).includes(factor as DiscFactorType);
   };
   
