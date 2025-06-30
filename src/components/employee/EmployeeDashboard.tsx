@@ -27,7 +27,24 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
         .from('scheduled_assessments')
         .select(`
           *,
-          checklist_templates (*)
+          checklist_templates (
+            id,
+            title,
+            description,
+            type,
+            scale_type,
+            is_active,
+            is_standard,
+            estimated_time_minutes,
+            version,
+            created_at,
+            updated_at,
+            company_id,
+            created_by,
+            cutoff_scores,
+            derived_from_id,
+            instructions
+          )
         `)
         .eq('employee_id', employeeId)
         .eq('status', 'scheduled');
@@ -57,7 +74,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
   const handleStartAssessment = (templateId: string) => {
     const assessment = pendingAssessments.find(a => a.templateId === templateId);
     if (assessment?.checklist_templates) {
-      const templateData = assessment.checklist_templates;
+      const templateData = assessment.checklist_templates as any;
       
       // Create template with proper type handling and safe property access
       const template: ChecklistTemplate = {
@@ -125,7 +142,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
                 <div key={assessment.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h3 className="font-medium">
-                      {assessment.checklist_templates?.title || 'Avaliação'}
+                      {(assessment.checklist_templates as any)?.title || 'Avaliação'}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Agendada para: {assessment.scheduledDate.toLocaleDateString()}
