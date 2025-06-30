@@ -61,7 +61,7 @@ export function NewAssessmentDialog({
             selectedEmployee={selectedEmployee}
             selectedTemplate={selectedTemplate}
             onCompanyChange={setSelectedCompany}
-            onSectorChange={setSelectedS ector}
+            onSectorChange={setSelectedSector}
             onRoleChange={setSelectedRole}
             onEmployeeChange={onEmployeeSelect}
             onTemplateSelect={onTemplateSelect}
@@ -74,7 +74,7 @@ export function NewAssessmentDialog({
             <AssessmentDateSection
               scheduledDate={scheduledDate}
               onDateSelect={handleDateSelect}
-              dateError={dateError}
+              dateError={!!dateError}
             />
 
             <AssessmentPeriodicitySection
