@@ -65,12 +65,12 @@ export function EmployeeDashboard() {
   };
 
   // Mock pending assessments with correct types
-  const mockPendingAssessments = [
+  const mockPendingAssessments: ScheduledAssessment[] = [
     {
       id: "1",
-      template_id: "template-1", // CORRIGIDO - usar snake_case
-      employee_id: "emp-1", // CORRIGIDO - usar snake_case
-      scheduled_date: new Date().toISOString(), // CORRIGIDO - usar snake_case
+      template_id: "template-1",
+      employee_id: "emp-1",
+      scheduled_date: new Date().toISOString(),
       status: "pending",
       // Propriedades de compatibilidade
       templateId: "template-1",
@@ -80,20 +80,10 @@ export function EmployeeDashboard() {
       completedAt: new Date(),
       linkUrl: "/assessment/1",
       checklist_templates: {
-        id: "template-1",
-        name: "Avaliação de Estresse",
-        title: "Avaliação de Estresse no Trabalho",
-        description: "Avaliação psicossocial focada em fatores de estresse",
-        type: "psicossocial" as const,
-        scale_type: "likert5" as const,
-        company_id: "comp-1",
-        is_standard: true,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        instructions: "Responda com honestidade sobre sua experiência no trabalho"
+        title: "Avaliação de Estresse no Trabalho"
       }
     }
-  ] as ScheduledAssessment[]; // CORRIGIDO - cast para o tipo correto
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">

@@ -220,3 +220,36 @@ export const psicossocialTemplate = {
     alto: 100
   }
 };
+
+// Function to calculate psychosocial risk level based on score
+export function calculatePsicossocialRisk(score: number): {
+  level: 'baixo' | 'medio' | 'alto' | 'critico';
+  label: string;
+  description: string;
+} {
+  if (score <= 25) {
+    return {
+      level: 'baixo',
+      label: 'Baixo Risco',
+      description: 'Condições psicossociais adequadas'
+    };
+  } else if (score <= 50) {
+    return {
+      level: 'medio',
+      label: 'Risco Moderado',
+      description: 'Algumas melhorias são recomendadas'
+    };
+  } else if (score <= 75) {
+    return {
+      level: 'alto',
+      label: 'Alto Risco',
+      description: 'Intervenções necessárias'
+    };
+  } else {
+    return {
+      level: 'critico',
+      label: 'Risco Crítico',
+      description: 'Ação imediata necessária'
+    };
+  }
+}

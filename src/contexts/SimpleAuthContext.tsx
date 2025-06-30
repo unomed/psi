@@ -7,8 +7,13 @@ import { AppRole } from '@/types';
 interface SimpleAuthContextType {
   isAuthenticated: boolean;
   userRole: AppRole;
+  user: any;
+  isLoading: boolean;
+  userCompanies: { companyId: string; companyName: string; }[];
   login: (email: string, password: string) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  signOut: () => void;
   hasPermission: (requiredRole: AppRole) => boolean;
 }
 
@@ -28,22 +33,38 @@ interface SimpleAuthProviderProps {
 
 export const SimpleAuthProvider: React.FC<SimpleAuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<AppRole>('profissionais' as AppRole); // CORRIGIDO
+  const [userRole, setUserRole] = useState<AppRole>('profissionais' as AppRole);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userCompanies] = useState<{ companyId: string; companyName: string; }[]>([
+    { companyId: '1', companyName: 'Empresa Teste' }
+  ]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulação de login simples
-    if (email && password) {
-      setIsAuthenticated(true);
-      setUserRole('admin' as AppRole); // CORRIGIDO - usar role válido
-      return true;
+    setIsLoading(true);
+    try {
+      // Simulação de login simples
+      if (email && password) {
+        setIsAuthenticated(true);
+        setUserRole('admin' as AppRole);
+        setUser({ email, id: '1' });
+        return true;
+      }
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-    return false;
   };
+
+  const signIn = login; // Alias for compatibility
 
   const logout = () => {
     setIsAuthenticated(false);
-    setUserRole('profissionais' as AppRole); // CORRIGIDO
+    setUserRole('profissionais' as AppRole);
+    setUser(null);
   };
+
+  const signOut = logout; // Alias for compatibility
 
   const hasPermission = (requiredRole: AppRole): boolean => {
     const roleHierarchy: Record<AppRole, number> = {
@@ -61,8 +82,13 @@ export const SimpleAuthProvider: React.FC<SimpleAuthProviderProps> = ({ children
     <SimpleAuthContext.Provider value={{
       isAuthenticated,
       userRole,
+      user,
+      isLoading,
+      userCompanies,
       login,
+      signIn,
       logout,
+      signOut,
       hasPermission
     }}>
       {children}
