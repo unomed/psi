@@ -17,7 +17,7 @@ export default function Setores() {
   const [selectedSector, setSelectedSector] = useState(null);
   const { userCompanies } = useAuth();
   const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
-  const { sectors, isLoading, error } = useSectors(companyId);
+  const { sectors, isLoading, createSector, updateSector, deleteSector } = useSectors(companyId);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleOpenForm = () => {
@@ -32,31 +32,32 @@ export default function Setores() {
     setSelectedSector(null);
   };
 
-  const handleEditSector = (sector) => {
+  const handleEditSector = (sector: any) => {
     setSelectedSector(sector);
     setIsEditMode(true);
     setIsFormOpen(true);
   };
 
-  const handleDeleteSector = async (sector) => {
+  const handleDeleteSector = async (sector: any) => {
     if (!window.confirm(`Tem certeza que deseja excluir o setor "${sector.name}"?`)) {
       return;
     }
 
     try {
-      // Simular deleção - implementar quando hook estiver disponível
+      await deleteSector.mutateAsync(sector.id);
       toast.success("Setor excluído com sucesso!");
     } catch (err) {
       toast.error("Erro ao excluir setor.");
     }
   };
 
-  const handleSubmit = async (sectorData) => {
+  const handleSubmit = async (sectorData: any) => {
     try {
-      // Simular criação/edição - implementar quando hook estiver disponível
       if (isEditMode) {
+        await updateSector.mutateAsync({ ...sectorData, id: selectedSector?.id });
         toast.success("Setor atualizado com sucesso!");
       } else {
+        await createSector.mutateAsync(sectorData);
         toast.success("Setor criado com sucesso!");
       }
       handleCloseForm();
@@ -101,13 +102,12 @@ export default function Setores() {
         <Card>
           <CardContent>Carregando setores...</CardContent>
         </Card>
-      ) : error ? (
-        <Card>
-          <CardContent>Erro ao carregar setores.</CardContent>
-        </Card>
       ) : filteredSectors && filteredSectors.length > 0 ? (
         <SectorGrid
-          sectors={filteredSectors}
+          sectors={filteredSectors.map(sector => ({
+            ...sector,
+            companyId: sector.companyId || companyId || ""
+          }))}
           onEdit={handleEditSector}
           onDelete={handleDeleteSector}
         />
@@ -130,17 +130,11 @@ export default function Setores() {
           <DialogHeader>
             <DialogTitle>{isEditMode ? "Editar Setor" : "Novo Setor"}</DialogTitle>
           </DialogHeader>
-          <div>
-            <p>Formulário de setor em desenvolvimento...</p>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleCloseForm} variant="outline">
-                Cancelar
-              </Button>
-              <Button onClick={() => handleSubmit({})}>
-                {isEditMode ? "Atualizar" : "Criar"}
-              </Button>
-            </div>
-          </div>
+          <SectorForm
+            onSubmit={handleSubmit}
+            initialValues={selectedSector}
+            isEditMode={isEditMode}
+          />
         </DialogContent>
       </Dialog>
     </div>

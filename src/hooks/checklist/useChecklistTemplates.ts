@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate } from "@/types";
 import { toast } from "sonner";
+import type { DbTemplateType, DbScaleType } from "@/services/checklist/types";
 
 export function useChecklistTemplates() {
   const { data: checklists, isLoading, error, refetch } = useQuery({
@@ -29,7 +30,7 @@ export function useChecklistTemplates() {
         title: template.title,
         description: template.description || '',
         category: 'default' as const,
-        type: template.type === 'stress' ? 'custom' : (template.type === 'psicossocial' ? 'psicossocial' : template.type),
+        type: template.type === 'custom' ? 'custom' : (template.type === 'psicossocial' ? 'psicossocial' : template.type),
         scale_type: template.scale_type || 'likert_5',
         is_standard: template.is_standard || false,
         is_active: template.is_active,
@@ -68,13 +69,19 @@ export function useChecklistOperations() {
 
   const createTemplate = useMutation({
     mutationFn: async (data: Omit<ChecklistTemplate, "id" | "created_at" | "updated_at">) => {
+      // Map frontend types to database types
+      const dbType: DbTemplateType = data.type === 'stress' ? 'custom' : data.type as DbTemplateType;
+      const dbScaleType: DbScaleType = (data.scale_type === 'likert_5' ? 'likert5' : 
+                                       data.scale_type === 'likert_7' ? 'likert7' : 
+                                       data.scale_type || 'likert5') as DbScaleType;
+
       const { data: result, error } = await supabase
         .from('checklist_templates')
         .insert({
           title: data.title || data.name,
           description: data.description,
-          type: data.type === 'stress' ? 'custom' : data.type,
-          scale_type: data.scale_type,
+          type: dbType,
+          scale_type: dbScaleType,
           is_active: data.is_active,
           is_standard: data.is_standard,
           estimated_time_minutes: data.estimated_time_minutes,
@@ -101,13 +108,19 @@ export function useChecklistOperations() {
 
   const updateTemplate = useMutation({
     mutationFn: async (data: ChecklistTemplate) => {
+      // Map frontend types to database types
+      const dbType: DbTemplateType = data.type === 'stress' ? 'custom' : data.type as DbTemplateType;
+      const dbScaleType: DbScaleType = (data.scale_type === 'likert_5' ? 'likert5' : 
+                                       data.scale_type === 'likert_7' ? 'likert7' : 
+                                       data.scale_type || 'likert5') as DbScaleType;
+
       const { data: result, error } = await supabase
         .from('checklist_templates')
         .update({
           title: data.title || data.name,
           description: data.description,
-          type: data.type === 'stress' ? 'custom' : data.type,
-          scale_type: data.scale_type,
+          type: dbType,
+          scale_type: dbScaleType,
           is_active: data.is_active,
           is_standard: data.is_standard,
           estimated_time_minutes: data.estimated_time_minutes,

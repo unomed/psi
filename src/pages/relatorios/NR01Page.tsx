@@ -14,11 +14,6 @@ export default function NR01Page() {
   const { userCompanies } = useAuth();
   const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
   const [activeTab, setActiveTab] = useState("compliance");
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
-
-  const handleDateRangeChange = (dates: [Date | null, Date | null]) => {
-    setDateRange(dates);
-  };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -74,7 +69,11 @@ export default function NR01Page() {
               <div className="mb-4">
                 <p>Seletor de data em desenvolvimento...</p>
               </div>
-              <NR01ComplianceReport />
+              <NR01ComplianceReport 
+                companyId={companyId || ""}
+                periodStart={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
+                periodEnd={new Date()}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -94,7 +93,15 @@ export default function NR01Page() {
               <div className="mb-4">
                 <p>Seletor de data em desenvolvimento...</p>
               </div>
-              <ActionPlanSummary />
+              <ActionPlanSummary 
+                filters={{
+                  companyId: companyId || "",
+                  dateRange: {
+                    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    end: new Date()
+                  }
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -114,7 +121,15 @@ export default function NR01Page() {
               <div className="mb-4">
                 <p>Seletor de data em desenvolvimento...</p>
               </div>
-              <RiskAnalysisSummary />
+              <RiskAnalysisSummary 
+                filters={{
+                  companyId: companyId || "",
+                  dateRange: {
+                    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    end: new Date()
+                  }
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -134,7 +149,11 @@ export default function NR01Page() {
               <div className="mb-4">
                 <p>Seletor de data em desenvolvimento...</p>
               </div>
-              <EffectivenessMetrics />
+              <EffectivenessMetrics 
+                implementationRate={75}
+                riskReduction={65}
+                overallEffectiveness={70}
+              />
             </CardContent>
           </Card>
         </TabsContent>

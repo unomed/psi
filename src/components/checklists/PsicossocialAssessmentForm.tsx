@@ -38,6 +38,11 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
     );
   }
 
+  const handleQuestionResponse = (questionId: string, value: string | number) => {
+    // Convert to string to ensure type consistency
+    handleResponseChange(String(value));
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
@@ -52,7 +57,7 @@ export function PsicossocialAssessmentForm({ template, onSubmit, onCancel }: Psi
           <PsicossocialQuestionCard
             question={currentQuestion}
             response={responses[String(currentQuestion.id || "")] || ""}
-            onResponseChange={(questionId, value) => handleResponseChange(String(value))}
+            onResponseChange={handleQuestionResponse}
           />
 
           <PsicossocialNavigationButtons
