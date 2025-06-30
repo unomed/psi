@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { CandidateComparison } from "@/components/candidates/CandidateComparison";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CandidatosComparacao() {
@@ -9,22 +9,21 @@ export default function CandidatosComparacao() {
         <div>
           <h1 className="text-3xl font-bold">Comparação de Candidatos</h1>
           <p className="text-muted-foreground">
-            Compare perfis comportamentais de candidatos
+            Compare perfis comportamentais e competências de candidatos
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Análise Comparativa</CardTitle>
+          <CardTitle>Análise Comparativa de Candidatos</CardTitle>
           <CardDescription>
-            Compare candidatos com base em competências comportamentais
+            Utilize ferramentas avançadas para comparar candidatos com base em avaliações comportamentais, 
+            competências técnicas e adequação cultural
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Funcionalidade em desenvolvimento...
-          </p>
+          <CandidateComparison />
         </CardContent>
       </Card>
     </div>
