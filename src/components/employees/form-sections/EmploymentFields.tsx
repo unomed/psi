@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,13 +26,14 @@ export function EmploymentFields({
   onSectorChange,
   onRoleChange
 }: EmploymentFieldsProps) {
-  const { companies } = useCompanies();
+  const { data: companies } = useCompanies();
   const { sectors } = useSectors();
   const { roles } = useRoles();
   const { filterResourcesByCompany } = useCompanyAccessCheck();
   
-  const formattedCompanies = companies.map(company => ({
+  const formattedCompanies = (companies || []).map(company => ({
     company_id: company.id,
+    name: company.name,
     ...company
   }));
   

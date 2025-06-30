@@ -19,7 +19,8 @@ export function createDefaultTemplate(type: string): Partial<ChecklistTemplate> 
   return DEFAULT_PSICOSSOCIAL_TEMPLATE;
 }
 
-export async function initializeDefaultTemplates(): Promise<void> {
+export async function initializeDefaultTemplates(): Promise<boolean> {
   console.log("Initializing default templates...");
   // Implementation will be added when needed
+  return true;
 }

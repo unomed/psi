@@ -1,348 +1,155 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion } from "@/types";
+import { ChecklistTemplate, ChecklistResult } from "@/types";
 import { mapDbTemplateTypeToApp } from "@/services/checklist/templateUtils";
 
-export async function submitAssessmentResult(resultData: Omit<any, "id" | "completedAt">) {
+export async function fetchAssessmentByToken(token: string) {
   try {
-    const { data: result, error } = await supabase
+    console.log("[fetchAssessmentByToken] Buscando assessment com token:", token);
+    
+    const { data: linkData, error: linkError } = await supabase
+      .from('assessment_links')
+      .select(`
+        *,
+        checklist_templates (
+          id,
+          title,
+          description,
+          type,
+          scale_type,
+          questions,
+          cutoff_scores,
+          created_at,
+          updated_at
+        )
+      `)
+      .eq('token', token)
+      .single();
+
+    if (linkError) {
+      console.error("[fetchAssessmentByToken] Erro ao buscar link:", linkError);
+      return { error: "Link de avaliação não encontrado ou expirado" };
+    }
+
+    if (!linkData || !linkData.checklist_templates) {
+      console.error("[fetchAssessmentByToken] Link ou template não encontrado");
+      return { error: "Template de avaliação não encontrado" };
+    }
+
+    // Verificar se o link não expirou
+    if (linkData.expires_at && new Date(linkData.expires_at) < new Date()) {
+      console.error("[fetchAssessmentByToken] Link expirado");
+      return { error: "Link de avaliação expirado" };
+    }
+
+    // Verificar se já foi usado
+    if (linkData.used_at) {
+      console.error("[fetchAssessmentByToken] Link já foi usado");
+      return { error: "Este link de avaliação já foi utilizado" };
+    }
+
+    console.log("[fetchAssessmentByToken] Link válido encontrado:", linkData);
+
+    // Converter template para o formato esperado
+    const template = {
+      id: linkData.checklist_templates.id,
+      title: linkData.checklist_templates.title,
+      description: linkData.checklist_templates.description || "",
+      type: linkData.checklist_templates.type,
+      scale_type: linkData.checklist_templates.scale_type,
+      questions: linkData.checklist_templates.questions || [],
+      cutoff_scores: linkData.checklist_templates.cutoff_scores || { high: 80, medium: 60, low: 40 },
+      created_at: linkData.checklist_templates.created_at,
+      updated_at: linkData.checklist_templates.updated_at,
+      category: "custom" as const
+    };
+
+    return { 
+      template,
+      linkData: {
+        id: linkData.id,
+        employee_id: linkData.employee_id,
+        created_by: linkData.created_by
+      }
+    };
+  } catch (error) {
+    console.error("[fetchAssessmentByToken] Erro inesperado:", error);
+    return { error: "Erro interno do servidor" };
+  }
+}
+
+export async function submitAssessmentResult(resultData: any) {
+  try {
+    console.log("[submitAssessmentResult] Enviando resultado:", resultData);
+
+    const assessmentResponse = {
+      template_id: resultData.templateId,
+      employee_id: resultData.employeeId || null,
+      employee_name: resultData.employeeName || "Anônimo",
+      response_data: resultData.responses,
+      raw_score: resultData.results?.totalScore || 0,
+      dominant_factor: resultData.dominantFactor,
+      factors_scores: resultData.results,
+      notes: null,
+      created_by: null
+    };
+
+    const { data, error } = await supabase
       .from('assessment_responses')
-      .insert({
-        template_id: resultData.templateId,
-        employee_id: resultData.employeeId,
-        employee_name: resultData.employeeName,
-        response_data: resultData.responses,
-        factors_scores: resultData.factorsScores,
-        dominant_factor: resultData.dominantFactor,
-        notes: resultData.notes
-      })
+      .insert([assessmentResponse])
       .select()
       .single();
 
     if (error) {
-      return { error: "Erro ao salvar resultado da avaliação", result: null };
+      console.error("[submitAssessmentResult] Erro ao salvar:", error);
+      throw error;
     }
 
-    if (resultData.linkId) {
-      await supabase
-        .from('assessment_links')
-        .update({ used_at: new Date().toISOString() })
-        .eq('id', resultData.linkId);
-    }
-
-    if (resultData.assessmentId) {
-      await supabase
-        .from('scheduled_assessments')
-        .update({ 
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', resultData.assessmentId);
-    }
-
-    return { result, error: null };
+    console.log("[submitAssessmentResult] Resultado salvo com sucesso:", data);
+    return { result: data };
   } catch (error) {
-    console.error("Error submitting assessment result:", error);
-    return { error: "Erro ao enviar resultado da avaliação", result: null };
+    console.error("[submitAssessmentResult] Erro:", error);
+    return { error: "Erro ao salvar resultado da avaliação" };
   }
 }
 
-export async function fetchAssessmentByToken(token: string) {
+export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
   try {
-    console.log("=== FETCH ASSESSMENT BY TOKEN - INÍCIO ===");
-    console.log("Token recebido (original):", token);
-    
-    // PASSO 0: Tratamento robusto do token
-    let cleanToken = token;
-    
-    // Decodificar URL se necessário
-    if (token.includes('%')) {
-      cleanToken = decodeURIComponent(token);
-      console.log("Token após decodificação URL:", cleanToken);
-    }
-    
-    // Remover espaços em branco
-    cleanToken = cleanToken.trim();
-    console.log("Token limpo final:", cleanToken);
-    
-    // Validar formato básico do token
-    if (!cleanToken || cleanToken.length < 10) {
-      console.error("Token inválido - muito curto:", cleanToken);
-      return { error: "Token de avaliação inválido" };
-    }
-    
-    // PASSO 1: Buscar link de avaliação com debug melhorado
-    console.log("Passo 1: Buscando link de avaliação...");
-    console.log("Query SQL equivalente: SELECT * FROM assessment_links WHERE token = '" + cleanToken + "'");
-    
-    const { data: linkData, error: linkError } = await supabase
-      .from('assessment_links')
-      .select('id, employee_id, template_id, expires_at, used_at, created_at, token')
-      .eq('token', cleanToken)
-      .maybeSingle();
-
-    console.log("Resultado da query assessment_links:");
-    console.log("- linkData:", linkData);
-    console.log("- linkError:", linkError);
-
-    if (linkError) {
-      console.error("Erro ao buscar link (SQL):", linkError);
-      return { error: "Erro na consulta do link de avaliação: " + linkError.message };
-    }
-
-    if (!linkData) {
-      console.log("Link não encontrado. Tentando busca alternativa...");
-      
-      // Busca alternativa - todos os tokens para debug
-      const { data: allTokens, error: allTokensError } = await supabase
-        .from('assessment_links')
-        .select('token, created_at')
-        .order('created_at', { ascending: false })
-        .limit(10);
-        
-      console.log("Últimos 10 tokens no banco:", allTokens);
-      console.log("Erro na busca de tokens:", allTokensError);
-      
-      // Busca com LIKE para tokens similares
-      const { data: similarTokens, error: similarError } = await supabase
-        .from('assessment_links')
-        .select('token, id, created_at')
-        .ilike('token', `%${cleanToken.substring(0, 10)}%`)
-        .limit(5);
-        
-      console.log("Tokens similares encontrados:", similarTokens);
-      
-      return { error: "Link de avaliação não encontrado no banco de dados" };
-    }
-
-    console.log("Link encontrado com sucesso:", {
-      id: linkData.id,
-      employee_id: linkData.employee_id,
-      template_id: linkData.template_id,
-      token_match: linkData.token === cleanToken
-    });
-
-    // PASSO 2: Verificar validade do link com melhor diagnóstico
-    console.log("Passo 2: Verificando validade do link...");
-    
-    const now = new Date();
-    const expiresAt = linkData.expires_at ? new Date(linkData.expires_at) : null;
-    const usedAt = linkData.used_at ? new Date(linkData.used_at) : null;
-    
-    console.log("Verificação de validade:", {
-      now: now.toISOString(),
-      expires_at: linkData.expires_at,
-      used_at: linkData.used_at,
-      is_expired: expiresAt ? expiresAt < now : false,
-      is_used: !!usedAt
-    });
-    
-    if (expiresAt && expiresAt < now) {
-      console.log("Link expirado:", {
-        expires_at: linkData.expires_at,
-        expired_hours_ago: Math.round((now.getTime() - expiresAt.getTime()) / (1000 * 60 * 60))
-      });
-      return { error: "Link de avaliação expirado" };
-    }
-
-    if (usedAt) {
-      console.log("Link já foi usado:", {
-        used_at: linkData.used_at,
-        used_hours_ago: Math.round((now.getTime() - usedAt.getTime()) / (1000 * 60 * 60))
-      });
-      return { error: "Este link de avaliação já foi utilizado" };
-    }
-
-    console.log("Link válido! Prosseguindo...");
-
-    // PASSO 3: Buscar template com error handling melhorado
-    console.log("Passo 3: Buscando template...");
-    console.log("Template ID a buscar:", linkData.template_id);
-    
-    const { data: templateData, error: templateError } = await supabase
-      .from('checklist_templates')
+    const { data, error } = await supabase
+      .from('assessment_responses')
       .select(`
-        id,
-        title,
-        description,
-        type,
-        scale_type,
-        instructions,
-        company_id,
-        created_at,
-        updated_at,
-        estimated_time_minutes,
-        max_score,
-        cutoff_scores,
-        interpretation_guide,
-        is_standard,
-        is_active,
-        version,
-        created_by,
-        derived_from_id
+        *,
+        checklist_templates (
+          title,
+          type,
+          description
+        )
       `)
-      .eq('id', linkData.template_id)
-      .maybeSingle();
+      .order('completed_at', { ascending: false });
 
-    console.log("Resultado da busca do template:");
-    console.log("- templateData:", templateData ? { id: templateData.id, title: templateData.title } : null);
-    console.log("- templateError:", templateError);
-
-    if (templateError) {
-      console.error("Erro ao buscar template:", templateError);
-      return { error: "Erro na consulta do template: " + templateError.message };
-    }
-    
-    if (!templateData) {
-      console.error("Template não encontrado:", linkData.template_id);
-      return { error: "Template de avaliação não encontrado" };
+    if (error) {
+      console.error('Error fetching assessment results:', error);
+      throw error;
     }
 
-    console.log("Template encontrado:", {
-      id: templateData.id,
-      title: templateData.title,
-      type: templateData.type,
-      is_active: templateData.is_active
-    });
-
-    // PASSO 4: Buscar questões com debug
-    console.log("Passo 4: Buscando questões...");
-    const { data: questionsData, error: questionsError } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('template_id', linkData.template_id)
-      .order('order_number');
-
-    console.log("Resultado da busca de questões:");
-    console.log("- questionsData length:", questionsData?.length || 0);
-    console.log("- questionsError:", questionsError);
-
-    if (questionsError) {
-      console.error("Erro ao buscar questões:", questionsError);
-      return { error: "Erro na consulta das questões: " + questionsError.message };
-    }
-
-    // PASSO 5: Mapear tipo do template
-    console.log("Passo 5: Mapeando tipo do template...");
-    const templateType = mapDbTemplateTypeToApp(templateData.type);
-    console.log("Tipo mapeado:", templateType);
-
-    // PASSO 6: Transformar questões (corrigido)
-    console.log("Passo 6: Transformando questões...");
-    let questions: any[] = [];
-    
-    if (templateType === "disc") {
-      questions = (questionsData || []).map(q => ({
-        id: q.id,
-        text: q.question_text,
-        question_text: q.question_text,
-        targetFactor: q.target_factor as any,
-        weight: q.weight || 1,
-        template_id: q.template_id,
-        order_number: q.order_number,
-        created_at: q.created_at,
-        updated_at: q.created_at // Corrigido: usar created_at quando updated_at não existe
-      }));
-    } else if (templateType === "psicossocial") {
-      questions = (questionsData || []).map(q => ({
-        id: q.id,
-        text: q.question_text,
-        question_text: q.question_text,
-        category: q.target_factor || "Geral",
-        weight: q.weight || 1,
-        template_id: q.template_id,
-        order_number: q.order_number,
-        created_at: q.created_at,
-        updated_at: q.created_at // Corrigido: usar created_at quando updated_at não existe
-      }));
-    } else {
-      questions = (questionsData || []).map(q => ({
-        id: q.id,
-        text: q.question_text,
-        question_text: q.question_text,
-        targetFactor: q.target_factor as any,
-        weight: q.weight || 1,
-        template_id: q.template_id,
-        order_number: q.order_number,
-        created_at: q.created_at,
-        updated_at: q.created_at // Corrigido: usar created_at quando updated_at não existe
-      }));
-    }
-
-    console.log("Questões transformadas:", questions.length);
-
-    // PASSO 7: Montar template completo (corrigido)
-    console.log("Passo 7: Montando template completo...");
-    
-    // Corrigir cutoff_scores
-    let cutoffScores = { high: 80, medium: 60, low: 40 };
-    if (templateData.cutoff_scores && typeof templateData.cutoff_scores === 'object') {
-      cutoffScores = templateData.cutoff_scores as { high: number; medium: number; low: number; };
-    }
-    
-    const template: ChecklistTemplate = {
-      id: templateData.id,
-      name: templateData.title,
-      title: templateData.title,
-      description: templateData.description || "",
-      category: templateType === "disc" ? "disc" : templateType === "psicossocial" ? "psicossocial" : "default",
-      type: templateType,
-      questions: questions.map(q => ({
-        id: q.id,
-        template_id: q.template_id,
-        question_text: q.question_text,
-        text: q.text,
-        order_number: q.order_number,
-        created_at: q.created_at,
-        updated_at: q.updated_at
-      })),
-      createdAt: new Date(templateData.created_at),
-      updated_at: templateData.updated_at,
-      scale_type: templateData.scale_type as any,
-      is_standard: templateData.is_standard,
-      is_active: templateData.is_active,
-      estimated_time_minutes: templateData.estimated_time_minutes,
-      version: templateData.version,
-      created_at: templateData.created_at,
-      company_id: templateData.company_id,
-      created_by: templateData.created_by,
-      cutoff_scores: cutoffScores, // Corrigido
-      derived_from_id: templateData.derived_from_id,
-      instructions: templateData.instructions,
-      interpretation_guide: templateData.interpretation_guide,
-      max_score: templateData.max_score
-    };
-
-    console.log("Template completo montado:", {
-      id: template.id,
-      title: template.title,
-      questionsCount: template.questions?.length || 0
-    });
-
-    const result = {
-      template,
-      assessmentId: linkData.id,
-      linkId: linkData.id,
-      employeeId: linkData.employee_id,
-      error: null
-    };
-
-    console.log("=== FETCH ASSESSMENT BY TOKEN - SUCESSO ===");
-    console.log("Resultado final:", {
-      template_id: result.template.id,
-      employee_id: result.employeeId,
-      questions_count: result.template.questions?.length || 0
-    });
-    
-    return result;
-
+    return (data || []).map(result => ({
+      id: result.id,
+      template_id: result.template_id,
+      employee_id: result.employee_id,
+      templateId: result.template_id,
+      employeeId: result.employee_id,
+      employeeName: result.employee_name,
+      employee_name: result.employee_name,
+      responses: result.response_data as Record<string, any>,
+      results: result.factors_scores as Record<string, number>,
+      dominantFactor: result.dominant_factor,
+      dominant_factor: result.dominant_factor,
+      score: result.raw_score,
+      completedAt: new Date(result.completed_at),
+      completed_at: result.completed_at,
+      createdBy: result.created_by || ""
+    }));
   } catch (error) {
-    console.error("=== FETCH ASSESSMENT BY TOKEN - ERRO CRÍTICO ===");
-    console.error("Erro detalhado:", {
-      message: error?.message || 'Unknown error',
-      stack: error?.stack || 'No stack trace',
-      token: token
-    });
-    return { error: "Erro interno ao buscar avaliação: " + (error?.message || 'Erro desconhecido') };
+    console.error('Error in fetchAssessmentResults:', error);
+    throw error;
   }
 }

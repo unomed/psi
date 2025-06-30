@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useCompanies } from "@/hooks/useCompanies";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,7 +22,7 @@ export function CompanySelector({
   onCompanyChange,
 }: CompanySelectorProps) {
   const { userRole, userCompanies: authUserCompanies } = useAuth();
-  const { companies: allCompanies, isLoading } = useCompanies();
+  const { data: allCompanies, isLoading } = useCompanies();
 
   const companiesForUser = userRole === 'superadmin'
     ? allCompanies

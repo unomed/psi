@@ -1,3 +1,4 @@
+
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
@@ -53,11 +54,13 @@ export default function PublicAssessment() {
 
         if ('template' in response && response.template) {
           console.log("[PublicAssessment] Validação bem-sucedida:", response.template);
-          // Convert template to match expected type
+          // Convert template to match expected type with defaults for required fields
           const convertedTemplate: ChecklistTemplate = {
             ...response.template,
             category: response.template.category || "custom",
-            createdAt: new Date(response.template.created_at || Date.now())
+            createdAt: new Date(response.template.created_at || Date.now()),
+            cutoff_scores: response.template.cutoff_scores || { high: 80, medium: 60, low: 40 },
+            questions: response.template.questions || []
           };
           setTemplate(convertedTemplate);
           setEmployeeName("Funcionário");
@@ -209,13 +212,13 @@ export default function PublicAssessment() {
             <CardContent>
               {template.type === 'disc' ? (
                 <DiscAssessmentForm
-                  template={template}
+                  template={template as any}
                   onSubmit={handleSubmitAssessment}
                   onCancel={handleBackToDashboard}
                 />
               ) : (
                 <PsicossocialAssessmentForm
-                  template={template}
+                  template={template as any}
                   onSubmit={handleSubmitAssessment}
                   onCancel={handleBackToDashboard}
                 />
