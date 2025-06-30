@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { EmailTemplate } from "@/types";
 
@@ -165,19 +164,28 @@ export async function createDefaultEmailTemplates(): Promise<void> {
 }
 
 export async function fetchEmailTemplates(): Promise<EmailTemplate[]> {
-  try {
-    const { data, error } = await supabase
-      .from('email_templates')
-      .select('*')
-      .order('name');
+  const { data, error } = await supabase
+    .from('email_templates')
+    .select('*')
+    .order('name');
 
-    if (error) throw error;
-
-    return data || [];
-  } catch (error) {
-    console.error("Error fetching email templates:", error);
+  if (error) {
+    console.error('Error fetching email templates:', error);
     throw error;
   }
+
+  // Corrigido: Tratamento adequado do tipo Json para Record<string, string>
+  return (data || []).map(template => ({
+    id: template.id,
+    name: template.name,
+    subject: template.subject,
+    body: template.body,
+    variables: typeof template.variables === 'object' && template.variables !== null 
+      ? template.variables as Record<string, string>
+      : {},
+    created_at: template.created_at,
+    updated_at: template.updated_at
+  }));
 }
 
 export async function saveEmailTemplate(template: Omit<EmailTemplate, "id">): Promise<string> {

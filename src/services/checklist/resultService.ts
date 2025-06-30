@@ -5,14 +5,14 @@ import { DiscFactorType } from "@/types/disc";
 import { stringToDiscFactorType } from "./utils";
 
 export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | "completedAt">): Promise<string> {
-  const dominantFactorString = result.dominant_factor?.toString() || result.dominantFactor?.toString() || '';
+  const dominantFactorString = result.dominant_factor?.toString() || '';
   
-  // Verificar se o employee_id é válido
-  if (!result.employee_name && !result.employeeName) {
+  // Verificar se o employee_name é válido
+  if (!result.employee_name) {
     throw new Error('Employee name is required to save assessment');
   }
   
-  const employeeName = result.employee_name || result.employeeName || '';
+  const employeeName = result.employee_name || '';
   
   // Buscar funcionário por nome para obter o ID correto
   const { data: employee, error: empError } = await supabase
@@ -29,7 +29,7 @@ export async function saveAssessmentResult(result: Omit<ChecklistResult, "id" | 
   const { data, error } = await supabase
     .from('assessment_responses')
     .insert({
-      template_id: result.template_id || result.templateId,
+      template_id: result.template_id,
       employee_id: employee.id, // Usar o ID correto do funcionário
       employee_name: employeeName,
       dominant_factor: dominantFactorString,

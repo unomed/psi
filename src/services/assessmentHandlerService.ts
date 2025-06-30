@@ -54,7 +54,7 @@ export const handleSaveAssessment = async (
     if (responseError) {
       console.error("Erro ao salvar na tabela assessment_responses:", responseError);
       
-      // If that fails, try to save as a scheduled assessment
+      // If that fails, try to save as a scheduled assessment (corrigido)
       await saveScheduledAssessment({
         employee_id: selectedEmployee,
         template_id: selectedTemplate.id,
@@ -92,6 +92,7 @@ export const calculateNextScheduledDate = (currentDate: Date, recurrenceType: Re
       nextDate.setMonth(nextDate.getMonth() + 6);
       break;
     case "annual":
+    case "yearly": // Adicionado suporte para yearly
       nextDate.setFullYear(nextDate.getFullYear() + 1);
       break;
     default:

@@ -125,7 +125,7 @@ export function useChecklistData() {
         linkUrl: item.link_url || '',
         link_url: item.link_url,
         company_id: item.company_id,
-        employee_name: item.employee_name || (Array.isArray(item.employees) ? item.employees[0]?.name : item.employees?.name || 'Funcionário'),
+        employee_name: item.employee_name || "Funcionário",
         employees: Array.isArray(item.employees) ? item.employees[0] : item.employees,
         checklist_templates: Array.isArray(item.checklist_templates) ? item.checklist_templates[0] : item.checklist_templates,
         checklist_template_id: item.template_id,

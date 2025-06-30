@@ -227,7 +227,7 @@ export async function fetchAssessmentByToken(token: string) {
     const templateType = mapDbTemplateTypeToApp(templateData.type);
     console.log("Tipo mapeado:", templateType);
 
-    // PASSO 6: Transformar questões
+    // PASSO 6: Transformar questões (corrigido)
     console.log("Passo 6: Transformando questões...");
     let questions: any[] = [];
     
@@ -241,7 +241,7 @@ export async function fetchAssessmentByToken(token: string) {
         template_id: q.template_id,
         order_number: q.order_number,
         created_at: q.created_at,
-        updated_at: q.updated_at
+        updated_at: q.created_at // Corrigido: usar created_at quando updated_at não existe
       }));
     } else if (templateType === "psicossocial") {
       questions = (questionsData || []).map(q => ({
@@ -253,7 +253,7 @@ export async function fetchAssessmentByToken(token: string) {
         template_id: q.template_id,
         order_number: q.order_number,
         created_at: q.created_at,
-        updated_at: q.updated_at
+        updated_at: q.created_at // Corrigido: usar created_at quando updated_at não existe
       }));
     } else {
       questions = (questionsData || []).map(q => ({
@@ -265,14 +265,21 @@ export async function fetchAssessmentByToken(token: string) {
         template_id: q.template_id,
         order_number: q.order_number,
         created_at: q.created_at,
-        updated_at: q.updated_at
+        updated_at: q.created_at // Corrigido: usar created_at quando updated_at não existe
       }));
     }
 
     console.log("Questões transformadas:", questions.length);
 
-    // PASSO 7: Montar template completo
+    // PASSO 7: Montar template completo (corrigido)
     console.log("Passo 7: Montando template completo...");
+    
+    // Corrigir cutoff_scores
+    let cutoffScores = { high: 80, medium: 60, low: 40 };
+    if (templateData.cutoff_scores && typeof templateData.cutoff_scores === 'object') {
+      cutoffScores = templateData.cutoff_scores as { high: number; medium: number; low: number; };
+    }
+    
     const template: ChecklistTemplate = {
       id: templateData.id,
       name: templateData.title,
@@ -299,7 +306,7 @@ export async function fetchAssessmentByToken(token: string) {
       created_at: templateData.created_at,
       company_id: templateData.company_id,
       created_by: templateData.created_by,
-      cutoff_scores: templateData.cutoff_scores,
+      cutoff_scores: cutoffScores, // Corrigido
       derived_from_id: templateData.derived_from_id,
       instructions: templateData.instructions,
       interpretation_guide: templateData.interpretation_guide,
