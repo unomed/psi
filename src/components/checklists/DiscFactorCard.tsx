@@ -27,8 +27,8 @@ export function DiscFactorCard({ factor, className }: DiscFactorCardProps) {
     );
   }
 
-  // Garantir que factor.type existe
-  const factorType = factor.type || 'D';
+  // Garantir que factor.type existe e é do tipo correto
+  const factorType = factor.type as DiscFactorType || DiscFactorType.D;
 
   return (
     <Card className={cn("border", getFactorBackgroundColor(factorType), className)}>

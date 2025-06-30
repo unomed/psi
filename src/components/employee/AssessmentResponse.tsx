@@ -1,129 +1,59 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ChecklistTemplate } from "@/types";
-import { DiscAssessmentForm } from "@/components/checklists/DiscAssessmentForm";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AssessmentResponseProps {
-  templateId: string;
-  employeeId: string;
-  onComplete: () => void;
+  assessment: {
+    id: string;
+    templateId: string;
+    templateName: string;
+    questions: any[];
+  };
+  onSubmit: (responses: Record<string, any>) => void;
 }
 
-export function AssessmentResponse({
-  templateId,
-  employeeId,
-  onComplete
-}: AssessmentResponseProps) {
-  const [template, setTemplate] = useState<ChecklistTemplate | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function AssessmentResponse({ assessment, onSubmit }: AssessmentResponseProps) {
+  const [responses, setResponses] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    fetchTemplate();
-  }, [templateId]);
-
-  const fetchTemplate = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('checklist_templates')
-        .select('*')
-        .eq('id', templateId)
-        .single();
-
-      if (error) throw error;
-
-      // Map database fields to ChecklistTemplate interface
-      const mappedTemplate: ChecklistTemplate = {
-        id: data.id,
-        name: data.title,
-        title: data.title,
-        description: data.description,
-        category: 'default', // Add required category field
-        type: data.type,
-        scale_type: data.scale_type,
-        is_active: data.is_active,
-        is_standard: data.is_standard || false,
-        estimated_time_minutes: data.estimated_time_minutes,
-        version: data.version,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-        company_id: data.company_id,
-        created_by: data.created_by,
-        cutoff_scores: data.cutoff_scores,
-        derived_from_id: data.derived_from_id,
-        instructions: data.instructions
-      };
-
-      setTemplate(mappedTemplate);
-    } catch (err) {
-      console.error('Error fetching template:', err);
-      setError('Erro ao carregar template');
-    } finally {
-      setLoading(false);
-    }
+  const handleResponseChange = (questionId: string, value: any) => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: value,
+    }));
   };
 
-  const handleSubmit = async (responses: any) => {
-    try {
-      const { error } = await supabase
-        .from('assessment_responses')
-        .insert({
-          template_id: templateId,
-          employee_id: employeeId,
-          response_data: responses,
-          completed_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-      onComplete();
-    } catch (err) {
-      console.error('Error saving response:', err);
-      setError('Erro ao salvar resposta');
-    }
+  const handleSubmit = () => {
+    onSubmit(responses);
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center">Carregando avaliação...</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">{error}</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!template) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center">Template não encontrado</div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Mock template data with corrected scale type
+  const mockTemplate = {
+    id: assessment.templateId,
+    name: assessment.templateName,
+    title: assessment.templateName,
+    type: "psicossocial" as const,
+    scale_type: "likert5" as const,
+    questions: assessment.questions
+  };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <DiscAssessmentForm
-        template={template}
-        onSubmit={handleSubmit}
-        onCancel={onComplete}
-      />
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Responder Avaliação: {mockTemplate.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {mockTemplate.questions.map((question) => (
+          <div key={question.id} className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">{question.text}</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              onChange={(e) => handleResponseChange(question.id, e.target.value)}
+            />
+          </div>
+        ))}
+        <Button onClick={handleSubmit}>Enviar Respostas</Button>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,6 +1,6 @@
 
 // Tipos principais do sistema - VERSÃO CORRIGIDA E UNIFICADA
-export type ScaleType = "likert" | "yes_no" | "custom" | "frequency" | "numeric" | "likert5" | "binary" | "percentage" | "psicossocial" | "likert_5";
+export type ScaleType = "likert" | "yes_no" | "custom" | "frequency" | "numeric" | "likert5" | "binary" | "percentage" | "psicossocial" | "likert_5" | "stanine" | "percentile" | "tscore" | "range10";
 
 export type ChecklistTemplateType = "psicossocial" | "disc" | "custom" | "360" | "standard" | "stress" | "srq20" | "phq9" | "gad7" | "mbi" | "audit" | "pss" | "copsoq" | "jcq" | "eri" | "personal_life" | "evaluation_360";
 
@@ -9,10 +9,13 @@ export type RiskLevel = "baixo" | "medio" | "alto" | "critico";
 // Tipos de recorrência COMPLETOS
 export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "yearly" | "semiannual" | "annual";
 
-// App Role type
-export type AppRole = "superadmin" | "admin" | "evaluator" | "profissionais";
+// App Role type - CORRIGIDO
+export type AppRole = "superadmin" | "admin" | "evaluator" | "profissionais" | "user";
 
-// Company Data type
+// Email Template Types - EXPANDIDO
+export type EmailTemplateType = "" | "initial_invite" | "reminder_3_days" | "reminder_1_day" | "final_reminder" | "completion_confirmation" | "high_risk_alert" | "manager_notification" | "action_plan_created";
+
+// Company Data type - EXPANDIDO
 export interface CompanyData {
   id: string;
   name: string;
@@ -27,6 +30,7 @@ export interface CompanyData {
   contact_email?: string;
   contact_phone?: string;
   logo_url?: string;
+  notes?: string; // ADICIONADO
   created_at?: string;
   updated_at?: string;
 }
@@ -78,7 +82,7 @@ export interface ScheduledAssessment {
   };
 }
 
-// Interface EmailTemplate COMPLETA com type mais flexível
+// Interface EmailTemplate COMPLETA
 export interface EmailTemplate {
   id: string;
   name: string;
@@ -87,8 +91,8 @@ export interface EmailTemplate {
   variables?: any;
   created_at?: string;
   
-  // Propriedades adicionais - type mais flexível
-  type?: string; // Aceita qualquer string
+  // Propriedades adicionais - type agora usa o union type específico
+  type?: EmailTemplateType; // CORRIGIDO - usa o tipo específico
   description?: string;
 }
 
@@ -179,7 +183,8 @@ export interface PsicossocialQuestion {
   weight?: number;
   order_number?: number;
   reverse_scored?: boolean;
-  created_at?: string; // Adicionado
+  created_at?: string;
+  updated_at?: string; // ADICIONADO
 }
 
 export interface DiscQuestion {
@@ -232,7 +237,7 @@ export interface EmployeeFormData {
   birth_date?: string;
   gender?: string;
   address?: string;
-  photo_url?: string; // Adicionado
+  photo_url?: string; // ADICIONADO
   special_conditions?: string;
   employee_tags?: any[];
 }
@@ -246,3 +251,9 @@ export interface ChecklistResponse {
   categorizedResults: Record<string, number>;
   factorsScores: Record<string, number>;
 }
+
+// Utility function - ADICIONADO
+export const generateUniqueAssessmentLink = (assessmentId: string): string => {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://app.exemplo.com';
+  return `${baseUrl}/employee-portal/assessment/${assessmentId}`;
+};

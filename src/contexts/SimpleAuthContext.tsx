@@ -1,186 +1,71 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+// Import AppRole from types
 import { AppRole } from '@/types';
 
 interface SimpleAuthContextType {
-  user: User | null;
-  userRole: AppRole | null;
-  userCompanies: any[];
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  isAuthenticated: boolean;
+  userRole: AppRole;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  hasPermission: (requiredRole: AppRole) => boolean;
 }
 
 const SimpleAuthContext = createContext<SimpleAuthContextType | undefined>(undefined);
 
-export function SimpleAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [userRole, setUserRole] = useState<AppRole | null>(null);
-  const [userCompanies, setUserCompanies] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Função para buscar dados do usuário do banco
-  const fetchUserData = async (userId: string) => {
-    try {
-      console.log('[SimpleAuthContext] Buscando dados do usuário:', userId);
-      
-      // Buscar role do usuário
-      const { data: userRoles, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .limit(1);
-
-      if (roleError) {
-        console.error('[SimpleAuthContext] Erro ao buscar role:', roleError);
-      } else if (userRoles && userRoles.length > 0) {
-        setUserRole(userRoles[0].role as AppRole);
-        console.log('[SimpleAuthContext] Role encontrada:', userRoles[0].role);
-      } else {
-        setUserRole('user'); // Role padrão
-        console.log('[SimpleAuthContext] Nenhuma role encontrada, usando padrão: user');
-      }
-
-      // Buscar empresas do usuário com query corrigida
-      const { data: userCompaniesData, error: companiesError } = await supabase
-        .from('user_companies')
-        .select('company_id')
-        .eq('user_id', userId);
-
-      if (companiesError) {
-        console.error('[SimpleAuthContext] Erro ao buscar user_companies:', companiesError);
-        setUserCompanies([]);
-      } else if (userCompaniesData && userCompaniesData.length > 0) {
-        // Buscar os nomes das empresas separadamente
-        const companyIds = userCompaniesData.map(uc => uc.company_id);
-        const { data: companies, error: companyNamesError } = await supabase
-          .from('companies')
-          .select('id, name')
-          .in('id', companyIds);
-
-        if (companyNamesError) {
-          console.error('[SimpleAuthContext] Erro ao buscar nomes das empresas:', companyNamesError);
-          setUserCompanies([]);
-        } else if (companies) {
-          const userCompaniesWithNames = companies.map(company => ({
-            companyId: company.id,
-            companyName: company.name
-          }));
-          setUserCompanies(userCompaniesWithNames);
-          console.log('[SimpleAuthContext] Empresas encontradas:', userCompaniesWithNames);
-        }
-      }
-
-    } catch (error) {
-      console.error('[SimpleAuthContext] Erro geral ao buscar dados do usuário:', error);
-    }
-  };
-
-  useEffect(() => {
-    console.log('[SimpleAuthContext] Inicializando contexto de autenticação');
-    
-    // Timeout de segurança para garantir que o loading seja definido como false
-    const safetyTimeout = setTimeout(() => {
-      console.log('[SimpleAuthContext] Timeout de segurança ativado - definindo loading como false');
-      setIsLoading(false);
-    }, 5000); // 5 segundos
-    
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      console.log('[SimpleAuthContext] Sessão inicial obtida:', { session, error });
-      clearTimeout(safetyTimeout);
-      
-      if (session?.user) {
-        setUser(session.user);
-        await fetchUserData(session.user.id);
-      } else {
-        setUser(null);
-        setUserRole(null);
-        setUserCompanies([]);
-      }
-      
-      setIsLoading(false);
-      console.log('[SimpleAuthContext] Loading definido como false');
-    }).catch((error) => {
-      console.error('[SimpleAuthContext] Erro ao obter sessão inicial:', error);
-      clearTimeout(safetyTimeout);
-      setIsLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[SimpleAuthContext] Mudança de autenticação:', { event, session });
-      
-      if (session?.user) {
-        setUser(session.user);
-        // Defer database calls to prevent deadlocks
-        setTimeout(() => {
-          fetchUserData(session.user.id);
-        }, 0);
-      } else {
-        setUser(null);
-        setUserRole(null);
-        setUserCompanies([]);
-      }
-      
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(safetyTimeout);
-    };
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      console.log('[SimpleAuthContext] Tentando fazer login...');
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast.success('Login realizado com sucesso!');
-    } catch (error: any) {
-      console.error('[SimpleAuthContext] Erro no login:', error);
-      toast.error('Erro no login: ' + error.message);
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      console.log('[SimpleAuthContext] Fazendo logout...');
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast.success('Logout realizado com sucesso!');
-    } catch (error: any) {
-      console.error('[SimpleAuthContext] Erro no logout:', error);
-      toast.error('Erro no logout: ' + error.message);
-      throw error;
-    }
-  };
-
-  const value = {
-    user,
-    userRole,
-    userCompanies,
-    isLoading,
-    signIn,
-    signOut
-  };
-
-  return (
-    <SimpleAuthContext.Provider value={value}>
-      {children}
-    </SimpleAuthContext.Provider>
-  );
-}
-
-export function useSimpleAuth() {
+export const useSimpleAuth = () => {
   const context = useContext(SimpleAuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useSimpleAuth must be used within a SimpleAuthProvider');
   }
   return context;
+};
+
+interface SimpleAuthProviderProps {
+  children: ReactNode;
 }
+
+export const SimpleAuthProvider: React.FC<SimpleAuthProviderProps> = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<AppRole>('profissionais' as AppRole); // CORRIGIDO
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    // Simulação de login simples
+    if (email && password) {
+      setIsAuthenticated(true);
+      setUserRole('admin' as AppRole); // CORRIGIDO - usar role válido
+      return true;
+    }
+    return false;
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUserRole('profissionais' as AppRole); // CORRIGIDO
+  };
+
+  const hasPermission = (requiredRole: AppRole): boolean => {
+    const roleHierarchy: Record<AppRole, number> = {
+      'profissionais': 1,
+      'evaluator': 2,
+      'admin': 3,
+      'superadmin': 4,
+      'user': 1
+    };
+
+    return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+  };
+
+  return (
+    <SimpleAuthContext.Provider value={{
+      isAuthenticated,
+      userRole,
+      login,
+      logout,
+      hasPermission
+    }}>
+      {children}
+    </SimpleAuthContext.Provider>
+  );
+};

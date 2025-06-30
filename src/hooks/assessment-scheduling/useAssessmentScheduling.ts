@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Employee } from "@/types";
 import { useEmployees } from "@/hooks/useEmployees";
-import { ChecklistTemplate, RecurrenceType, generateUniqueAssessmentLink } from '@/types';
+import { ChecklistTemplate, RecurrenceType, generateUniqueAssessmentLink } from '@/types'; // CORRIGIDO - função agora existe
 
 interface SchedulingDetails {
   scheduledDate?: Date;
