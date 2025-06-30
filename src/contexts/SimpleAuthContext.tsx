@@ -41,12 +41,11 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         console.error('[SimpleAuthContext] Erro ao buscar perfil:', profileError);
       }
 
-      // Buscar empresas do usuário
+      // Buscar empresas do usuário (corrigindo a query)
       const { data: userCompaniesData, error: companiesError } = await supabase
         .from('user_companies')
         .select(`
           company_id,
-          role,
           companies!inner(name)
         `)
         .eq('user_id', userId);
@@ -55,50 +54,43 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         console.error('[SimpleAuthContext] Erro ao buscar empresas:', companiesError);
       }
 
-      // Mapear empresas
+      // Buscar papel do usuário na tabela user_roles
+      const { data: userRoleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      if (roleError && roleError.code !== 'PGRST116') {
+        console.error('[SimpleAuthContext] Erro ao buscar papel:', roleError);
+      }
+
+      // Mapear empresas (assumindo papel padrão já que não está na tabela user_companies)
       const mappedCompanies = (userCompaniesData || []).map(uc => ({
         companyId: uc.company_id,
         companyName: uc.companies.name,
-        role: uc.role as AppRole
+        role: 'user' as AppRole // Papel padrão para empresas
       }));
 
-      // Determinar papel do usuário (pegar o maior nível)
-      const roleHierarchy: Record<AppRole, number> = {
-        superadmin: 5,
-        admin: 4,
-        user: 3,
-        employee: 2,
-        profissionais: 1,
-        evaluator: 1
-      };
-
-      let highestRole: AppRole = 'user';
-      mappedCompanies.forEach(company => {
-        if (roleHierarchy[company.role] > roleHierarchy[highestRole]) {
-          highestRole = company.role;
-        }
-      });
-
-      // Se não tem empresas, verificar se é superadmin
-      if (mappedCompanies.length === 0) {
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId)
-          .single();
-        
-        if (roleData?.role) {
-          highestRole = roleData.role as AppRole;
-        }
+      // Determinar papel do usuário
+      let finalRole: AppRole = 'user';
+      
+      // Se tem papel definido na tabela user_roles, usar esse
+      if (userRoleData?.role) {
+        finalRole = userRoleData.role as AppRole;
+      }
+      // Se não tem papel específico mas tem empresas, verificar se é admin
+      else if (mappedCompanies.length > 0) {
+        finalRole = 'admin'; // Usuários com empresas são admins por padrão
       }
 
       console.log('[SimpleAuthContext] Dados carregados:', {
-        role: highestRole,
+        role: finalRole,
         companies: mappedCompanies.length
       });
 
       return {
-        role: highestRole,
+        role: finalRole,
         companies: mappedCompanies
       };
     } catch (error) {
