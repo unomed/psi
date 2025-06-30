@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Import AppRole from types
@@ -40,6 +39,14 @@ export const SimpleAuthProvider: React.FC<SimpleAuthProviderProps> = ({ children
     { companyId: '1', companyName: 'Empresa Teste' }
   ]);
 
+  const roleHierarchy: Record<AppRole, number> = {
+    superadmin: 100,
+    admin: 80,
+    user: 60,
+    employee: 40,
+    profissionais: 50
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -67,14 +74,6 @@ export const SimpleAuthProvider: React.FC<SimpleAuthProviderProps> = ({ children
   const signOut = logout; // Alias for compatibility
 
   const hasPermission = (requiredRole: AppRole): boolean => {
-    const roleHierarchy: Record<AppRole, number> = {
-      'profissionais': 1,
-      'evaluator': 2,
-      'admin': 3,
-      'superadmin': 4,
-      'user': 1
-    };
-
     return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
   };
 

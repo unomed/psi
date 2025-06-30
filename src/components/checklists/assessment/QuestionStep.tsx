@@ -1,66 +1,61 @@
-
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DiscQuestion, ScaleType } from "@/types";
+import { ChecklistQuestion, ScaleType } from "@/types";
 import { ProgressBar } from "./ProgressBar";
 
 interface QuestionStepProps {
-  question: DiscQuestion;
-  currentStep: number;
-  totalSteps: number;
-  selectedValue?: string;
-  onResponseChange: (value: string) => void;
-  scaleType?: ScaleType;
+  question: ChecklistQuestion;
+  questionIndex: number;
+  totalQuestions: number;
+  response: any;
+  onResponseChange: (questionId: string, response: any) => void;
+  onNext: () => void;
+  onPrevious: () => void;
+  scaleType: ScaleType;
 }
 
 export function QuestionStep({ 
   question, 
-  currentStep, 
-  totalSteps,
-  selectedValue,
-  onResponseChange,
-  scaleType = 'likert_5'
+  questionIndex, 
+  totalQuestions, 
+  response, 
+  onResponseChange, 
+  onNext, 
+  onPrevious,
+  scaleType = "likert5"
 }: QuestionStepProps) {
-  return (
-    <div className="space-y-6">
-      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
-      
-      <p className="text-base">{question.text}</p>
-      
-      {scaleType === 'likert_5' && (
-        <RadioGroup 
-          value={selectedValue}
-          onValueChange={onResponseChange}
-          className="space-y-3"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="1" id="r1" />
-            <Label htmlFor="r1">Discordo totalmente</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="2" id="r2" />
-            <Label htmlFor="r2">Discordo parcialmente</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="3" id="r3" />
-            <Label htmlFor="r3">Neutro</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="4" id="r4" />
-            <Label htmlFor="r4">Concordo parcialmente</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="5" id="r5" />
-            <Label htmlFor="r5">Concordo totalmente</Label>
-          </div>
-        </RadioGroup>
-      )}
+  
+  const renderResponseInput = () => {
+    if (scaleType === "likert5") {
+      return (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Selecione uma opção de 1 (Discordo totalmente) a 5 (Concordo totalmente)
+          </p>
+          <RadioGroup
+            value={response?.toString() || ""}
+            onValueChange={(value) => onResponseChange(question.id, parseInt(value))}
+            className="grid grid-cols-5 gap-4"
+          >
+            {[1, 2, 3, 4, 5].map((value) => (
+              <div key={value} className="flex flex-col items-center space-y-2">
+                <RadioGroupItem value={value.toString()} id={`${question.id}-${value}`} />
+                <Label htmlFor={`${question.id}-${value}`} className="text-xs text-center">
+                  {value}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+      );
+    }
 
-      {scaleType === 'yes_no' && (
+    if (scaleType === 'yes_no') {
+      return (
         <RadioGroup 
-          value={selectedValue}
-          onValueChange={onResponseChange}
+          value={response?.toString() || ""}
+          onValueChange={(value) => onResponseChange(question.id, parseInt(value))}
           className="space-y-3"
         >
           <div className="flex items-center space-x-2">
@@ -72,12 +67,14 @@ export function QuestionStep({
             <Label htmlFor="yes">Sim</Label>
           </div>
         </RadioGroup>
-      )}
+      );
+    }
 
-      {scaleType === 'percentage' && (
+    if (scaleType === 'percentage') {
+      return (
         <RadioGroup 
-          value={selectedValue}
-          onValueChange={onResponseChange}
+          value={response?.toString() || ""}
+          onValueChange={(value) => onResponseChange(question.id, parseInt(value))}
           className="space-y-3"
         >
           <div className="flex items-center space-x-2">
@@ -93,16 +90,18 @@ export function QuestionStep({
             <Label htmlFor="agree">Concordo</Label>
           </div>
         </RadioGroup>
-      )}
+      );
+    }
 
-      {scaleType === 'custom' && (
+    if (scaleType === 'custom') {
+      return (
         <div className="space-y-2 bg-muted/50 p-4 rounded-md">
           <p className="text-sm text-muted-foreground">
             Escala personalizada disponível em breve. Por padrão, usando escala Likert de 5 pontos.
           </p>
           <RadioGroup 
-            value={selectedValue}
-            onValueChange={onResponseChange}
+            value={response?.toString() || ""}
+            onValueChange={(value) => onResponseChange(question.id, parseInt(value))}
             className="space-y-3"
           >
             <div className="flex items-center space-x-2">
@@ -127,7 +126,19 @@ export function QuestionStep({
             </div>
           </RadioGroup>
         </div>
-      )}
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="space-y-6">
+      <ProgressBar currentStep={questionIndex} totalSteps={totalQuestions} />
+      
+      <p className="text-base">{question.text}</p>
+      
+      {renderResponseInput()}
     </div>
   );
 }

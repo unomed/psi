@@ -99,7 +99,7 @@ export type ScaleType =
   | "tscore"
   | "range10";
 
-export type AppRole = "superadmin" | "admin" | "user" | "employee";
+export type AppRole = "superadmin" | "admin" | "user" | "employee" | "profissionais";
 
 export type EmailTemplateType = 
   | ""
@@ -115,9 +115,10 @@ export type EmailTemplateType =
 export interface EmailTemplate {
   id: string;
   name: string;
-  type: EmailTemplateType;
+  type?: EmailTemplateType;
   subject: string;
   body: string;
+  description?: string;
   variables?: Record<string, string>;
   created_at?: string;
   updated_at?: string;
@@ -375,6 +376,7 @@ export interface DiscFactor {
   type: DiscFactorType;
   name: string;
   description: string;
+  characteristics?: string[];
 }
 
 export interface DiscQuestion {
@@ -393,10 +395,10 @@ export interface DiscQuestion {
 export interface PsicossocialQuestion {
   id: string;
   text: string;
+  question_text: string;
   category: string;
   weight: number;
   template_id?: string;
-  question_text?: string;
   order_number?: number;
   created_at?: string;
   updated_at?: string;

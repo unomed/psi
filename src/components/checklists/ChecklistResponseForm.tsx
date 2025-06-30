@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChecklistTemplate } from "@/types";
@@ -132,19 +131,55 @@ export function ChecklistResponseForm({
               {currentQuestion.question_text || currentQuestion.text}
             </h3>
 
-            <RadioGroup
-              value={responses[currentQuestion.id] || ""}
-              onValueChange={(value) => handleResponseChange(currentQuestion.id, value)}
-            >
-              {renderScaleOptions().map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.value} id={option.value} />
-                  <Label htmlFor={option.value} className="cursor-pointer">
-                    {option.label}
-                  </Label>
+            {/* Scale-specific rendering */}
+            {template.scale_type === "likert5" ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Selecione uma opção de 1 (Discordo totalmente) a 5 (Concordo totalmente)
+                </p>
+                <RadioGroup
+                  value={responses[question.id]?.toString() || ""}
+                  onValueChange={(value) => handleResponseChange(question.id, parseInt(value))}
+                  className="flex space-x-4"
+                >
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <div key={value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={value.toString()} id={`${question.id}-${value}`} />
+                      <Label htmlFor={`${question.id}-${value}`}>{value}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            ) : template.scale_type === "yes_no" ? (
+              <RadioGroup
+                value={responses[question.id]?.toString() || ""}
+                onValueChange={(value) => handleResponseChange(question.id, value === "yes" ? 1 : 0)}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id={`${question.id}-yes`} />
+                  <Label htmlFor={`${question.id}-yes`}>Sim</Label>
                 </div>
-              ))}
-            </RadioGroup>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id={`${question.id}-no`} />
+                  <Label htmlFor={`${question.id}-no`}>Não</Label>
+                </div>
+              </RadioGroup>
+            ) : (
+              <RadioGroup
+                value={responses[currentQuestion.id] || ""}
+                onValueChange={(value) => handleResponseChange(currentQuestion.id, value)}
+              >
+                {renderScaleOptions().map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={option.value} />
+                    <Label htmlFor={option.value} className="cursor-pointer">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            )}
           </div>
 
           <div className="flex justify-between">

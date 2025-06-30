@@ -1,91 +1,82 @@
-
-import { Label } from "@/components/ui/label";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UseFormReturn } from "react-hook-form";
 import { ScaleType } from "@/types";
-import { Badge } from "@/components/ui/badge";
 
 interface ScaleTypeSelectorProps {
-  value: ScaleType;
-  onChange: (value: ScaleType) => void;
-  disabled?: boolean;
+  form: UseFormReturn<any>;
+  name: string;
+  value?: ScaleType;
+  onValueChange?: (value: ScaleType) => void;
 }
 
-export function ScaleTypeSelector({ 
-  value, 
-  onChange,
-  disabled = false
-}: ScaleTypeSelectorProps) {
-  const getScaleDescription = (scaleType: ScaleType) => {
-    switch(scaleType) {
-      case 'likert':
-      case 'likert_5':
-        return "Escala de 5 pontos: 1-Discordo totalmente, 2-Discordo, 3-Neutro, 4-Concordo, 5-Concordo totalmente";
-      case 'yes_no':
-      case 'binary':
-        return "Resposta binária: Sim ou Não";
-      case 'percentage':
-        return "Escala de 3 pontos: Discordo, Neutro, Concordo";
-      case 'numeric':
-        return "Frequência: Nunca, Raramente, Às vezes, Frequentemente, Sempre";
-      case 'psicossocial':
-        return "Psicossocial: 1-Nunca/Quase nunca, 2-Raramente, 3-Às vezes, 4-Frequentemente, 5-Sempre/Quase sempre";
-      case 'custom':
-        return "Personalizada: Defina suas próprias opções";
-      default:
-        return "Selecione um tipo de escala";
-    }
-  };
+const scaleTypes = [
+  { value: "custom" as const, label: "Personalizada" },
+  { value: "likert5" as const, label: "Likert 5 pontos (1-5)" },
+  { value: "likert7" as const, label: "Likert 7 pontos (1-7)" },
+  { value: "yes_no" as const, label: "Sim/Não" },
+  { value: "frequency" as const, label: "Frequência" },
+  { value: "binary" as const, label: "Binária (0/1)" },
+  { value: "percentage" as const, label: "Percentual (0-100)" },
+  { value: "stanine" as const, label: "Stanine (1-9)" },
+  { value: "percentile" as const, label: "Percentil (0-100)" },
+  { value: "tscore" as const, label: "T-Score" },
+  { value: "range10" as const, label: "Escala 1-10" }
+];
 
+export function ScaleTypeSelector({ form, name, value, onValueChange }: ScaleTypeSelectorProps) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor="scale-type">Tipo de Escala</Label>
-      <Select 
-        value={value} 
-        onValueChange={(val) => onChange(val as ScaleType)}
-        disabled={disabled}
-      >
-        <SelectTrigger id="scale-type">
-          <SelectValue placeholder="Selecione o tipo de escala" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="likert_5">Likert (5 pontos)</SelectItem>
-          <SelectItem value="yes_no">Sim/Não</SelectItem>
-          <SelectItem value="percentage">Concordo (3 pontos)</SelectItem>
-          <SelectItem value="numeric">Frequência</SelectItem>
-          <SelectItem value="psicossocial">Psicossocial</SelectItem>
-          <SelectItem value="custom">Personalizada</SelectItem>
-        </SelectContent>
-      </Select>
-      <div className="text-sm text-muted-foreground">
-        {getScaleDescription(value)}
-      </div>
-      
-      <div className="flex flex-wrap gap-1 mt-2">
-        {(value === 'likert' || value === 'likert_5') && (
-          <>
-            <Badge variant="outline" className="bg-gray-50">1 - Discordo totalmente</Badge>
-            <Badge variant="outline" className="bg-gray-50">2 - Discordo</Badge>
-            <Badge variant="outline" className="bg-gray-50">3 - Neutro</Badge>
-            <Badge variant="outline" className="bg-gray-50">4 - Concordo</Badge>
-            <Badge variant="outline" className="bg-gray-50">5 - Concordo totalmente</Badge>
-          </>
-        )}
-        {(value === 'yes_no' || value === 'binary') && (
-          <>
-            <Badge variant="outline" className="bg-gray-50">Sim</Badge>
-            <Badge variant="outline" className="bg-gray-50">Não</Badge>
-          </>
-        )}
-        {value === 'psicossocial' && (
-          <>
-            <Badge variant="outline" className="bg-purple-50">1 - Nunca/Quase nunca</Badge>
-            <Badge variant="outline" className="bg-purple-50">2 - Raramente</Badge>
-            <Badge variant="outline" className="bg-purple-50">3 - Às vezes</Badge>
-            <Badge variant="outline" className="bg-purple-50">4 - Frequentemente</Badge>
-            <Badge variant="outline" className="bg-purple-50">5 - Sempre/Quase sempre</Badge>
-          </>
-        )}
-      </div>
-    </div>
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Tipo de Escala</FormLabel>
+          <FormControl>
+            <Select
+              value={field.value || value}
+              onValueChange={(newValue: ScaleType) => {
+                field.onChange(newValue);
+                onValueChange?.(newValue);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar tipo de escala" />
+              </SelectTrigger>
+              <SelectContent>
+                {scaleTypes.map((scale) => (
+                  <SelectItem key={scale.value} value={scale.value}>
+                    {scale.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormControl>
+          <FormMessage />
+
+          {/* Scale description */}
+          {(field.value === "likert5" || value === "likert5") && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Escala de 1 (Discordo totalmente) a 5 (Concordo totalmente)
+            </p>
+          )}
+          {(field.value === "likert7" || value === "likert7") && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Escala de 1 (Discordo totalmente) a 7 (Concordo totalmente)
+            </p>
+          )}
+          {(field.value === "yes_no" || value === "yes_no") && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Resposta binária: Sim ou Não
+            </p>
+          )}
+          {(field.value === "frequency" || value === "frequency") && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Frequência: Nunca, Raramente, Às vezes, Frequentemente, Sempre
+            </p>
+          )}
+        </FormItem>
+      )}
+    />
   );
 }
