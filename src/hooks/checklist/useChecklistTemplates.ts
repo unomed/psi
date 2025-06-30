@@ -42,7 +42,6 @@ export function useChecklistTemplates() {
         cutoff_scores: template.cutoff_scores,
         derived_from_id: template.derived_from_id,
         instructions: template.instructions,
-        max_score: template.max_score,
         questions: template.questions?.map((q: any) => ({
           id: q.id,
           template_id: q.template_id,
@@ -82,8 +81,7 @@ export function useChecklistOperations() {
           company_id: data.company_id,
           created_by: data.created_by,
           cutoff_scores: data.cutoff_scores,
-          instructions: data.instructions,
-          max_score: data.max_score
+          instructions: data.instructions
         })
         .select()
         .single();
@@ -92,7 +90,7 @@ export function useChecklistOperations() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklists'] });
+      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
       toast.success('Template criado com sucesso!');
     },
     onError: (error) => {
@@ -114,8 +112,7 @@ export function useChecklistOperations() {
           is_standard: data.is_standard,
           estimated_time_minutes: data.estimated_time_minutes,
           cutoff_scores: data.cutoff_scores,
-          instructions: data.instructions,
-          max_score: data.max_score
+          instructions: data.instructions
         })
         .eq('id', data.id)
         .select()
@@ -125,7 +122,7 @@ export function useChecklistOperations() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklists'] });
+      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
       toast.success('Template atualizado com sucesso!');
     },
     onError: (error) => {
@@ -144,7 +141,7 @@ export function useChecklistOperations() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklists'] });
+      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
       toast.success('Template excluído com sucesso!');
     },
     onError: (error) => {

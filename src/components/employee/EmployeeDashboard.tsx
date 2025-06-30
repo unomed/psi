@@ -59,11 +59,11 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
     if (assessment?.checklist_templates) {
       const templateData = assessment.checklist_templates;
       
-      // Create template with proper type handling
+      // Create template with proper type handling and safe property access
       const template: ChecklistTemplate = {
         id: templateData.id || '',
-        name: templateData.title || templateData.name || '',
-        title: templateData.title || templateData.name || '',
+        name: templateData.title || '',
+        title: templateData.title || '',
         description: templateData.description || '',
         category: 'default',
         type: templateData.type || 'custom',
@@ -78,8 +78,7 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
         created_by: templateData.created_by,
         cutoff_scores: templateData.cutoff_scores,
         derived_from_id: templateData.derived_from_id,
-        instructions: templateData.instructions,
-        max_score: templateData.max_score
+        instructions: templateData.instructions
       };
       
       setActiveAssessment(template);
