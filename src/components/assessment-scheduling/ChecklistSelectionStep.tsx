@@ -69,7 +69,7 @@ export function ChecklistSelectionStep({
           name: existingTemplate.title,
           title: existingTemplate.title,
           description: existingTemplate.description || "",
-          category: templateData.type,
+          category: "default" as const,
           scale_type: templateData.scale_type,
           questions: [],
           createdAt: new Date(existingTemplate.created_at),
@@ -80,7 +80,7 @@ export function ChecklistSelectionStep({
           created_at: existingTemplate.created_at,
           updated_at: existingTemplate.updated_at,
           version: existingTemplate.version || 1,
-          type: templateData.type
+          type: templateData.type as any
         };
       } else {
         // Se não existe, criar e salvar o template
@@ -138,7 +138,7 @@ export function ChecklistSelectionStep({
           name: savedTemplate.title,
           title: savedTemplate.title,
           description: savedTemplate.description || "",
-          category: tempTemplate.type,
+          category: "default" as const,
           scale_type: tempTemplate.scale_type,
           questions: tempTemplate.questions || [],
           createdAt: new Date(savedTemplate.created_at),
@@ -149,7 +149,7 @@ export function ChecklistSelectionStep({
           created_at: savedTemplate.created_at,
           updated_at: savedTemplate.updated_at,
           version: savedTemplate.version || 1,
-          type: tempTemplate.type
+          type: tempTemplate.type as any
         };
       }
 

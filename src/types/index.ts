@@ -1,3 +1,4 @@
+
 export interface CompanyData {
   id?: string;
   name: string; // Required field
@@ -32,11 +33,14 @@ export interface ChecklistResult {
   results: Json;
   score: number;
   completedAt: Date;
+  completed_at?: string;
   createdBy: string;
   dominant_factor?: string;
   dominantFactor?: string;
   total_score?: number;
   risk_level?: string;
+  categorized_results?: Record<string, number>;
+  categorizedResults?: Record<string, number>;
 }
 
 export interface ScheduledAssessment {
@@ -47,6 +51,7 @@ export interface ScheduledAssessment {
   status: "scheduled" | "sent" | "completed" | "pending";
   company_id?: string;
   created_at?: string;
+  updated_at?: string;
   // Legacy compatibility properties
   templateId?: string;
   employeeId?: string;
@@ -71,7 +76,9 @@ export interface ScheduledAssessment {
   nextScheduledDate?: Date;
   next_scheduled_date?: string | null;
   recurrence_type?: RecurrenceType;
+  recurrenceType?: RecurrenceType;
   phoneNumber?: string;
+  phone_number?: string;
   portal_token?: string;
   due_date?: string;
 }
@@ -104,6 +111,17 @@ export type EmailTemplateType =
   | "completion_confirmation"
   | "manager_notification"
   | "action_plan_created";
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  type: EmailTemplateType;
+  subject: string;
+  body: string;
+  variables?: Record<string, string>;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export type AssessmentStatus = "scheduled" | "sent" | "completed" | "pending";
 
@@ -165,12 +183,14 @@ export interface Employee {
   name: string;
   email: string;
   phone: string;
+  cpf: string;
   company_id: string;
   sector_id?: string;
   role_id?: string;
   created_at?: string;
   updated_at?: string;
   birthdate?: string;
+  birth_date?: string;
   gender?: string;
   start_date?: string;
   end_date?: string;
@@ -184,6 +204,34 @@ export interface Employee {
   emergency_contact_email?: string;
   notes?: string;
   status?: string;
+  employee_type?: string;
+  special_conditions?: string;
+  photo_url?: string;
+  employee_tags?: Json;
+  role?: {
+    name: string;
+  };
+}
+
+export interface EmployeeFormData {
+  name: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  company_id: string;
+  sector_id: string;
+  role_id: string;
+  birthdate?: string;
+  gender?: string;
+  start_date: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  status: string;
+  employee_type?: string;
+  special_conditions?: string;
+  photo_url?: string;
+  employee_tags?: Json;
 }
 
 export interface RoleData {
@@ -315,7 +363,47 @@ export interface RoleRequiredTag {
   tag_type?: TagType;
 }
 
-export const generateUniqueAssessmentLink = (templateId: string, employeeId: string): string => {
+// DISC types
+export enum DiscFactorType {
+  D = "D",
+  I = "I",
+  S = "S",
+  C = "C",
+}
+
+export interface DiscFactor {
+  type: DiscFactorType;
+  name: string;
+  description: string;
+}
+
+export interface DiscQuestion {
+  id: string;
+  text: string;
+  targetFactor: DiscFactorType;
+  weight: number;
+  template_id?: string;
+  question_text?: string;
+  order_number?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Psychosocial types
+export interface PsicossocialQuestion {
+  id: string;
+  text: string;
+  category: string;
+  weight: number;
+  template_id?: string;
+  question_text?: string;
+  order_number?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export const generateUniqueAssessmentLink = (templateId: string, employeeId?: string): string => {
   const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  return `/assessment/${templateId}/${employeeId}?token=${token}`;
+  const base = employeeId ? `/assessment/${templateId}/${employeeId}` : `/assessment/${templateId}`;
+  return `${base}?token=${token}`;
 };

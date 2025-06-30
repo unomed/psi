@@ -32,7 +32,7 @@ export function EditScheduledAssessmentDialog({
       const dateValue = assessment.scheduledDate || assessment.scheduled_date;
       setScheduledDate(dateValue ? new Date(dateValue) : undefined);
       // Use recurrence_type (snake_case) que é a propriedade real do banco
-      setRecurrenceType(assessment.recurrenceType || assessment.recurrence_type || "none");
+      setRecurrenceType(assessment.recurrence_type || assessment.recurrenceType || "none");
       setPhoneNumber(assessment.phoneNumber || assessment.phone_number || "");
     }
   }, [assessment]);
@@ -61,7 +61,7 @@ export function EditScheduledAssessmentDialog({
     if (assessment) {
       const dateValue = assessment.scheduledDate || assessment.scheduled_date;
       setScheduledDate(dateValue ? new Date(dateValue) : undefined);
-      setRecurrenceType(assessment.recurrenceType || assessment.recurrence_type || "none");
+      setRecurrenceType(assessment.recurrence_type || assessment.recurrenceType || "none");
       setPhoneNumber(assessment.phoneNumber || assessment.phone_number || "");
     }
   };

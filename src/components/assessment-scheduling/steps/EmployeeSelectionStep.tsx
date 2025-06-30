@@ -26,7 +26,7 @@ export function EmployeeSelectionStep({
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.cpf.includes(searchTerm) ||
+    (employee.cpf && employee.cpf.includes(searchTerm)) ||
     (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -61,7 +61,9 @@ export function EmployeeSelectionStep({
                   </div>
                   <div>
                     <h4 className="font-medium">{employee.name}</h4>
-                    <p className="text-sm text-muted-foreground">CPF: {employee.cpf}</p>
+                    {employee.cpf && (
+                      <p className="text-sm text-muted-foreground">CPF: {employee.cpf}</p>
+                    )}
                     {employee.email && (
                       <p className="text-sm text-muted-foreground">{employee.email}</p>
                     )}
