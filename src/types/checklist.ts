@@ -55,8 +55,9 @@ export interface ChecklistResult {
   
   // ✅ ADICIONAR - propriedades faltando:
   employeeName?: string;                  // ✅ Usado no código
-  dominantFactor?: string;                // ✅ Usado no código
+  dominantFactor?: string;                // ✅ Usado no código  
   results?: any;                          // ✅ ADICIONAR - usado no código
+  categorizedResults?: any;               // ✅ ADICIONAR - usado no código
 }
 
 // Aliases for compatibility

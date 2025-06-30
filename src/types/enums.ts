@@ -1,14 +1,15 @@
 
 // Enums baseados no schema real do banco PostgreSQL
-export type ScaleType = 
-  | 'psicossocial'    // ✅ ADICIONAR - usado no código
-  | 'binary' 
-  | 'likert_5'        // ✅ CORRIGIR - era 'likert5'
-  | 'likert_7' 
-  | 'numeric' 
-  | 'percentage' 
-  | 'custom'
-  | 'yes_no';
+export enum ScaleType {
+  PSICOSSOCIAL = 'psicossocial',
+  BINARY = 'binary',
+  LIKERT_5 = 'likert_5',
+  LIKERT_7 = 'likert_7', 
+  NUMERIC = 'numeric', 
+  PERCENTAGE = 'percentage', 
+  CUSTOM = 'custom',
+  YES_NO = 'yes_no'
+}
 
 export type ChecklistTemplateType = 
   | 'disc' 
@@ -25,17 +26,17 @@ export type ChecklistTemplateType =
   | 'personal_life' 
   | 'evaluation_360' 
   | 'custom'
-  | 'stress';          // ✅ ADICIONAR - valor faltando
+  | 'stress';
 
 export type RecurrenceType = 
   | 'none' 
-  | 'daily'           // ✅ ADICIONAR
-  | 'weekly'          // ✅ ADICIONAR
+  | 'daily'
+  | 'weekly'
   | 'monthly' 
   | 'quarterly' 
   | 'semiannual' 
   | 'annual'
-  | 'yearly';         // ✅ ADICIONAR
+  | 'yearly';
 
 export type AssessmentStatus = 'scheduled' | 'sent' | 'completed' | 'in_progress';
 

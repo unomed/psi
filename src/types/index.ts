@@ -6,7 +6,7 @@ export type {
   AssessmentStatus
 } from './enums';
 
-export { DiscFactorType } from './enums';
+export { DiscFactorType, ScaleType } from './enums';
 
 // Interfaces principais
 export type {
@@ -43,4 +43,5 @@ export interface DiscFactor {
   score: number;
   name?: string;                          // ✅ ADICIONAR - usado no código
   description?: string;                   // ✅ ADICIONAR - usado no código
+  characteristics?: string[];             // ✅ ADICIONAR - usado no código
 }

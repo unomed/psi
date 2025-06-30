@@ -59,7 +59,8 @@ export function ChecklistResponseForm({
   const renderScaleOptions = () => {
     const scaleType = template.scale_type;
     
-    if (scaleType === 'likert5' || scaleType === 'likert') {
+    // ✅ CORRIGIR: Usar valores corretos do enum
+    if (scaleType === ScaleType.LIKERT_5 || scaleType === 'likert_5') {
       return [
         { value: "1", label: "1 - Discordo totalmente" },
         { value: "2", label: "2 - Discordo parcialmente" },
@@ -67,12 +68,12 @@ export function ChecklistResponseForm({
         { value: "4", label: "4 - Concordo parcialmente" },
         { value: "5", label: "5 - Concordo totalmente" }
       ];
-    } else if (scaleType === 'binary' || scaleType === 'yes_no') {
+    } else if (scaleType === ScaleType.BINARY || scaleType === ScaleType.YES_NO) {
       return [
         { value: "sim", label: "Sim" },
         { value: "nao", label: "Não" }
       ];
-    } else if (scaleType === 'psicossocial') {
+    } else if (scaleType === ScaleType.PSICOSSOCIAL || scaleType === 'psicossocial') {
       return [
         { value: "1", label: "1 - Nunca/Quase nunca" },
         { value: "2", label: "2 - Raramente" },
@@ -95,7 +96,7 @@ export function ChecklistResponseForm({
   const getScaleDescription = () => {
     const scaleType = template.scale_type;
     
-    if (scaleType === 'psicossocial') {
+    if (scaleType === ScaleType.PSICOSSOCIAL || scaleType === 'psicossocial') {
       return "Indique com que frequência cada situação se aplica ao seu trabalho:";
     }
     
