@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, ChecklistResult, ScheduledAssessment } from "@/types";
@@ -25,7 +24,7 @@ export function useChecklistData() {
         description: item.description || '',
         category: 'default' as const,
         type: item.type || 'custom',
-        scale_type: item.scale_type || 'likert_5',
+        scale_type: item.scale_type === 'likert7' ? 'likert7' : (item.scale_type || 'likert5'),
         is_active: item.is_active ?? true,
         is_standard: item.is_standard ?? false,
         estimated_time_minutes: item.estimated_time_minutes || 15,
@@ -64,8 +63,11 @@ export function useChecklistData() {
       
       return (data || []).map(item => ({
         id: item.id,
+        template_id: item.template_id || '',
+        employee_id: item.employee_id,
         templateId: item.template_id || '',
         employeeId: item.employee_id,
+        employee_name: Array.isArray(item.employees) ? item.employees[0]?.name : item.employees?.name,
         employeeName: Array.isArray(item.employees) ? item.employees[0]?.name : item.employees?.name,
         templateName: Array.isArray(item.checklist_templates) 
           ? item.checklist_templates[0]?.title 
@@ -75,7 +77,8 @@ export function useChecklistData() {
         score: item.raw_score || 0,
         completedAt: new Date(item.completed_at),
         createdBy: item.created_by || '',
-        dominantFactor: item.dominant_factor || 'N/A'
+        dominantFactor: item.dominant_factor || 'N/A',
+        dominant_factor: item.dominant_factor || 'N/A'
       }));
     }
   });

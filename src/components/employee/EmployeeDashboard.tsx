@@ -79,7 +79,6 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
       status: "pending",
       company_id: "company-1",
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       // Propriedades de compatibilidade legacy
       templateId: "template-1",
       employeeId: "emp-1", 

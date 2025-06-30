@@ -35,7 +35,7 @@ export function useCompanies() {
         contact_name: company.contact_name,
         contact_email: company.contact_email,
         contact_phone: company.contact_phone,
-        notes: company.notes, // Add notes mapping
+        notes: company.notes || '', // Add notes mapping with fallback
         createdAt: new Date(company.created_at),
         updatedAt: new Date(company.updated_at),
         created_at: company.created_at,

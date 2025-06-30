@@ -28,13 +28,13 @@ export function useChecklistTemplates() {
         // Map database scale types to frontend scale types
         let scaleType = template.scale_type || 'likert5';
         if (scaleType === 'likert7') {
-          scaleType = 'likert'; // Map likert7 to likert for compatibility
+          scaleType = 'likert7'; // Keep likert7 as is
         }
         if (scaleType === 'likert_5') {
           scaleType = 'likert5';
         }
         if (scaleType === 'likert_7') {
-          scaleType = 'likert';
+          scaleType = 'likert7';
         }
 
         return {
@@ -88,8 +88,8 @@ export function useChecklistOperations() {
       let dbScaleType: DbScaleType = 'likert5';
       
       // Map scale types correctly
-      if (data.scale_type === 'likert') {
-        dbScaleType = 'likert5';
+      if (data.scale_type === 'likert7') {
+        dbScaleType = 'likert7';
       } else if (data.scale_type === 'likert5') {
         dbScaleType = 'likert5';
       } else {
@@ -134,8 +134,8 @@ export function useChecklistOperations() {
       let dbScaleType: DbScaleType = 'likert5';
       
       // Map scale types correctly
-      if (data.scale_type === 'likert') {
-        dbScaleType = 'likert5';
+      if (data.scale_type === 'likert7') {
+        dbScaleType = 'likert7';
       } else if (data.scale_type === 'likert5') {
         dbScaleType = 'likert5';
       } else {
