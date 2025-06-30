@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,12 +64,15 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
 
         if (companyDetailsError) {
           console.error('[SimpleAuthContext] Erro ao buscar detalhes das empresas:', companyDetailsError);
-        } else {
-          mappedCompanies = (companiesData || []).map(company => ({
-            companyId: company.id,
-            companyName: company.name,
-            role: 'user' as AppRole // Papel padrão para empresas
-          }));
+        } else if (companiesData) {
+          // Validar dados antes de mapear
+          mappedCompanies = companiesData
+            .filter(company => company && company.id && company.name) // Filtrar dados válidos
+            .map(company => ({
+              companyId: company.id,
+              companyName: company.name,
+              role: 'user' as AppRole // Papel padrão para empresas
+            }));
         }
       }
 
