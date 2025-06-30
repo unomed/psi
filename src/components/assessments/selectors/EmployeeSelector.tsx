@@ -1,81 +1,48 @@
 
-import React from "react";
-import { useEmployees } from "@/hooks/useEmployees";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEmployees } from "@/hooks/useEmployees";
+import { useAuth } from "@/hooks/useAuth";
 
 interface EmployeeSelectorProps {
-  selectedRole: string | null;
-  selectedEmployee: string | null;
+  selectedRole?: string | null;
+  selectedEmployee?: string | null;
   onEmployeeChange: (employeeId: string) => void;
+  companyId?: string;
 }
 
 export function EmployeeSelector({
   selectedRole,
   selectedEmployee,
   onEmployeeChange,
+  companyId
 }: EmployeeSelectorProps) {
-  const { data: employees, isLoading } = useEmployees();
+  const { userCompanies } = useAuth();
+  const targetCompanyId = companyId || (userCompanies.length > 0 ? String(userCompanies[0].companyId) : undefined);
+  
+  const { data: employees, isLoading } = useEmployees(targetCompanyId);
 
-  const baseFilteredEmployees = selectedRole
-    ? (employees || []).filter(emp => emp.role_id === selectedRole)
-    : [];
-
-  const validEmployees = baseFilteredEmployees.filter(emp =>
-    emp &&
-    emp.id !== null &&
-    emp.id !== undefined &&
-    String(emp.id).trim() !== "" &&
-    emp.name &&
-    String(emp.name).trim() !== ""
-  );
-
-  if (isLoading) {
-    return (
-      <div className="space-y-2">
-        <Label>Funcionário</Label>
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
-  }
+  const filteredEmployees = selectedRole 
+    ? employees?.filter(emp => emp.role_id === selectedRole)
+    : employees;
 
   return (
     <div className="space-y-2">
       <Label htmlFor="employee">Funcionário</Label>
       <Select
-        value={selectedEmployee || "no-employee-selected"}
+        value={selectedEmployee || ""}
         onValueChange={onEmployeeChange}
-        disabled={!selectedRole}
+        disabled={isLoading}
       >
         <SelectTrigger id="employee">
           <SelectValue placeholder="Selecione um funcionário" />
         </SelectTrigger>
         <SelectContent>
-          {validEmployees.length > 0 ? (
-            validEmployees.map((employee) => {
-              const employeeIdStr = String(employee.id);
-              if (employeeIdStr.trim() === "") {
-                console.error("[Assessments/EmployeeSelector] Attempting to render SelectItem with empty value for employee:", employee);
-                return null;
-              }
-              return (
-                <SelectItem key={employeeIdStr} value={employeeIdStr}>
-                  {employee.name}
-                </SelectItem>
-              );
-            }).filter(Boolean)
-          ) : (
-            <SelectItem value="no-employees-available" disabled>
-              {selectedRole ? "Nenhum funcionário encontrado" : "Selecione uma função primeiro"}
+          {filteredEmployees?.map((employee) => (
+            <SelectItem key={employee.id} value={employee.id}>
+              {employee.name} - {employee.email}
             </SelectItem>
-          )}
+          ))}
         </SelectContent>
       </Select>
     </div>
