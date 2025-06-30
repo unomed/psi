@@ -1,15 +1,8 @@
-import { ChecklistResult } from "@/types/checklist";
+
+import { ChecklistResult } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DiscFactorDetails } from "./disc/DiscFactorDetails";
-import { DiscFactorProgress } from "./disc/DiscFactorProgress";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { DiscFactorType } from "@/types";
 
 interface DiscResultDisplayProps {
   result: ChecklistResult;
@@ -17,128 +10,95 @@ interface DiscResultDisplayProps {
 }
 
 export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
-  // Helper para verificar se results contém fatores DISC
-  const isDISCResult = () => {
-    return typeof result.results === 'object' && result.results !== null &&
-      'D' in result.results && 'I' in result.results && 
-      'S' in result.results && 'C' in result.results;
+  const factors = result.results?.factors || result.results || {};
+  
+  // Ensure factors are numbers for calculations
+  const getFactorScore = (factor: string): number => {
+    const score = factors[factor];
+    return typeof score === 'number' ? score : 0;
   };
 
-  // Helper para renderizar resultados psicossociais
-  const renderPsicossocialResults = () => {
-    if (!result.categorizedResults && !result.results) return null;
-    
-    const resultsToUse = result.categorizedResults || result.results;
-    if (typeof resultsToUse !== 'object' || !resultsToUse) return null;
-    
-    const categories = Object.keys(resultsToUse);
-    
-    return (
-      <div className="space-y-6">
-        <h3 className="text-xl font-medium">Resultados por Categoria</h3>
-        
-        {categories.map(category => {
-          // @ts-ignore - resultsToUse é um objeto com chaves de string
-          const score = resultsToUse[category];
-          const percentage = Math.round(score * 20); // 1-5 para percentual (1=20%, 5=100%)
-          
-          return (
-            <Card key={category} className={
-              percentage >= 80 ? "border-red-300" : 
-              percentage >= 60 ? "border-orange-300" : 
-              percentage >= 40 ? "border-yellow-300" : 
-              "border-green-300"
-            }>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">{category}</CardTitle>
-                <CardDescription>
-                  {percentage >= 80 ? "Alto risco" : 
-                   percentage >= 60 ? "Risco moderado" : 
-                   percentage >= 40 ? "Baixo risco" : 
-                   "Sem risco significativo"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                  <div 
-                    className={`h-2.5 rounded-full ${
-                      percentage >= 80 ? "bg-red-500" : 
-                      percentage >= 60 ? "bg-orange-500" : 
-                      percentage >= 40 ? "bg-yellow-500" : 
-                      "bg-green-500"
-                    }`} 
-                    style={{ width: `${percentage}%` }}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Pontuação: {score.toFixed(1)} / 5.0
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
-        
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-medium mb-2">Fator Principal:</h4>
-          <p className="text-lg">{result.dominantFactor}</p>
-          <p className="text-sm text-gray-600 mt-2">
-            Este fator representa a área que mais se destacou na avaliação.
-          </p>
-        </div>
-      </div>
-    );
+  const totalScore = getFactorScore('D') + getFactorScore('I') + getFactorScore('S') + getFactorScore('C');
+  
+  const percentages = {
+    D: totalScore > 0 ? Math.round((getFactorScore('D') / totalScore) * 100) : 0,
+    I: totalScore > 0 ? Math.round((getFactorScore('I') / totalScore) * 100) : 0,
+    S: totalScore > 0 ? Math.round((getFactorScore('S') / totalScore) * 100) : 0,
+    C: totalScore > 0 ? Math.round((getFactorScore('C') / totalScore) * 100) : 0,
+  };
+
+  const getFactorName = (factor: string) => {
+    switch(factor) {
+      case 'D': return 'Dominância';
+      case 'I': return 'Influência';
+      case 'S': return 'Estabilidade';
+      case 'C': return 'Conformidade';
+      default: return factor;
+    }
+  };
+
+  const getFactorDescription = (factor: string) => {
+    switch(factor) {
+      case 'D': return 'Orientado para resultados, direto, determinado';
+      case 'I': return 'Sociável, otimista, comunicativo';
+      case 'S': return 'Paciente, leal, bom ouvinte';
+      case 'C': return 'Preciso, analítico, sistemático';
+      default: return '';
+    }
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">
-          Resultado da Avaliação
-        </h2>
-        {result.employeeName && (
-          <p className="text-gray-600">
-            Funcionário: <span className="font-medium">{result.employeeName}</span>
-          </p>
-        )}
-        <p className="text-gray-600">
-          Data: <span className="font-medium">
-            {new Date(result.completedAt).toLocaleDateString('pt-BR')}
-          </span>
-        </p>
-      </div>
-
-      {isDISCResult() ? (
-        // Renderização original para DISC
-        <>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              {Object.entries(result.results).map(([factor, value]) => {
-                if (factor === 'D' || factor === 'I' || factor === 'S' || factor === 'C') {
-                  // Calculate percentage (assuming max score is 100)
-                  const percentage = Math.round(value * 100);
-                  return (
-                    <DiscFactorProgress 
-                      key={factor}
-                      factor={factor as DiscFactorType} 
-                      percentage={percentage} 
-                    />
-                  );
-                }
-                return null;
-              })}
-            </div>
-            <DiscFactorDetails dominantFactor={result.dominantFactor} />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Resultado DISC - {result.employeeName}</span>
+            <Badge variant="secondary">{getFactorName(result.dominantFactor)}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(percentages).map(([factor, percentage]) => (
+              <div key={factor}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{getFactorName(factor)} ({factor})</span>
+                  <span className="text-sm font-medium">{percentage}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div 
+                    className={`h-3 rounded-full ${
+                      factor === result.dominantFactor ? 'bg-blue-600' : 'bg-gray-400'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {getFactorDescription(factor)}
+                </p>
+              </div>
+            ))}
           </div>
-        </>
-      ) : (
-        // Renderização para resultados psicossociais
-        renderPsicossocialResults()
-      )}
+        </CardContent>
+      </Card>
 
-      <div className="flex justify-end mt-4">
-        <Button onClick={onClose}>
-          Fechar
-        </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle>Perfil Dominante: {getFactorName(result.dominantFactor)}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600">
+            {getFactorDescription(result.dominantFactor)}
+          </p>
+          <div className="mt-4 p-3 bg-blue-50 rounded-md">
+            <p className="text-sm">
+              <strong>Pontuação:</strong> {percentages[result.dominantFactor as keyof typeof percentages]}% do perfil total
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button onClick={onClose}>Fechar</Button>
       </div>
     </div>
   );

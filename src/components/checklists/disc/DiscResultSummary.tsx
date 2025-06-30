@@ -1,88 +1,72 @@
 
-import { BarChart3, Download } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChecklistResult, DiscFactorType } from "@/types";
-import { DiscFactorProgress } from "./DiscFactorProgress";
-import { discFactors, getFactorColor } from "./DiscFactorsData";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface DiscResultSummaryProps {
-  result: ChecklistResult;
-  onDownload: () => void;
+  results: any;
+  dominantFactor: string;
 }
 
-export function DiscResultSummary({ result, onDownload }: DiscResultSummaryProps) {
-  // Calculate total points for percentage calculation
-  const totalPoints = Object.values(result.results).reduce((sum, value) => sum + value, 0);
+export function DiscResultSummary({ results, dominantFactor }: DiscResultSummaryProps) {
+  const factors = results?.factors || results || {};
   
-  // Calculate percentage for each factor
-  const factorPercentages = {
-    [DiscFactorType.D]: Math.round((result.results.D / totalPoints) * 100) || 0,
-    [DiscFactorType.I]: Math.round((result.results.I / totalPoints) * 100) || 0,
-    [DiscFactorType.S]: Math.round((result.results.S / totalPoints) * 100) || 0,
-    [DiscFactorType.C]: Math.round((result.results.C / totalPoints) * 100) || 0
+  // Ensure factors are numbers for calculations
+  const getFactorScore = (factor: string): number => {
+    const score = factors[factor];
+    return typeof score === 'number' ? score : 0;
   };
 
-  // Helper function to safely get color based on factor
-  const getSafeFactorColor = (factor: string | DiscFactorType) => {
-    // Check if the factor is a valid DiscFactorType
-    if (factor === DiscFactorType.D || 
-        factor === DiscFactorType.I || 
-        factor === DiscFactorType.S || 
-        factor === DiscFactorType.C) {
-      return getFactorColor(factor as DiscFactorType);
-    }
-    // For non-DISC factors (like from psicossocial assessments), return a default color
-    return "text-gray-700";
+  const totalScore = getFactorScore('D') + getFactorScore('I') + getFactorScore('S') + getFactorScore('C');
+  
+  const percentages = {
+    D: totalScore > 0 ? Math.round((getFactorScore('D') / totalScore) * 100) : 0,
+    I: totalScore > 0 ? Math.round((getFactorScore('I') / totalScore) * 100) : 0,
+    S: totalScore > 0 ? Math.round((getFactorScore('S') / totalScore) * 100) : 0,
+    C: totalScore > 0 ? Math.round((getFactorScore('C') / totalScore) * 100) : 0,
   };
 
-  // Helper function to safely get factor name
-  const getSafeFactorName = (factor: string | DiscFactorType) => {
-    if (factor === DiscFactorType.D || 
-        factor === DiscFactorType.I || 
-        factor === DiscFactorType.S || 
-        factor === DiscFactorType.C) {
-      return discFactors[factor as DiscFactorType]?.name || factor;
+  const getFactorName = (factor: string) => {
+    switch(factor) {
+      case 'D': return 'Dominância';
+      case 'I': return 'Influência';
+      case 'S': return 'Estabilidade';
+      case 'C': return 'Conformidade';
+      default: return factor;
     }
-    return factor; // Return the category name for non-DISC factors
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          Resultado da Avaliação DISC
+          Resumo DISC
+          <Badge variant="secondary">{getFactorName(dominantFactor)}</Badge>
         </CardTitle>
-        <CardDescription>
-          {result.employeeName ? `Avaliação de ${result.employeeName}` : "Avaliação anônima"}
-        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">
-            Perfil dominante: 
-            <span className={getSafeFactorColor(result.dominantFactor)}>
-              {" "}{result.dominantFactor} - {getSafeFactorName(result.dominantFactor)}
-            </span>
-          </h3>
-          
-          <div className="space-y-3">
-            <DiscFactorProgress factor={DiscFactorType.D} percentage={factorPercentages[DiscFactorType.D]} />
-            <DiscFactorProgress factor={DiscFactorType.I} percentage={factorPercentages[DiscFactorType.I]} />
-            <DiscFactorProgress factor={DiscFactorType.S} percentage={factorPercentages[DiscFactorType.S]} />
-            <DiscFactorProgress factor={DiscFactorType.C} percentage={factorPercentages[DiscFactorType.C]} />
-          </div>
+      <CardContent>
+        <div className="space-y-3">
+          {Object.entries(percentages).map(([factor, percentage]) => (
+            <div key={factor} className="flex items-center justify-between">
+              <span className="font-medium">{getFactorName(factor)} ({factor})</span>
+              <div className="flex items-center gap-2">
+                <div className="w-24 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full" 
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+                <span className="text-sm font-medium">{percentage}%</span>
+              </div>
+            </div>
+          ))}
         </div>
         
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={onDownload}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Baixar Relatório Detalhado
-        </Button>
+        <div className="mt-4 p-3 bg-gray-50 rounded-md">
+          <p className="text-sm text-gray-600">
+            <strong>Perfil Dominante:</strong> {getFactorName(dominantFactor)} com {percentages[dominantFactor as keyof typeof percentages]}%
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
