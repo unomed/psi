@@ -171,9 +171,9 @@ export function CategoryQuestionGroup({
                     {category} ({questionsByCategory[category]?.length || 0})
                   </CardTitle>
                   <div className="text-xs text-muted-foreground">
-                    Escala: {selectedScaleType === ScaleType.Likert ? "Likert (1-5)" : 
-                             selectedScaleType === ScaleType.YesNo ? "Sim/Não" : 
-                             selectedScaleType === ScaleType.Psicossocial ? "Psicossocial (1-5)" :
+                    Escala: {selectedScaleType === 'likert_5' ? "Likert (1-5)" : 
+                             selectedScaleType === 'yes_no' ? "Sim/Não" : 
+                             selectedScaleType === 'psicossocial' ? "Psicossocial (1-5)" :
                              "Personalizada"}
                   </div>
                 </CardHeader>

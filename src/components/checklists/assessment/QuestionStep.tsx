@@ -20,7 +20,7 @@ export function QuestionStep({
   totalSteps,
   selectedValue,
   onResponseChange,
-  scaleType = ScaleType.Likert
+  scaleType = 'likert_5'
 }: QuestionStepProps) {
   return (
     <div className="space-y-6">
@@ -28,7 +28,7 @@ export function QuestionStep({
       
       <p className="text-base">{question.text}</p>
       
-      {scaleType === ScaleType.Likert && (
+      {scaleType === 'likert_5' && (
         <RadioGroup 
           value={selectedValue}
           onValueChange={onResponseChange}
@@ -57,7 +57,7 @@ export function QuestionStep({
         </RadioGroup>
       )}
 
-      {scaleType === ScaleType.YesNo && (
+      {scaleType === 'yes_no' && (
         <RadioGroup 
           value={selectedValue}
           onValueChange={onResponseChange}
@@ -74,7 +74,7 @@ export function QuestionStep({
         </RadioGroup>
       )}
 
-      {scaleType === ScaleType.Agree3 && (
+      {scaleType === 'percentage' && (
         <RadioGroup 
           value={selectedValue}
           onValueChange={onResponseChange}
@@ -95,7 +95,7 @@ export function QuestionStep({
         </RadioGroup>
       )}
 
-      {scaleType === ScaleType.Custom && (
+      {scaleType === 'custom' && (
         <div className="space-y-2 bg-muted/50 p-4 rounded-md">
           <p className="text-sm text-muted-foreground">
             Escala personalizada disponível em breve. Por padrão, usando escala Likert de 5 pontos.

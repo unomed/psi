@@ -22,7 +22,23 @@ export function useChecklistData() {
         throw error;
       }
 
-      return data || [];
+      return (data || []).map(item => ({
+        id: item.id,
+        name: item.title, // Usar title do banco como name na interface
+        title: item.title,
+        description: item.description,
+        type: item.type,
+        scale_type: item.scale_type,
+        is_active: item.is_active,
+        is_standard: item.is_standard || false,
+        estimated_time_minutes: item.estimated_time_minutes,
+        version: item.version,
+        company_id: item.company_id,
+        created_by: item.created_by,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        category: 'default' // Propriedade obrigatória
+      }));
     }
   });
 
@@ -46,8 +62,10 @@ export function useChecklistData() {
         employeeId: item.employee_id,
         employeeName: item.employee_name,
         completedAt: new Date(item.completed_at),
-        results: item.response_data || {},
-        dominantFactor: item.dominant_factor || 'Unknown'
+        results: item.response_data || {}, // Aceitar qualquer tipo como object
+        dominantFactor: item.dominant_factor || 'Unknown',
+        responses: item.response_data,
+        score: item.raw_score || 0
       }));
     }
   });
@@ -79,16 +97,26 @@ export function useChecklistData() {
       return (data || []).map(item => ({
         id: item.id,
         employeeId: item.employee_id,
+        employee_id: item.employee_id,
         templateId: item.template_id,
+        template_id: item.template_id,
         scheduledDate: new Date(item.scheduled_date),
+        scheduled_date: item.scheduled_date,
         status: item.status,
         sentAt: item.sent_at ? new Date(item.sent_at) : null,
+        sent_at: item.sent_at,
         completedAt: item.completed_at ? new Date(item.completed_at) : null,
+        completed_at: item.completed_at,
         linkUrl: item.link_url || '',
+        link_url: item.link_url,
         company_id: item.company_id,
         employee_name: item.employee_name,
         employees: Array.isArray(item.employees) ? item.employees[0] : item.employees,
-        checklist_templates: Array.isArray(item.checklist_templates) ? item.checklist_templates[0] : item.checklist_templates
+        checklist_templates: Array.isArray(item.checklist_templates) ? item.checklist_templates[0] : item.checklist_templates,
+        checklist_template_id: item.template_id,
+        employee_ids: [item.employee_id],
+        created_at: item.created_at,
+        updated_at: item.updated_at
       }));
     }
   });
@@ -98,7 +126,7 @@ export function useChecklistData() {
     mutationFn: async (templateData: Omit<ChecklistTemplate, "id" | "createdAt">) => {
       const { data, error } = await supabase
         .from('checklist_templates')
-        .insert([{
+        .insert({
           title: templateData.name, // Usar name como title no banco
           description: templateData.description,
           type: templateData.type,
@@ -109,7 +137,7 @@ export function useChecklistData() {
           version: templateData.version,
           company_id: templateData.company_id,
           created_by: templateData.created_by
-        }])
+        })
         .select()
         .single();
 
@@ -131,7 +159,7 @@ export function useChecklistData() {
     mutationFn: async (template: ChecklistTemplate) => {
       const { data, error } = await supabase
         .from('checklist_templates')
-        .update([{
+        .update({
           title: template.name, // Usar name como title no banco
           description: template.description,
           type: template.type,
@@ -139,7 +167,7 @@ export function useChecklistData() {
           is_active: template.is_active,
           estimated_time_minutes: template.estimated_time_minutes,
           version: template.version
-        }])
+        })
         .eq('id', template.id)
         .select()
         .single();
@@ -154,26 +182,6 @@ export function useChecklistData() {
     onError: (error: any) => {
       console.error('Error updating template:', error);
       toast.error('Erro ao atualizar template');
-    }
-  });
-
-  // Delete template mutation
-  const deleteTemplate = useMutation({
-    mutationFn: async (templateId: string) => {
-      const { error } = await supabase
-        .from('checklist_templates')
-        .delete()
-        .eq('id', templateId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklist-templates'] });
-      toast.success('Template excluído com sucesso!');
-    },
-    onError: (error: any) => {
-      console.error('Error deleting template:', error);
-      toast.error('Erro ao excluir template');
     }
   });
 
@@ -200,19 +208,39 @@ export function useChecklistData() {
     }
   });
 
+  // Delete template mutation
+  const deleteTemplate = useMutation({
+    mutationFn: async (templateId: string) => {
+      const { error } = await supabase
+        .from('checklist_templates')
+        .delete()
+        .eq('id', templateId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checklist-templates'] });
+      toast.success('Template excluído com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Error deleting template:', error);
+      toast.error('Erro ao excluir template');
+    }
+  });
+
   // Save assessment result mutation
   const saveAssessmentResult = useMutation({
     mutationFn: async (resultData: any) => {
       const { data, error } = await supabase
         .from('assessment_responses')
-        .insert([{
+        .insert({
           template_id: resultData.templateId,
           employee_id: resultData.employeeId,
           employee_name: resultData.employeeName,
           response_data: resultData.results,
           dominant_factor: resultData.dominantFactor,
           completed_at: new Date().toISOString()
-        }])
+        })
         .select()
         .single();
 
