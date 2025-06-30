@@ -61,10 +61,9 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
       {/* Resultados por Categoria */}
       <div className="space-y-4">
         {Object.entries(categoryResults).map(([category, score]) => {
-          const numericScore = Number(score) || 0; // ✅ Type assertion para number
-          const risk = getRiskLevel(numericScore);
+          const risk = getRiskLevel(score);
           const Icon = risk.icon;
-          const recommendations = getRecommendations(category, numericScore);
+          const recommendations = getRecommendations(category, score);
 
           return (
             <Card key={category}>
@@ -82,9 +81,9 @@ export function PsicossocialResultDisplay({ result }: PsicossocialResultDisplayP
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Pontuação</span>
-                    <span>{numericScore}/100</span>
+                    <span>{score}/100</span>
                   </div>
-                  <Progress value={numericScore} className="h-2" />
+                  <Progress value={score} className="h-2" />
                 </div>
 
                 <div className="p-4 bg-muted/50 rounded-lg">

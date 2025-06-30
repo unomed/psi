@@ -58,7 +58,7 @@ export function EmailTemplateManager({
     name: "",
     subject: "",
     body: "",
-    type: "" as string,
+    type: "" as TemplateType | "",
     description: ""
   });
 
@@ -96,7 +96,7 @@ export function EmailTemplateManager({
       name: formData.name,
       subject: formData.subject,
       body: formData.body,
-      type: formData.type,
+      type: formData.type as EmailTemplate['type'],
       description: formData.description
     };
 
@@ -281,7 +281,7 @@ export function EmailTemplateManager({
                   <Label htmlFor="template-type">Tipo de Template</Label>
                   <Select 
                     value={formData.type} 
-                    onValueChange={(value: string) => setFormData(prev => ({ ...prev, type: value }))}
+                    onValueChange={(value: TemplateType) => setFormData(prev => ({ ...prev, type: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar tipo" />

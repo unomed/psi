@@ -1,4 +1,3 @@
-
 import { ChecklistResult } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
 import { DiscFactorDetails } from "./disc/DiscFactorDetails";
@@ -39,7 +38,8 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
         <h3 className="text-xl font-medium">Resultados por Categoria</h3>
         
         {categories.map(category => {
-          const score = Number(resultsToUse[category]) || 0; // ✅ Type assertion para number
+          // @ts-ignore - resultsToUse é um objeto com chaves de string
+          const score = resultsToUse[category];
           const percentage = Math.round(score * 20); // 1-5 para percentual (1=20%, 5=100%)
           
           return (
@@ -115,7 +115,7 @@ export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
               {Object.entries(result.results).map(([factor, value]) => {
                 if (factor === 'D' || factor === 'I' || factor === 'S' || factor === 'C') {
                   // Calculate percentage (assuming max score is 100)
-                  const percentage = Math.round(Number(value) * 100); // ✅ Type assertion
+                  const percentage = Math.round(value * 100);
                   return (
                     <DiscFactorProgress 
                       key={factor}

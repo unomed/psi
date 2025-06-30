@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChecklistTemplate, SCALE_TYPES, DiscFactorType } from "@/types";
+import { ChecklistTemplate, ScaleType, DiscFactorType } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -58,7 +59,7 @@ export function ChecklistResponseForm({
   const renderScaleOptions = () => {
     const scaleType = template.scale_type;
     
-    if (scaleType === 'likert_5') {
+    if (scaleType === 'likert5' || scaleType === 'likert') {
       return [
         { value: "1", label: "1 - Discordo totalmente" },
         { value: "2", label: "2 - Discordo parcialmente" },

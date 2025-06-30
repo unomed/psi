@@ -41,8 +41,7 @@ export function TemplatePreviewDialog({
   const getScaleOptions = () => {
     const scaleType = template.scale_type;
     
-    // ✅ Usar string literals diretamente:
-    if (scaleType === 'likert_5') {
+    if (scaleType === 'likert5' || scaleType === 'likert') {
       return ["1 - Discordo totalmente", "2 - Discordo", "3 - Neutro", "4 - Concordo", "5 - Concordo totalmente"];
     } else if (scaleType === 'binary' || scaleType === 'yes_no') {
       return ["Sim", "Não"];
@@ -56,8 +55,7 @@ export function TemplatePreviewDialog({
   const getScaleDescription = () => {
     const scaleType = template.scale_type;
     
-    // ✅ Usar string literals diretamente:
-    if (scaleType === 'likert_5') {
+    if (scaleType === 'likert5' || scaleType === 'likert') {
       return "Escala Likert de 5 pontos";
     } else if (scaleType === 'binary' || scaleType === 'yes_no') {
       return "Resposta binária (Sim/Não)";

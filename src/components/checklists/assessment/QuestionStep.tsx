@@ -1,133 +1,133 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ChecklistTemplate, Question, SCALE_TYPES } from "@/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DiscQuestion, ScaleType } from "@/types";
+import { ProgressBar } from "./ProgressBar";
 
 interface QuestionStepProps {
-  template: ChecklistTemplate;
-  question: Question;
-  questionIndex: number;
-  totalQuestions: number;
-  response: string;
-  onResponseChange: (response: string) => void;
-  onNext: () => void;
-  onPrevious: () => void;
-  isLastQuestion: boolean;
+  question: DiscQuestion;
+  currentStep: number;
+  totalSteps: number;
+  selectedValue?: string;
+  onResponseChange: (value: string) => void;
+  scaleType?: ScaleType;
 }
 
-export function QuestionStep({
-  template,
-  question,
-  questionIndex,
-  totalQuestions,
-  response,
+export function QuestionStep({ 
+  question, 
+  currentStep, 
+  totalSteps,
+  selectedValue,
   onResponseChange,
-  onNext,
-  onPrevious,
-  isLastQuestion
+  scaleType = ScaleType.Likert
 }: QuestionStepProps) {
-
-  const getScaleOptions = () => {
-    const scaleType = template.scale_type;
-    
-    if (scaleType === 'likert_5') {  // ✅ usar string literal
-      return [
-        { value: "1", label: "1 - Discordo totalmente" },
-        { value: "2", label: "2 - Discordo parcialmente" },
-        { value: "3", label: "3 - Neutro" },
-        { value: "4", label: "4 - Concordo parcialmente" },
-        { value: "5", label: "5 - Concordo totalmente" }
-      ];
-    } else if (scaleType === 'binary' || scaleType === 'yes_no') {  // ✅ usar string literals
-      return [
-        { value: "sim", label: "Sim" },
-        { value: "nao", label: "Não" }
-      ];
-    } else if (scaleType === 'psicossocial') {  // ✅ usar string literal
-      return [
-        { value: "1", label: "1 - Nunca/Quase nunca" },
-        { value: "2", label: "2 - Raramente" },
-        { value: "3", label: "3 - Às vezes" },
-        { value: "4", label: "4 - Frequentemente" },
-        { value: "5", label: "5 - Sempre/Quase sempre" }
-      ];
-    } else if (scaleType === 'likert_7') {  // ✅ usar string literal
-      return [
-        { value: "1", label: "1 - Discordo totalmente" },
-        { value: "2", label: "2 - Discordo muito" },
-        { value: "3", label: "3 - Discordo parcialmente" },
-        { value: "4", label: "4 - Neutro" },
-        { value: "5", label: "5 - Concordo parcialmente" },
-        { value: "6", label: "6 - Concordo muito" },
-        { value: "7", label: "7 - Concordo totalmente" }
-      ];
-    } else if (scaleType === 'numeric') {  // ✅ usar string literal
-      return [
-        { value: "1", label: "1" },
-        { value: "2", label: "2" },
-        { value: "3", label: "3" },
-        { value: "4", label: "4" },
-        { value: "5", label: "5" }
-      ];
-    }
-    
-    // Default fallback
-    return [
-      { value: "1", label: "1" },
-      { value: "2", label: "2" },
-      { value: "3", label: "3" },
-      { value: "4", label: "4" },
-      { value: "5", label: "5" }
-    ];
-  };
-
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Questão {questionIndex + 1} de {totalQuestions}</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium mb-4">
-            {question.question_text || question.text}
-          </h3>
+    <div className="space-y-6">
+      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+      
+      <p className="text-base">{question.text}</p>
+      
+      {scaleType === ScaleType.Likert && (
+        <RadioGroup 
+          value={selectedValue}
+          onValueChange={onResponseChange}
+          className="space-y-3"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="1" id="r1" />
+            <Label htmlFor="r1">Discordo totalmente</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="2" id="r2" />
+            <Label htmlFor="r2">Discordo parcialmente</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="3" id="r3" />
+            <Label htmlFor="r3">Neutro</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="4" id="r4" />
+            <Label htmlFor="r4">Concordo parcialmente</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="5" id="r5" />
+            <Label htmlFor="r5">Concordo totalmente</Label>
+          </div>
+        </RadioGroup>
+      )}
 
-          <RadioGroup
-            value={response}
+      {scaleType === ScaleType.YesNo && (
+        <RadioGroup 
+          value={selectedValue}
+          onValueChange={onResponseChange}
+          className="space-y-3"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="1" id="no" />
+            <Label htmlFor="no">Não</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="5" id="yes" />
+            <Label htmlFor="yes">Sim</Label>
+          </div>
+        </RadioGroup>
+      )}
+
+      {scaleType === ScaleType.Agree3 && (
+        <RadioGroup 
+          value={selectedValue}
+          onValueChange={onResponseChange}
+          className="space-y-3"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="1" id="disagree" />
+            <Label htmlFor="disagree">Discordo</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="3" id="neutral" />
+            <Label htmlFor="neutral">Neutro</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="5" id="agree" />
+            <Label htmlFor="agree">Concordo</Label>
+          </div>
+        </RadioGroup>
+      )}
+
+      {scaleType === ScaleType.Custom && (
+        <div className="space-y-2 bg-muted/50 p-4 rounded-md">
+          <p className="text-sm text-muted-foreground">
+            Escala personalizada disponível em breve. Por padrão, usando escala Likert de 5 pontos.
+          </p>
+          <RadioGroup 
+            value={selectedValue}
             onValueChange={onResponseChange}
+            className="space-y-3"
           >
-            {getScaleOptions().map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={option.value} />
-                <Label htmlFor={option.value} className="cursor-pointer">
-                  {option.label}
-                </Label>
-              </div>
-            ))}
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="1" id="r1c" />
+              <Label htmlFor="r1c">Discordo totalmente</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="2" id="r2c" />
+              <Label htmlFor="r2c">Discordo parcialmente</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="3" id="r3c" />
+              <Label htmlFor="r3c">Neutro</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="4" id="r4c" />
+              <Label htmlFor="r4c">Concordo parcialmente</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="5" id="r5c" />
+              <Label htmlFor="r5c">Concordo totalmente</Label>
+            </div>
           </RadioGroup>
         </div>
-
-        <div className="flex justify-between">
-          <Button 
-            variant="outline" 
-            onClick={onPrevious}
-            disabled={questionIndex === 0}
-          >
-            Anterior
-          </Button>
-          
-          <Button 
-            onClick={onNext}
-            disabled={!response}
-          >
-            {isLastQuestion ? 'Finalizar' : 'Próxima'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

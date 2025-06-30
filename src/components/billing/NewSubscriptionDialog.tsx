@@ -2,13 +2,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface NewSubscriptionDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function NewSubscriptionDialog({ open, onOpenChange }: NewSubscriptionDialogProps) {
+export function NewSubscriptionDialog({ isOpen, onClose }: NewSubscriptionDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nova Assinatura</DialogTitle>

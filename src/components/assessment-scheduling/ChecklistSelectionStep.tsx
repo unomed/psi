@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, Users, Star } from "lucide-react";
-import { ChecklistTemplate, SCALE_TYPES } from "@/types";
+import { ChecklistTemplate } from "@/types";
 import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires";
 import { createStandardTemplate } from "@/data/standardQuestionnaires";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,7 +70,7 @@ export function ChecklistSelectionStep({
           title: existingTemplate.title,
           description: existingTemplate.description || "",
           category: templateData.type,
-          scale_type: SCALE_TYPES.LIKERT_5, // ✅ Usar constante correta
+          scale_type: templateData.scale_type,
           questions: [],
           createdAt: new Date(existingTemplate.created_at),
           is_standard: existingTemplate.is_standard,

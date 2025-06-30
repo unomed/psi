@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -28,14 +27,7 @@ export function EditScheduledAssessmentDialog({
 
   useEffect(() => {
     if (assessment) {
-      // ✅ CORRIGIR: Converter string para Date se necessário
-      const dateValue = assessment.scheduledDate;
-      if (typeof dateValue === 'string') {
-        setScheduledDate(new Date(dateValue));
-      } else if (dateValue instanceof Date) {
-        setScheduledDate(dateValue);
-      }
-      
+      setScheduledDate(assessment.scheduledDate);
       // Use the correct property name from the database
       setRecurrenceType(assessment.recurrence_type || "none");
       setPhoneNumber(assessment.phoneNumber || "");
@@ -64,12 +56,7 @@ export function EditScheduledAssessmentDialog({
     onClose();
     // Reset form when closing
     if (assessment) {
-      const dateValue = assessment.scheduledDate;
-      if (typeof dateValue === 'string') {
-        setScheduledDate(new Date(dateValue));
-      } else if (dateValue instanceof Date) {
-        setScheduledDate(dateValue);
-      }
+      setScheduledDate(assessment.scheduledDate);
       setRecurrenceType(assessment.recurrence_type || "none");
       setPhoneNumber(assessment.phoneNumber || "");
     }

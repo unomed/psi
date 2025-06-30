@@ -2,13 +2,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface BillingConfigDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function BillingConfigDialog({ open, onOpenChange }: BillingConfigDialogProps) {
+export function BillingConfigDialog({ isOpen, onClose }: BillingConfigDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Configurações de Faturamento</DialogTitle>
