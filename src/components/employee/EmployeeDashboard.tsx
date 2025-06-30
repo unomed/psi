@@ -56,24 +56,27 @@ export function EmployeeDashboard({ employeeId }: EmployeeDashboardProps) {
   };
 
   const handleStartAssessment = (templateId: string) => {
-    // Find the template from pending assessments
     const assessment = pendingAssessments.find(a => a.templateId === templateId);
     if (assessment?.checklist_templates) {
+      const templateData = assessment.checklist_templates;
+      
+      // Create template with safe property access
       const template: ChecklistTemplate = {
-        id: assessment.checklist_templates.id,
-        name: assessment.checklist_templates.title,
-        title: assessment.checklist_templates.title,
-        description: assessment.checklist_templates.description,
+        id: templateData.id || '',
+        name: templateData.title || '',
+        title: templateData.title || '',
+        description: templateData.description || '',
         category: 'default',
-        type: assessment.checklist_templates.type,
-        scale_type: assessment.checklist_templates.scale_type,
-        is_active: assessment.checklist_templates.is_active,
-        is_standard: assessment.checklist_templates.is_standard || false,
-        estimated_time_minutes: assessment.checklist_templates.estimated_time_minutes,
-        version: assessment.checklist_templates.version,
-        created_at: assessment.checklist_templates.created_at,
-        updated_at: assessment.checklist_templates.updated_at
+        type: templateData.type || 'custom',
+        scale_type: templateData.scale_type || 'likert_5',
+        is_active: templateData.is_active ?? true,
+        is_standard: templateData.is_standard ?? false,
+        estimated_time_minutes: templateData.estimated_time_minutes || 15,
+        version: templateData.version || '1.0',
+        created_at: templateData.created_at || new Date().toISOString(),
+        updated_at: templateData.updated_at || new Date().toISOString()
       };
+      
       setActiveAssessment(template);
     }
   };

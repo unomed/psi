@@ -32,7 +32,9 @@ export function useEmployees(companyId?: string) {
         role: Array.isArray(emp.roles) ? emp.roles[0] : emp.roles,
         sectors: Array.isArray(emp.sectors) ? emp.sectors[0] : emp.sectors,
         employee_type: emp.employee_type as 'funcionario' | 'candidato',
-        employee_tags: Array.isArray(emp.employee_tags) ? emp.employee_tags : []
+        employee_tags: Array.isArray(emp.employee_tags) 
+          ? emp.employee_tags.map(tag => String(tag)).filter(Boolean)
+          : []
       }));
     },
     enabled: !!companyId

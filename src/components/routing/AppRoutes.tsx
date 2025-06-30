@@ -1,159 +1,65 @@
 
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { AuthRoutes } from "./AuthRoutes";
-import { AdminRoutes } from "./AdminRoutes";
-import { SettingsRoutes } from "./SettingsRoutes";
-import MainLayout from "@/components/layout/MainLayout";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { AdminGuard } from "@/components/auth/AdminGuard";
-import { SafeEmployeeGuard } from "@/components/auth/SafeEmployeeGuard";
-import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
-import EmployeePortal from "@/pages/EmployeePortal";
-import PublicAssessment from "@/pages/PublicAssessment";
-import ChecklistPortal from "@/pages/ChecklistPortal";
+import { Routes, Route } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import Dashboard from "@/pages/Dashboard";
+import Empresas from "@/pages/Empresas";
+import Funcionarios from "@/pages/Funcionarios";
+import Funcoes from "@/pages/Funcoes";
+import Setores from "@/pages/Setores";
+import Checklists from "@/pages/Checklists";
+import Avaliacoes from "@/pages/Avaliacoes";
+import Relatorios from "@/pages/Relatorios";
+import PlanoAcao from "@/pages/PlanoAcao";
+import Faturamento from "@/pages/Faturamento";
+import AssessmentScheduling from "@/pages/AssessmentScheduling";
+import AssessmentResults from "@/pages/AssessmentResults";
+import GestaoRiscos from "@/pages/GestaoRiscos";
+import AutomacaoGestores from "@/pages/AutomacaoGestores";
+import CandidatosAvaliacoes from "@/pages/CandidatosAvaliacoes";
+import CandidatosComparacao from "@/pages/CandidatosComparacao";
+import Perfil from "@/pages/Perfil";
 import { AssessmentResponse } from "@/components/employee/AssessmentResponse";
-import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
-import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
-import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
+import NotFound from "@/pages/NotFound";
 
-export function AppRoutes() {
-  const { user, isLoading } = useSimpleAuth();
-
-  console.log('[AppRoutes] Estado atual:', {
-    hasUser: !!user,
-    isLoading,
-    currentPath: window.location.pathname
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-center space-y-4">
-          <LoadingSpinner size="lg" />
-          <div className="text-muted-foreground">
-            <p>Verificando autenticação...</p>
-            <p className="text-sm mt-2">Conectando com banco de dados...</p>
-          </div>
-        </div>
-      </div>
-    );
+function AssessmentResponseWrapper() {
+  const { templateId, employeeId } = useParams();
+  
+  if (!templateId || !employeeId) {
+    return <NotFound />;
   }
 
   return (
+    <AssessmentResponse
+      templateId={templateId}
+      employeeId={employeeId}
+      onComplete={() => window.close()}
+    />
+  );
+}
+
+export function AppRoutes() {
+  return (
     <Routes>
-      {/* Direct login route - redirect to auth/login */}
-      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-
-      {/* Rotas de autenticação - PRIORIDADE MÁXIMA */}
-      <Route path="/auth/*" element={
-        <FormErrorBoundary>
-          <AuthRoutes />
-        </FormErrorBoundary>
-      } />
-
-      {/* Nova rota para checklist com validação */}
-      <Route path="/checklist/:checklistName" element={<ChecklistPortal />} />
-      <Route path="/checklist" element={<ChecklistPortal />} />
-
-      {/* ROTA ISOLADA PARA FUNCIONÁRIOS - SISTEMA NATIVO */}
-      <Route path="/auth/employee" element={
-        <EmployeeErrorBoundary>
-          <EmployeeLoginIsolated />
-        </EmployeeErrorBoundary>
-      } />
-      
-      {/* Portal do funcionário com provider nativo */}
-      <Route path="/employee-portal" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <SafeEmployeeGuard>
-              <EmployeePortal />
-            </SafeEmployeeGuard>
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-      
-      <Route path="/employee-portal/:templateId" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <SafeEmployeeGuard>
-              <EmployeePortal />
-            </SafeEmployeeGuard>
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-
-      {/* Nova rota para resposta de avaliação no portal */}
-      <Route path="/employee-portal/assessment/:assessmentId" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <SafeEmployeeGuard>
-              <AssessmentResponse />
-            </SafeEmployeeGuard>
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-
-      {/* Avaliações públicas com tokens - sistema nativo */}
-      <Route path="/avaliacao/:token" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <PublicAssessment />
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-      
-      <Route path="/assessment/:token" element={
-        <EmployeeErrorBoundary>
-          <EmployeeAuthNativeProvider>
-            <PublicAssessment />
-          </EmployeeAuthNativeProvider>
-        </EmployeeErrorBoundary>
-      } />
-
-      {/* Redirecionamentos diretos sem múltiplas camadas */}
-      <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />
-      <Route path="/portal" element={<Navigate to="/employee-portal" replace />} />
-
-      {/* Rotas administrativas protegidas */}
-      {user && (
-        <>
-          <Route 
-            path="/configuracoes/*" 
-            element={
-              <AdminGuard>
-                <MainLayout>
-                  <SettingsRoutes />
-                </MainLayout>
-              </AdminGuard>
-            } 
-          />
-          
-          <Route 
-            path="/*" 
-            element={
-              <AdminGuard>
-                <MainLayout>
-                  <AdminRoutes />
-                </MainLayout>
-              </AdminGuard>
-            } 
-          />
-        </>
-      )}
-
-      {/* Redirecionamento padrão simplificado */}
-      <Route 
-        path="/" 
-        element={
-          user ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Navigate to="/auth/login" replace />
-          )
-        } 
-      />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/empresas" element={<Empresas />} />
+      <Route path="/funcionarios" element={<Funcionarios />} />
+      <Route path="/funcoes" element={<Funcoes />} />
+      <Route path="/setores" element={<Setores />} />
+      <Route path="/checklists" element={<Checklists />} />
+      <Route path="/avaliacoes" element={<Avaliacoes />} />
+      <Route path="/agendamento-avaliacoes" element={<AssessmentScheduling />} />
+      <Route path="/resultados-avaliacoes" element={<AssessmentResults />} />
+      <Route path="/relatorios" element={<Relatorios />} />
+      <Route path="/plano-acao" element={<PlanoAcao />} />
+      <Route path="/faturamento" element={<Faturamento />} />
+      <Route path="/gestao-riscos" element={<GestaoRiscos />} />
+      <Route path="/automacao-gestores" element={<AutomacaoGestores />} />
+      <Route path="/candidatos-avaliacoes" element={<CandidatosAvaliacoes />} />
+      <Route path="/candidatos-comparacao" element={<CandidatosComparacao />} />
+      <Route path="/perfil" element={<Perfil />} />
+      <Route path="/assessment/:templateId/:employeeId" element={<AssessmentResponseWrapper />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
