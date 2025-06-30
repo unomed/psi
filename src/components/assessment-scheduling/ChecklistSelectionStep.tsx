@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, Users, Star } from "lucide-react";
-import { ChecklistTemplate } from "@/types";
+import { ChecklistTemplate, ScaleType } from "@/types";
 import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires";
 import { createStandardTemplate } from "@/data/standardQuestionnaires";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +69,7 @@ export function ChecklistSelectionStep({
           title: existingTemplate.title,
           description: existingTemplate.description || "",
           category: templateData.type,
-          scale_type: templateData.scale_type,
+          scale_type: ScaleType.LIKERT_5, // ✅ Usar enum correto
           questions: [],
           createdAt: new Date(existingTemplate.created_at),
           is_standard: existingTemplate.is_standard,

@@ -24,7 +24,7 @@ export function Evaluation360Selector({ onSelectTemplate, onCancel }: Evaluation
       title: `Avaliação 360° - ${evaluationType === "colleague" ? "Colegas" : "Gestores"}`,
       description: `Avaliação anônima para ${evaluationType === "colleague" ? "colegas de trabalho" : "gestores"}`,
       type: "evaluation_360",
-      scaleType: ScaleType.Likert,
+      scaleType: ScaleType.LIKERT_5, // ✅ Usar enum correto
       questions: questions,
       isAnonymous: true,
       restrictToSector: true,
