@@ -17,7 +17,7 @@ export default function Setores() {
   const [selectedSector, setSelectedSector] = useState(null);
   const { userCompanies } = useAuth();
   const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
-  const { sectors, isLoading, createSector, updateSector, deleteSector } = useSectors(companyId);
+  const { sectors, isLoading, createSector, updateSector, deleteSector } = useSectors();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleOpenForm = () => {

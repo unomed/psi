@@ -10,22 +10,24 @@ interface UsePsicossocialAssessmentProps {
 
 export function usePsicossocialAssessment({ template, onSubmit }: UsePsicossocialAssessmentProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [responses, setResponses] = useState<Record<string, number>>({});
+  const [responses, setResponses] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const questions = template.questions as PsicossocialQuestion[];
+  const questions = (template.questions as PsicossocialQuestion[]) || [];
   const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
 
   const handleResponseChange = (value: string) => {
+    if (!currentQuestion?.id) return;
+    
     setResponses({
       ...responses,
-      [currentQuestion.id]: parseInt(value)
+      [currentQuestion.id]: value
     });
   };
 
   const handleNext = () => {
-    if (!responses[currentQuestion.id]) {
+    if (!currentQuestion?.id || !responses[currentQuestion.id]) {
       toast.error("Por favor, selecione uma resposta antes de continuar.");
       return;
     }
@@ -43,13 +45,15 @@ export function usePsicossocialAssessment({ template, onSubmit }: UsePsicossocia
     }
   };
 
-  const calculateCategoryScores = (responses: Record<string, number>) => {
+  const calculateCategoryScores = (responses: Record<string, string>) => {
     const categoryScores: Record<string, number> = {};
     const categoryCounts: Record<string, number> = {};
 
     questions.forEach(question => {
+      if (!question.id) return;
+      
       const category = question.category || "Geral";
-      const response = responses[question.id] || 0;
+      const response = parseInt(responses[question.id] || "0");
 
       if (!categoryScores[category]) {
         categoryScores[category] = 0;

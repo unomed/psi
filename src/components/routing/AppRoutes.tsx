@@ -10,7 +10,7 @@ import AutomacaoAvancadaPage from "@/pages/configuracoes/AutomacaoAvancadaPage";
 import { AssessmentResponse } from "@/components/employee/AssessmentResponse";
 import NotFound from "@/pages/NotFound";
 
-// Importar versões simplificadas
+// Importar versões simplificadas para páginas com problemas
 import FuncoesSimplified from "@/pages/FuncoesSimplified";
 import ChecklistsSimplified from "@/pages/ChecklistsSimplified";
 import AvaliacoesSimplified from "@/pages/AvaliacoesSimplified";
