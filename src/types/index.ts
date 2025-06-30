@@ -1,18 +1,19 @@
+
 // ===== TIPOS BASE =====
 export type AppRole = 'admin' | 'manager' | 'user' | 'employee' | 'evaluator' | 'superadmin';
 
-export enum ScaleType {
-  Likert = 'likert5',
-  YesNo = 'binary',
-  Agree3 = 'percentage',
-  Frequency = 'numeric',
-  Importance = 'likert',
-  Probability = 'yes_no',
-  Impact = 'psicossocial',
-  RiskLevel = 'percentage',
-  Psicossocial = 'psicossocial',
-  Custom = 'custom'
-}
+// Corrigir ScaleType para string union type
+export type ScaleType = 
+  | 'psicossocial'
+  | 'binary' 
+  | 'likert_5'
+  | 'likert_7' 
+  | 'numeric' 
+  | 'percentage' 
+  | 'custom'
+  | 'yes_no'
+  | 'likert5'
+  | 'likert';
 
 export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'none' | 'semiannual' | 'annual';
 
@@ -39,6 +40,13 @@ export interface CompanyData {
   notes?: string;
   created_at: string;
   updated_at: string;
+  // Compatibilidade com Company
+  logoUrl?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ChecklistTemplate {
@@ -129,7 +137,7 @@ export interface ScheduledAssessment {
   created_at: string;
   updated_at: string;
   // Campos adicionais compatibilidade
-  employeeId?: string;
+  employeeId: string; // Tornar obrigatório
   templateId?: string;
   scheduledDate?: Date;
   sentAt?: Date | null;
@@ -198,6 +206,7 @@ export interface DiscFactor {
   name: string;
   description: string;
   characteristics: string[];
+  score?: number; // Tornar opcional
 }
 
 export interface Company {
@@ -216,6 +225,9 @@ export interface Company {
   contactPhone?: string;
   createdAt: Date;
   updatedAt: Date;
+  // Compatibilidade com CompanyData
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CompanyAccess {
@@ -225,7 +237,7 @@ export interface CompanyAccess {
 
 // Auth context interface - Fixed to include all required properties
 export interface SimpleAuthContextType {
-  user: User | null;
+  user: any | null;
   userRole: AppRole | null;
   userCompanies: any[];
   isLoading: boolean;
@@ -286,3 +298,33 @@ export const SYSTEM_CONSTANTS = {
   SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
   CACHE_DURATION: 5 * 60 * 1000 // 5 minutes
 };
+
+// ===== CONSTANTES PARA USO COMO VALORES =====
+export const SCALE_TYPES = {
+  PSICOSSOCIAL: 'psicossocial',
+  BINARY: 'binary',
+  LIKERT_5: 'likert_5',
+  LIKERT_7: 'likert_7',
+  NUMERIC: 'numeric',
+  PERCENTAGE: 'percentage',
+  CUSTOM: 'custom',
+  YES_NO: 'yes_no'
+} as const;
+
+export const CHECKLIST_TYPES = {
+  DISC: 'disc',
+  PSICOSSOCIAL: 'psicossocial',
+  SRQ20: 'srq20',
+  PHQ9: 'phq9',
+  GAD7: 'gad7',
+  MBI: 'mbi',
+  AUDIT: 'audit',
+  PSS: 'pss',
+  COPSOQ: 'copsoq',
+  JCQ: 'jcq',
+  ERI: 'eri',
+  PERSONAL_LIFE: 'personal_life',
+  EVALUATION_360: 'evaluation_360',
+  CUSTOM: 'custom',
+  STRESS: 'stress'
+} as const;

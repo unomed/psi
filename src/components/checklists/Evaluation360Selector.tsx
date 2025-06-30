@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, UserCheck, Crown } from "lucide-react";
 import { get360Questions } from "@/services/checklist/templateUtils";
-import { ScaleType } from "@/types";
 
 interface Evaluation360SelectorProps {
   onSelectTemplate: (template: any) => void;
@@ -24,7 +23,7 @@ export function Evaluation360Selector({ onSelectTemplate, onCancel }: Evaluation
       title: `Avaliação 360° - ${evaluationType === "colleague" ? "Colegas" : "Gestores"}`,
       description: `Avaliação anônima para ${evaluationType === "colleague" ? "colegas de trabalho" : "gestores"}`,
       type: "evaluation_360",
-      scaleType: ScaleType.Likert,
+      scaleType: 'likert_5',
       questions: questions,
       isAnonymous: true,
       restrictToSector: true,

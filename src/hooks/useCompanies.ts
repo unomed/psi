@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CompanyData } from "@/types";
 
 export function useCompanies() {
   const queryClient = useQueryClient();
@@ -35,13 +36,15 @@ export function useCompanies() {
         contactEmail: company.contact_email,
         contactPhone: company.contact_phone,
         createdAt: new Date(company.created_at),
-        updatedAt: new Date(company.updated_at)
+        updatedAt: new Date(company.updated_at),
+        created_at: company.created_at,
+        updated_at: company.updated_at
       }));
     }
   });
 
   const createCompany = useMutation({
-    mutationFn: async (companyData: any) => {
+    mutationFn: async (companyData: Omit<CompanyData, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('companies')
         .insert({
@@ -75,7 +78,7 @@ export function useCompanies() {
   });
 
   const updateCompany = useMutation({
-    mutationFn: async (companyData: any) => {
+    mutationFn: async ({ id, ...companyData }: Partial<CompanyData> & { id: string }) => {
       const { data, error } = await supabase
         .from('companies')
         .update({
@@ -92,7 +95,7 @@ export function useCompanies() {
           contact_email: companyData.contactEmail,
           contact_phone: companyData.contactPhone
         })
-        .eq('id', companyData.id)
+        .eq('id', id)
         .select()
         .single();
 
@@ -131,8 +134,8 @@ export function useCompanies() {
     companies: companies || [], 
     isLoading,
     error,
-    createCompany,
-    updateCompany,
-    deleteCompany
+    createCompany: createCompany.mutate,
+    updateCompany: updateCompany.mutate,
+    deleteCompany: deleteCompany.mutate
   };
 }

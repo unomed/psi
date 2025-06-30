@@ -1,182 +1,306 @@
 
-import { useChecklistTemplates } from "./checklist/useChecklistTemplates";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ChecklistTemplate, ChecklistResult } from "@/types";
-import { useScheduledAssessments } from "./checklist/useScheduledAssessments";
+import { ChecklistTemplate, ChecklistResult, ScheduledAssessment } from "@/types";
 
 export function useChecklistData() {
   const queryClient = useQueryClient();
-  const { checklists, isLoading, error, refetch } = useChecklistTemplates();
-  const { scheduledAssessments, refetch: refetchScheduled } = useScheduledAssessments();
 
-  // Mock results data for now
-  const results: ChecklistResult[] = [];
-
-  const createTemplate = useMutation({
-    mutationFn: async (template: Omit<ChecklistTemplate, 'id'>) => {
+  // Fetch checklist templates
+  const { data: checklists, isLoading: checklistsLoading, refetch: refetchChecklists } = useQuery({
+    queryKey: ['checklist-templates'],
+    queryFn: async (): Promise<ChecklistTemplate[]> => {
       const { data, error } = await supabase
         .from('checklist_templates')
-        .insert({
-          title: template.title || template.name,
-          description: template.description,
-          type: template.type,
-          scale_type: template.scale_type,
-          is_active: template.is_active,
-          is_standard: template.is_standard,
-          derived_from_id: template.derived_from_id,
-          company_id: template.company_id,
-          instructions: template.instructions,
-          estimated_time_minutes: template.estimated_time_minutes,
-          cutoff_scores: template.cutoff_scores,
-          version: template.version,
-          created_by: template.created_by
-        })
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching checklist templates:', error);
+        throw error;
+      }
+
+      return data || [];
+    }
+  });
+
+  // Fetch results
+  const { data: results, isLoading: resultsLoading } = useQuery({
+    queryKey: ['checklist-results'],
+    queryFn: async (): Promise<ChecklistResult[]> => {
+      const { data, error } = await supabase
+        .from('assessment_responses')
+        .select('*')
+        .order('completed_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching checklist results:', error);
+        throw error;
+      }
+
+      return (data || []).map(item => ({
+        id: item.id,
+        templateId: item.template_id,
+        employeeId: item.employee_id,
+        employeeName: item.employee_name,
+        completedAt: new Date(item.completed_at),
+        results: item.response_data || {},
+        dominantFactor: item.dominant_factor || 'Unknown'
+      }));
+    }
+  });
+
+  // Fetch scheduled assessments
+  const { data: scheduledAssessments, isLoading: scheduledLoading, refetch } = useQuery({
+    queryKey: ['scheduled-assessments'],
+    queryFn: async (): Promise<ScheduledAssessment[]> => {
+      const { data, error } = await supabase
+        .from('scheduled_assessments')
+        .select(`
+          *,
+          employees:employee_id (
+            name,
+            email,
+            phone
+          ),
+          checklist_templates:template_id (
+            title
+          )
+        `)
+        .order('scheduled_date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching scheduled assessments:', error);
+        throw error;
+      }
+
+      return (data || []).map(item => ({
+        id: item.id,
+        employeeId: item.employee_id,
+        templateId: item.template_id,
+        scheduledDate: new Date(item.scheduled_date),
+        status: item.status,
+        sentAt: item.sent_at ? new Date(item.sent_at) : null,
+        completedAt: item.completed_at ? new Date(item.completed_at) : null,
+        linkUrl: item.link_url || '',
+        company_id: item.company_id,
+        employee_name: item.employee_name,
+        employees: Array.isArray(item.employees) ? item.employees[0] : item.employees,
+        checklist_templates: Array.isArray(item.checklist_templates) ? item.checklist_templates[0] : item.checklist_templates
+      }));
+    }
+  });
+
+  // Create template mutation
+  const createTemplate = useMutation({
+    mutationFn: async (templateData: Omit<ChecklistTemplate, "id" | "createdAt">) => {
+      const { data, error } = await supabase
+        .from('checklist_templates')
+        .insert([{
+          title: templateData.name, // Usar name como title no banco
+          description: templateData.description,
+          type: templateData.type,
+          scale_type: templateData.scale_type,
+          is_active: templateData.is_active,
+          is_standard: templateData.is_standard || false,
+          estimated_time_minutes: templateData.estimated_time_minutes,
+          version: templateData.version,
+          company_id: templateData.company_id,
+          created_by: templateData.created_by
+        }])
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
+      queryClient.invalidateQueries({ queryKey: ['checklist-templates'] });
       toast.success('Template criado com sucesso!');
     },
     onError: (error: any) => {
-      toast.error('Erro ao criar template: ' + error.message);
+      console.error('Error creating template:', error);
+      toast.error('Erro ao criar template');
     }
   });
 
+  // Update template mutation
   const updateTemplate = useMutation({
-    mutationFn: async ({ id, template }: { id: string; template: Partial<ChecklistTemplate> }) => {
-      const updateData: Record<string, any> = {};
-      
-      if (template.title || template.name) updateData.title = template.title || template.name;
-      if (template.description) updateData.description = template.description;
-      if (template.type) updateData.type = template.type;
-      if (template.scale_type) updateData.scale_type = template.scale_type;
-      if (template.is_active !== undefined) updateData.is_active = template.is_active;
-      if (template.is_standard !== undefined) updateData.is_standard = template.is_standard;
-      if (template.derived_from_id) updateData.derived_from_id = template.derived_from_id;
-      if (template.company_id) updateData.company_id = template.company_id;
-      if (template.instructions) updateData.instructions = template.instructions;
-      if (template.estimated_time_minutes) updateData.estimated_time_minutes = template.estimated_time_minutes;
-      if (template.cutoff_scores) updateData.cutoff_scores = template.cutoff_scores;
-      if (template.version) updateData.version = template.version;
-      if (template.created_by) updateData.created_by = template.created_by;
-      
-      const { data, error } = await supabase
-        .from('checklist_templates')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
-      toast.success('Template atualizado com sucesso!');
-    },
-    onError: (error: any) => {
-      toast.error('Erro ao atualizar template: ' + error.message);
-    }
-  });
-
-  const deleteTemplate = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('checklist_templates')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      return true;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
-      toast.success('Template deletado com sucesso!');
-    },
-    onError: (error: any) => {
-      toast.error('Erro ao deletar template: ' + error.message);
-    }
-  });
-
-  const copyTemplate = useMutation({
     mutationFn: async (template: ChecklistTemplate) => {
       const { data, error } = await supabase
         .from('checklist_templates')
-        .insert({
-          title: `${template.title || template.name} (Cópia)`,
+        .update([{
+          title: template.name, // Usar name como title no banco
           description: template.description,
           type: template.type,
           scale_type: template.scale_type,
           is_active: template.is_active,
-          is_standard: false,
-          derived_from_id: template.id,
-          company_id: template.company_id,
-          instructions: template.instructions,
           estimated_time_minutes: template.estimated_time_minutes,
-          cutoff_scores: template.cutoff_scores,
-          version: template.version,
-          created_by: template.created_by
-        })
+          version: template.version
+        }])
+        .eq('id', template.id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
-      toast.success('Template copiado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['checklist-templates'] });
+      toast.success('Template atualizado com sucesso!');
     },
     onError: (error: any) => {
-      toast.error('Erro ao copiar template: ' + error.message);
+      console.error('Error updating template:', error);
+      toast.error('Erro ao atualizar template');
     }
   });
 
-  // Mock functions for compatibility
-  const handleSaveAssessmentResult = async (result: any) => {
-    // Implementation would go here
-    toast.success('Resultado salvo com sucesso!');
-    return true;
-  };
+  // Delete template mutation
+  const deleteTemplate = useMutation({
+    mutationFn: async (templateId: string) => {
+      const { error } = await supabase
+        .from('checklist_templates')
+        .delete()
+        .eq('id', templateId);
 
-  const handleSendEmail = async (assessmentId: string) => {
-    // Implementation would go here
-    toast.success('Email enviado com sucesso!');
-    return true;
-  };
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checklist-templates'] });
+      toast.success('Template excluído com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Error deleting template:', error);
+      toast.error('Erro ao excluir template');
+    }
+  });
+
+  // Copy template mutation
+  const copyTemplate = useMutation({
+    mutationFn: async (template: ChecklistTemplate) => {
+      const { data, error } = await supabase
+        .rpc('copy_template_for_company', {
+          template_id: template.id,
+          company_id: template.company_id,
+          new_title: `Cópia de ${template.name}`
+        });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checklist-templates'] });
+      toast.success('Template copiado com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Error copying template:', error);
+      toast.error('Erro ao copiar template');
+    }
+  });
+
+  // Save assessment result mutation
+  const saveAssessmentResult = useMutation({
+    mutationFn: async (resultData: any) => {
+      const { data, error } = await supabase
+        .from('assessment_responses')
+        .insert([{
+          template_id: resultData.templateId,
+          employee_id: resultData.employeeId,
+          employee_name: resultData.employeeName,
+          response_data: resultData.results,
+          dominant_factor: resultData.dominantFactor,
+          completed_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['checklist-results'] });
+      toast.success('Resultado salvo com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Error saving result:', error);
+      toast.error('Erro ao salvar resultado');
+    }
+  });
+
+  // Send email mutation
+  const sendEmail = useMutation({
+    mutationFn: async (emailData: any) => {
+      // Implement email sending logic here
+      console.log('Sending email:', emailData);
+      return true;
+    },
+    onSuccess: () => {
+      toast.success('Email enviado com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Error sending email:', error);
+      toast.error('Erro ao enviar email');
+    }
+  });
+
+  const isLoading = checklistsLoading || resultsLoading || scheduledLoading;
 
   return {
     checklists,
     results,
     scheduledAssessments,
     isLoading,
-    error,
-    refetch,
-    handleCreateTemplate: (template: Omit<ChecklistTemplate, 'id'>) => {
-      createTemplate.mutate(template);
-      return Promise.resolve(true);
+    handleCreateTemplate: async (templateData: Omit<ChecklistTemplate, "id" | "createdAt">) => {
+      try {
+        await createTemplate.mutateAsync(templateData);
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
-    handleUpdateTemplate: (template: ChecklistTemplate) => {
-      updateTemplate.mutate({ id: template.id, template });
-      return Promise.resolve(true);
+    handleUpdateTemplate: async (template: ChecklistTemplate) => {
+      try {
+        await updateTemplate.mutateAsync(template);
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
-    handleDeleteTemplate: (template: ChecklistTemplate) => {
-      deleteTemplate.mutate(template.id);
-      return Promise.resolve(true);
+    handleDeleteTemplate: async (template: ChecklistTemplate) => {
+      try {
+        await deleteTemplate.mutateAsync(template.id);
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
-    handleCopyTemplate: (template: ChecklistTemplate) => {
-      copyTemplate.mutate(template);
-      return Promise.resolve(true);
+    handleCopyTemplate: async (template: ChecklistTemplate) => {
+      try {
+        await copyTemplate.mutateAsync(template);
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
-    handleSaveAssessmentResult,
-    handleSendEmail,
-    refetchChecklists: refetch,
-    refetchScheduledAssessments: refetchScheduled
+    handleSaveAssessmentResult: async (resultData: any) => {
+      try {
+        await saveAssessmentResult.mutateAsync(resultData);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+    handleSendEmail: async (emailData: any) => {
+      try {
+        await sendEmail.mutateAsync(emailData);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+    refetchChecklists,
+    refetch
   };
 }

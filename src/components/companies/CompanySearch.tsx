@@ -1,24 +1,23 @@
 
-import { Search } from "lucide-react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
-interface CompanySearchProps {
+export interface CompanySearchProps {
   value: string;
   onChange: (value: string) => void;
 }
 
 export function CompanySearch({ value, onChange }: CompanySearchProps) {
   return (
-    <div className="flex gap-2 items-center">
-      <div className="relative flex-1">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Pesquisar empresas por nome, CNPJ, cidade..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="pl-8"
-        />
-      </div>
+    <div className="relative mb-6">
+      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+      <Input
+        placeholder="Buscar empresas..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="pl-10"
+      />
     </div>
   );
 }

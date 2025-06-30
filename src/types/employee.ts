@@ -17,6 +17,7 @@ export interface Employee {
   role_id: string;
   employee_type: 'funcionario' | 'candidato';
   employee_tags: string[];
+  // Adicionar propriedades usadas no código
   role?: {
     id: string;
     name: string;

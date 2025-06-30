@@ -6,7 +6,7 @@ export type RecurrenceType = "none" | "monthly" | "quarterly" | "semiannual" | "
 
 export interface ScheduledAssessment {
   id: string;
-  employeeId: string;
+  employeeId: string; // Tornar obrigatório
   templateId: string;
   scheduledDate: Date;
   sentAt: Date | null;
@@ -17,7 +17,7 @@ export interface ScheduledAssessment {
   nextScheduledDate?: Date | null;
   phoneNumber?: string;
   company_id?: string;
-  employee_name?: string; // Add employee_name field
+  employee_name?: string;
   // Make employees optional and add possible error state
   employees?: {
     name: string;
@@ -36,5 +36,5 @@ export interface EmailTemplate {
   subject: string;
   body: string;
   description?: string;
-  type?: string; // initial_invite, reminder_3_days, reminder_1_day, final_reminder, completion_confirmation, high_risk_alert, manager_notification, action_plan_created
+  type?: string;
 }
