@@ -1,3 +1,4 @@
+
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
@@ -52,7 +53,14 @@ class SimpleAppErrorBoundary extends React.Component<
 }
 
 function AppContent() {
-  const { user, isLoading } = useSimpleAuth();
+  const { user, isLoading, isAuthenticated } = useSimpleAuth();
+
+  console.log('[SimpleAppContent] Estado atual:', {
+    hasUser: !!user,
+    isLoading,
+    isAuthenticated,
+    currentPath: window.location.pathname
+  });
 
   if (isLoading) {
     return (
@@ -65,7 +73,9 @@ function AppContent() {
     );
   }
 
-  if (!user) {
+  // Se não está autenticado, mostrar páginas de auth
+  if (!isAuthenticated || !user) {
+    console.log('[SimpleAppContent] Usuário não autenticado, mostrando tela de login');
     return (
       <Routes>
         <Route path="/auth/register" element={<Register />} />
@@ -74,6 +84,8 @@ function AppContent() {
     );
   }
 
+  // Se está autenticado, mostrar aplicação principal
+  console.log('[SimpleAppContent] Usuário autenticado, carregando aplicação principal');
   return (
     <MainLayout>
       <AppRoutes />
@@ -82,7 +94,7 @@ function AppContent() {
 }
 
 export function SimpleAppContent() {
-  console.log('[SimpleAppContent] Configurando roteamento com menu funcional');
+  console.log('[SimpleAppContent] Inicializando roteamento principal');
   
   return (
     <SimpleAppErrorBoundary>

@@ -1,6 +1,5 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
 // Lazy load all pages
 import { lazy, Suspense } from "react";
@@ -21,14 +20,15 @@ const CandidatosAvaliacoes = lazy(() => import("@/pages/CandidatosAvaliacoes"));
 const NR01Page = lazy(() => import("@/pages/relatorios/NR01Page"));
 
 export function AppRoutes() {
-  const { isAuthenticated } = useSimpleAuth();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
   return (
-    <Suspense fallback={<div>Carregando...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-muted-foreground">Carregando página...</p>
+        </div>
+      </div>
+    }>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
