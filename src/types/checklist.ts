@@ -10,6 +10,7 @@ export interface Question {
   weight?: number;
   reverse_scored?: boolean;
   created_at: string;
+  updated_at?: string;                    // ✅ ADICIONAR propriedade faltando
   // Compatibility fields
   text?: string;
   targetFactor?: string;
@@ -18,8 +19,8 @@ export interface Question {
 
 export interface ChecklistTemplate {
   id: string;
-  title?: string;                         // ✅ OPCIONAL para compatibilidade
-  name?: string;                          // ✅ OPCIONAL para compatibilidade
+  title: string;                          // ✅ Campo correto do banco
+  name?: string;                          // ✅ Manter para compatibilidade
   description?: string;
   type: ChecklistTemplateType;
   scale_type: ScaleType;
@@ -55,7 +56,7 @@ export interface ChecklistResult {
   
   // ✅ ADICIONAR - propriedades faltando:
   employeeName?: string;                  // ✅ Usado no código
-  dominantFactor?: string;                // ✅ Usado no código  
+  dominantFactor?: string;                // ✅ Usado no código
   results?: any;                          // ✅ ADICIONAR - usado no código
   categorizedResults?: any;               // ✅ ADICIONAR - usado no código
 }

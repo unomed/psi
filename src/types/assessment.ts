@@ -37,6 +37,10 @@ export interface ScheduledAssessment {
   companyId?: string;                     // ✅ camelCase - Compatibility
   updatedAt?: string;                     // ✅ camelCase - Compatibility
   
+  // ✅ ADICIONAR campos específicos para resolução de erros:
+  checklist_template_id?: string;         // ✅ Para compatibilidade com código existente
+  employee_ids?: string[];                // ✅ Para compatibilidade com código existente
+  
   // ✅ Relacionamentos opcionais:
   employees?: {
     name: string;

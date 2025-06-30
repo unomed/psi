@@ -15,7 +15,7 @@ export interface Employee {
   employee_type: 'funcionario' | 'candidato';
   employee_tags: string[];
   company_id: string;
-  sector_id?: string;
+  sector_id?: string;                     // ✅ Manter opcional
   role_id?: string;
   created_at: string;
   updated_at: string;
@@ -46,7 +46,7 @@ export interface EmployeeFormData {
   special_conditions?: string;
   photo_url?: string;
   company_id: string;
-  sector_id: string;
+  sector_id: string;                      // ✅ Manter obrigatório aqui
   role_id: string;
   employee_type: 'funcionario' | 'candidato';
   employee_tags: string[];
