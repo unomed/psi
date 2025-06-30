@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -8,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChecklistTemplate, ChecklistQuestion, ScaleType } from "@/types";
+import { ChecklistTemplate, ChecklistQuestion } from "@/types";
 
 interface TemplatePreviewDialogProps {
   template: ChecklistTemplate;
@@ -42,12 +41,12 @@ export function TemplatePreviewDialog({
   const getScaleOptions = () => {
     const scaleType = template.scale_type;
     
-    // ✅ CORRIGIR: Usar valores corretos do enum
-    if (scaleType === ScaleType.LIKERT_5 || scaleType === 'likert_5') {
+    // ✅ Usar string literals diretamente:
+    if (scaleType === 'likert_5') {
       return ["1 - Discordo totalmente", "2 - Discordo", "3 - Neutro", "4 - Concordo", "5 - Concordo totalmente"];
-    } else if (scaleType === ScaleType.BINARY || scaleType === ScaleType.YES_NO) {
+    } else if (scaleType === 'binary' || scaleType === 'yes_no') {
       return ["Sim", "Não"];
-    } else if (scaleType === ScaleType.PSICOSSOCIAL || scaleType === 'psicossocial') {
+    } else if (scaleType === 'psicossocial') {
       return ["1 - Nunca", "2 - Raramente", "3 - Às vezes", "4 - Frequentemente", "5 - Sempre"];
     }
     
@@ -57,12 +56,12 @@ export function TemplatePreviewDialog({
   const getScaleDescription = () => {
     const scaleType = template.scale_type;
     
-    // ✅ CORRIGIR: Usar valores corretos do enum
-    if (scaleType === ScaleType.LIKERT_5 || scaleType === 'likert_5') {
+    // ✅ Usar string literals diretamente:
+    if (scaleType === 'likert_5') {
       return "Escala Likert de 5 pontos";
-    } else if (scaleType === ScaleType.BINARY || scaleType === ScaleType.YES_NO) {
+    } else if (scaleType === 'binary' || scaleType === 'yes_no') {
       return "Resposta binária (Sim/Não)";
-    } else if (scaleType === ScaleType.PSICOSSOCIAL || scaleType === 'psicossocial') {
+    } else if (scaleType === 'psicossocial') {
       return "Escala psicossocial de frequência";
     }
     

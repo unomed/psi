@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, UserCheck, Crown } from "lucide-react";
 import { get360Questions } from "@/services/checklist/templateUtils";
-import { ScaleType } from "@/types";
+import { SCALE_TYPES } from "@/types";
 
 interface Evaluation360SelectorProps {
   onSelectTemplate: (template: any) => void;
@@ -24,7 +23,7 @@ export function Evaluation360Selector({ onSelectTemplate, onCancel }: Evaluation
       title: `Avaliação 360° - ${evaluationType === "colleague" ? "Colegas" : "Gestores"}`,
       description: `Avaliação anônima para ${evaluationType === "colleague" ? "colegas de trabalho" : "gestores"}`,
       type: "evaluation_360",
-      scaleType: ScaleType.LIKERT_5, // ✅ Usar enum correto
+      scaleType: SCALE_TYPES.LIKERT_5, // ✅ Usar constante correta
       questions: questions,
       isAnonymous: true,
       restrictToSector: true,

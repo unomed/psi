@@ -1,15 +1,14 @@
 
-// Enums baseados no schema real do banco PostgreSQL
-export enum ScaleType {
-  PSICOSSOCIAL = 'psicossocial',
-  BINARY = 'binary',
-  LIKERT_5 = 'likert_5',
-  LIKERT_7 = 'likert_7', 
-  NUMERIC = 'numeric', 
-  PERCENTAGE = 'percentage', 
-  CUSTOM = 'custom',
-  YES_NO = 'yes_no'
-}
+// ✅ ScaleType como STRING UNION TYPE (não enum)
+export type ScaleType = 
+  | 'psicossocial'    // ✅ lowercase string
+  | 'binary' 
+  | 'likert_5'        // ✅ lowercase string
+  | 'likert_7' 
+  | 'numeric' 
+  | 'percentage' 
+  | 'custom'
+  | 'yes_no';
 
 export type ChecklistTemplateType = 
   | 'disc' 
@@ -40,6 +39,7 @@ export type RecurrenceType =
 
 export type AssessmentStatus = 'scheduled' | 'sent' | 'completed' | 'in_progress';
 
+// ✅ ESTE PODE SER ENUM:
 export enum DiscFactorType {
   D = "D",
   I = "I", 

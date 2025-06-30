@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChecklistTemplate, ScaleType, DiscFactorType } from "@/types";
+import { ChecklistTemplate, SCALE_TYPES, DiscFactorType } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -59,8 +58,7 @@ export function ChecklistResponseForm({
   const renderScaleOptions = () => {
     const scaleType = template.scale_type;
     
-    // ✅ CORRIGIR: Usar valores corretos do enum
-    if (scaleType === ScaleType.LIKERT_5 || scaleType === 'likert_5') {
+    if (scaleType === 'likert_5') {
       return [
         { value: "1", label: "1 - Discordo totalmente" },
         { value: "2", label: "2 - Discordo parcialmente" },
@@ -68,12 +66,12 @@ export function ChecklistResponseForm({
         { value: "4", label: "4 - Concordo parcialmente" },
         { value: "5", label: "5 - Concordo totalmente" }
       ];
-    } else if (scaleType === ScaleType.BINARY || scaleType === ScaleType.YES_NO) {
+    } else if (scaleType === 'binary' || scaleType === 'yes_no') {
       return [
         { value: "sim", label: "Sim" },
         { value: "nao", label: "Não" }
       ];
-    } else if (scaleType === ScaleType.PSICOSSOCIAL || scaleType === 'psicossocial') {
+    } else if (scaleType === 'psicossocial') {
       return [
         { value: "1", label: "1 - Nunca/Quase nunca" },
         { value: "2", label: "2 - Raramente" },
@@ -96,7 +94,7 @@ export function ChecklistResponseForm({
   const getScaleDescription = () => {
     const scaleType = template.scale_type;
     
-    if (scaleType === ScaleType.PSICOSSOCIAL || scaleType === 'psicossocial') {
+    if (scaleType === 'psicossocial') {
       return "Indique com que frequência cada situação se aplica ao seu trabalho:";
     }
     

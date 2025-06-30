@@ -1,7 +1,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScaleType } from "@/types";
+import { ScaleType, SCALE_TYPES } from "@/types"; // ✅ Import correto
 import { Badge } from "@/components/ui/badge";
 
 interface ScaleTypeSelectorProps {
@@ -17,15 +17,15 @@ export function ScaleTypeSelector({
 }: ScaleTypeSelectorProps) {
   const getScaleDescription = (scaleType: ScaleType) => {
     switch(scaleType) {
-      case ScaleType.LIKERT_5:
+      case 'likert_5': // ✅ String literal
         return "Escala de 5 pontos: 1-Discordo totalmente, 2-Discordo, 3-Neutro, 4-Concordo, 5-Concordo totalmente";
-      case ScaleType.YES_NO:
+      case 'yes_no': // ✅ String literal
         return "Resposta binária: Sim ou Não";
-      case ScaleType.BINARY:
+      case 'binary': // ✅ String literal
         return "Escala de 3 pontos: Discordo, Neutro, Concordo";
-      case ScaleType.PSICOSSOCIAL:
+      case 'psicossocial': // ✅ String literal
         return "Psicossocial: 1-Nunca/Quase nunca, 2-Raramente, 3-Às vezes, 4-Frequentemente, 5-Sempre/Quase sempre";
-      case ScaleType.CUSTOM:
+      case 'custom': // ✅ String literal
         return "Personalizada: Defina suas próprias opções";
       default:
         return "Selecione um tipo de escala";
@@ -44,11 +44,11 @@ export function ScaleTypeSelector({
           <SelectValue placeholder="Selecione o tipo de escala" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ScaleType.LIKERT_5}>Likert (5 pontos)</SelectItem>
-          <SelectItem value={ScaleType.YES_NO}>Sim/Não</SelectItem>
-          <SelectItem value={ScaleType.BINARY}>Binário</SelectItem>
-          <SelectItem value={ScaleType.PSICOSSOCIAL}>Psicossocial</SelectItem>
-          <SelectItem value={ScaleType.CUSTOM}>Personalizada</SelectItem>
+          <SelectItem value="likert_5">Likert (5 pontos)</SelectItem>
+          <SelectItem value="yes_no">Sim/Não</SelectItem>
+          <SelectItem value="binary">Binário</SelectItem>
+          <SelectItem value="psicossocial">Psicossocial</SelectItem>
+          <SelectItem value="custom">Personalizada</SelectItem>
         </SelectContent>
       </Select>
       <div className="text-sm text-muted-foreground">
@@ -56,7 +56,7 @@ export function ScaleTypeSelector({
       </div>
       
       <div className="flex flex-wrap gap-1 mt-2">
-        {value === ScaleType.LIKERT_5 && (
+        {value === 'likert_5' && ( // ✅ String literal
           <>
             <Badge variant="outline" className="bg-gray-50">1 - Discordo totalmente</Badge>
             <Badge variant="outline" className="bg-gray-50">2 - Discordo</Badge>
@@ -65,13 +65,13 @@ export function ScaleTypeSelector({
             <Badge variant="outline" className="bg-gray-50">5 - Concordo totalmente</Badge>
           </>
         )}
-        {value === ScaleType.YES_NO && (
+        {value === 'yes_no' && ( // ✅ String literal
           <>
             <Badge variant="outline" className="bg-gray-50">Sim</Badge>
             <Badge variant="outline" className="bg-gray-50">Não</Badge>
           </>
         )}
-        {value === ScaleType.PSICOSSOCIAL && (
+        {value === 'psicossocial' && ( // ✅ String literal
           <>
             <Badge variant="outline" className="bg-purple-50">1 - Nunca/Quase nunca</Badge>
             <Badge variant="outline" className="bg-purple-50">2 - Raramente</Badge>

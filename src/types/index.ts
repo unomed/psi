@@ -1,12 +1,16 @@
 
+// ✅ EXPORTAR CORRETAMENTE:
 export type {
-  ScaleType,
+  ScaleType,                             // ✅ export type (não valor)
   ChecklistTemplateType,
   RecurrenceType,
   AssessmentStatus
 } from './enums';
 
-export { DiscFactorType, ScaleType } from './enums';
+export { DiscFactorType } from './enums'; // ✅ export valor (enum)
+
+// ✅ EXPORTAR CONSTANTES TAMBÉM:
+export { SCALE_TYPES, CHECKLIST_TYPES } from './constants';
 
 // Interfaces principais
 export type {
@@ -37,11 +41,11 @@ export type { Company } from './company';
 // App role type
 export type AppRole = "admin" | "manager" | "user" | "employee" | "evaluator" | "superadmin";
 
-// ✅ COMPLETAR DiscFactor com propriedades faltando:
+// ✅ CORRIGIR DiscFactor:
 export interface DiscFactor {
   type: DiscFactorType;
-  score: number;
-  name?: string;                          // ✅ ADICIONAR - usado no código
-  description?: string;                   // ✅ ADICIONAR - usado no código
-  characteristics?: string[];             // ✅ ADICIONAR - usado no código
+  score?: number;                         // ✅ OPCIONAL, não obrigatório
+  name?: string;
+  description?: string;
+  characteristics?: string[];             // ✅ ADICIONAR se usado
 }
