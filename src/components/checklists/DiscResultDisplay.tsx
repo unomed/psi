@@ -10,7 +10,15 @@ interface DiscResultDisplayProps {
 }
 
 export function DiscResultDisplay({ result, onClose }: DiscResultDisplayProps) {
-  const factors = result.results?.factors || result.results || {};
+  // Safely parse the results to handle Json type
+  const parseResults = (results: any) => {
+    if (typeof results === 'object' && results !== null) {
+      return results.factors || results || {};
+    }
+    return {};
+  };
+
+  const factors = parseResults(result.results);
   
   // Ensure factors are numbers for calculations
   const getFactorScore = (factor: string): number => {

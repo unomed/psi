@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChecklistTemplate } from "@/types";
@@ -58,7 +59,7 @@ export function ChecklistResponseForm({
   const renderScaleOptions = () => {
     const scaleType = template.scale_type;
     
-    if (scaleType === 'likert_5' || scaleType === 'likert') {
+    if (scaleType === 'likert5' || scaleType === 'likert') {
       return [
         { value: "1", label: "1 - Discordo totalmente" },
         { value: "2", label: "2 - Discordo parcialmente" },
@@ -138,31 +139,31 @@ export function ChecklistResponseForm({
                   Selecione uma opção de 1 (Discordo totalmente) a 5 (Concordo totalmente)
                 </p>
                 <RadioGroup
-                  value={responses[question.id]?.toString() || ""}
-                  onValueChange={(value) => handleResponseChange(question.id, parseInt(value))}
+                  value={responses[currentQuestion.id]?.toString() || ""}
+                  onValueChange={(value) => handleResponseChange(currentQuestion.id, parseInt(value))}
                   className="flex space-x-4"
                 >
                   {[1, 2, 3, 4, 5].map((value) => (
                     <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`${question.id}-${value}`} />
-                      <Label htmlFor={`${question.id}-${value}`}>{value}</Label>
+                      <RadioGroupItem value={value.toString()} id={`${currentQuestion.id}-${value}`} />
+                      <Label htmlFor={`${currentQuestion.id}-${value}`}>{value}</Label>
                     </div>
                   ))}
                 </RadioGroup>
               </div>
             ) : template.scale_type === "yes_no" ? (
               <RadioGroup
-                value={responses[question.id]?.toString() || ""}
-                onValueChange={(value) => handleResponseChange(question.id, value === "yes" ? 1 : 0)}
+                value={responses[currentQuestion.id]?.toString() || ""}
+                onValueChange={(value) => handleResponseChange(currentQuestion.id, value === "yes" ? 1 : 0)}
                 className="flex space-x-4"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id={`${question.id}-yes`} />
-                  <Label htmlFor={`${question.id}-yes`}>Sim</Label>
+                  <RadioGroupItem value="yes" id={`${currentQuestion.id}-yes`} />
+                  <Label htmlFor={`${currentQuestion.id}-yes`}>Sim</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id={`${question.id}-no`} />
-                  <Label htmlFor={`${question.id}-no`}>Não</Label>
+                  <RadioGroupItem value="no" id={`${currentQuestion.id}-no`} />
+                  <Label htmlFor={`${currentQuestion.id}-no`}>Não</Label>
                 </div>
               </RadioGroup>
             ) : (

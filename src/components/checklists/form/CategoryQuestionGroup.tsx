@@ -4,210 +4,175 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus, ChevronDown, ChevronUp } from "lucide-react";
-import { v4 as uuidv4 } from 'uuid';
-import { ScaleType } from "@/types";
-
-export interface CategoryQuestion {
-  id: string;
-  text: string;
-  category: string;
-  weight?: number;
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trash2, Plus } from "lucide-react";
+import { ChecklistQuestion, ScaleType } from "@/types";
 
 interface CategoryQuestionGroupProps {
-  categories: string[];
-  questions: CategoryQuestion[];
-  onAddCategory: (category: string) => void;
-  onAddQuestion: (question: CategoryQuestion) => void;
-  onRemoveQuestion: (questionId: string) => void;
-  onUpdateQuestion: (question: CategoryQuestion) => void;
-  selectedScaleType: ScaleType;
+  category: string;
+  questions: ChecklistQuestion[];
+  onQuestionsChange: (questions: ChecklistQuestion[]) => void;
+  onCategoryChange: (oldCategory: string, newCategory: string) => void;
+  onRemoveCategory: (category: string) => void;
+  scaleType: ScaleType;
 }
 
 export function CategoryQuestionGroup({
-  categories,
+  category,
   questions,
-  onAddCategory,
-  onAddQuestion,
-  onRemoveQuestion,
-  onUpdateQuestion,
-  selectedScaleType
+  onQuestionsChange,
+  onCategoryChange,
+  onRemoveCategory,
+  scaleType
 }: CategoryQuestionGroupProps) {
-  const [newCategory, setNewCategory] = useState("");
   const [newQuestionText, setNewQuestionText] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>(categories[0] || "");
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [editingCategory, setEditingCategory] = useState(false);
+  const [categoryName, setCategoryName] = useState(category);
 
-  const handleAddCategory = () => {
-    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      onAddCategory(newCategory.trim());
-      setSelectedCategory(newCategory.trim());
-      setNewCategory("");
-    }
-  };
-
-  const handleAddQuestion = () => {
-    if (newQuestionText.trim() && selectedCategory) {
-      const newQuestion: CategoryQuestion = {
-        id: uuidv4(),
+  const addQuestion = () => {
+    if (newQuestionText.trim()) {
+      const newQuestion: ChecklistQuestion = {
+        id: `temp-${Date.now()}`,
+        template_id: "",
+        question_text: newQuestionText.trim(),
         text: newQuestionText.trim(),
-        category: selectedCategory,
-        weight: 1
+        order_number: questions.length + 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
-      onAddQuestion(newQuestion);
+      onQuestionsChange([...questions, newQuestion]);
       setNewQuestionText("");
     }
   };
 
-  const toggleCategory = (category: string) => {
-    setExpandedCategory(expandedCategory === category ? null : category);
+  const updateQuestion = (index: number, field: keyof ChecklistQuestion, value: string) => {
+    const updatedQuestions = [...questions];
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      [field]: value,
+      updated_at: new Date().toISOString()
+    };
+    onQuestionsChange(updatedQuestions);
   };
 
-  // Agrupar questões por categoria
-  const questionsByCategory = categories.reduce((acc, category) => {
-    acc[category] = questions.filter(q => q.category === category);
-    return acc;
-  }, {} as Record<string, CategoryQuestion[]>);
+  const removeQuestion = (index: number) => {
+    const updatedQuestions = questions.filter((_, i) => i !== index);
+    onQuestionsChange(updatedQuestions);
+  };
+
+  const handleCategoryNameChange = () => {
+    if (categoryName.trim() && categoryName !== category) {
+      onCategoryChange(category, categoryName.trim());
+    }
+    setEditingCategory(false);
+  };
+
+  const getScaleDescription = () => {
+    switch (scaleType) {
+      case 'likert5':
+        return "Escala de 1 (Discordo totalmente) a 5 (Concordo totalmente)";
+      case 'likert7':
+        return "Escala de 1 (Discordo totalmente) a 7 (Concordo totalmente)";
+      case 'yes_no':
+        return "Resposta binária: Sim ou Não";
+      case 'frequency':
+        return "Frequência: Nunca, Raramente, Às vezes, Frequentemente, Sempre";
+      case 'psicossocial':
+        return "Escala psicossocial: Nunca/Quase nunca até Sempre/Quase sempre";
+      default:
+        return "Escala personalizada";
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Categorias e Perguntas</h3>
-        
-        {/* Adicionar nova categoria */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-2">
-            <Label htmlFor="new-category">Nova Categoria</Label>
-            <div className="flex space-x-2">
-              <Input 
-                id="new-category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Ex: Demandas de Trabalho"
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          {editingCategory ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                onBlur={handleCategoryNameChange}
+                onKeyPress={(e) => e.key === 'Enter' && handleCategoryNameChange()}
+                className="font-medium"
               />
-              <Button 
-                type="button" 
-                onClick={handleAddCategory}
-                disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
+            </div>
+          ) : (
+            <CardTitle 
+              className="cursor-pointer hover:text-blue-600" 
+              onClick={() => setEditingCategory(true)}
+            >
+              {category}
+            </CardTitle>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemoveCategory(category)}
+            className="text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {getScaleDescription()}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {questions.map((question, index) => (
+          <div key={question.id} className="space-y-2 p-3 border rounded-md">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`question-${question.id}`}>
+                Pergunta {index + 1}
+              </Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeQuestion(index)}
+                className="text-red-500 hover:text-red-700"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
+            <Textarea
+              id={`question-${question.id}`}
+              value={question.question_text || question.text}
+              onChange={(e) => updateQuestion(index, 'question_text', e.target.value)}
+              placeholder="Digite o texto da pergunta..."
+              className="min-h-[80px]"
+            />
+            
+            {/* Show scale preview for this question */}
+            <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+              <strong>Escala:</strong> {getScaleDescription()}
+            </div>
           </div>
-        </div>
+        ))}
 
-        {/* Adicionar nova pergunta */}
         <div className="space-y-2">
-          <h4 className="text-md font-medium">Adicionar Nova Pergunta</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="question-category">Categoria</Label>
-              <Select 
-                value={selectedCategory} 
-                onValueChange={setSelectedCategory}
-                disabled={categories.length === 0}
-              >
-                <SelectTrigger id="question-category">
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="new-question">Texto da Pergunta</Label>
-              <div className="flex space-x-2">
-                <Input 
-                  id="new-question"
-                  value={newQuestionText}
-                  onChange={(e) => setNewQuestionText(e.target.value)}
-                  placeholder="Ex: Tenho tempo suficiente para realizar minhas tarefas diárias"
-                />
-                <Button 
-                  type="button" 
-                  onClick={handleAddQuestion}
-                  disabled={!newQuestionText.trim() || !selectedCategory}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar
-                </Button>
-              </div>
-            </div>
+          <Label htmlFor={`new-question-${category}`}>
+            Nova Pergunta
+          </Label>
+          <div className="flex gap-2">
+            <Textarea
+              id={`new-question-${category}`}
+              value={newQuestionText}
+              onChange={(e) => setNewQuestionText(e.target.value)}
+              placeholder="Digite o texto da nova pergunta..."
+              className="flex-1 min-h-[80px]"
+            />
+            <Button
+              onClick={addQuestion}
+              disabled={!newQuestionText.trim()}
+              className="h-fit"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-      </div>
-
-      {/* Lista de categorias e perguntas */}
-      <div className="space-y-4">
-        <h4 className="text-md font-medium">Categorias e Perguntas ({questions.length})</h4>
-        
-        {categories.length === 0 ? (
-          <div className="text-center p-6 border border-dashed rounded-md">
-            <p className="text-muted-foreground">Nenhuma categoria foi adicionada ainda.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {categories.map(category => (
-              <Card key={category}>
-                <CardHeader 
-                  className="py-3 cursor-pointer flex flex-row items-center justify-between"
-                  onClick={() => toggleCategory(category)}
-                >
-                  <CardTitle className="text-md font-medium flex items-center">
-                    {expandedCategory === category ? (
-                      <ChevronDown className="h-5 w-5 mr-2" />
-                    ) : (
-                      <ChevronUp className="h-5 w-5 mr-2" />
-                    )}
-                    {category} ({questionsByCategory[category]?.length || 0})
-                  </CardTitle>
-                  <div className="text-xs text-muted-foreground">
-                    Escala: {selectedScaleType === 'likert_5' ? "Likert (1-5)" : 
-                             selectedScaleType === 'yes_no' ? "Sim/Não" : 
-                             selectedScaleType === 'psicossocial' ? "Psicossocial (1-5)" :
-                             "Personalizada"}
-                  </div>
-                </CardHeader>
-                
-                {expandedCategory === category && (
-                  <CardContent>
-                    {questionsByCategory[category]?.length ? (
-                      <div className="space-y-2">
-                        {questionsByCategory[category].map((question, index) => (
-                          <div key={question.id} className="flex items-start justify-between p-2 border rounded-md">
-                            <div className="flex-1">
-                              <p className="text-sm">{index + 1}. {question.text}</p>
-                            </div>
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => onRemoveQuestion(question.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Nenhuma pergunta nesta categoria.</p>
-                    )}
-                  </CardContent>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

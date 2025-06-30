@@ -1,200 +1,146 @@
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ChecklistTemplate } from "@/types";
-import { toast } from "sonner";
-import type { DbTemplateType, DbScaleType } from "@/services/checklist/types";
+import { useState, useEffect } from 'react';
+import { ChecklistTemplate } from '@/types';
+import { standardQuestionnaires } from '@/data/standardQuestionnaires';
 
 export function useChecklistTemplates() {
-  const { data: checklists, isLoading, error, refetch } = useQuery({
-    queryKey: ['checklistTemplates'],
-    queryFn: async (): Promise<ChecklistTemplate[]> => {
-      const { data, error } = await supabase
-        .from('checklist_templates')
-        .select(`
-          *,
-          questions(*)
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+  const [templates, setTemplates] = useState<ChecklistTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-      if (error) {
-        console.error('Error fetching checklist templates:', error);
-        throw error;
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        // Convert the standardQuestionnaires to proper ChecklistTemplate format
+        const convertedTemplates: ChecklistTemplate[] = standardQuestionnaires.map(template => ({
+          ...template,
+          cutoff_scores: typeof template.cutoff_scores === 'object' && template.cutoff_scores !== null 
+            ? template.cutoff_scores as { high: number; medium: number; low: number; }
+            : { high: 80, medium: 60, low: 40 }
+        }));
+
+        // Normalize scale types
+        const normalizedTemplates = convertedTemplates.map(template => {
+          let normalizedScaleType = template.scale_type;
+          
+          if (normalizedScaleType === 'likert5') {
+            normalizedScaleType = 'likert5';
+          } else if (normalizedScaleType === 'likert7') {
+            normalizedScaleType = 'likert7';
+          } else {
+            normalizedScaleType = 'likert5';
+          }
+
+          return {
+            ...template,
+            scale_type: normalizedScaleType
+          };
+        });
+
+        setTemplates(normalizedTemplates);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load templates');
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      // Transform database response to match ChecklistTemplate interface
-      return data?.map(template => {
-        // Map database scale types to frontend scale types
-        let scaleType = template.scale_type || 'likert5';
-        if (scaleType === 'likert7') {
-          scaleType = 'likert7'; // Keep likert7 as is
-        }
-        if (scaleType === 'likert_5') {
-          scaleType = 'likert5';
-        }
-        if (scaleType === 'likert_7') {
-          scaleType = 'likert7';
-        }
+    loadTemplates();
+  }, []);
 
-        return {
-          id: template.id,
-          name: template.title,
-          title: template.title,
-          description: template.description || '',
-          category: 'default' as const,
-          type: template.type === 'custom' ? 'custom' : (template.type === 'psicossocial' ? 'psicossocial' : template.type),
-          scale_type: scaleType as any,
-          is_standard: template.is_standard || false,
-          is_active: template.is_active,
-          estimated_time_minutes: template.estimated_time_minutes || 15,
-          version: typeof template.version === 'string' ? parseInt(template.version) : (template.version || 1),
-          created_at: template.created_at,
-          updated_at: template.updated_at,
-          company_id: template.company_id,
-          created_by: template.created_by,
-          cutoff_scores: template.cutoff_scores,
-          derived_from_id: template.derived_from_id,
-          instructions: template.instructions,
-          questions: template.questions?.map((q: any) => ({
-            id: q.id,
-            template_id: q.template_id,
-            question_text: q.question_text,
-            text: q.question_text,
-            order_number: q.order_number,
-            created_at: q.created_at,
-            updated_at: q.updated_at
-          })) || []
-        };
-      }) || [];
+  const getTemplatesByCategory = (category: string) => {
+    return templates.filter(template => template.category === category);
+  };
+
+  const getTemplatesByType = (type: string) => {
+    return templates.filter(template => template.type === type);
+  };
+
+  const getStandardTemplates = () => {
+    return templates.filter(template => template.is_standard);
+  };
+
+  const getCustomTemplates = () => {
+    return templates.filter(template => !template.is_standard);
+  };
+
+  const getTemplateById = (id: string) => {
+    return templates.find(template => template.id === id);
+  };
+
+  const getPsicossocialTemplates = () => {
+    return templates.filter(template => template.type === 'psicossocial');
+  };
+
+  const getDiscTemplates = () => {
+    return templates.filter(template => template.type === 'disc');
+  };
+
+  const getStressTemplates = () => {
+    return templates.filter(template => template.type === 'custom');
+  };
+
+  const createTemplate = async (templateData: Partial<ChecklistTemplate>) => {
+    try {
+      const newTemplate: ChecklistTemplate = {
+        id: `custom-${Date.now()}`,
+        name: templateData.name || 'Novo Template',
+        title: templateData.title || templateData.name || 'Novo Template',
+        description: templateData.description || '',
+        category: templateData.category || 'default',
+        type: templateData.type || 'custom',
+        scale_type: templateData.scale_type || 'likert5',
+        is_standard: false,
+        is_active: true,
+        estimated_time_minutes: templateData.estimated_time_minutes || 10,
+        version: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        questions: templateData.questions || [],
+        cutoff_scores: templateData.cutoff_scores || { high: 80, medium: 60, low: 40 }
+      };
+
+      setTemplates(prev => [...prev, newTemplate]);
+      return newTemplate;
+    } catch (err) {
+      throw new Error('Failed to create template');
     }
-  });
+  };
+
+  const updateTemplate = async (id: string, updates: Partial<ChecklistTemplate>) => {
+    try {
+      setTemplates(prev => prev.map(template => 
+        template.id === id 
+          ? { ...template, ...updates, updated_at: new Date().toISOString() }
+          : template
+      ));
+    } catch (err) {
+      throw new Error('Failed to update template');
+    }
+  };
+
+  const deleteTemplate = async (id: string) => {
+    try {
+      setTemplates(prev => prev.filter(template => template.id !== id));
+    } catch (err) {
+      throw new Error('Failed to delete template');
+    }
+  };
 
   return {
-    checklists: checklists || [],
+    templates,
     isLoading,
     error,
-    refetch
-  };
-}
-
-export function useChecklistOperations() {
-  const queryClient = useQueryClient();
-
-  const createTemplate = useMutation({
-    mutationFn: async (data: Omit<ChecklistTemplate, "id" | "created_at" | "updated_at">) => {
-      // Map frontend types to database types
-      const dbType: DbTemplateType = data.type === 'stress' ? 'custom' : data.type as DbTemplateType;
-      let dbScaleType: DbScaleType = 'likert5';
-      
-      // Map scale types correctly
-      if (data.scale_type === 'likert7') {
-        dbScaleType = 'likert7';
-      } else if (data.scale_type === 'likert5') {
-        dbScaleType = 'likert5';
-      } else {
-        dbScaleType = data.scale_type as DbScaleType;
-      }
-
-      const { data: result, error } = await supabase
-        .from('checklist_templates')
-        .insert({
-          title: data.title || data.name,
-          description: data.description,
-          type: dbType,
-          scale_type: dbScaleType,
-          is_active: data.is_active,
-          is_standard: data.is_standard,
-          estimated_time_minutes: data.estimated_time_minutes,
-          company_id: data.company_id,
-          created_by: data.created_by,
-          cutoff_scores: data.cutoff_scores,
-          instructions: data.instructions
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
-      toast.success('Template criado com sucesso!');
-    },
-    onError: (error) => {
-      console.error('Error creating template:', error);
-      toast.error('Erro ao criar template');
-    }
-  });
-
-  const updateTemplate = useMutation({
-    mutationFn: async (data: ChecklistTemplate) => {
-      // Map frontend types to database types
-      const dbType: DbTemplateType = data.type === 'stress' ? 'custom' : data.type as DbTemplateType;
-      let dbScaleType: DbScaleType = 'likert5';
-      
-      // Map scale types correctly
-      if (data.scale_type === 'likert7') {
-        dbScaleType = 'likert7';
-      } else if (data.scale_type === 'likert5') {
-        dbScaleType = 'likert5';
-      } else {
-        dbScaleType = data.scale_type as DbScaleType;
-      }
-
-      const { data: result, error } = await supabase
-        .from('checklist_templates')
-        .update({
-          title: data.title || data.name,
-          description: data.description,
-          type: dbType,
-          scale_type: dbScaleType,
-          is_active: data.is_active,
-          is_standard: data.is_standard,
-          estimated_time_minutes: data.estimated_time_minutes,
-          cutoff_scores: data.cutoff_scores,
-          instructions: data.instructions
-        })
-        .eq('id', data.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return result;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
-      toast.success('Template atualizado com sucesso!');
-    },
-    onError: (error) => {
-      console.error('Error updating template:', error);
-      toast.error('Erro ao atualizar template');
-    }
-  });
-
-  const deleteTemplate = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('checklist_templates')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['checklistTemplates'] });
-      toast.success('Template excluído com sucesso!');
-    },
-    onError: (error) => {
-      console.error('Error deleting template:', error);
-      toast.error('Erro ao excluir template');
-    }
-  });
-
-  return {
-    createTemplate: createTemplate.mutateAsync,
-    updateTemplate: updateTemplate.mutateAsync,
-    deleteTemplate: deleteTemplate.mutateAsync,
-    isDeleting: deleteTemplate.isPending
+    getTemplatesByCategory,
+    getTemplatesByType,
+    getStandardTemplates,
+    getCustomTemplates,
+    getTemplateById,
+    getPsicossocialTemplates,
+    getDiscTemplates,
+    getStressTemplates,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate
   };
 }

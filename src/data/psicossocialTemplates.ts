@@ -53,3 +53,42 @@ export const psicossocialQuestions: PsicossocialQuestion[] = [
     updated_at: new Date().toISOString()
   }
 ];
+
+export interface PsicossocialRisk {
+  level: 'baixo' | 'medio' | 'alto' | 'critico';
+  label: string;
+  color: string;
+  description: string;
+}
+
+export const calculatePsicossocialRisk = (score: number): PsicossocialRisk => {
+  if (score >= 80) {
+    return {
+      level: 'critico',
+      label: 'Crítico',
+      color: 'red',
+      description: 'Risco psicossocial crítico - requer intervenção imediata'
+    };
+  } else if (score >= 60) {
+    return {
+      level: 'alto',
+      label: 'Alto',
+      color: 'orange',
+      description: 'Risco psicossocial alto - requer atenção prioritária'
+    };
+  } else if (score >= 40) {
+    return {
+      level: 'medio',
+      label: 'Médio',
+      color: 'yellow',
+      description: 'Risco psicossocial médio - monitoramento necessário'
+    };
+  } else {
+    return {
+      level: 'baixo',
+      label: 'Baixo',
+      color: 'green',
+      description: 'Risco psicossocial baixo - situação controlada'
+    };
+  }
+};
