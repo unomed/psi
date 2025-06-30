@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,17 +40,36 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
         console.error('[SimpleAuthContext] Erro ao buscar perfil:', profileError);
       }
 
-      // Buscar empresas do usuário (corrigindo a query)
+      // Buscar empresas do usuário - primeiro os IDs
       const { data: userCompaniesData, error: companiesError } = await supabase
         .from('user_companies')
-        .select(`
-          company_id,
-          companies!inner(name)
-        `)
+        .select('company_id')
         .eq('user_id', userId);
 
       if (companiesError) {
-        console.error('[SimpleAuthContext] Erro ao buscar empresas:', companiesError);
+        console.error('[SimpleAuthContext] Erro ao buscar empresas do usuário:', companiesError);
+      }
+
+      // Buscar dados das empresas separadamente
+      let mappedCompanies: Array<{ companyId: string; companyName: string; role: AppRole }> = [];
+      
+      if (userCompaniesData && userCompaniesData.length > 0) {
+        const companyIds = userCompaniesData.map(uc => uc.company_id);
+        
+        const { data: companiesData, error: companyDetailsError } = await supabase
+          .from('companies')
+          .select('id, name')
+          .in('id', companyIds);
+
+        if (companyDetailsError) {
+          console.error('[SimpleAuthContext] Erro ao buscar detalhes das empresas:', companyDetailsError);
+        } else {
+          mappedCompanies = (companiesData || []).map(company => ({
+            companyId: company.id,
+            companyName: company.name,
+            role: 'user' as AppRole // Papel padrão para empresas
+          }));
+        }
       }
 
       // Buscar papel do usuário na tabela user_roles
@@ -64,13 +82,6 @@ export function SimpleAuthProvider({ children }: { children: React.ReactNode }) 
       if (roleError && roleError.code !== 'PGRST116') {
         console.error('[SimpleAuthContext] Erro ao buscar papel:', roleError);
       }
-
-      // Mapear empresas (assumindo papel padrão já que não está na tabela user_companies)
-      const mappedCompanies = (userCompaniesData || []).map(uc => ({
-        companyId: uc.company_id,
-        companyName: uc.companies.name,
-        role: 'user' as AppRole // Papel padrão para empresas
-      }));
 
       // Determinar papel do usuário
       let finalRole: AppRole = 'user';
