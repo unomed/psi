@@ -1,10 +1,8 @@
-
 import { ChecklistTemplate } from "@/types/checklist";
 import { ScaleType } from "@/types";
 import { DiscFactorType } from "@/types/disc";
 import { 
   getDefaultDiscQuestions, 
-  getDefaultPsicossocialQuestions, 
   getSRQ20Questions, 
   getPHQ9Questions, 
   getGAD7Questions,
@@ -51,16 +49,6 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
     ],
     estimatedTimeMinutes: 10,
     instructions: "Responda de acordo com como você geralmente se comporta no ambiente de trabalho."
-  },
-  {
-    id: "psicossocial_mte",
-    name: "Avaliação Psicossocial - MTE Completa",
-    description: "Avaliação completa baseada no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego",
-    type: "psicossocial" as const,
-    scaleType: ScaleType.Psicossocial,
-    questions: getDefaultPsicossocialQuestions(),
-    estimatedTimeMinutes: 25,
-    instructions: "Avalie cada afirmação considerando sua experiência no trabalho nos últimos 6 meses."
   },
   {
     id: "srq20_standard",
