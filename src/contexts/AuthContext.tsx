@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { useAuthSession } from '@/hooks/useAuthSession';
@@ -6,6 +5,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { AppRole } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
@@ -27,36 +27,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const cleanupAuthState = () => {
   console.log("[AuthProvider] Limpando estado de autenticação");
   
-  try {
-    // Limpar localStorage
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Limpar sessionStorage
-    Object.keys(sessionStorage || {}).forEach((key) => {
-      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-        sessionStorage.removeItem(key);
-      }
-    });
-  } catch (error) {
-    console.warn("[AuthProvider] Erro na limpeza de estado:", error);
-  }
+  // Limpar localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Limpar sessionStorage
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const { session, user, loading: authLoading } = useAuthSession();
   
-  // Call useUserRole directly at the top level
+  // Call useUserRole directly at the top level - no more useMemo wrapping
   const { userRole, userCompanies, roleLoading, fetchUserRoleAndCompanies, clearCache } = useUserRole();
   const { hasRole, hasCompanyAccess } = useRolePermissions();
 
   // Fetch user role when session changes - com debounce
   useEffect(() => {
     if (user?.id) {
-      console.log("[AuthProvider] Carregando papel do usuário:", user.id);
       // Debounce para evitar chamadas múltiplas
       const timeoutId = setTimeout(() => {
         fetchUserRoleAndCompanies(user.id);
@@ -71,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isLoading = authLoading || roleLoading;
 
-  // Implementar ações de auth diretamente no contexto
+  // Implementar ações de auth diretamente no contexto para evitar dependência circular
   const signIn = async (email: string, password: string) => {
     try {
       console.log("[AuthProvider] Iniciando processo de login");
@@ -98,8 +94,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (data.user) {
-        console.log("[AuthProvider] Login bem-sucedido");
-        // Não forçar redirecionamento aqui - deixar o roteamento natural acontecer
+        console.log("[AuthProvider] Login bem-sucedido, redirecionando...");
+        
+        // Aguardar um momento para o estado ser atualizado
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+        }, 100);
       }
       
       return;
@@ -152,6 +152,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Cadastro realizado com sucesso",
         description: "O usuário já pode fazer login com suas credenciais"
       });
+      
+      if (!role) {
+        navigate('/auth/login', { replace: true });
+      }
       
       return authData.user;
     } catch (error: any) {

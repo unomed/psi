@@ -16,10 +16,6 @@ import {
   getEvaluation360ManagerQuestions
 } from "@/services/checklist/templateUtils";
 
-// ATENÇÃO: Este arquivo contém dados de templates padrão que são usados apenas
-// durante a inicialização do sistema. Os templates reais são buscados do banco de dados.
-// Veja: src/services/templates/defaultTemplateService.ts
-
 export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
   {
     id: "disc_standard",
@@ -162,11 +158,7 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
   }
 ];
 
-// DEPRECATED: Use fetchChecklistTemplates() ao invés desta função
-// Esta função é mantida apenas para compatibilidade durante a transição
 export function createStandardTemplate(templateId: string): ChecklistTemplate | null {
-  console.warn("createStandardTemplate() está deprecated. Use fetchChecklistTemplates() para buscar templates do banco de dados.");
-  
   const template = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
   if (!template) return null;
 

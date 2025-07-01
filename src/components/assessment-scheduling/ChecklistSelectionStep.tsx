@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Clock, Users, Star } from "lucide-react";
 import { ChecklistTemplate } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import { fetchChecklistTemplates } from "@/services/checklist";
+import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires";
+import { createStandardTemplate } from "@/data/standardQuestionnaires";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { scaleTypeToDbScaleType } from "@/types/scale";
+import { mapAppTemplateTypeToDb } from "@/services/checklist/utils";
 
 interface ChecklistSelectionStepProps {
   selectedChecklist: ChecklistTemplate | null;
@@ -17,11 +21,6 @@ export function ChecklistSelectionStep({
   onChecklistSelect 
 }: ChecklistSelectionStepProps) {
   const [loading, setLoading] = useState(false);
-  
-  const { data: templates = [], isLoading } = useQuery({
-    queryKey: ['checklistTemplates'],
-    queryFn: fetchChecklistTemplates
-  });
   
   const getTemplateTypeLabel = (type: string) => {
     const types = {
@@ -43,29 +42,115 @@ export function ChecklistSelectionStep({
     return types[type as keyof typeof types] || type;
   };
 
-  const handleTemplateSelect = async (template: ChecklistTemplate) => {
+  const handleTemplateSelect = async (templateId: string) => {
     setLoading(true);
     try {
-      onChecklistSelect(template);
+      const templateData = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
+      if (!templateData) {
+        throw new Error("Template não encontrado");
+      }
+
+      const dbTemplateType = mapAppTemplateTypeToDb(templateData.type);
+
+      // Primeiro verificar se o template já existe na base de dados
+      const { data: existingTemplate, error: fetchError } = await supabase
+        .from('checklist_templates')
+        .select('*')
+        .eq('title', templateData.name)
+        .eq('type', dbTemplateType as any)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Erro ao buscar template existente:', fetchError);
+      }
+
+      let finalTemplate: ChecklistTemplate;
+
+      if (existingTemplate) {
+        // Se já existe, usar o template existente
+        finalTemplate = {
+          id: existingTemplate.id,
+          title: existingTemplate.title,
+          description: existingTemplate.description || "",
+          type: templateData.type,
+          scaleType: templateData.scaleType,
+          questions: [], // As questões serão carregadas conforme necessário
+          createdAt: new Date(existingTemplate.created_at),
+          isStandard: existingTemplate.is_standard,
+          estimatedTimeMinutes: existingTemplate.estimated_time_minutes,
+          instructions: existingTemplate.instructions
+        };
+      } else {
+        // Se não existe, criar e salvar o template
+        const tempTemplate = createStandardTemplate(templateId);
+        if (!tempTemplate) {
+          throw new Error("Template não encontrado");
+        }
+
+        // Salvar template na base de dados
+        const { data: savedTemplate, error: saveError } = await supabase
+          .from('checklist_templates')
+          .insert({
+            title: tempTemplate.title,
+            description: tempTemplate.description,
+            type: mapAppTemplateTypeToDb(tempTemplate.type),
+            scale_type: scaleTypeToDbScaleType(tempTemplate.scaleType),
+            is_standard: true,
+            is_active: true,
+            estimated_time_minutes: tempTemplate.estimatedTimeMinutes,
+            instructions: tempTemplate.instructions
+          } as any)
+          .select()
+          .single();
+
+        if (saveError) {
+          console.error('Erro ao salvar template:', saveError);
+          throw new Error("Erro ao salvar template na base de dados");
+        }
+
+        // Salvar questões do template
+        if (tempTemplate.questions && tempTemplate.questions.length > 0) {
+          const questionsToInsert = tempTemplate.questions.map((question, index) => ({
+            template_id: savedTemplate.id,
+            question_text: question.text,
+            order_number: index + 1,
+            target_factor: 'targetFactor' in question ? question.targetFactor : question.category || 'general',
+            weight: 'weight' in question ? question.weight : 1
+          }));
+
+          const { error: questionsError } = await supabase
+            .from('questions')
+            .insert(questionsToInsert);
+
+          if (questionsError) {
+            console.error('Erro ao salvar questões:', questionsError);
+            // Não falhar se as questões não forem salvas, pois o template principal já foi criado
+          }
+        }
+
+        finalTemplate = {
+          id: savedTemplate.id,
+          title: savedTemplate.title,
+          description: savedTemplate.description || "",
+          type: tempTemplate.type,
+          scaleType: tempTemplate.scaleType,
+          questions: tempTemplate.questions,
+          createdAt: new Date(savedTemplate.created_at),
+          isStandard: savedTemplate.is_standard,
+          estimatedTimeMinutes: savedTemplate.estimated_time_minutes,
+          instructions: savedTemplate.instructions
+        };
+      }
+
+      onChecklistSelect(finalTemplate);
+      toast.success(`Template "${finalTemplate.title}" selecionado com sucesso!`);
     } catch (error) {
       console.error('Erro ao processar template:', error);
+      toast.error("Erro ao processar template selecionado");
     } finally {
       setLoading(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Selecionar Checklist</h3>
-          <p className="text-muted-foreground">
-            Carregando templates disponíveis...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -77,80 +162,72 @@ export function ChecklistSelectionStep({
       </div>
 
       <div className="space-y-4 max-h-96 overflow-y-auto">
-        {templates.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Nenhum template disponível. O sistema está inicializando os templates padrão.
-          </div>
-        ) : (
-          templates.map(template => (
-            <Card 
-              key={template.id}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                selectedChecklist?.id === template.id ? 'ring-2 ring-primary' : ''
-              } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
-              onClick={() => handleTemplateSelect(template)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-base">{template.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {template.description}
-                      </p>
-                    </div>
+        {STANDARD_QUESTIONNAIRE_TEMPLATES.map(template => (
+          <Card 
+            key={template.id}
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              selectedChecklist?.title === template.name ? 'ring-2 ring-primary' : ''
+            } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
+            onClick={() => handleTemplateSelect(template.id)}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-primary" />
                   </div>
-                  
-                  {selectedChecklist?.id === template.id && (
-                    <Badge>Selecionado</Badge>
-                  )}
+                  <div className="flex-1">
+                    <CardTitle className="text-base">{template.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {template.description}
+                    </p>
+                  </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {template.isStandard && (
-                    <Badge variant="secondary" className="text-xs">
-                      <Star className="h-3 w-3 mr-1" />
-                      Padrão
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className="text-xs">
-                    {getTemplateTypeLabel(template.type)}
-                  </Badge>
-                </div>
+                
+                {selectedChecklist?.title === template.name && (
+                  <Badge>Selecionado</Badge>
+                )}
+              </div>
+            </CardHeader>
+            
+            <CardContent className="pt-0">
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge variant="secondary" className="text-xs">
+                  <Star className="h-3 w-3 mr-1" />
+                  Padrão
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {getTemplateTypeLabel(template.type)}
+                </Badge>
+              </div>
 
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  {template.questions.length} questões
+                </div>
+                {template.estimatedTimeMinutes && (
                   <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {template.questions.length} questões
-                  </div>
-                  {template.estimatedTimeMinutes && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      ~{template.estimatedTimeMinutes} min
-                    </div>
-                  )}
-                </div>
-
-                {template.instructions && (
-                  <div className="mt-3 p-3 bg-muted/50 rounded-md">
-                    <p className="text-sm">{template.instructions}</p>
+                    <Clock className="h-4 w-4" />
+                    ~{template.estimatedTimeMinutes} min
                   </div>
                 )}
+              </div>
 
-                <div className="mt-3 p-2 bg-green-50 rounded-md border border-green-200">
-                  <p className="text-xs text-green-700">
-                    <strong>Link gerado:</strong> avaliacao.unomed.med.br/checklist/{template.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}
-                  </p>
+              {template.instructions && (
+                <div className="mt-3 p-3 bg-muted/50 rounded-md">
+                  <p className="text-sm">{template.instructions}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+              )}
+
+              <div className="mt-3 p-2 bg-green-50 rounded-md border border-green-200">
+                <p className="text-xs text-green-700">
+                  <strong>Link gerado:</strong> avaliacao.unomed.med.br/checklist/{template.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {loading && (

@@ -1,29 +1,14 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
+import { SimpleRoutes } from "@/components/routing/SimpleRoutes";
+import { AuthenticatedRoutes } from "@/components/routing/AuthenticatedRoutes";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { useSystemInitialization } from "@/hooks/useSystemInitialization";
-import { RouteGuard } from "@/components/auth/RouteGuard";
-import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
-import { AppErrorBoundary } from "@/components/error-boundary/AppErrorBoundary";
-import MainLayout from "@/components/layout/MainLayout";
-import Index from "./pages/Index";
-import Login from "./pages/auth/Login";
-import Checklists from "./pages/Checklists";
-import AssessmentResult from "./pages/AssessmentResults";
-import Employees from "./pages/Funcionarios";
-import Companies from "./pages/Empresas";
-import EmailTemplatesPage from "./pages/configuracoes/EmailTemplatesPage";
-import Dashboard from "./pages/Dashboard";
-import AssessmentPortal from "./pages/AssessmentPage";
-import ActionPlansPage from "./pages/PlanoAcao";
-import AuditPage from "./pages/configuracoes/AuditoriaPage";
-import "./App.css";
+import Login from "@/pages/auth/Login";
 
+// QueryClient configuração simples
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -34,115 +19,60 @@ const queryClient = new QueryClient({
   },
 });
 
-// Componente interno que usa o hook de inicialização
-function AppContent() {
-  const { isInitialized, isInitializing, initializationError, hasError } = useSystemInitialization();
-
-  console.log('[App] Estado da inicialização:', {
-    isInitialized,
-    isInitializing,
-    hasError,
-    initializationError
+function App() {
+  console.log('[App] PSI - Iniciando aplicação');
+  
+  // Estado para controlar qual portal está sendo exibido
+  const [portalMode, setPortalMode] = useState<'admin' | 'employee'>(() => {
+    // Verificar se há uma preferência salva no localStorage
+    const savedMode = localStorage.getItem('psi-portal-mode');
+    return (savedMode === 'admin' || savedMode === 'employee') ? savedMode : 'admin';
   });
 
-  if (isInitializing) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center space-y-4">
-          <LoadingSpinner />
-          <div className="space-y-2">
-            <span className="text-lg font-medium">Inicializando sistema...</span>
-            <p className="text-sm text-muted-foreground">
-              Configurando templates e verificando conectividade
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Salvar a preferência do usuário no localStorage
+  useEffect(() => {
+    localStorage.setItem('psi-portal-mode', portalMode);
+  }, [portalMode]);
 
-  if (hasError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-yellow-50 to-orange-100">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto">
-            <span className="text-white text-2xl">⚠️</span>
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-yellow-800">
-              Sistema Parcialmente Inicializado
-            </h2>
-            <p className="text-sm text-yellow-700">
-              Alguns recursos podem não funcionar corretamente.
-            </p>
-            {initializationError && (
-              <p className="text-xs text-yellow-600 bg-yellow-100 p-2 rounded">
-                {initializationError}
-              </p>
-            )}
+  // Função para alternar entre os portais
+  const togglePortal = () => {
+    setPortalMode(prev => prev === 'admin' ? 'employee' : 'admin');
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        {/* Barra de navegação superior com botão para alternar entre portais */}
+        <div className="fixed top-0 left-0 right-0 bg-slate-800 text-white p-2 z-50 flex justify-between items-center">
+          <div className="font-semibold">
+            {portalMode === 'admin' ? 'Portal Administrativo' : 'Portal do Funcionário'}
           </div>
           <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            onClick={togglePortal}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
           >
-            Tentar Novamente
+            Alternar para {portalMode === 'admin' ? 'Portal do Funcionário' : 'Portal Administrativo'}
           </button>
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <AppErrorBoundary>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/portal/:token" element={<AssessmentPortal />} />
-          <Route path="/assessment/:id/result" element={<AssessmentResult />} />
-          
-          <Route
-            path="/*"
-            element={
-              <RouteGuard>
-                <MainLayout>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/templates" element={<Checklists />} />
-                    <Route path="/checklists" element={<Checklists />} />
-                    <Route path="/employees" element={<Employees />} />
-                    <Route path="/companies" element={<Companies />} />
-                    <Route path="/action-plans" element={<ActionPlansPage />} />
-                    <Route path="/audit" element={<AuditPage />} />
-                    <Route path="/configuracoes/emails" element={<EmailTemplatesPage />} />
-                  </Routes>
-                </MainLayout>
-              </RouteGuard>
-            }
-          />
-        </Routes>
+        {/* Espaçamento para compensar a barra fixa */}
+        <div className="pt-12"></div>
+
+        {/* Renderização condicional com base no modo selecionado */}
+        {portalMode === 'employee' ? (
+          <EmployeeAuthNativeProvider>
+            <SimpleRoutes />
+          </EmployeeAuthNativeProvider>
+        ) : (
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/*" element={<AuthenticatedRoutes />} />
+            </Routes>
+          </AuthProvider>
+        )}
       </BrowserRouter>
-    </AppErrorBoundary>
-  );
-}
-
-function App() {
-  console.log('[Main] Portal do Funcionário iniciando...');
-  
-  return (
-    <AppErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <TooltipProvider>
-            <AuthProvider>
-              <AppContent />
-              <Toaster />
-              <Sonner />
-            </AuthProvider>
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </AppErrorBoundary>
+    </QueryClientProvider>
   );
 }
 
