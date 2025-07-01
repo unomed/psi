@@ -54,7 +54,7 @@ export default function Empresas() {
   });
 
   const updateCompany = useMutation({
-    mutationFn: async (companyData: any) => {
+    mutationFn: async ({ companyId, companyData }: { companyId: string, companyData: any }) => {
       const { data, error } = await supabase
         .from('companies')
         .update({
@@ -70,7 +70,7 @@ export default function Empresas() {
           contact_email: companyData.contactEmail,
           contact_phone: companyData.contactPhone
         })
-        .eq('id', companyData.id)
+        .eq('id', companyId)
         .select();
 
       if (error) throw error;
@@ -107,8 +107,8 @@ export default function Empresas() {
     await createCompany.mutateAsync(companyData);
   };
 
-  const handleEditCompany = async (companyData: any) => {
-    await updateCompany.mutateAsync(companyData);
+  const handleEditCompany = async (companyId: string, companyData: any) => {
+    await updateCompany.mutateAsync({ companyId, companyData });
   };
 
   const handleDeleteCompany = async (companyId: string) => {
@@ -170,7 +170,10 @@ export default function Empresas() {
           {filteredCompanies.map((company) => (
             <CompanyCard
               key={company.id}
-              company={company}
+              company={{
+                ...company,
+                id: company.id || '', // Garantir que id não seja undefined
+              }}
               onEdit={() => handleEdit(company)}
               onDelete={() => handleDelete(company)}
             />
@@ -188,7 +191,7 @@ export default function Empresas() {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         company={selectedCompany}
-        onEdit={handleEditCompany}
+        onUpdate={handleEditCompany}
       />
 
       <DeleteCompanyDialog

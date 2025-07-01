@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { PsychosocialRiskConfigForm } from "@/components/risks/PsychosocialRiskConfigForm";
 import { PsychosocialAutomationDashboard } from "@/components/risks/PsychosocialAutomationDashboard";
-import { RiskMatrixEditor } from "@/components/risks/RiskMatrixEditor";
+import RiskMatrixEditor from "@/components/risks/RiskMatrixEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 

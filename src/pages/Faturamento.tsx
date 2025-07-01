@@ -1,12 +1,21 @@
 
+import { useState } from "react";
 import { CompanyBillingDashboard } from "@/components/billing/CompanyBillingDashboard";
 import { BillingOverview } from "@/components/billing/BillingOverview";
 import { UsageAnalytics } from "@/components/billing/UsageAnalytics";
 import { InvoicesList } from "@/components/billing/InvoicesList";
 import { SubscriptionsList } from "@/components/billing/SubscriptionsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
 
 export default function Faturamento() {
+  const { userCompanies } = useSimpleAuth();
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
+
+  const handlePurchaseCredits = (companyId: string) => {
+    console.log("Purchase credits for company:", companyId);
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -32,7 +41,10 @@ export default function Faturamento() {
         </TabsContent>
 
         <TabsContent value="company" className="space-y-6">
-          <CompanyBillingDashboard />
+          <CompanyBillingDashboard 
+            companyId={selectedCompany || userCompanies?.[0]?.companyId || ""}
+            onPurchaseCredits={handlePurchaseCredits}
+          />
         </TabsContent>
 
         <TabsContent value="invoices" className="space-y-6">

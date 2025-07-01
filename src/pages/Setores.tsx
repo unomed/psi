@@ -98,6 +98,19 @@ export default function Setores() {
     await deleteSector.mutateAsync(sectorId);
   };
 
+  // Transformar dados para corresponder ao tipo SectorData esperado
+  const transformedSectors = filteredSectors?.map(sector => ({
+    id: sector.id,
+    name: sector.name,
+    description: sector.description,
+    companyId: sector.company_id,
+    location: sector.location || '',
+    responsibleName: sector.responsible_name || '',
+    riskLevel: sector.risk_level,
+    created_at: sector.created_at,
+    updated_at: sector.updated_at
+  })) || [];
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-6">
@@ -132,7 +145,7 @@ export default function Setores() {
       <SectorCompanySelect
         selectedCompany={selectedCompany}
         onCompanyChange={setSelectedCompany}
-        userCompanies={userCompanies}
+        companies={userCompanies?.map(uc => ({ id: uc.companyId, name: uc.companyName })) || []}
       />
 
       {!selectedCompany ? (
@@ -140,10 +153,10 @@ export default function Setores() {
           <p className="text-muted-foreground">Selecione uma empresa para visualizar os setores</p>
         </div>
       ) : !filteredSectors?.length ? (
-        <EmptySectorState onCreateClick={() => setIsCreateDialogOpen(true)} />
+        <EmptySectorState />
       ) : (
         <SectorGrid
-          sectors={filteredSectors}
+          sectors={transformedSectors}
           onEdit={(sector) => {
             setSelectedSector(sector);
             setIsEditDialogOpen(true);
@@ -159,7 +172,6 @@ export default function Setores() {
           </DialogHeader>
           <SectorForm
             onSubmit={handleCreateSector}
-            onCancel={() => setIsCreateDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
@@ -170,9 +182,8 @@ export default function Setores() {
             <DialogTitle>Editar Setor</DialogTitle>
           </DialogHeader>
           <SectorForm
-            sector={selectedSector}
+            defaultValues={selectedSector}
             onSubmit={handleEditSector}
-            onCancel={() => setIsEditDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
