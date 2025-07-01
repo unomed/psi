@@ -2,14 +2,15 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
-import { AppRoutes } from "@/components/routing/AppRoutes";
+import { OptimizedAppRoutes } from "@/components/routing/OptimizedAppRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import { Routes, Route } from "react-router-dom";
+import { OptimizedAuthProvider } from "@/contexts/OptimizedAuthContext";
 
-// Error boundary simplificado
-class SimpleAppErrorBoundary extends React.Component<
+// Error boundary otimizado
+class OptimizedAppErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean }
 > {
@@ -23,23 +24,23 @@ class SimpleAppErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[SimpleAppContent] Error caught by boundary:', error, errorInfo);
+    console.error('[OptimizedAppContent] Error caught by boundary:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="text-center">
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">
+          <div className="text-center space-y-4">
+            <h1 className="text-xl font-semibold text-gray-900">
               Erro na aplicação
             </h1>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600">
               Ocorreu um erro inesperado. Recarregue a página.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             >
               Recarregar
             </button>
@@ -55,7 +56,7 @@ class SimpleAppErrorBoundary extends React.Component<
 function AppContent() {
   const { user, isLoading, isAuthenticated } = useSimpleAuth();
 
-  console.log('[SimpleAppContent] Estado atual:', {
+  console.log('[OptimizedAppContent] Estado atual:', {
     hasUser: !!user,
     isLoading,
     isAuthenticated,
@@ -73,9 +74,8 @@ function AppContent() {
     );
   }
 
-  // Se não está autenticado, mostrar páginas de auth
   if (!isAuthenticated || !user) {
-    console.log('[SimpleAppContent] Usuário não autenticado, mostrando tela de login');
+    console.log('[OptimizedAppContent] Usuário não autenticado, mostrando tela de login');
     return (
       <Routes>
         <Route path="/auth/register" element={<Register />} />
@@ -84,23 +84,24 @@ function AppContent() {
     );
   }
 
-  // Se está autenticado, mostrar aplicação principal
-  console.log('[SimpleAppContent] Usuário autenticado, carregando aplicação principal');
+  console.log('[OptimizedAppContent] Usuário autenticado, carregando aplicação principal');
   return (
     <MainLayout>
-      <AppRoutes />
+      <OptimizedAppRoutes />
     </MainLayout>
   );
 }
 
 export function SimpleAppContent() {
-  console.log('[SimpleAppContent] Inicializando roteamento principal');
+  console.log('[OptimizedAppContent] Inicializando roteamento otimizado');
   
   return (
-    <SimpleAppErrorBoundary>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </SimpleAppErrorBoundary>
+    <OptimizedAppErrorBoundary>
+      <OptimizedAuthProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </OptimizedAuthProvider>
+    </OptimizedAppErrorBoundary>
   );
 }
