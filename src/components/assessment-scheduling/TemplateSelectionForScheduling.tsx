@@ -54,6 +54,22 @@ export function TemplateSelectionForScheduling({
   // Hook para templates customizados do banco
   const { checklists: customTemplates, isLoading: isLoadingCustom } = useChecklistTemplates();
 
+  // Função para gerar typeLabel baseado no template
+  const generateTypeLabel = (template: any): string => {
+    if (template.type) {
+      // Para templates customizados que já têm type
+      return template.type.toUpperCase();
+    }
+    
+    // Para templates padrão, inferir do ID
+    const id = template.id.toLowerCase();
+    if (id.includes("disc")) return "DISC";
+    if (id.includes("psicossocial") || id.includes("estresse") || id.includes("ambiente") || id.includes("organizacao")) return "Psicossocial";
+    if (id.includes("360")) return "360°";
+    if (id.includes("personal")) return "Vida Pessoal";
+    return "Saúde Mental";
+  };
+
   // Combinar templates padrão e customizados
   const allTemplates = useMemo((): ExtendedTemplate[] => {
     const standardTemplates = useTemplatesPage().filteredTemplates;
@@ -77,9 +93,9 @@ export function TemplateSelectionForScheduling({
       name: template.name,
       description: template.description,
       categories: template.categories || [],
-      estimatedQuestions: template.estimatedQuestions,
+      estimatedQuestions: template.questions?.length || 0,
       estimatedTimeMinutes: template.estimatedTimeMinutes,
-      typeLabel: template.typeLabel
+      typeLabel: generateTypeLabel(template)
     }));
 
     return [...convertedStandardTemplates, ...convertedCustomTemplates];
