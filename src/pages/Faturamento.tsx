@@ -12,8 +12,8 @@ export default function Faturamento() {
   const { userCompanies } = useSimpleAuth();
   const [selectedCompany, setSelectedCompany] = useState<string>("");
 
-  const handlePurchaseCredits = (companyId: string) => {
-    console.log("Purchase credits for company:", companyId);
+  const handlePurchaseCredits = () => {
+    console.log("Purchase credits for company:", selectedCompany);
   };
 
   return (

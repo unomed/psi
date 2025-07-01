@@ -172,7 +172,9 @@ export default function Empresas() {
               key={company.id}
               company={{
                 ...company,
-                id: company.id || '', // Garantir que id não seja undefined
+                id: company.id || '',
+                created_at: company.created_at || new Date().toISOString(),
+                updated_at: company.updated_at || new Date().toISOString()
               }}
               onEdit={() => handleEdit(company)}
               onDelete={() => handleDelete(company)}

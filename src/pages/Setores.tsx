@@ -145,7 +145,12 @@ export default function Setores() {
       <SectorCompanySelect
         selectedCompany={selectedCompany}
         onCompanyChange={setSelectedCompany}
-        companies={userCompanies?.map(uc => ({ id: uc.companyId, name: uc.companyName })) || []}
+        companies={userCompanies?.map(uc => ({ 
+          id: uc.companyId, 
+          name: uc.companyName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })) || []}
       />
 
       {!selectedCompany ? (
@@ -153,15 +158,14 @@ export default function Setores() {
           <p className="text-muted-foreground">Selecione uma empresa para visualizar os setores</p>
         </div>
       ) : !filteredSectors?.length ? (
-        <EmptySectorState />
+        <EmptySectorState onAddClick={() => setIsCreateDialogOpen(true)} />
       ) : (
         <SectorGrid
           sectors={transformedSectors}
-          onEdit={(sector) => {
+          onSectorClick={(sector) => {
             setSelectedSector(sector);
             setIsEditDialogOpen(true);
           }}
-          onDelete={handleDeleteSector}
         />
       )}
 
@@ -182,8 +186,9 @@ export default function Setores() {
             <DialogTitle>Editar Setor</DialogTitle>
           </DialogHeader>
           <SectorForm
-            defaultValues={selectedSector}
+            initialData={selectedSector}
             onSubmit={handleEditSector}
+            isEdit={true}
           />
         </DialogContent>
       </Dialog>
