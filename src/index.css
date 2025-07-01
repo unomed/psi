@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 195 85% 41%; /* Teal-blue */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 199 89% 48%; /* Accent blue */
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 195 85% 41%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar sizing and positioning */
+    --sidebar-width: 280px;
+    --sidebar-width-icon: 48px;
+
+    /* Sidebar colors - Dark theme with #161616 background */
+    --sidebar-background: 0 0% 8.6%; /* #161616 converted to HSL */
+    --sidebar-foreground: 0 0% 90%; /* Light text for contrast */
+    --sidebar-primary: 195 85% 41%;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 0 0% 15%; /* Slightly lighter than background for hover */
+    --sidebar-accent-foreground: 199 89% 48%; /* Blue text on hover */
+    --sidebar-border: 0 0% 20%; /* Subtle border */
+    --sidebar-ring: 199 89% 48%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 195 85% 41%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 195 85% 41%;
+
+    /* Dark mode sidebar - keeping the same #161616 theme */
+    --sidebar-background: 0 0% 8.6%; /* #161616 */
+    --sidebar-foreground: 0 0% 90%; /* Light text */
+    --sidebar-primary: 195 85% 41%;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-accent: 0 0% 15%; /* Slightly lighter for hover */
+    --sidebar-accent-foreground: 199 89% 48%; /* Blue text on hover */
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 199 89% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border transition-colors duration-200;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-md;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted/80;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Enhanced button animations */
+  .btn-animate {
+    @apply transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1;
+  }
+
+  /* Loading states */
+  .loading-pulse {
+    @apply animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%];
+    animation: shimmer 2s infinite;
+  }
+
+  /* Page transitions */
+  .page-enter {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both;
+  }
+
+  /* Stagger animations */
+  .stagger-item {
+    @apply animate-in fade-in slide-in-from-left-4 duration-300 fill-mode-both;
+  }
+
+  /* Interactive elements */
+  .interactive {
+    @apply transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+
+  /* Smooth backdrop blur */
+  .backdrop-blur-smooth {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .mobile-optimized {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .mobile-spacing {
+    @apply p-4 space-y-4;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+  }
+  
+  .dark {
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+  }
+}

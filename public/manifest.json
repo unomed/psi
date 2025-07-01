@@ -1,0 +1,9 @@
+
+{
+  "name": "Portal do Funcionário",
+  "short_name": "Portal",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6"
+}
