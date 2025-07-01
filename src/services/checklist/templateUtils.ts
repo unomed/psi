@@ -342,6 +342,84 @@ export function calculatePsicossocialRisk(responses: Record<string, number>, que
   };
 }
 
+// Novas funções para templates psicossociais específicos
+export function getCompletePsicossocialQuestions(): PsicossocialQuestion[] {
+  return [
+    // Demandas de Trabalho
+    { id: crypto.randomUUID(), text: "Tenho que trabalhar muito rapidamente para cumprir prazos", category: "demandas_trabalho", weight: 1 },
+    { id: crypto.randomUUID(), text: "Meu trabalho exige que eu aprenda coisas novas constantemente", category: "demandas_trabalho", weight: 1 },
+    { id: crypto.randomUUID(), text: "Tenho uma quantidade excessiva de trabalho para fazer", category: "demandas_trabalho", weight: 1 },
+    
+    // Controle e Autonomia
+    { id: crypto.randomUUID(), text: "Posso decidir como realizar minhas tarefas", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Tenho liberdade para decidir quando fazer pausas", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Posso influenciar nas decisões que afetam meu trabalho", category: "controle_autonomia", weight: 1 },
+    
+    // Suporte Social
+    { id: crypto.randomUUID(), text: "Recebo apoio adequado dos meus colegas", category: "suporte_social", weight: 1 },
+    { id: crypto.randomUUID(), text: "Meu supervisor me dá apoio quando necessário", category: "suporte_social", weight: 1 },
+    { id: crypto.randomUUID(), text: "Posso contar com ajuda dos colegas quando tenho dificuldades", category: "suporte_social", weight: 1 },
+    
+    // Reconhecimento e Crescimento
+    { id: crypto.randomUUID(), text: "Recebo reconhecimento pelo meu trabalho e esforços", category: "reconhecimento_crescimento", weight: 1 },
+    { id: crypto.randomUUID(), text: "Tenho oportunidades de crescimento profissional", category: "reconhecimento_crescimento", weight: 1 },
+    { id: crypto.randomUUID(), text: "Meu trabalho oferece possibilidades de desenvolvimento", category: "reconhecimento_crescimento", weight: 1 },
+    
+    // Condições Ambientais
+    { id: crypto.randomUUID(), text: "O ambiente físico do meu trabalho é adequado", category: "condicoes_ambientais", weight: 1 },
+    { id: crypto.randomUUID(), text: "O ruído no meu local de trabalho é aceitável", category: "condicoes_ambientais", weight: 1 },
+    { id: crypto.randomUUID(), text: "A iluminação do meu local de trabalho é adequada", category: "condicoes_ambientais", weight: 1 }
+  ];
+}
+
+export function getOccupationalStressQuestions(): PsicossocialQuestion[] {
+  return [
+    // Demandas de Trabalho - Estresse
+    { id: crypto.randomUUID(), text: "Sinto-me sobrecarregado com a quantidade de trabalho", category: "demandas_trabalho", weight: 1 },
+    { id: crypto.randomUUID(), text: "Os prazos são muito apertados para completar as tarefas", category: "demandas_trabalho", weight: 1 },
+    { id: crypto.randomUUID(), text: "Preciso trabalhar em ritmo muito acelerado", category: "demandas_trabalho", weight: 1 },
+    { id: crypto.randomUUID(), text: "Frequentemente levo trabalho para casa", category: "demandas_trabalho", weight: 1 },
+    
+    // Controle - Estresse
+    { id: crypto.randomUUID(), text: "Tenho pouco controle sobre meu ritmo de trabalho", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Não posso decidir quando fazer pausas", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Tenho pouca influência sobre as decisões que me afetam", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Sinto que não tenho autonomia suficiente", category: "controle_autonomia", weight: 1 }
+  ];
+}
+
+export function getSocialWorkEnvironmentQuestions(): PsicossocialQuestion[] {
+  return [
+    // Suporte Social
+    { id: crypto.randomUUID(), text: "Meus colegas me apoiam quando preciso", category: "suporte_social", weight: 1 },
+    { id: crypto.randomUUID(), text: "Existe boa comunicação entre os colegas", category: "suporte_social", weight: 1 },
+    { id: crypto.randomUUID(), text: "Posso conversar com meus colegas sobre problemas de trabalho", category: "suporte_social", weight: 1 },
+    { id: crypto.randomUUID(), text: "O ambiente de trabalho é colaborativo", category: "suporte_social", weight: 1 },
+    
+    // Relacionamentos
+    { id: crypto.randomUUID(), text: "Tenho bons relacionamentos com meus colegas", category: "relacionamentos", weight: 1 },
+    { id: crypto.randomUUID(), text: "Sinto-me integrado à equipe de trabalho", category: "relacionamentos", weight: 1 },
+    { id: crypto.randomUUID(), text: "Existe respeito mútuo entre os colegas", category: "relacionamentos", weight: 1 },
+    { id: crypto.randomUUID(), text: "Raramente há conflitos interpessoais no trabalho", category: "relacionamentos", weight: 1 }
+  ];
+}
+
+export function getWorkOrganizationQuestions(): PsicossocialQuestion[] {
+  return [
+    // Clareza de Papel
+    { id: crypto.randomUUID(), text: "Sei exatamente o que se espera de mim no trabalho", category: "clareza_papel", weight: 1 },
+    { id: crypto.randomUUID(), text: "Minhas responsabilidades estão claramente definidas", category: "clareza_papel", weight: 1 },
+    { id: crypto.randomUUID(), text: "Recebo informações claras sobre meus objetivos", category: "clareza_papel", weight: 1 },
+    { id: crypto.randomUUID(), text: "Entendo como meu trabalho contribui para os objetivos da empresa", category: "clareza_papel", weight: 1 },
+    
+    // Controle Organizacional
+    { id: crypto.randomUUID(), text: "Posso planejar meu próprio trabalho", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Tenho influência sobre a organização do meu trabalho", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Posso decidir a ordem em que faço minhas tarefas", category: "controle_autonomia", weight: 1 },
+    { id: crypto.randomUUID(), text: "Tenho autonomia para resolver problemas do dia a dia", category: "controle_autonomia", weight: 1 }
+  ];
+}
+
 // Outras funções de templates (mantidas para compatibilidade)
 export function getSRQ20Questions(): PsicossocialQuestion[] {
   return [
