@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChecklistTemplate } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { createTemplateFromId } from "@/utils/templateIntegration";
 import { useTemplatesPage } from "@/hooks/useTemplatesPage";
+import { useChecklistTemplates } from "@/hooks/checklist/useChecklistTemplates";
 import { FavoriteTemplatesSection } from "@/components/templates/FavoriteTemplatesSection";
 import { TemplatesFilters } from "@/components/templates/TemplatesFilters";
 import { TemplatesGrid } from "@/components/templates/TemplatesGrid";
@@ -26,17 +27,89 @@ export function TemplateSelectionForScheduling({
 }: TemplateSelectionForSchedulingProps) {
   const [isConverting, setIsConverting] = useState(false);
 
+  // Hook para templates padrão
   const {
     searchTerm,
     setSearchTerm,
     filterType,
     setFilterType,
-    filteredTemplates,
-    availableTypes,
     clearFilters,
     hasActiveFilters,
     validateTemplate
   } = useTemplatesPage();
+
+  // Hook para templates customizados do banco
+  const { checklists: customTemplates, isLoading: isLoadingCustom } = useChecklistTemplates();
+
+  // Combinar templates padrão e customizados
+  const allTemplates = useMemo(() => {
+    const standardTemplates = useTemplatesPage().filteredTemplates;
+    
+    // Converter templates customizados para formato compatível
+    const convertedCustomTemplates = customTemplates.map(template => ({
+      id: template.id,
+      name: template.title,
+      description: template.description || '',
+      categories: [template.type],
+      estimatedQuestions: template.questions?.length || 0,
+      estimatedTimeMinutes: template.estimatedTimeMinutes || 30,
+      typeLabel: template.type.toUpperCase(),
+      isCustom: true, // Marcar como customizado
+      originalTemplate: template // Manter referência ao template original
+    }));
+
+    return [...standardTemplates, ...convertedCustomTemplates];
+  }, [customTemplates]);
+
+  // Aplicar filtros nos templates combinados
+  const filteredTemplates = useMemo(() => {
+    let templates = allTemplates;
+
+    // Filtro por busca
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      templates = templates.filter(template => {
+        const searchableText = [
+          template.name,
+          template.description,
+          ...(template.categories || [])
+        ].join(' ').toLowerCase();
+        
+        return searchableText.includes(searchLower);
+      });
+    }
+
+    // Filtro por tipo
+    if (filterType !== "all") {
+      templates = templates.filter(template => {
+        if (template.isCustom) {
+          // Para templates customizados, usar o tipo original
+          return template.originalTemplate?.type === filterType.toLowerCase();
+        } else {
+          // Para templates padrão, usar lógica existente
+          const typeLabel = template.id.includes("disc") ? "DISC" :
+                           template.id.includes("psicossocial") ? "Psicossocial" :
+                           template.id.includes("360") ? "360°" :
+                           template.id.includes("personal") ? "Vida Pessoal" : "Saúde Mental";
+          return typeLabel === filterType;
+        }
+      });
+    }
+
+    return templates;
+  }, [allTemplates, searchTerm, filterType]);
+
+  // Tipos disponíveis incluindo customizados
+  const availableTypes = useMemo(() => {
+    const standardTypes = ["all", "DISC", "Psicossocial", "360°", "Vida Pessoal", "Saúde Mental"];
+    
+    // Adicionar tipos dos templates customizados
+    const customTypes = Array.from(new Set(
+      customTemplates.map(t => t.type.toUpperCase())
+    ));
+    
+    return [...standardTypes, ...customTypes.filter(type => !standardTypes.includes(type))];
+  }, [customTemplates]);
 
   const handleTemplateSelection = async (templateId: string) => {
     setIsConverting(true);
@@ -44,10 +117,48 @@ export function TemplateSelectionForScheduling({
     try {
       console.log("🔄 Convertendo template para agendamento:", templateId);
       
-      // Criar template a partir do ID
-      const template = createTemplateFromId(templateId);
-      if (!template) {
-        throw new Error(`Template ${templateId} não encontrado`);
+      let template: ChecklistTemplate | null = null;
+
+      // Verificar se é template customizado
+      const customTemplate = customTemplates.find(t => t.id === templateId);
+      if (customTemplate) {
+        console.log("✅ Template customizado encontrado:", customTemplate.title);
+        // Template customizado já está no formato correto
+        template = customTemplate;
+      } else {
+        // Template padrão - usar createTemplateFromId
+        const standardTemplate = createTemplateFromId(templateId);
+        if (!standardTemplate) {
+          throw new Error(`Template padrão ${templateId} não encontrado`);
+        }
+
+        // Converter para ChecklistTemplate
+        template = {
+          id: standardTemplate.id,
+          title: standardTemplate.title,
+          description: standardTemplate.description || '',
+          type: standardTemplate.type,
+          questions: standardTemplate.questions || [],
+          createdAt: new Date(),
+          scaleType: standardTemplate.scaleType || ScaleType.Likert,
+          isStandard: true,
+          estimatedTimeMinutes: standardTemplate.estimatedTimeMinutes,
+          instructions: standardTemplate.instructions,
+          interpretationGuide: standardTemplate.interpretationGuide,
+          maxScore: standardTemplate.maxScore,
+          cutoffScores: standardTemplate.cutoffScores,
+          isActive: true,
+          version: 1,
+          // Database compatibility fields
+          estimated_time_minutes: standardTemplate.estimatedTimeMinutes,
+          is_standard: true,
+          scale_type: standardTemplate.scaleType || 'likert5',
+          created_at: new Date().toISOString(),
+          is_active: true,
+          cutoff_scores: standardTemplate.cutoffScores,
+          max_score: standardTemplate.maxScore,
+          interpretation_guide: standardTemplate.interpretationGuide
+        };
       }
 
       // Validar template
@@ -55,42 +166,15 @@ export function TemplateSelectionForScheduling({
         throw new Error(`Template ${templateId} não é válido`);
       }
 
-      // Converter para ChecklistTemplate compatível com agendamento
-      const checklistTemplate: ChecklistTemplate = {
+      console.log("✅ Template convertido com sucesso:", {
         id: template.id,
         title: template.title,
-        description: template.description || '',
+        questions: template.questions.length,
         type: template.type,
-        questions: template.questions || [],
-        createdAt: new Date(),
-        scaleType: template.scaleType || ScaleType.Likert,
-        isStandard: true,
-        estimatedTimeMinutes: template.estimatedTimeMinutes,
-        instructions: template.instructions,
-        interpretationGuide: template.interpretationGuide,
-        maxScore: template.maxScore,
-        cutoffScores: template.cutoffScores,
-        isActive: true,
-        version: 1,
-        // Database compatibility fields
-        estimated_time_minutes: template.estimatedTimeMinutes,
-        is_standard: true,
-        scale_type: template.scaleType || 'likert5',
-        created_at: new Date().toISOString(),
-        is_active: true,
-        cutoff_scores: template.cutoffScores,
-        max_score: template.maxScore,
-        interpretation_guide: template.interpretationGuide
-      };
-
-      console.log("✅ Template convertido com sucesso:", {
-        id: checklistTemplate.id,
-        title: checklistTemplate.title,
-        questions: checklistTemplate.questions.length,
-        type: checklistTemplate.type
+        isCustom: !!customTemplate
       });
 
-      onTemplateSelect(checklistTemplate);
+      onTemplateSelect(template);
       toast.success(`Template "${template.title}" selecionado para agendamento!`);
       
     } catch (error) {
@@ -108,6 +192,17 @@ export function TemplateSelectionForScheduling({
     toast.info("Para criar templates personalizados, vá para a página Templates");
   };
 
+  if (isLoadingCustom) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando templates...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -119,7 +214,7 @@ export function TemplateSelectionForScheduling({
         <div>
           <h2 className="text-2xl font-bold">Selecionar Template de Avaliação</h2>
           <p className="text-muted-foreground">
-            Escolha um template para criar a avaliação agendada
+            Escolha um template para criar a avaliação agendada (Templates padrão + seus templates customizados)
           </p>
         </div>
       </div>
@@ -151,7 +246,16 @@ export function TemplateSelectionForScheduling({
         />
       ) : (
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Todos os Templates</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold">
+              Todos os Templates ({filteredTemplates.length})
+            </h3>
+            <div className="text-sm text-muted-foreground">
+              {customTemplates.length > 0 && (
+                <span>Incluindo {customTemplates.length} template(s) personalizado(s)</span>
+              )}
+            </div>
+          </div>
           <TemplatesGrid
             templates={filteredTemplates}
             onTemplateSelect={handleTemplateSelection}
@@ -177,6 +281,9 @@ export function TemplateSelectionForScheduling({
               <span>Perguntas: {selectedTemplate.questions?.length || 0}</span>
               <span>Tempo: {selectedTemplate.estimatedTimeMinutes} min</span>
               <span>Tipo: {selectedTemplate.type}</span>
+              {selectedTemplate.isStandard === false && (
+                <span className="text-blue-600 font-medium">Personalizado</span>
+              )}
             </div>
           </CardContent>
         </Card>
