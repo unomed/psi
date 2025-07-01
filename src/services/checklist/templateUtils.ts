@@ -1,4 +1,3 @@
-
 import { DiscFactorType, DiscQuestion } from "@/types/disc";
 import { PsicossocialQuestion, ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
@@ -136,8 +135,13 @@ export function getDefaultDiscQuestions(): DiscQuestion[] {
   ];
 }
 
-// ETAPA 1: Função corrigida para buscar perguntas psicossociais do banco
-export async function getDefaultPsicossocialQuestions(): Promise<PsicossocialQuestion[]> {
+// ETAPA 1: Função síncrona para fallback (mantém compatibilidade)
+export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
+  return getFallbackPsicossocialQuestions();
+}
+
+// ETAPA 2: Nova função assíncrona para buscar do banco
+export async function loadPsicossocialQuestionsFromDatabase(): Promise<PsicossocialQuestion[]> {
   try {
     console.log("Buscando perguntas psicossociais do banco de dados...");
     
@@ -225,7 +229,7 @@ export async function getDefaultQuestions(templateType: ChecklistTemplateType): 
     case "disc":
       return getDefaultDiscQuestions();
     case "psicossocial":
-      return await getDefaultPsicossocialQuestions();
+      return await loadPsicossocialQuestionsFromDatabase();
     case "srq20":
       return getSRQ20Questions();
     case "phq9":

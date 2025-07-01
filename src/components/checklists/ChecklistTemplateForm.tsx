@@ -32,7 +32,8 @@ import { ScaleType } from "@/types";
 import { PsicossocialQuestion } from '@/types/checklist';
 import { ScaleTypeSelector } from './ScaleTypeSelector';
 import { CategoryQuestionGroup, CategoryQuestion } from './form/CategoryQuestionGroup';
-import { getDefaultQuestions } from '@/services/checklist/templateUtils';
+import { getDefaultQuestions, loadPsicossocialQuestionsFromDatabase } from '@/services/checklist/templateUtils';
+import { QuestionLoadingStatus } from './QuestionLoadingStatus';
 
 // Modelo de perguntas psicossociais para referência
 const PSICOSSOCIAL_CATEGORIES = [
@@ -85,7 +86,7 @@ export function ChecklistTemplateForm({
   const [categories, setCategories] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>("basic");
   
-  // ETAPA 2: Estados para carregamento assíncrono
+  // Estados para carregamento assíncrono
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [questionsLoadError, setQuestionsLoadError] = useState<string | null>(null);
 
@@ -257,7 +258,7 @@ export function ChecklistTemplateForm({
     }
   }, [method, form]);
 
-  // ETAPA 2: Função assíncrona para carregar perguntas padrão
+  // Função assíncrona para carregar perguntas padrão
   const handleLoadDefaultQuestions = async () => {
     setIsLoadingQuestions(true);
     setQuestionsLoadError(null);
@@ -265,12 +266,19 @@ export function ChecklistTemplateForm({
     try {
       console.log(`Carregando perguntas padrão para tipo: ${method}`);
       
-      const defaultQuestions = await getDefaultQuestions(method as any);
+      let defaultQuestions;
+      
+      // Para psicossocial, usar a função específica do banco
+      if (method === "psicossocial") {
+        defaultQuestions = await loadPsicossocialQuestionsFromDatabase();
+      } else {
+        defaultQuestions = await getDefaultQuestions(method as any);
+      }
       
       if (defaultQuestions.length > 0) {
         form.setValue("questions", defaultQuestions);
         
-        // ETAPA 4: Feedback específico por tipo de template
+        // Feedback específico por tipo de template
         if (method === "psicossocial") {
           toast.success(`${defaultQuestions.length} perguntas psicossociais MTE carregadas com sucesso!`);
         } else {
@@ -498,7 +506,6 @@ export function ChecklistTemplateForm({
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Perguntas do Checklist</h3>
               
-              {/* ETAPA 2: Botão com estados de loading */}
               <Button
                 type="button"
                 variant="outline"
@@ -520,14 +527,14 @@ export function ChecklistTemplateForm({
               </Button>
             </div>
 
-            {/* ETAPA 4: Exibir erro de carregamento se houver */}
-            {questionsLoadError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-sm text-red-600">{questionsLoadError}</p>
-              </div>
-            )}
+            <QuestionLoadingStatus 
+              isLoading={isLoadingQuestions}
+              error={questionsLoadError}
+              questionsCount={form.watch("questions")?.length || 0}
+              templateType={method}
+            />
 
-            {/* ETAPA 4: Feedback visual para template psicossocial */}
+            {/* Feedback visual para template psicossocial */}
             {method === "psicossocial" && !isLoadingQuestions && (
               <div className="bg-green-50 border border-green-200 rounded-md p-3">
                 <p className="text-sm text-green-700">
