@@ -1,4 +1,5 @@
 
+
 import { DiscFactorType, DiscQuestion } from "@/types/disc";
 import { PsicossocialQuestion, ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
@@ -355,6 +356,9 @@ export function mapAppTemplateTypeToDb(appType: ChecklistTemplateType): string {
     'mbi': 'mbi',
     'audit': 'audit',
     'pss': 'pss',
+    'copsoq': 'copsoq',
+    'jcq': 'jcq',
+    'eri': 'eri',
     'personal_life': 'personal_life',
     'evaluation_360': 'evaluation_360'
   };
