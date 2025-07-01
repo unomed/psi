@@ -12,15 +12,12 @@ import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Checklists from "./pages/Checklists";
-import Assessments from "./pages/Assessments";
 import AssessmentResult from "./pages/AssessmentResults";
 import Employees from "./pages/Funcionarios";
 import Companies from "./pages/Empresas";
-import Settings from "./pages/Settings";
 import EmailTemplatesPage from "./pages/configuracoes/EmailTemplatesPage";
 import Dashboard from "./pages/Dashboard";
 import AssessmentPortal from "./pages/AssessmentPage";
-import CandidatesPage from "./pages/CandidatesPage";
 import ActionPlansPage from "./pages/PlanoAcao";
 import AuditPage from "./pages/configuracoes/AuditoriaPage";
 import "./App.css";
@@ -50,23 +47,18 @@ function AppContent() {
         <Route
           path="/*"
           element={
-            <ProtectedRoute>
-              <RouteGuard>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/templates" element={<Checklists />} />
-                  <Route path="/assessments" element={<Assessments />} />
-                  <Route path="/employees" element={<Employees />} />
-                  <Route path="/companies" element={<Companies />} />
-                  <Route path="/candidates" element={<CandidatesPage />} />
-                  <Route path="/action-plans" element={<ActionPlansPage />} />
-                  <Route path="/audit" element={<AuditPage />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/configuracoes/emails" element={<EmailTemplatesPage />} />
-                </Routes>
-              </RouteGuard>
-            </ProtectedRoute>
+            <RouteGuard>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/templates" element={<Checklists />} />
+                <Route path="/employees" element={<Employees />} />
+                <Route path="/companies" element={<Companies />} />
+                <Route path="/action-plans" element={<ActionPlansPage />} />
+                <Route path="/audit" element={<AuditPage />} />
+                <Route path="/configuracoes/emails" element={<EmailTemplatesPage />} />
+              </Routes>
+            </RouteGuard>
           }
         />
       </Routes>
