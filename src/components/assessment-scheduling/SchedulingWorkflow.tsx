@@ -163,12 +163,11 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
             </TabsContent>
           </Tabs>
 
-          {currentStep !== 'scheduling' && currentStep !== 'template' && (
+          {currentStep === 'employee' && (
             <div className="flex justify-between pt-4 border-t">
               <Button 
                 variant="outline" 
                 onClick={handleBack}
-                disabled={currentStep === 'template'}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar

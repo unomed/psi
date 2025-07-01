@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { ChecklistTemplate } from "@/types";
 import { createTemplateFromId } from "@/utils/templateIntegration";
 import { useTemplateAnalytics } from "@/hooks/useTemplateAnalytics";
+import { ScaleType } from "@/types";
 import { toast } from "sonner";
 
 export function useTemplateSelection() {
@@ -38,7 +39,7 @@ export function useTemplateSelection() {
         type: template.type,
         questions: template.questions,
         createdAt: new Date(),
-        scaleType: template.scaleType || 'likert5',
+        scaleType: template.scaleType || ScaleType.Likert,
         isStandard: true,
         estimatedTimeMinutes: template.estimatedTimeMinutes,
         instructions: template.instructions,

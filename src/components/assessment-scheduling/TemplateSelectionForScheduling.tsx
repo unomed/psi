@@ -10,6 +10,7 @@ import { FavoriteTemplatesSection } from "@/components/templates/FavoriteTemplat
 import { TemplatesFilters } from "@/components/templates/TemplatesFilters";
 import { TemplatesGrid } from "@/components/templates/TemplatesGrid";
 import { TemplatesEmptyState } from "@/components/templates/TemplatesEmptyState";
+import { ScaleType } from "@/types";
 import { toast } from "sonner";
 
 interface TemplateSelectionForSchedulingProps {
@@ -62,7 +63,7 @@ export function TemplateSelectionForScheduling({
         type: template.type,
         questions: template.questions || [],
         createdAt: new Date(),
-        scaleType: template.scaleType || 'likert5',
+        scaleType: template.scaleType || ScaleType.Likert,
         isStandard: true,
         estimatedTimeMinutes: template.estimatedTimeMinutes,
         instructions: template.instructions,
