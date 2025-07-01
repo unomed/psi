@@ -118,8 +118,11 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
 
             <TabsContent value="checklist" className="mt-6">
               <ChecklistSelectionStep
-                selectedChecklist={selectedChecklist}
-                onChecklistSelect={setSelectedChecklist}
+                templates={[]}
+                selectedTemplate={selectedChecklist}
+                onSelectTemplate={setSelectedChecklist}
+                onNext={handleNext}
+                onBack={handleBack}
               />
             </TabsContent>
 
