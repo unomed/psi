@@ -60,7 +60,9 @@ export function usePerformanceMetrics() {
     if (performance.getEntriesByType) {
       const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
       if (navigationEntries.length > 0) {
-        const loadTime = navigationEntries[0].loadEventEnd - navigationEntries[0].navigationStart;
+        const entry = navigationEntries[0];
+        // Usar startTime ao invés de navigationStart (propriedade correta na API atual)
+        const loadTime = entry.loadEventEnd - entry.startTime;
         setMetrics(prev => ({
           ...prev,
           pageLoadTime: loadTime
