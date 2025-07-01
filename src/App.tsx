@@ -10,6 +10,7 @@ import { useSystemInitialization } from "@/hooks/useSystemInitialization";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { LoadingSpinner } from "@/components/auth/LoadingSpinner";
 import { AppErrorBoundary } from "@/components/error-boundary/AppErrorBoundary";
+import MainLayout from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Checklists from "./pages/Checklists";
@@ -103,16 +104,19 @@ function AppContent() {
             path="/*"
             element={
               <RouteGuard>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/templates" element={<Checklists />} />
-                  <Route path="/employees" element={<Employees />} />
-                  <Route path="/companies" element={<Companies />} />
-                  <Route path="/action-plans" element={<ActionPlansPage />} />
-                  <Route path="/audit" element={<AuditPage />} />
-                  <Route path="/configuracoes/emails" element={<EmailTemplatesPage />} />
-                </Routes>
+                <MainLayout>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/templates" element={<Checklists />} />
+                    <Route path="/checklists" element={<Checklists />} />
+                    <Route path="/employees" element={<Employees />} />
+                    <Route path="/companies" element={<Companies />} />
+                    <Route path="/action-plans" element={<ActionPlansPage />} />
+                    <Route path="/audit" element={<AuditPage />} />
+                    <Route path="/configuracoes/emails" element={<EmailTemplatesPage />} />
+                  </Routes>
+                </MainLayout>
               </RouteGuard>
             }
           />
