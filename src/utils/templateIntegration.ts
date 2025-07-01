@@ -14,44 +14,140 @@ export interface TemplatePreview {
   colorScheme: string;
 }
 
+// Cache para templates para melhor performance
+const templateCache = new Map<string, ChecklistTemplate>();
+
 export function getTemplatePreview(templateId: string): TemplatePreview | null {
   const template = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
-  if (!template) return null;
+  if (!template) {
+    console.error(`❌ Template preview não encontrado: ${templateId}`);
+    return null;
+  }
 
-  return {
-    id: template.id,
-    name: template.name,
-    description: template.description,
-    categories: template.categories || ['Geral'],
-    estimatedQuestions: template.questions.length,
-    estimatedTimeMinutes: template.estimatedTimeMinutes,
-    typeLabel: getTypeLabel(template.id),
-    icon: getTemplateIcon(template.id),
-    colorScheme: getTemplateColorScheme(template.id)
-  };
+  try {
+    return {
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      categories: template.categories || ['Geral'],
+      estimatedQuestions: template.questions.length,
+      estimatedTimeMinutes: template.estimatedTimeMinutes,
+      typeLabel: getTypeLabel(template.id),
+      icon: getTemplateIcon(template.id),
+      colorScheme: getTemplateColorScheme(template.id)
+    };
+  } catch (error) {
+    console.error(`❌ Erro ao criar preview do template ${templateId}:`, error);
+    return null;
+  }
 }
 
 export function createTemplateFromId(templateId: string): ChecklistTemplate | null {
-  return createStandardTemplate(templateId);
+  // Verificar cache primeiro
+  if (templateCache.has(templateId)) {
+    console.log(`✅ Template recuperado do cache: ${templateId}`);
+    return templateCache.get(templateId)!;
+  }
+
+  try {
+    console.log(`🔄 Criando template: ${templateId}`);
+    
+    const template = createStandardTemplate(templateId);
+    
+    if (template) {
+      // Validação adicional do template criado
+      if (!validateTemplateStructure(template)) {
+        console.error(`❌ Template criado é inválido: ${templateId}`);
+        return null;
+      }
+
+      // Adicionar ao cache
+      templateCache.set(templateId, template);
+      console.log(`✅ Template criado e cacheado: ${templateId}`);
+      
+      return template;
+    }
+    
+    console.error(`❌ Falha ao criar template: ${templateId}`);
+    return null;
+    
+  } catch (error) {
+    console.error(`❌ Erro ao criar template ${templateId}:`, error);
+    return null;
+  }
+}
+
+// Validação de estrutura do template
+function validateTemplateStructure(template: ChecklistTemplate): boolean {
+  if (!template) return false;
+  
+  if (!template.title || template.title.trim() === "") {
+    console.error("❌ Template sem título válido");
+    return false;
+  }
+  
+  if (!template.questions || !Array.isArray(template.questions) || template.questions.length === 0) {
+    console.error("❌ Template sem perguntas válidas");
+    return false;
+  }
+  
+  if (!template.type) {
+    console.error("❌ Template sem tipo definido");
+    return false;
+  }
+  
+  return true;
 }
 
 export function getTemplatesByType(type?: string): TemplatePreview[] {
-  return STANDARD_QUESTIONNAIRE_TEMPLATES
-    .filter(template => !type || getTypeLabel(template.id).toLowerCase() === type.toLowerCase())
-    .map(template => getTemplatePreview(template.id)!)
-    .filter(Boolean);
+  try {
+    return STANDARD_QUESTIONNAIRE_TEMPLATES
+      .filter(template => !type || getTypeLabel(template.id).toLowerCase() === type.toLowerCase())
+      .map(template => getTemplatePreview(template.id)!)
+      .filter(Boolean);
+  } catch (error) {
+    console.error("❌ Erro ao filtrar templates por tipo:", error);
+    return [];
+  }
 }
 
 export function searchTemplates(query: string): TemplatePreview[] {
-  const lowercaseQuery = query.toLowerCase();
-  return STANDARD_QUESTIONNAIRE_TEMPLATES
-    .filter(template => 
-      template.name.toLowerCase().includes(lowercaseQuery) ||
-      template.description.toLowerCase().includes(lowercaseQuery) ||
-      (template.categories || []).some(cat => cat.toLowerCase().includes(lowercaseQuery))
-    )
-    .map(template => getTemplatePreview(template.id)!)
-    .filter(Boolean);
+  if (!query || query.trim() === "") {
+    return [];
+  }
+
+  try {
+    const lowercaseQuery = query.toLowerCase();
+    return STANDARD_QUESTIONNAIRE_TEMPLATES
+      .filter(template => {
+        const searchableText = [
+          template.name,
+          template.description,
+          ...(template.categories || [])
+        ].join(' ').toLowerCase();
+        
+        return searchableText.includes(lowercaseQuery);
+      })
+      .map(template => getTemplatePreview(template.id)!)
+      .filter(Boolean);
+  } catch (error) {
+    console.error("❌ Erro ao buscar templates:", error);
+    return [];
+  }
+}
+
+// Limpar cache quando necessário
+export function clearTemplateCache(): void {
+  templateCache.clear();
+  console.log("🔄 Cache de templates limpo");
+}
+
+// Obter estatísticas do cache
+export function getCacheStats(): { size: number; keys: string[] } {
+  return {
+    size: templateCache.size,
+    keys: Array.from(templateCache.keys())
+  };
 }
 
 function getTypeLabel(templateId: string): string {
