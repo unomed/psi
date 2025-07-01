@@ -1,13 +1,12 @@
 
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import { useSimpleAuth } from "@/contexts/SimpleAuthContext";
+import { useOptimizedAuth } from "@/contexts/OptimizedAuthContext";
 import { OptimizedAppRoutes } from "@/components/routing/OptimizedAppRoutes";
 import MainLayout from "@/components/layout/MainLayout";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import { Routes, Route } from "react-router-dom";
-import { OptimizedAuthProvider } from "@/contexts/OptimizedAuthContext";
 
 // Error boundary otimizado
 class OptimizedAppErrorBoundary extends React.Component<
@@ -54,7 +53,7 @@ class OptimizedAppErrorBoundary extends React.Component<
 }
 
 function AppContent() {
-  const { user, isLoading, isAuthenticated } = useSimpleAuth();
+  const { user, isLoading, isAuthenticated } = useOptimizedAuth();
 
   console.log('[OptimizedAppContent] Estado atual:', {
     hasUser: !!user,
@@ -97,11 +96,9 @@ export function SimpleAppContent() {
   
   return (
     <OptimizedAppErrorBoundary>
-      <OptimizedAuthProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </OptimizedAuthProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </OptimizedAppErrorBoundary>
   );
 }
