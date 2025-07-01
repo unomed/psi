@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -15,39 +15,40 @@ export function PsychosocialRiskErrorState({ error, onRetry }: PsychosocialRiskE
       <CardHeader>
         <CardTitle className="text-red-800 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5" />
-          Erro ao Carregar Análise de Riscos Psicossociais
+          Erro ao Carregar Análises de Risco
         </CardTitle>
-        <CardDescription className="text-red-700">
-          Ocorreu um erro ao carregar os dados de análise de riscos psicossociais.
-        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="text-sm text-red-600 bg-red-100 p-3 rounded border">
-            <strong>Detalhes do erro:</strong>
-            <br />
+      <CardContent className="space-y-4">
+        <div className="text-red-700">
+          <p className="font-medium">Não foi possível carregar os dados de risco psicossocial.</p>
+          <p className="text-sm mt-1">
             {error.message || 'Erro desconhecido'}
-          </div>
+          </p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            onClick={onRetry}
+            variant="outline"
+            className="border-red-300 text-red-700 hover:bg-red-100"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Tentar Novamente
+          </Button>
           
-          <div className="flex gap-2">
-            <Button 
-              onClick={onRetry}
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-100"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Tentar Novamente
-            </Button>
-          </div>
-          
-          <div className="text-sm text-red-600">
-            <p>Se o problema persistir, verifique:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Sua conexão com a internet</li>
-              <li>Se você tem permissões adequadas</li>
-              <li>Se existem dados de avaliação disponíveis</li>
-            </ul>
-          </div>
+          <Button 
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="border-red-300 text-red-700 hover:bg-red-100"
+          >
+            Recarregar Página
+          </Button>
+        </div>
+
+        <div className="text-xs text-red-600 bg-red-100 p-2 rounded">
+          <strong>Detalhes técnicos:</strong><br/>
+          Se o problema persistir, verifique se você tem permissão para acessar os dados da empresa
+          ou contate o administrador do sistema.
         </div>
       </CardContent>
     </Card>

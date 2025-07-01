@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, TrendingUp, Users, FileText, Plus, Settings } from "lucide-react";
+import { AlertTriangle, TrendingUp, Users, FileText, Plus, Settings, Info } from "lucide-react";
 import { usePsychosocialRisk } from "@/hooks/usePsychosocialRisk";
 import { getPsychosocialCategories, getExposureLevels } from "@/services/riskManagement/psychosocialRiskService";
 import { PsychosocialRiskLoadingState } from "./PsychosocialRiskLoadingState";
@@ -18,7 +18,14 @@ interface PsychosocialRiskAnalysisProps {
 
 export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysisProps) {
   const [activeTab, setActiveTab] = useState("analysis");
-  const { riskAnalyses, isLoading, generateNR01ActionPlan, error } = usePsychosocialRisk(companyId);
+  const { 
+    riskAnalyses, 
+    isLoading, 
+    generateNR01ActionPlan, 
+    error, 
+    targetCompanyId 
+  } = usePsychosocialRisk(companyId);
+  
   const categories = getPsychosocialCategories();
   const exposureLevels = getExposureLevels();
 
@@ -33,6 +40,13 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
   if (isLoading) {
     return <PsychosocialRiskLoadingState />;
   }
+
+  // Debug info para desenvolvimento
+  console.log('[PsychosocialRiskAnalysis] Render state:', {
+    targetCompanyId,
+    riskAnalysesCount: riskAnalyses.length,
+    categoriesFound: [...new Set(riskAnalyses.map(a => a.category))]
+  });
 
   // Agrupar análises por categoria
   const analysesByCategory = riskAnalyses.reduce((acc: any, analysis: any) => {
@@ -66,6 +80,23 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
       </TabsList>
 
       <TabsContent value="analysis" className="space-y-6">
+        {/* Debug Info Card - Remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-blue-800 flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                Debug Info (Desenvolvimento)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-blue-700 space-y-1">
+              <p><strong>Company ID:</strong> {targetCompanyId || 'N/A'}</p>
+              <p><strong>Total Análises:</strong> {totalAnalyses}</p>
+              <p><strong>Categorias com dados:</strong> {Object.keys(analysesByCategory).join(', ') || 'Nenhuma'}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Estatísticas Gerais */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -119,14 +150,65 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
           </Card>
         </div>
 
+        {/* Estado vazio melhorado */}
+        {totalAnalyses === 0 && (
+          <Card className="border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-center text-gray-600">
+                Nenhuma Análise de Risco Encontrada
+              </CardTitle>
+              <CardDescription className="text-center">
+                {!targetCompanyId 
+                  ? "Nenhuma empresa selecionada para análise"
+                  : "Ainda não há análises de risco psicossocial para esta empresa"
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                As análises de risco são geradas automaticamente quando avaliações psicossociais são concluídas,
+                ou podem ser criadas manualmente através das configurações.
+              </p>
+              <Button onClick={() => setActiveTab("config")} variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                Configurar Análises
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Análises por Categoria */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Análises por Categoria NR-01</h3>
-          
-          {Object.entries(categories).map(([categoryKey, categoryInfo]) => {
-            const categoryAnalyses = analysesByCategory[categoryKey] || [];
+        {totalAnalyses > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Análises por Categoria NR-01</h3>
             
-            if (categoryAnalyses.length === 0) {
+            {Object.entries(categories).map(([categoryKey, categoryInfo]) => {
+              const categoryAnalyses = analysesByCategory[categoryKey] || [];
+              
+              if (categoryAnalyses.length === 0) {
+                return (
+                  <Card key={categoryKey}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base" style={{ color: categoryInfo.color }}>
+                            {categoryInfo.label}
+                          </CardTitle>
+                          <CardDescription>{categoryInfo.description}</CardDescription>
+                        </div>
+                        <Badge variant="outline">Sem análises</Badge>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                );
+              }
+
+              const avgRiskScore = categoryAnalyses.reduce((sum: number, a: any) => sum + a.risk_score, 0) / categoryAnalyses.length;
+              const highestExposureLevel = categoryAnalyses.reduce((max: string, a: any) => {
+                const levels = ['baixo', 'medio', 'alto', 'critico'];
+                return levels.indexOf(a.exposure_level) > levels.indexOf(max) ? a.exposure_level : max;
+              }, 'baixo');
+
               return (
                 <Card key={categoryKey}>
                   <CardHeader className="pb-3">
@@ -137,98 +219,76 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
                         </CardTitle>
                         <CardDescription>{categoryInfo.description}</CardDescription>
                       </div>
-                      <Badge variant="outline">Sem análises</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          style={{ 
+                            backgroundColor: exposureLevels[highestExposureLevel as keyof typeof exposureLevels]?.color,
+                            color: 'white'
+                          }}
+                        >
+                          {exposureLevels[highestExposureLevel as keyof typeof exposureLevels]?.label}
+                        </Badge>
+                        <Badge variant="outline">{categoryAnalyses.length} análises</Badge>
+                      </div>
                     </div>
                   </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>Score Médio de Risco</span>
+                        <span className="font-medium">{avgRiskScore.toFixed(1)}%</span>
+                      </div>
+                      <Progress value={avgRiskScore} className="h-2" />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {categoryAnalyses.slice(0, 4).map((analysis: any) => (
+                        <div key={analysis.id} className="p-3 border rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="text-sm">
+                              <p className="font-medium">Score: {analysis.risk_score}%</p>
+                              <p className="text-muted-foreground">
+                                {analysis.evaluation_date ? new Date(analysis.evaluation_date).toLocaleDateString() : 'N/A'}
+                              </p>
+                            </div>
+                            <Badge 
+                              style={{ 
+                                backgroundColor: exposureLevels[analysis.exposure_level as keyof typeof exposureLevels]?.color,
+                                color: 'white'
+                              }}
+                            >
+                              {exposureLevels[analysis.exposure_level as keyof typeof exposureLevels]?.label}
+                            </Badge>
+                          </div>
+                          
+                          {(analysis.exposure_level === 'alto' || analysis.exposure_level === 'critico') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleGenerateActionPlan(analysis.id)}
+                              disabled={generateNR01ActionPlan.isPending}
+                              className="w-full"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Gerar Plano NR-01
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {categoryAnalyses.length > 4 && (
+                      <p className="text-sm text-muted-foreground text-center">
+                        +{categoryAnalyses.length - 4} análises adicionais
+                      </p>
+                    )}
+                  </CardContent>
                 </Card>
               );
-            }
-
-            const avgRiskScore = categoryAnalyses.reduce((sum: number, a: any) => sum + a.risk_score, 0) / categoryAnalyses.length;
-            const highestExposureLevel = categoryAnalyses.reduce((max: string, a: any) => {
-              const levels = ['baixo', 'medio', 'alto', 'critico'];
-              return levels.indexOf(a.exposure_level) > levels.indexOf(max) ? a.exposure_level : max;
-            }, 'baixo');
-
-            return (
-              <Card key={categoryKey}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-base" style={{ color: categoryInfo.color }}>
-                        {categoryInfo.label}
-                      </CardTitle>
-                      <CardDescription>{categoryInfo.description}</CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        style={{ 
-                          backgroundColor: exposureLevels[highestExposureLevel as keyof typeof exposureLevels]?.color,
-                          color: 'white'
-                        }}
-                      >
-                        {exposureLevels[highestExposureLevel as keyof typeof exposureLevels]?.label}
-                      </Badge>
-                      <Badge variant="outline">{categoryAnalyses.length} análises</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Score Médio de Risco</span>
-                      <span className="font-medium">{avgRiskScore.toFixed(1)}%</span>
-                    </div>
-                    <Progress value={avgRiskScore} className="h-2" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {categoryAnalyses.slice(0, 4).map((analysis: any) => (
-                      <div key={analysis.id} className="p-3 border rounded-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="text-sm">
-                            <p className="font-medium">Score: {analysis.risk_score}%</p>
-                            <p className="text-muted-foreground">
-                              {analysis.evaluation_date ? new Date(analysis.evaluation_date).toLocaleDateString() : 'N/A'}
-                            </p>
-                          </div>
-                          <Badge 
-                            style={{ 
-                              backgroundColor: exposureLevels[analysis.exposure_level as keyof typeof exposureLevels]?.color,
-                              color: 'white'
-                            }}
-                          >
-                            {exposureLevels[analysis.exposure_level as keyof typeof exposureLevels]?.label}
-                          </Badge>
-                        </div>
-                        
-                        {(analysis.exposure_level === 'alto' || analysis.exposure_level === 'critico') && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleGenerateActionPlan(analysis.id)}
-                            disabled={generateNR01ActionPlan.isPending}
-                            className="w-full"
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Gerar Plano NR-01
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {categoryAnalyses.length > 4 && (
-                    <p className="text-sm text-muted-foreground text-center">
-                      +{categoryAnalyses.length - 4} análises adicionais
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+            })}
+          </div>
+        )}
 
         {/* Ações Rápidas */}
         {criticalRiskCount > 0 && (
@@ -259,7 +319,7 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
       </TabsContent>
 
       <TabsContent value="config">
-        <PsychosocialRiskConfigForm companyId={companyId} />
+        <PsychosocialRiskConfigForm companyId={targetCompanyId} />
       </TabsContent>
     </Tabs>
   );
