@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ChecklistTemplateWorkflow } from "@/components/checklists/ChecklistTemplateWorkflow";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import { TemplatesHeader } from "@/components/templates/TemplatesHeader";
 import { TemplatesFilters } from "@/components/templates/TemplatesFilters";
 import { TemplatesGrid } from "@/components/templates/TemplatesGrid";
 import { TemplatesEmptyState } from "@/components/templates/TemplatesEmptyState";
+import { FavoriteTemplatesSection } from "@/components/templates/FavoriteTemplatesSection";
 
 export default function Templates() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,6 +112,13 @@ export default function Templates() {
           isCreatingTemplate={isCreatingTemplate}
         />
 
+        {/* Seção de Favoritos - Nova */}
+        <FavoriteTemplatesSection
+          onTemplateSelect={handleTemplateSelectionWithValidation}
+          isSubmitting={isSubmitting}
+          isCreatingTemplate={isCreatingTemplate}
+        />
+
         {/* Filtros e Busca */}
         <TemplatesFilters
           searchTerm={searchTerm}
@@ -139,12 +146,15 @@ export default function Templates() {
             isCreatingTemplate={isCreatingTemplate}
           />
         ) : (
-          <TemplatesGrid
-            templates={filteredTemplates}
-            onTemplateSelect={handleTemplateSelectionWithValidation}
-            isSubmitting={isSubmitting}
-            isCreatingTemplate={isCreatingTemplate}
-          />
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Todos os Templates</h2>
+            <TemplatesGrid
+              templates={filteredTemplates}
+              onTemplateSelect={handleTemplateSelectionWithValidation}
+              isSubmitting={isSubmitting}
+              isCreatingTemplate={isCreatingTemplate}
+            />
+          </div>
         )}
 
         {/* Dialog Workflow */}
