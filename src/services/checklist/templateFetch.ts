@@ -47,7 +47,7 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       id: template.id,
       title: template.title,
       description: template.description || "",
-      type: templateType,
+      type: templateType, // Now properly typed as ChecklistTemplateType
       scaleType: dbScaleTypeToScaleType(template.scale_type), 
       isStandard: template.is_standard || false,
       companyId: template.company_id,

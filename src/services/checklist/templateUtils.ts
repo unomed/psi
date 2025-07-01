@@ -1,6 +1,6 @@
 
 import { DiscFactorType, DiscQuestion } from "@/types/disc";
-import { PsicossocialQuestion } from "@/types/checklist";
+import { PsicossocialQuestion, ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
 
 // Categorias expandidas baseadas no Guia MTE
@@ -46,6 +46,66 @@ export const CATEGORY_RISK_WEIGHTS: Record<PsicossocialCategory, number> = {
   impactos_saude: 1.3                // Categoria crítica (indicador de resultado)
 };
 
+// Template type helper functions
+export function isTemplateTypePsicossocial(template: { type: string }): boolean {
+  return template.type === "psicossocial";
+}
+
+export function getTemplateTypeDisplayName(template: { type: string }): string {
+  const typeMap: Record<string, string> = {
+    'disc': 'DISC',
+    'psicossocial': 'Psicossocial',
+    'custom': 'Personalizado',
+    'srq20': 'SRQ-20',
+    'phq9': 'PHQ-9',
+    'gad7': 'GAD-7',
+    'mbi': 'MBI',
+    'audit': 'AUDIT',
+    'pss': 'PSS',
+    'personal_life': 'Vida Pessoal',
+    'evaluation_360': 'Avaliação 360°'
+  };
+  
+  return typeMap[template.type] || template.type;
+}
+
+// Database type safety functions
+export function getSafeDbScaleType(scaleType: ScaleType): string {
+  return scaleType as string;
+}
+
+export function getSafeDbTemplateType(templateType: ChecklistTemplateType): string {
+  return templateType as string;
+}
+
+export function formatQuestionsForDb(
+  questions: (DiscQuestion | PsicossocialQuestion)[], 
+  templateId: string, 
+  templateType: string
+): any[] {
+  return questions.map((question, index) => {
+    if ('targetFactor' in question) {
+      // DISC question
+      return {
+        template_id: templateId,
+        question_text: question.text,
+        order_number: index + 1,
+        target_factor: question.targetFactor,
+        weight: question.weight || 1
+      };
+    } else {
+      // Psicossocial question
+      return {
+        template_id: templateId,
+        question_text: question.text,
+        order_number: index + 1,
+        target_factor: question.category,
+        weight: question.weight || 1
+      };
+    }
+  });
+}
+
 export function getDefaultDiscQuestions(): DiscQuestion[] {
   return [
     {
@@ -85,6 +145,43 @@ export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
       category: "demandas_trabalho"
     }
   ];
+}
+
+// Generic function to get default questions based on type
+export function getDefaultQuestions(templateType: ChecklistTemplateType): (DiscQuestion | PsicossocialQuestion)[] {
+  switch (templateType) {
+    case "disc":
+      return getDefaultDiscQuestions();
+    case "psicossocial":
+      return getDefaultPsicossocialQuestions();
+    case "srq20":
+      return getSRQ20Questions();
+    case "phq9":
+      return getPHQ9Questions();
+    case "gad7":
+      return getGAD7Questions();
+    case "mbi":
+      return getMBIQuestions();
+    case "audit":
+      return getAUDITQuestions();
+    case "pss":
+      return getPSSQuestions();
+    case "personal_life":
+      return getPersonalLifeQuestions();
+    case "evaluation_360":
+      return getEvaluation360ColleagueQuestions();
+    default:
+      return [];
+  }
+}
+
+// 360 evaluation questions
+export function get360Questions(evaluationType: "colleague" | "manager"): PsicossocialQuestion[] {
+  if (evaluationType === "colleague") {
+    return getEvaluation360ColleagueQuestions();
+  } else {
+    return getEvaluation360ManagerQuestions();
+  }
 }
 
 // Função para calcular risco psicossocial baseado nas categorias
@@ -229,8 +326,8 @@ export function getEvaluation360ManagerQuestions(): PsicossocialQuestion[] {
   ];
 }
 
-export function mapDbTemplateTypeToApp(dbType: string): string {
-  const typeMap: Record<string, string> = {
+export function mapDbTemplateTypeToApp(dbType: string): ChecklistTemplateType {
+  const typeMap: Record<string, ChecklistTemplateType> = {
     'psicossocial': 'psicossocial',
     'disc': 'disc',
     'custom': 'custom',
@@ -244,11 +341,11 @@ export function mapDbTemplateTypeToApp(dbType: string): string {
     'evaluation_360': 'evaluation_360'
   };
   
-  return typeMap[dbType] || dbType;
+  return typeMap[dbType] || 'custom';
 }
 
-export function mapAppTemplateTypeToDb(appType: string): string {
-  const typeMap: Record<string, string> = {
+export function mapAppTemplateTypeToDb(appType: ChecklistTemplateType): string {
+  const typeMap: Record<ChecklistTemplateType, string> = {
     'psicossocial': 'psicossocial',
     'disc': 'disc', 
     'custom': 'custom',
