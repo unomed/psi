@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ChecklistSelectionStep } from "./ChecklistSelectionStep";
+import { TemplateSelectionForScheduling } from "./TemplateSelectionForScheduling";
 import { EmployeeSelectionStep } from "./EmployeeSelectionStep";
 import { SchedulingDetailsStep } from "./steps/SchedulingDetailsStep";
 import { ChecklistTemplate, RecurrenceType } from "@/types";
@@ -17,8 +17,8 @@ interface SchedulingWorkflowProps {
 }
 
 export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps) {
-  const [currentStep, setCurrentStep] = useState<'checklist' | 'employee' | 'scheduling'>('checklist');
-  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistTemplate | null>(null);
+  const [currentStep, setCurrentStep] = useState<'template' | 'employee' | 'scheduling'>('template');
+  const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
   const {
@@ -29,7 +29,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
   } = useAssessmentSchedulingWithAutomation();
 
   const handleNext = () => {
-    if (currentStep === 'checklist' && selectedChecklist) {
+    if (currentStep === 'template' && selectedTemplate) {
       setCurrentStep('employee');
     } else if (currentStep === 'employee' && selectedEmployee) {
       setCurrentStep('scheduling');
@@ -40,21 +40,35 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
     if (currentStep === 'scheduling') {
       setCurrentStep('employee');
     } else if (currentStep === 'employee') {
-      setCurrentStep('checklist');
+      setCurrentStep('template');
     }
   };
 
+  const handleTemplateSelect = (template: ChecklistTemplate) => {
+    console.log("📋 Template selecionado no workflow:", template.title);
+    setSelectedTemplate(template);
+    // Automaticamente avançar para próximo step
+    setTimeout(() => {
+      setCurrentStep('employee');
+    }, 500);
+  };
+
   const handleSchedule = async (recurrenceType: RecurrenceType, phoneNumber: string) => {
-    if (!selectedEmployee || !selectedChecklist || !schedulingDetails.scheduledDate) {
-      toast.error("Selecione um funcionário, checklist e data para continuar");
+    if (!selectedEmployee || !selectedTemplate || !schedulingDetails.scheduledDate) {
+      toast.error("Selecione um funcionário, template e data para continuar");
       return;
     }
 
     try {
-      // Passar dados diretamente para o hook
+      console.log("🔄 Agendando avaliação:", {
+        employee: selectedEmployee.name,
+        template: selectedTemplate.title,
+        date: schedulingDetails.scheduledDate
+      });
+
       await scheduleAssessment({
         employee: selectedEmployee,
-        checklist: selectedChecklist,
+        checklist: selectedTemplate,
         schedulingDetails: {
           scheduledDate: schedulingDetails.scheduledDate,
           recurrenceType,
@@ -64,17 +78,19 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
         }
       });
       
-      toast.success("Avaliação agendada com sucesso!");
+      toast.success("Avaliação agendada com sucesso!", {
+        description: `${selectedTemplate.title} agendada para ${selectedEmployee.name}`
+      });
       handleClose();
     } catch (error) {
-      console.error("Erro ao agendar:", error);
+      console.error("❌ Erro ao agendar:", error);
       toast.error(error instanceof Error ? error.message : "Erro ao agendar avaliação");
     }
   };
 
   const handleClose = () => {
-    setCurrentStep('checklist');
-    setSelectedChecklist(null);
+    setCurrentStep('template');
+    setSelectedTemplate(null);
     setSelectedEmployee(null);
     setSchedulingDetails({
       scheduledDate: new Date(),
@@ -87,14 +103,14 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
   };
 
   const isNextDisabled = () => {
-    if (currentStep === 'checklist') return !selectedChecklist;
+    if (currentStep === 'template') return !selectedTemplate;
     if (currentStep === 'employee') return !selectedEmployee;
     return false;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[1000px] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Agendar Nova Avaliação</DialogTitle>
           <DialogDescription>
@@ -102,11 +118,11 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           <Tabs value={currentStep} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="checklist" disabled={currentStep !== 'checklist'}>
-                1. Checklist
+              <TabsTrigger value="template" disabled={currentStep !== 'template'}>
+                1. Template
               </TabsTrigger>
               <TabsTrigger value="employee" disabled={currentStep !== 'employee'}>
                 2. Funcionário
@@ -116,12 +132,10 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="checklist" className="mt-6">
-              <ChecklistSelectionStep
-                templates={[]}
-                selectedTemplate={selectedChecklist}
-                onSelectTemplate={setSelectedChecklist}
-                onNext={handleNext}
+            <TabsContent value="template" className="mt-6">
+              <TemplateSelectionForScheduling
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={handleTemplateSelect}
                 onBack={handleBack}
               />
             </TabsContent>
@@ -137,7 +151,7 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
               <SchedulingDetailsStep
                 employeeName={selectedEmployee?.name || ""}
                 employeeEmail={selectedEmployee?.email}
-                templateTitle={selectedChecklist?.title}
+                templateTitle={selectedTemplate?.title}
                 scheduledDate={schedulingDetails.scheduledDate}
                 onDateSelect={(date) => setSchedulingDetails(prev => ({ 
                   ...prev, 
@@ -149,12 +163,12 @@ export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps)
             </TabsContent>
           </Tabs>
 
-          {currentStep !== 'scheduling' && (
-            <div className="flex justify-between pt-4">
+          {currentStep !== 'scheduling' && currentStep !== 'template' && (
+            <div className="flex justify-between pt-4 border-t">
               <Button 
                 variant="outline" 
                 onClick={handleBack}
-                disabled={currentStep === 'checklist'}
+                disabled={currentStep === 'template'}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar

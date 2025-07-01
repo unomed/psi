@@ -4,8 +4,9 @@ import { ChecklistTemplate } from "@/types/checklist";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Target, Brain, Activity, FileText } from "lucide-react";
+import { Clock, Users, Target, Brain, Activity, FileText, ArrowLeft } from "lucide-react";
 import { getTemplateTypeDisplayName } from "@/services/checklist/templateUtils";
+import { TemplateSelectionForScheduling } from "./TemplateSelectionForScheduling";
 
 interface ChecklistSelectionStepProps {
   templates: ChecklistTemplate[];
@@ -22,6 +23,38 @@ export function ChecklistSelectionStep({
   onNext,
   onBack
 }: ChecklistSelectionStepProps) {
+  const [useAdvancedSelection, setUseAdvancedSelection] = useState(true);
+
+  // Se usar seleção avançada, usar o novo componente
+  if (useAdvancedSelection) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Selecionar Template de Avaliação</h2>
+            <p className="text-muted-foreground">
+              Interface avançada com favoritos, filtros e preview
+            </p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setUseAdvancedSelection(false)}
+            size="sm"
+          >
+            Usar Seleção Básica
+          </Button>
+        </div>
+
+        <TemplateSelectionForScheduling
+          selectedTemplate={selectedTemplate}
+          onTemplateSelect={onSelectTemplate}
+          onBack={onBack}
+        />
+      </div>
+    );
+  }
+
+  // Seleção básica original (mantida como fallback)
   const [filter, setFilter] = useState<string>("all");
 
   const getTemplateIcon = (type: string) => {
@@ -79,11 +112,20 @@ export function ChecklistSelectionStep({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Selecionar Template de Avaliação</h2>
-        <p className="text-muted-foreground">
-          Escolha o tipo de avaliação que será aplicada aos funcionários
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="text-center flex-1">
+          <h2 className="text-2xl font-bold mb-2">Selecionar Template de Avaliação</h2>
+          <p className="text-muted-foreground">
+            Escolha o tipo de avaliação que será aplicada aos funcionários (Seleção Básica)
+          </p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setUseAdvancedSelection(true)}
+          size="sm"
+        >
+          Usar Seleção Avançada
+        </Button>
       </div>
 
       {/* Filtros */}
@@ -201,6 +243,7 @@ export function ChecklistSelectionStep({
       {/* Navegação */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={onBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
         <Button 
