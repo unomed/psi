@@ -25,7 +25,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Loader2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "@/lib/utils";
 import { ScaleType } from "@/types";
@@ -84,6 +84,10 @@ export function ChecklistTemplateForm({
   const [selectedScale, setSelectedScale] = useState<ScaleType>(ScaleType.YesNo);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>("basic");
+  
+  // ETAPA 2: Estados para carregamento assíncrono
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [questionsLoadError, setQuestionsLoadError] = useState<string | null>(null);
 
   // Preparar dados iniciais baseado no template existente ou valores padrão
   const prepareInitialData = () => {
@@ -253,13 +257,48 @@ export function ChecklistTemplateForm({
     }
   }, [method, form]);
 
-  const handleLoadDefaultQuestions = () => {
-    const defaultQuestions = getDefaultQuestions(method as any);
-    if (defaultQuestions.length > 0) {
-      form.setValue("questions", defaultQuestions);
-      toast.success(`${defaultQuestions.length} perguntas padrão carregadas!`);
-    } else {
-      toast.info("Nenhuma pergunta padrão disponível para este tipo.");
+  // ETAPA 2: Função assíncrona para carregar perguntas padrão
+  const handleLoadDefaultQuestions = async () => {
+    setIsLoadingQuestions(true);
+    setQuestionsLoadError(null);
+    
+    try {
+      console.log(`Carregando perguntas padrão para tipo: ${method}`);
+      
+      const defaultQuestions = await getDefaultQuestions(method as any);
+      
+      if (defaultQuestions.length > 0) {
+        form.setValue("questions", defaultQuestions);
+        
+        // ETAPA 4: Feedback específico por tipo de template
+        if (method === "psicossocial") {
+          toast.success(`${defaultQuestions.length} perguntas psicossociais MTE carregadas com sucesso!`);
+        } else {
+          toast.success(`${defaultQuestions.length} perguntas padrão carregadas!`);
+        }
+        
+        // Extrair categorias das perguntas carregadas
+        if (method === "psicossocial" || method === "custom") {
+          const loadedCategories = new Set<string>();
+          defaultQuestions.forEach((q: any) => {
+            if (q.category) {
+              loadedCategories.add(q.category);
+            }
+          });
+          if (loadedCategories.size > 0) {
+            setCategories(Array.from(loadedCategories));
+          }
+        }
+      } else {
+        setQuestionsLoadError("Nenhuma pergunta padrão disponível para este tipo.");
+        toast.info("Nenhuma pergunta padrão disponível para este tipo.");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar perguntas padrão:", error);
+      setQuestionsLoadError("Erro ao carregar perguntas do banco de dados.");
+      toast.error("Erro ao carregar perguntas padrão. Tente novamente.");
+    } finally {
+      setIsLoadingQuestions(false);
     }
   };
 
@@ -458,16 +497,45 @@ export function ChecklistTemplateForm({
           <TabsContent value="questions" className="space-y-6 pt-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Perguntas do Checklist</h3>
+              
+              {/* ETAPA 2: Botão com estados de loading */}
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleLoadDefaultQuestions}
+                disabled={isLoadingQuestions}
                 className="flex items-center gap-2"
               >
-                <Plus className="h-4 w-4" />
-                Carregar Perguntas Padrão
+                {isLoadingQuestions ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Carregando...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Carregar Perguntas Padrão
+                  </>
+                )}
               </Button>
             </div>
+
+            {/* ETAPA 4: Exibir erro de carregamento se houver */}
+            {questionsLoadError && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <p className="text-sm text-red-600">{questionsLoadError}</p>
+              </div>
+            )}
+
+            {/* ETAPA 4: Feedback visual para template psicossocial */}
+            {method === "psicossocial" && !isLoadingQuestions && (
+              <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                <p className="text-sm text-green-700">
+                  <strong>Template MTE:</strong> Carregará 49 perguntas organizadas em 11 categorias 
+                  conforme Guia do Ministério do Trabalho e Emprego (NR-01).
+                </p>
+              </div>
+            )}
             
             <FormField
               control={form.control}

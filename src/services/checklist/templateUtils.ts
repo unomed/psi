@@ -2,6 +2,7 @@
 import { DiscFactorType, DiscQuestion } from "@/types/disc";
 import { PsicossocialQuestion, ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 // Categorias expandidas baseadas no Guia MTE
 export type PsicossocialCategory = 
@@ -135,25 +136,96 @@ export function getDefaultDiscQuestions(): DiscQuestion[] {
   ];
 }
 
-export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
-  // As perguntas agora estão no banco de dados, então retornamos uma estrutura básica
-  // que será substituída pelos dados reais carregados do banco
+// ETAPA 1: Função corrigida para buscar perguntas psicossociais do banco
+export async function getDefaultPsicossocialQuestions(): Promise<PsicossocialQuestion[]> {
+  try {
+    console.log("Buscando perguntas psicossociais do banco de dados...");
+    
+    // Buscar o template MTE no banco
+    const { data: template, error: templateError } = await supabase
+      .from('checklist_templates')
+      .select('id, title')
+      .eq('title', 'Avaliação Psicossocial - MTE Completa')
+      .eq('type', 'psicossocial')
+      .eq('is_standard', true)
+      .single();
+
+    if (templateError || !template) {
+      console.log("Template MTE não encontrado, usando perguntas de exemplo");
+      return getFallbackPsicossocialQuestions();
+    }
+
+    // Buscar perguntas do template
+    const { data: questions, error: questionsError } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('template_id', template.id)
+      .order('order_number');
+
+    if (questionsError || !questions || questions.length === 0) {
+      console.log("Perguntas não encontradas, usando fallback");
+      return getFallbackPsicossocialQuestions();
+    }
+
+    console.log(`${questions.length} perguntas psicossociais carregadas do banco`);
+
+    // Mapear perguntas do banco para formato da aplicação
+    return questions.map(q => ({
+      id: q.id,
+      text: q.question_text,
+      category: q.target_factor || 'geral',
+      weight: q.weight || 1
+    }));
+
+  } catch (error) {
+    console.error("Erro ao buscar perguntas psicossociais:", error);
+    return getFallbackPsicossocialQuestions();
+  }
+}
+
+// Função de fallback com perguntas básicas
+function getFallbackPsicossocialQuestions(): PsicossocialQuestion[] {
   return [
     {
       id: crypto.randomUUID(),
-      text: "Template de exemplo - será substituído por dados do banco",
-      category: "demandas_trabalho"
+      text: "Tenho que trabalhar muito rapidamente para cumprir prazos",
+      category: "demandas_trabalho",
+      weight: 1
+    },
+    {
+      id: crypto.randomUUID(),
+      text: "Posso decidir como realizar minhas tarefas",
+      category: "controle_autonomia",
+      weight: 1
+    },
+    {
+      id: crypto.randomUUID(),
+      text: "O ambiente físico do meu trabalho é adequado",
+      category: "condicoes_ambientais",
+      weight: 1
+    },
+    {
+      id: crypto.randomUUID(),
+      text: "A comunicação entre colegas e superiores é clara e eficaz",
+      category: "relacoes_socioprofissionais",
+      weight: 1
+    },
+    {
+      id: crypto.randomUUID(),
+      text: "Recebo reconhecimento pelo meu trabalho e esforços",
+      category: "reconhecimento_crescimento",
+      weight: 1
     }
   ];
 }
 
 // Generic function to get default questions based on type
-export function getDefaultQuestions(templateType: ChecklistTemplateType): (DiscQuestion | PsicossocialQuestion)[] {
+export async function getDefaultQuestions(templateType: ChecklistTemplateType): Promise<(DiscQuestion | PsicossocialQuestion)[]> {
   switch (templateType) {
     case "disc":
       return getDefaultDiscQuestions();
     case "psicossocial":
-      return getDefaultPsicossocialQuestions();
+      return await getDefaultPsicossocialQuestions();
     case "srq20":
       return getSRQ20Questions();
     case "phq9":
