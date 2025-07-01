@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ChecklistTemplate, PsicossocialQuestion } from "@/types/checklist";
 import { toast } from "sonner";
+import { calculatePsicossocialRisk, PSICOSSOCIAL_CATEGORIES } from "@/services/checklist/templateUtils";
 
 interface UsePsicossocialAssessmentProps {
   template: ChecklistTemplate;
@@ -43,32 +44,6 @@ export function usePsicossocialAssessment({ template, onSubmit }: UsePsicossocia
     }
   };
 
-  const calculateCategoryScores = (responses: Record<string, number>) => {
-    const categoryScores: Record<string, number> = {};
-    const categoryCounts: Record<string, number> = {};
-
-    questions.forEach(question => {
-      const category = question.category || "Geral";
-      const response = responses[question.id] || 0;
-
-      if (!categoryScores[category]) {
-        categoryScores[category] = 0;
-        categoryCounts[category] = 0;
-      }
-
-      categoryScores[category] += response;
-      categoryCounts[category]++;
-    });
-
-    // Calcular média por categoria e converter para escala 0-100
-    Object.keys(categoryScores).forEach(category => {
-      const average = categoryScores[category] / categoryCounts[category];
-      categoryScores[category] = Math.round((average / 5) * 100); // Converter escala 1-5 para 0-100
-    });
-
-    return categoryScores;
-  };
-
   const handleSubmit = async () => {
     if (Object.keys(responses).length !== questions.length) {
       toast.error("Por favor, responda todas as perguntas.");
@@ -78,25 +53,40 @@ export function usePsicossocialAssessment({ template, onSubmit }: UsePsicossocia
     setIsSubmitting(true);
 
     try {
-      // Calcular scores por categoria
-      const categorizedResults = calculateCategoryScores(responses);
+      // Calcular scores usando a nova função de análise
+      const riskAnalysis = calculatePsicossocialRisk(responses, questions);
       
-      // Determinar categoria dominante (maior score)
-      const dominantCategory = Object.entries(categorizedResults)
-        .reduce((a, b) => a[1] > b[1] ? a : b)[0];
-
+      // Preparar dados detalhados para o resultado
       const resultData = {
         templateId: template.id,
         employeeName: "Funcionário", // Será preenchido pelo sistema
         responses,
-        results: categorizedResults,
-        dominantFactor: dominantCategory,
-        categorizedResults,
-        factorsScores: categorizedResults
+        results: riskAnalysis.categoryScores,
+        dominantFactor: riskAnalysis.riskLevel,
+        categorizedResults: riskAnalysis.categoryScores,
+        factorsScores: riskAnalysis.categoryScores,
+        riskAnalysis: {
+          overallRisk: riskAnalysis.overallRisk,
+          riskLevel: riskAnalysis.riskLevel,
+          criticalCategories: riskAnalysis.criticalCategories,
+          categoryBreakdown: Object.entries(riskAnalysis.categoryScores).map(([category, score]) => ({
+            category: PSICOSSOCIAL_CATEGORIES[category as keyof typeof PSICOSSOCIAL_CATEGORIES] || category,
+            score,
+            riskLevel: score >= 80 ? 'crítico' : score >= 60 ? 'alto' : score >= 40 ? 'médio' : 'baixo'
+          }))
+        }
       };
 
-      console.log("Enviando resultado:", resultData);
+      console.log("Enviando resultado psicossocial detalhado:", resultData);
       await onSubmit(resultData);
+      
+      // Mostrar resumo dos resultados
+      toast.success(`Avaliação concluída! Risco geral: ${riskAnalysis.riskLevel.toUpperCase()}`);
+      
+      if (riskAnalysis.criticalCategories.length > 0) {
+        toast.warning(`Atenção: Categorias críticas identificadas: ${riskAnalysis.criticalCategories.join(', ')}`);
+      }
+      
     } catch (error) {
       console.error("Erro ao enviar avaliação:", error);
       toast.error("Erro ao enviar avaliação. Tente novamente.");

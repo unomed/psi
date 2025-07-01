@@ -1,86 +1,52 @@
 
-import { ChecklistTemplateType } from "@/types";
-import { DiscFactorType } from "@/types/disc";
+import { DiscFactorType, DiscQuestion } from "@/types/disc";
+import { PsicossocialQuestion } from "@/types/checklist";
+import { ScaleType } from "@/types";
 
-export function mapDbTemplateTypeToApp(dbType: string): ChecklistTemplateType {
-  console.log("Mapeando tipo de template:", dbType);
-  
-  const typeMap: Record<string, ChecklistTemplateType> = {
-    'disc': 'disc',
-    'psicossocial': 'psicossocial',
-    'srq20': 'srq20',
-    'phq9': 'phq9',
-    'gad7': 'gad7',
-    'mbi': 'mbi',
-    'audit': 'audit',
-    'pss': 'pss',
-    'copsoq': 'copsoq',
-    'jcq': 'jcq',
-    'eri': 'eri',
-    'personal_life': 'personal_life',
-    'evaluation_360': 'evaluation_360',
-    'custom': 'custom'
-  };
+// Categorias expandidas baseadas no Guia MTE
+export type PsicossocialCategory = 
+  | "demandas_trabalho"
+  | "controle_autonomia" 
+  | "condicoes_ambientais"
+  | "relacoes_socioprofissionais"
+  | "reconhecimento_crescimento"
+  | "elo_trabalho_vida_social"
+  | "suporte_social"
+  | "clareza_papel"
+  | "reconhecimento_recompensas"
+  | "gestao_mudancas"
+  | "impactos_saude";
 
-  const mappedType = typeMap[dbType] || 'custom';
-  console.log("Tipo mapeado de", dbType, "para", mappedType);
-  
-  return mappedType;
-}
+export const PSICOSSOCIAL_CATEGORIES: Record<PsicossocialCategory, string> = {
+  demandas_trabalho: "Demandas de Trabalho",
+  controle_autonomia: "Controle e Autonomia",
+  condicoes_ambientais: "Condições Ambientais", 
+  relacoes_socioprofissionais: "Relações Socioprofissionais",
+  reconhecimento_crescimento: "Reconhecimento e Crescimento",
+  elo_trabalho_vida_social: "Elo Trabalho-Vida Social",
+  suporte_social: "Suporte Social",
+  clareza_papel: "Clareza de Papel",
+  reconhecimento_recompensas: "Reconhecimento e Recompensas",
+  gestao_mudancas: "Gestão de Mudanças",
+  impactos_saude: "Impactos na Saúde"
+};
 
-// Função para verificar se é template psicossocial
-export function isTemplateTypePsicossocial(template: any): boolean {
-  return template.type === 'psicossocial' || template.type === 'custom';
-}
+// Pesos das categorias para cálculo de risco (baseado no Guia MTE)
+export const CATEGORY_RISK_WEIGHTS: Record<PsicossocialCategory, number> = {
+  demandas_trabalho: 1.2,        // Categoria crítica
+  controle_autonomia: 1.1,       // Categoria muito importante
+  condicoes_ambientais: 1.0,     // Categoria importante
+  relacoes_socioprofissionais: 1.1, // Categoria muito importante
+  reconhecimento_crescimento: 0.9,   // Categoria moderada
+  elo_trabalho_vida_social: 0.8,     // Categoria moderada
+  suporte_social: 1.0,               // Categoria importante
+  clareza_papel: 1.0,                // Categoria importante
+  reconhecimento_recompensas: 0.9,   // Categoria moderada
+  gestao_mudancas: 0.8,              // Categoria moderada
+  impactos_saude: 1.3                // Categoria crítica (indicador de resultado)
+};
 
-// Função para obter nome de exibição do tipo
-export function getTemplateTypeDisplayName(template: any): string {
-  const typeNames: Record<string, string> = {
-    'disc': 'DISC',
-    'psicossocial': 'Psicossocial',
-    'srq20': 'SRQ-20',
-    'phq9': 'PHQ-9',
-    'gad7': 'GAD-7',
-    'mbi': 'MBI',
-    'audit': 'AUDIT',
-    'pss': 'PSS',
-    'personal_life': 'Vida Pessoal',
-    'evaluation_360': 'Avaliação 360°',
-    'custom': 'Personalizado'
-  };
-  
-  return typeNames[template.type] || 'Personalizado';
-}
-
-// Funções para questões padrão
-export function getDefaultQuestions(templateType: ChecklistTemplateType) {
-  switch (templateType) {
-    case 'disc':
-      return getDefaultDiscQuestions();
-    case 'psicossocial':
-      return getDefaultPsicossocialQuestions();
-    case 'srq20':
-      return getSRQ20Questions();
-    case 'phq9':
-      return getPHQ9Questions();
-    case 'gad7':
-      return getGAD7Questions();
-    case 'mbi':
-      return getMBIQuestions();
-    case 'audit':
-      return getAUDITQuestions();
-    case 'pss':
-      return getPSSQuestions();
-    case 'personal_life':
-      return getPersonalLifeQuestions();
-    case 'evaluation_360':
-      return getEvaluation360ColleagueQuestions();
-    default:
-      return [];
-  }
-}
-
-export function getDefaultDiscQuestions() {
+export function getDefaultDiscQuestions(): DiscQuestion[] {
   return [
     {
       id: crypto.randomUUID(),
@@ -109,192 +75,192 @@ export function getDefaultDiscQuestions() {
   ];
 }
 
-export function getDefaultPsicossocialQuestions() {
+export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
+  // As perguntas agora estão no banco de dados, então retornamos uma estrutura básica
+  // que será substituída pelos dados reais carregados do banco
   return [
     {
       id: crypto.randomUUID(),
-      text: "Meu trabalho exige que eu aprenda coisas novas",
-      category: "Demandas de Trabalho"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Tenho liberdade para decidir como fazer meu trabalho",
-      category: "Controle e Autonomia"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Recebo apoio adequado dos meus colegas",
-      category: "Suporte Social"
+      text: "Template de exemplo - será substituído por dados do banco",
+      category: "demandas_trabalho"
     }
   ];
 }
 
-export function getSRQ20Questions() {
-  return [
-    {
-      id: crypto.randomUUID(),
-      text: "Tem dores de cabeça frequentemente?",
-      category: "Sintomas Físicos"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Tem falta de apetite?",
-      category: "Sintomas Físicos"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Dorme mal?",
-      category: "Sintomas Físicos"
+// Função para calcular risco psicossocial baseado nas categorias
+export function calculatePsicossocialRisk(responses: Record<string, number>, questions: PsicossocialQuestion[]): {
+  categoryScores: Record<string, number>;
+  overallRisk: number;
+  riskLevel: 'baixo' | 'medio' | 'alto' | 'critico';
+  criticalCategories: string[];
+} {
+  const categoryScores: Record<string, number> = {};
+  const categoryCounts: Record<string, number> = {};
+
+  // Agrupar respostas por categoria
+  questions.forEach(question => {
+    const category = question.category;
+    const response = responses[question.id] || 0;
+
+    if (!categoryScores[category]) {
+      categoryScores[category] = 0;
+      categoryCounts[category] = 0;
     }
-  ];
+
+    categoryScores[category] += response;
+    categoryCounts[category]++;
+  });
+
+  // Calcular médias por categoria (escala 1-5 convertida para 0-100)
+  Object.keys(categoryScores).forEach(category => {
+    const average = categoryScores[category] / categoryCounts[category];
+    categoryScores[category] = Math.round((average / 5) * 100);
+  });
+
+  // Calcular risco geral ponderado
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  Object.entries(categoryScores).forEach(([category, score]) => {
+    const weight = CATEGORY_RISK_WEIGHTS[category as PsicossocialCategory] || 1.0;
+    weightedSum += score * weight;
+    totalWeight += weight;
+  });
+
+  const overallRisk = Math.round(weightedSum / totalWeight);
+
+  // Determinar nível de risco
+  let riskLevel: 'baixo' | 'medio' | 'alto' | 'critico';
+  if (overallRisk >= 80) {
+    riskLevel = 'critico';
+  } else if (overallRisk >= 60) {
+    riskLevel = 'alto';
+  } else if (overallRisk >= 40) {
+    riskLevel = 'medio';
+  } else {
+    riskLevel = 'baixo';
+  }
+
+  // Identificar categorias críticas (>= 70)
+  const criticalCategories = Object.entries(categoryScores)
+    .filter(([_, score]) => score >= 70)
+    .map(([category, _]) => PSICOSSOCIAL_CATEGORIES[category as PsicossocialCategory] || category);
+
+  return {
+    categoryScores,
+    overallRisk,
+    riskLevel,
+    criticalCategories
+  };
 }
 
-export function getPHQ9Questions() {
+// Outras funções de templates (mantidas para compatibilidade)
+export function getSRQ20Questions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Pouco interesse ou prazer em fazer as coisas",
-      category: "Humor"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Sentindo-se desanimado, deprimido ou sem esperança",
-      category: "Humor"
-    }
+    { id: crypto.randomUUID(), text: "Tem dores de cabeça frequentes?", category: "sintomas_fisicos" },
+    { id: crypto.randomUUID(), text: "Tem falta de apetite?", category: "sintomas_fisicos" },
+    { id: crypto.randomUUID(), text: "Dorme mal?", category: "sintomas_fisicos" },
+    { id: crypto.randomUUID(), text: "Assusta-se com facilidade?", category: "sintomas_psiquicos" },
+    { id: crypto.randomUUID(), text: "Tem tremores nas mãos?", category: "sintomas_fisicos" }
   ];
 }
 
-export function getGAD7Questions() {
+export function getPHQ9Questions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Sentindo-se nervoso, ansioso ou no limite",
-      category: "Ansiedade"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Não conseguindo parar ou controlar as preocupações",
-      category: "Ansiedade"
-    }
+    { id: crypto.randomUUID(), text: "Pouco interesse ou prazer em fazer as coisas", category: "humor_depressivo" },
+    { id: crypto.randomUUID(), text: "Sentir-se desanimado, deprimido ou sem esperança", category: "humor_depressivo" },
+    { id: crypto.randomUUID(), text: "Dificuldade para adormecer, continuar dormindo ou dormir demais", category: "sintomas_sono" }
   ];
 }
 
-export function getMBIQuestions() {
+export function getGAD7Questions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Sinto-me emocionalmente esgotado pelo meu trabalho",
-      category: "Exaustão Emocional"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Sinto-me esgotado ao final de um dia de trabalho",
-      category: "Exaustão Emocional"
-    }
+    { id: crypto.randomUUID(), text: "Sentir-se nervoso, ansioso ou muito tenso", category: "ansiedade" },
+    { id: crypto.randomUUID(), text: "Não conseguir parar ou controlar as preocupações", category: "ansiedade" },
+    { id: crypto.randomUUID(), text: "Preocupar-se muito com coisas diferentes", category: "ansiedade" }
   ];
 }
 
-export function getAUDITQuestions() {
+export function getMBIQuestions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Com que frequência você consome bebidas alcoólicas?",
-      category: "Frequência de Uso"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Quantas doses você consome num dia normal?",
-      category: "Quantidade"
-    }
+    { id: crypto.randomUUID(), text: "Sinto-me emocionalmente esgotado pelo meu trabalho", category: "exaustao_emocional" },
+    { id: crypto.randomUUID(), text: "Sinto-me usado ao final de um dia de trabalho", category: "exaustao_emocional" },
+    { id: crypto.randomUUID(), text: "Trabalhar com pessoas o dia todo me causa estresse", category: "despersonalizacao" }
   ];
 }
 
-export function getPSSQuestions() {
+export function getAUDITQuestions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "No último mês, com que frequência você ficou chateado por causa de algo que aconteceu inesperadamente?",
-      category: "Estresse Percebido"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "No último mês, com que frequência você sentiu que não conseguia controlar as coisas importantes da sua vida?",
-      category: "Controle"
-    }
+    { id: crypto.randomUUID(), text: "Com que frequência você toma bebidas alcoólicas?", category: "consumo_alcool" },
+    { id: crypto.randomUUID(), text: "Quantas doses você toma em um dia típico?", category: "consumo_alcool" },
+    { id: crypto.randomUUID(), text: "Com que frequência toma mais de 6 doses em uma ocasião?", category: "consumo_pesado" }
   ];
 }
 
-export function getPersonalLifeQuestions() {
+export function getPSSQuestions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Estou satisfeito com minha situação financeira atual",
-      category: "Situação Financeira"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Tenho relacionamentos familiares saudáveis",
-      category: "Relacionamentos Familiares"
-    }
+    { id: crypto.randomUUID(), text: "Com que frequência você ficou chateado por causa de algo inesperado?", category: "estresse_percebido" },
+    { id: crypto.randomUUID(), text: "Com que frequência você sentiu que não conseguia controlar as coisas importantes da vida?", category: "estresse_percebido" },
+    { id: crypto.randomUUID(), text: "Com que frequência você se sentiu nervoso ou estressado?", category: "estresse_percebido" }
   ];
 }
 
-export function getEvaluation360ColleagueQuestions() {
+export function getPersonalLifeQuestions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Demonstra boa colaboração em projetos de equipe",
-      category: "Trabalho em Equipe"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Comunica-se de forma clara e efetiva",
-      category: "Comunicação"
-    }
+    { id: crypto.randomUUID(), text: "Minha situação financeira atual me causa preocupação", category: "situacao_financeira" },
+    { id: crypto.randomUUID(), text: "Tenho um bom relacionamento familiar", category: "relacionamentos_familiares" },
+    { id: crypto.randomUUID(), text: "Minha saúde física está em bom estado", category: "saude_fisica" }
   ];
 }
 
-export function getEvaluation360ManagerQuestions() {
+export function getEvaluation360ColleagueQuestions(): PsicossocialQuestion[] {
   return [
-    {
-      id: crypto.randomUUID(),
-      text: "Fornece direcionamento claro para a equipe",
-      category: "Liderança"
-    },
-    {
-      id: crypto.randomUUID(),
-      text: "Oferece feedback construtivo regularmente",
-      category: "Feedback"
-    }
+    { id: crypto.randomUUID(), text: "Este colega colabora efetivamente em projetos de equipe", category: "colaboracao" },
+    { id: crypto.randomUUID(), text: "Este colega comunica-se de forma clara e respeitosa", category: "comunicacao" },
+    { id: crypto.randomUUID(), text: "Este colega demonstra confiabilidade no cumprimento de compromissos", category: "confiabilidade" }
   ];
 }
 
-export function get360Questions(type: 'colleague' | 'manager') {
-  return type === 'colleague' 
-    ? getEvaluation360ColleagueQuestions()
-    : getEvaluation360ManagerQuestions();
-}
-
-// Funções para conversão de dados do banco
-export function getSafeDbScaleType(scaleType: string): string {
-  const validTypes = ['yes_no', 'likert', 'frequency', 'psicossocial'];
-  return validTypes.includes(scaleType) ? scaleType : 'likert';
-}
-
-export function getSafeDbTemplateType(templateType: string): string {
-  const validTypes = [
-    'disc', 'psicossocial', 'srq20', 'phq9', 'gad7', 'mbi', 
-    'audit', 'pss', 'personal_life', 'evaluation_360', 'custom'
+export function getEvaluation360ManagerQuestions(): PsicossocialQuestion[] {
+  return [
+    { id: crypto.randomUUID(), text: "Este gestor fornece direcionamento claro sobre as tarefas", category: "lideranca" },
+    { id: crypto.randomUUID(), text: "Este gestor oferece feedback construtivo regularmente", category: "feedback" },
+    { id: crypto.randomUUID(), text: "Este gestor demonstra interesse no desenvolvimento da equipe", category: "desenvolvimento" }
   ];
-  return validTypes.includes(templateType) ? templateType : 'custom';
 }
 
-export function formatQuestionsForDb(questions: any[], templateId?: string, templateType?: string) {
-  return questions.map((question, index) => ({
-    template_id: templateId,
-    question_text: question.text,
-    target_factor: question.targetFactor || question.category || null,
-    weight: question.weight || 1,
-    order_number: index + 1
-  }));
+export function mapDbTemplateTypeToApp(dbType: string): string {
+  const typeMap: Record<string, string> = {
+    'psicossocial': 'psicossocial',
+    'disc': 'disc',
+    'custom': 'custom',
+    'srq20': 'srq20',
+    'phq9': 'phq9',
+    'gad7': 'gad7',
+    'mbi': 'mbi',
+    'audit': 'audit',
+    'pss': 'pss',
+    'personal_life': 'personal_life',
+    'evaluation_360': 'evaluation_360'
+  };
+  
+  return typeMap[dbType] || dbType;
+}
+
+export function mapAppTemplateTypeToDb(appType: string): string {
+  const typeMap: Record<string, string> = {
+    'psicossocial': 'psicossocial',
+    'disc': 'disc', 
+    'custom': 'custom',
+    'srq20': 'srq20',
+    'phq9': 'phq9',
+    'gad7': 'gad7',
+    'mbi': 'mbi',
+    'audit': 'audit',
+    'pss': 'pss',
+    'personal_life': 'personal_life',
+    'evaluation_360': 'evaluation_360'
+  };
+  
+  return typeMap[appType] || appType;
 }
