@@ -439,6 +439,7 @@ export type Database = {
           percentile: number | null
           raw_score: number | null
           response_data: Json
+          risk_level: string | null
           stanine: number | null
           template_id: string
           tscore: number | null
@@ -459,6 +460,7 @@ export type Database = {
           percentile?: number | null
           raw_score?: number | null
           response_data: Json
+          risk_level?: string | null
           stanine?: number | null
           template_id: string
           tscore?: number | null
@@ -479,6 +481,7 @@ export type Database = {
           percentile?: number | null
           raw_score?: number | null
           response_data?: Json
+          risk_level?: string | null
           stanine?: number | null
           template_id?: string
           tscore?: number | null
@@ -2427,6 +2430,7 @@ export type Database = {
           phone_number: string | null
           portal_token: string | null
           recurrence_type: string | null
+          risk_level: string | null
           scheduled_date: string
           sent_at: string | null
           status: string
@@ -2447,6 +2451,7 @@ export type Database = {
           phone_number?: string | null
           portal_token?: string | null
           recurrence_type?: string | null
+          risk_level?: string | null
           scheduled_date: string
           sent_at?: string | null
           status: string
@@ -2467,6 +2472,7 @@ export type Database = {
           phone_number?: string | null
           portal_token?: string | null
           recurrence_type?: string | null
+          risk_level?: string | null
           scheduled_date?: string
           sent_at?: string | null
           status?: string

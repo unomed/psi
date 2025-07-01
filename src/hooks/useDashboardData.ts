@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
@@ -45,18 +46,19 @@ export function useDashboardData(companyId: string | null) {
       }
       const { count: totalEmployees } = await employeesQuery;
 
-      // Avaliações pendentes
+      // Avaliações pendentes usando completed_at
       let pendingQuery = supabase
         .from('scheduled_assessments')
         .select('id', { count: 'exact' })
-        .in('status', ['scheduled', 'sent']);
+        .in('status', ['scheduled', 'sent'])
+        .is('completed_at', null);
       
       if (companyId) {
         pendingQuery = pendingQuery.eq('company_id', companyId);
       }
       const { count: pendingAssessments } = await pendingQuery;
 
-      // Avaliações completadas
+      // Avaliações completadas usando completed_at diretamente
       let completedQuery = supabase
         .from('assessment_responses')
         .select('id', { count: 'exact' })
@@ -75,26 +77,33 @@ export function useDashboardData(companyId: string | null) {
       }
       const { count: completedAssessments } = await completedQuery;
 
-      // Funcionários em alto risco
+      // Usar risk_level diretamente da tabela assessment_responses
       let highRiskQuery = supabase
-        .from('psychosocial_risk_analysis')
+        .from('assessment_responses')
         .select('id', { count: 'exact' })
-        .eq('exposure_level', 'alto');
+        .eq('risk_level', 'Alto')
+        .not('completed_at', 'is', null);
 
-      if (companyId) {
-        highRiskQuery = highRiskQuery.eq('company_id', companyId);
-      }
-      const { count: highRiskEmployees } = await highRiskQuery;
-
-      // Funcionários em risco crítico
       let criticalRiskQuery = supabase
-        .from('psychosocial_risk_analysis')
+        .from('assessment_responses')
         .select('id', { count: 'exact' })
-        .eq('exposure_level', 'critico');
+        .eq('risk_level', 'Crítico')
+        .not('completed_at', 'is', null);
 
       if (companyId) {
-        criticalRiskQuery = criticalRiskQuery.eq('company_id', companyId);
+        const { data: companyEmployees } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('company_id', companyId);
+        
+        if (companyEmployees && companyEmployees.length > 0) {
+          const employeeIds = companyEmployees.map(emp => emp.id);
+          highRiskQuery = highRiskQuery.in('employee_id', employeeIds);
+          criticalRiskQuery = criticalRiskQuery.in('employee_id', employeeIds);
+        }
       }
+
+      const { count: highRiskEmployees } = await highRiskQuery;
       const { count: criticalRiskEmployees } = await criticalRiskQuery;
 
       // Próximas reavaliações (próximos 30 dias)
@@ -141,7 +150,7 @@ export function useDashboardData(companyId: string | null) {
           employee_id,
           completed_at,
           dominant_factor,
-          factors_scores,
+          risk_level,
           employees!inner(
             id,
             name,
@@ -161,20 +170,24 @@ export function useDashboardData(companyId: string | null) {
       if (error) throw error;
 
       return (data || []).map(assessment => {
-        // Calculate risk level based on assessment data
+        // Usar o risk_level diretamente da tabela, com fallback para cálculo manual apenas se necessário
         let riskLevel: 'Alto' | 'Médio' | 'Baixo' = 'Baixo';
         
-        if (assessment.factors_scores) {
-          const scores = Object.values(assessment.factors_scores as Record<string, number>);
-          const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-          
-          if (avgScore >= 0.7) riskLevel = 'Alto';
-          else if (avgScore >= 0.4) riskLevel = 'Médio';
+        if (assessment.risk_level) {
+          // Mapear possíveis valores do banco para o formato esperado
+          const dbRiskLevel = assessment.risk_level.toLowerCase();
+          if (dbRiskLevel === 'alto' || dbRiskLevel === 'crítico' || dbRiskLevel === 'critical') {
+            riskLevel = 'Alto';
+          } else if (dbRiskLevel === 'médio' || dbRiskLevel === 'medio' || dbRiskLevel === 'medium') {
+            riskLevel = 'Médio';
+          } else {
+            riskLevel = 'Baixo';
+          }
         }
 
-        // Handle employee data properly - it can be an array from Supabase
+        // Handle employee data properly
         const employeesArray = Array.isArray(assessment.employees) ? assessment.employees : (assessment.employees ? [assessment.employees] : []);
-        const employee = employeesArray[0]; // Get first employee from array
+        const employee = employeesArray[0];
         const employeeName = assessment.employee_name || (employee?.name) || 'Anônimo';
         const sector = employee?.sectors?.name || 'N/A';
 

@@ -23,12 +23,15 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
         .from('assessment_responses')
         .select(`
           *,
+          risk_level,
+          completed_at,
           checklist_templates(title, type)
         `)
+        .not('completed_at', 'is', null)
         .order('completed_at', { ascending: false });
 
       if (companyId) {
-        // Filter by company through employee or template
+        // Filter by company through employee
         const { data: companyEmployees } = await supabase
           .from('employees')
           .select('id')
@@ -55,8 +58,9 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
   };
 
   const getStatusBadge = (result: any) => {
-    if (result.dominant_factor) {
-      const riskLevel = getRiskLevel(result);
+    // Usar risk_level diretamente da tabela
+    if (result.risk_level) {
+      const riskLevel = normalizeRiskLevel(result.risk_level);
       return (
         <Badge variant={
           riskLevel === 'Alto' ? 'destructive' : 
@@ -67,10 +71,36 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
         </Badge>
       );
     }
+    
+    // Fallback para cálculo manual apenas se risk_level não existir
+    if (result.dominant_factor) {
+      const calculatedRisk = calculateRiskLevel(result);
+      return (
+        <Badge variant={
+          calculatedRisk === 'Alto' ? 'destructive' : 
+          calculatedRisk === 'Médio' ? 'secondary' : 
+          'default'
+        }>
+          {calculatedRisk} Risco
+        </Badge>
+      );
+    }
+    
     return <Badge variant="outline">Concluída</Badge>;
   };
 
-  const getRiskLevel = (result: any) => {
+  const normalizeRiskLevel = (riskLevel: string): 'Alto' | 'Médio' | 'Baixo' => {
+    const normalized = riskLevel.toLowerCase();
+    if (normalized === 'alto' || normalized === 'crítico' || normalized === 'critical') {
+      return 'Alto';
+    }
+    if (normalized === 'médio' || normalized === 'medio' || normalized === 'medium') {
+      return 'Médio';
+    }
+    return 'Baixo';
+  };
+
+  const calculateRiskLevel = (result: any): 'Alto' | 'Médio' | 'Baixo' => {
     if (result.factors_scores) {
       const scores = Object.values(result.factors_scores) as number[];
       const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -79,7 +109,7 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
       if (avgScore >= 0.6) return 'Médio';
       return 'Baixo';
     }
-    return 'Indefinido';
+    return 'Baixo';
   };
 
   if (isLoading) {

@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,6 +40,7 @@ export function useAssessmentResultsData(companyId?: string | null) {
           factors_scores,
           classification,
           notes,
+          risk_level,
           checklist_templates!inner(
             title,
             type
@@ -77,21 +79,33 @@ export function useAssessmentResultsData(companyId?: string | null) {
       }
 
       return (data || []).map(result => {
-        // Calculate risk level based on assessment data
+        // Usar risk_level diretamente da tabela primeiro
         let riskLevel: 'Alto' | 'Médio' | 'Baixo' = 'Baixo';
         
-        if (result.classification) {
-          if (result.classification === 'severe' || result.classification === 'critical') {
+        if (result.risk_level) {
+          const dbRiskLevel = result.risk_level.toLowerCase();
+          if (dbRiskLevel === 'alto' || dbRiskLevel === 'crítico' || dbRiskLevel === 'critical') {
             riskLevel = 'Alto';
-          } else if (result.classification === 'moderate') {
+          } else if (dbRiskLevel === 'médio' || dbRiskLevel === 'medio' || dbRiskLevel === 'medium') {
             riskLevel = 'Médio';
+          } else {
+            riskLevel = 'Baixo';
           }
-        } else if (result.factors_scores) {
-          const scores = Object.values(result.factors_scores as Record<string, number>);
-          const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-          
-          if (avgScore >= 0.7) riskLevel = 'Alto';
-          else if (avgScore >= 0.4) riskLevel = 'Médio';
+        } else {
+          // Fallback para cálculo manual apenas se risk_level não existir
+          if (result.classification) {
+            if (result.classification === 'severe' || result.classification === 'critical') {
+              riskLevel = 'Alto';
+            } else if (result.classification === 'moderate') {
+              riskLevel = 'Médio';
+            }
+          } else if (result.factors_scores) {
+            const scores = Object.values(result.factors_scores as Record<string, number>);
+            const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+            
+            if (avgScore >= 0.7) riskLevel = 'Alto';
+            else if (avgScore >= 0.4) riskLevel = 'Médio';
+          }
         }
 
         // Handle employee data - it can be an array or single object from Supabase

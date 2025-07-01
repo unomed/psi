@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, ChecklistResult } from "@/types";
-import { mapDbTemplateTypeToApp } from "@/services/checklist/templateUtils";
 
 export async function fetchAssessmentByToken(token: string) {
   try {
@@ -92,6 +91,19 @@ export async function submitAssessmentResult(resultData: any) {
   try {
     console.log("[submitAssessmentResult] Enviando resultado:", resultData);
 
+    // Calcular risk_level baseado nos resultados
+    let riskLevel = 'Baixo';
+    if (resultData.results?.totalScore) {
+      const totalScore = resultData.results.totalScore;
+      if (totalScore >= 80) {
+        riskLevel = 'Crítico';
+      } else if (totalScore >= 60) {
+        riskLevel = 'Alto';
+      } else if (totalScore >= 40) {
+        riskLevel = 'Médio';
+      }
+    }
+
     const assessmentResponse = {
       template_id: resultData.templateId,
       employee_id: resultData.employeeId || null,
@@ -101,7 +113,9 @@ export async function submitAssessmentResult(resultData: any) {
       dominant_factor: resultData.dominantFactor,
       factors_scores: resultData.results,
       notes: null,
-      created_by: null
+      created_by: null,
+      risk_level: riskLevel, // Salvar o risk_level calculado
+      completed_at: new Date().toISOString() // Garantir que completed_at seja definido
     };
 
     const { data, error } = await supabase
@@ -129,12 +143,15 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
       .from('assessment_responses')
       .select(`
         *,
+        risk_level,
+        completed_at,
         checklist_templates (
           title,
           type,
           description
         )
       `)
+      .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false });
 
     if (error) {
@@ -157,7 +174,8 @@ export async function fetchAssessmentResults(): Promise<ChecklistResult[]> {
       score: result.raw_score,
       completedAt: new Date(result.completed_at),
       completed_at: result.completed_at,
-      createdBy: result.created_by || ""
+      createdBy: result.created_by || "",
+      riskLevel: result.risk_level || 'Baixo' // Incluir o risk_level da tabela
     }));
   } catch (error) {
     console.error('Error in fetchAssessmentResults:', error);

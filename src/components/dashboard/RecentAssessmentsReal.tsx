@@ -14,6 +14,17 @@ interface RecentAssessmentsRealProps {
 export function RecentAssessmentsReal({ companyId }: RecentAssessmentsRealProps) {
   const { recentAssessments, isLoading } = useDashboardData(companyId);
 
+  const getBadgeVariant = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'Alto':
+        return 'destructive';
+      case 'Médio':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -60,11 +71,7 @@ export function RecentAssessmentsReal({ companyId }: RecentAssessmentsRealProps)
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium">{assessment.employeeName}</p>
                     <Badge
-                      variant={
-                        assessment.riskLevel === 'Alto' ? 'destructive' :
-                        assessment.riskLevel === 'Médio' ? 'secondary' :
-                        'default'
-                      }
+                      variant={getBadgeVariant(assessment.riskLevel)}
                       className="text-xs"
                     >
                       {assessment.riskLevel}
