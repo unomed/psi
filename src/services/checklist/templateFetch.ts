@@ -8,6 +8,7 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
   const { data, error } = await supabase
     .from('checklist_templates')
     .select('*, questions(*)')
+    .eq('is_active', true)
     .order('created_at', { ascending: false });
   
   if (error) {
