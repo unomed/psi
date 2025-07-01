@@ -1,77 +1,89 @@
 
-import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { EmployeeAuthNativeProvider } from "@/contexts/EmployeeAuthNative";
-import { SimpleRoutes } from "@/components/routing/SimpleRoutes";
-import { AuthenticatedRoutes } from "@/components/routing/AuthenticatedRoutes";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Login from "@/pages/auth/Login";
+import { useSystemInitialization } from "@/hooks/useSystemInitialization";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import RouteGuard from "@/components/auth/RouteGuard";
+import LoadingSpinner from "@/components/auth/LoadingSpinner";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Checklists from "./pages/Checklists";
+import Assessments from "./pages/Assessments";
+import AssessmentResult from "./pages/AssessmentResult";
+import Employees from "./pages/Employees";
+import Companies from "./pages/Companies";
+import Settings from "./pages/Settings";
+import EmailTemplatesPage from "./pages/configuracoes/EmailTemplatesPage";
+import Dashboard from "./pages/Dashboard";
+import AssessmentPortal from "./pages/AssessmentPortal";
+import CandidatesPage from "./pages/CandidatesPage";
+import ActionPlansPage from "./pages/ActionPlansPage";
+import AuditPage from "./pages/AuditPage";
+import "./App.css";
 
-// QueryClient configuração simples
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-function App() {
-  console.log('[App] PSI - Iniciando aplicação');
-  
-  // Estado para controlar qual portal está sendo exibido
-  const [portalMode, setPortalMode] = useState<'admin' | 'employee'>(() => {
-    // Verificar se há uma preferência salva no localStorage
-    const savedMode = localStorage.getItem('psi-portal-mode');
-    return (savedMode === 'admin' || savedMode === 'employee') ? savedMode : 'admin';
-  });
+// Componente interno que usa o hook de inicialização
+function AppContent() {
+  const { isInitialized, isInitializing } = useSystemInitialization();
 
-  // Salvar a preferência do usuário no localStorage
-  useEffect(() => {
-    localStorage.setItem('psi-portal-mode', portalMode);
-  }, [portalMode]);
-
-  // Função para alternar entre os portais
-  const togglePortal = () => {
-    setPortalMode(prev => prev === 'admin' ? 'employee' : 'admin');
-  };
+  if (isInitializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+        <span className="ml-2">Inicializando sistema...</span>
+      </div>
+    );
+  }
 
   return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/portal/:token" element={<AssessmentPortal />} />
+        <Route path="/assessment/:id/result" element={<AssessmentResult />} />
+        
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <RouteGuard>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/templates" element={<Checklists />} />
+                  <Route path="/assessments" element={<Assessments />} />
+                  <Route path="/employees" element={<Employees />} />
+                  <Route path="/companies" element={<Companies />} />
+                  <Route path="/candidates" element={<CandidatesPage />} />
+                  <Route path="/action-plans" element={<ActionPlansPage />} />
+                  <Route path="/audit" element={<AuditPage />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/configuracoes/emails" element={<EmailTemplatesPage />} />
+                </Routes>
+              </RouteGuard>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        {/* Barra de navegação superior com botão para alternar entre portais */}
-        <div className="fixed top-0 left-0 right-0 bg-slate-800 text-white p-2 z-50 flex justify-between items-center">
-          <div className="font-semibold">
-            {portalMode === 'admin' ? 'Portal Administrativo' : 'Portal do Funcionário'}
-          </div>
-          <button 
-            onClick={togglePortal}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
-          >
-            Alternar para {portalMode === 'admin' ? 'Portal do Funcionário' : 'Portal Administrativo'}
-          </button>
-        </div>
-
-        {/* Espaçamento para compensar a barra fixa */}
-        <div className="pt-12"></div>
-
-        {/* Renderização condicional com base no modo selecionado */}
-        {portalMode === 'employee' ? (
-          <EmployeeAuthNativeProvider>
-            <SimpleRoutes />
-          </EmployeeAuthNativeProvider>
-        ) : (
-          <AuthProvider>
-            <Routes>
-              <Route path="/auth/login" element={<Login />} />
-              <Route path="/*" element={<AuthenticatedRoutes />} />
-            </Routes>
-          </AuthProvider>
-        )}
-      </BrowserRouter>
+      <TooltipProvider>
+        <AuthProvider>
+          <AppContent />
+          <Toaster />
+          <Sonner />
+        </AuthProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

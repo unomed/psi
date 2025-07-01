@@ -1,10 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { FileText, Clock, Users, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate } from "@/types";
+import { fetchChecklistTemplates } from "@/services/checklist";
 
 interface TemplateSelectionStepProps {
   selectedTemplate: ChecklistTemplate | null;
@@ -14,55 +14,7 @@ interface TemplateSelectionStepProps {
 export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: TemplateSelectionStepProps) {
   const { data: templates, isLoading } = useQuery({
     queryKey: ['checklistTemplates'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('checklist_templates')
-        .select(`
-          *,
-          questions(count)
-        `)
-        .eq('is_active', true)
-        .order('is_standard', { ascending: false })
-        .order('title');
-
-      if (error) throw error;
-      
-      // Transform database response to match ChecklistTemplate interface
-      return data.map(template => ({
-        id: template.id,
-        title: template.title,
-        description: template.description || '',
-        type: template.type,
-        questions: [], // Will be loaded separately if needed
-        createdAt: new Date(template.created_at),
-        scaleType: template.scale_type,
-        isStandard: template.is_standard,
-        companyId: template.company_id,
-        derivedFromId: template.derived_from_id,
-        estimatedTimeMinutes: template.estimated_time_minutes,
-        instructions: template.instructions,
-        interpretationGuide: template.interpretation_guide,
-        maxScore: template.max_score,
-        cutoffScores: template.cutoff_scores,
-        isActive: template.is_active,
-        version: template.version,
-        updatedAt: template.updated_at ? new Date(template.updated_at) : undefined,
-        createdBy: template.created_by,
-        // Keep database field names for compatibility
-        estimated_time_minutes: template.estimated_time_minutes,
-        is_standard: template.is_standard,
-        company_id: template.company_id,
-        derived_from_id: template.derived_from_id,
-        scale_type: template.scale_type,
-        created_at: template.created_at,
-        updated_at: template.updated_at,
-        created_by: template.created_by,
-        is_active: template.is_active,
-        cutoff_scores: template.cutoff_scores,
-        max_score: template.max_score,
-        interpretation_guide: template.interpretation_guide
-      })) as ChecklistTemplate[];
-    }
+    queryFn: fetchChecklistTemplates
   });
 
   const getTemplateTypeLabel = (type: string) => {
@@ -112,7 +64,7 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
           <div className="text-center py-8">Carregando templates...</div>
         ) : templates?.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            Nenhum template disponível
+            Nenhum template disponível. O sistema está inicializando os templates padrão.
           </div>
         ) : (
           templates?.map(template => (
@@ -166,7 +118,7 @@ export function TemplateSelectionStep({ selectedTemplate, onTemplateSelect }: Te
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
-                    Questões disponíveis
+                    {template.questions.length} questões
                   </div>
                   {template.estimatedTimeMinutes && (
                     <div className="flex items-center gap-1">

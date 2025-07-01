@@ -8,6 +8,8 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
   const { data, error } = await supabase
     .from('checklist_templates')
     .select('*, questions(*)')
+    .eq('is_active', true)
+    .order('is_standard', { ascending: false })
     .order('created_at', { ascending: false });
   
   if (error) {
@@ -52,7 +54,16 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       companyId: template.company_id,
       derivedFromId: template.derived_from_id,
       questions,
-      createdAt: new Date(template.created_at)
+      createdAt: new Date(template.created_at),
+      estimatedTimeMinutes: template.estimated_time_minutes,
+      instructions: template.instructions,
+      interpretationGuide: template.interpretation_guide,
+      maxScore: template.max_score,
+      cutoffScores: template.cutoff_scores,
+      isActive: template.is_active,
+      version: template.version,
+      updatedAt: template.updated_at ? new Date(template.updated_at) : undefined,
+      createdBy: template.created_by
     };
   });
 }
