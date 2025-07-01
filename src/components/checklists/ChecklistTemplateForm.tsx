@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -86,7 +87,7 @@ export function ChecklistTemplateForm({
   const [categories, setCategories] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>("basic");
   
-  // Estados para carregamento assíncrono
+  // Estados para carregamento assíncrono das perguntas MTE
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const [questionsLoadError, setQuestionsLoadError] = useState<string | null>(null);
 
@@ -258,34 +259,42 @@ export function ChecklistTemplateForm({
     }
   }, [method, form]);
 
-  // Função assíncrona para carregar perguntas padrão
+  // Função assíncrona para carregar perguntas padrão - OTIMIZADA PARA MTE
   const handleLoadDefaultQuestions = async () => {
     setIsLoadingQuestions(true);
     setQuestionsLoadError(null);
     
     try {
-      console.log(`Carregando perguntas padrão para tipo: ${method}`);
+      console.log(`🔍 Carregando perguntas padrão para tipo: ${method}`);
       
       let defaultQuestions;
       
-      // Para psicossocial, usar a função específica do banco
+      // ESPECIAL: Para psicossocial, usar função específica do banco que carrega as 49 perguntas MTE
       if (method === "psicossocial") {
+        console.log("📋 Carregando perguntas psicossociais MTE do banco de dados...");
         defaultQuestions = await loadPsicossocialQuestionsFromDatabase();
+        
+        if (defaultQuestions.length >= 40) { // Validar se carregou as perguntas completas
+          console.log(`✅ ${defaultQuestions.length} perguntas MTE carregadas com sucesso!`);
+          toast.success(`${defaultQuestions.length} perguntas psicossociais MTE carregadas com sucesso!`);
+        } else {
+          console.log(`⚠️ Apenas ${defaultQuestions.length} perguntas carregadas - usando fallback`);
+          toast.warning(`Apenas ${defaultQuestions.length} perguntas carregadas. Verifique o banco de dados.`);
+        }
       } else {
+        // Para outros tipos, usar função genérica
         defaultQuestions = await getDefaultQuestions(method as any);
+        
+        if (defaultQuestions.length > 0) {
+          toast.success(`${defaultQuestions.length} perguntas padrão carregadas!`);
+        }
       }
       
       if (defaultQuestions.length > 0) {
+        // Aplicar perguntas ao formulário
         form.setValue("questions", defaultQuestions);
         
-        // Feedback específico por tipo de template
-        if (method === "psicossocial") {
-          toast.success(`${defaultQuestions.length} perguntas psicossociais MTE carregadas com sucesso!`);
-        } else {
-          toast.success(`${defaultQuestions.length} perguntas padrão carregadas!`);
-        }
-        
-        // Extrair categorias das perguntas carregadas
+        // Extrair e aplicar categorias das perguntas carregadas
         if (method === "psicossocial" || method === "custom") {
           const loadedCategories = new Set<string>();
           defaultQuestions.forEach((q: any) => {
@@ -293,8 +302,11 @@ export function ChecklistTemplateForm({
               loadedCategories.add(q.category);
             }
           });
+          
           if (loadedCategories.size > 0) {
-            setCategories(Array.from(loadedCategories));
+            const categoriesArray = Array.from(loadedCategories);
+            setCategories(categoriesArray);
+            console.log(`📊 ${categoriesArray.length} categorias identificadas:`, categoriesArray);
           }
         }
       } else {
@@ -302,7 +314,7 @@ export function ChecklistTemplateForm({
         toast.info("Nenhuma pergunta padrão disponível para este tipo.");
       }
     } catch (error) {
-      console.error("Erro ao carregar perguntas padrão:", error);
+      console.error("❌ Erro ao carregar perguntas padrão:", error);
       setQuestionsLoadError("Erro ao carregar perguntas do banco de dados.");
       toast.error("Erro ao carregar perguntas padrão. Tente novamente.");
     } finally {
@@ -534,7 +546,7 @@ export function ChecklistTemplateForm({
               templateType={method}
             />
 
-            {/* Feedback visual para template psicossocial */}
+            {/* Feedback visual específico para template psicossocial */}
             {method === "psicossocial" && !isLoadingQuestions && (
               <div className="bg-green-50 border border-green-200 rounded-md p-3">
                 <p className="text-sm text-green-700">

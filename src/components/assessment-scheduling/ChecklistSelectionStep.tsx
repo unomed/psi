@@ -1,240 +1,215 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChecklistTemplate } from "@/types/checklist";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Clock, Users, Star } from "lucide-react";
-import { ChecklistTemplate } from "@/types";
-import { STANDARD_QUESTIONNAIRE_TEMPLATES } from "@/data/standardQuestionnaires";
-import { createStandardTemplate } from "@/data/standardQuestionnaires";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { scaleTypeToDbScaleType } from "@/types/scale";
-import { mapAppTemplateTypeToDb } from "@/services/checklist/utils";
+import { Clock, Users, Target, Brain, Activity, FileText } from "lucide-react";
+import { getTemplateTypeDisplayName } from "@/services/checklist/templateUtils";
 
 interface ChecklistSelectionStepProps {
-  selectedChecklist: ChecklistTemplate | null;
-  onChecklistSelect: (checklist: ChecklistTemplate) => void;
+  templates: ChecklistTemplate[];
+  selectedTemplate: ChecklistTemplate | null;
+  onSelectTemplate: (template: ChecklistTemplate) => void;
+  onNext: () => void;
+  onBack: () => void;
 }
 
-export function ChecklistSelectionStep({ 
-  selectedChecklist, 
-  onChecklistSelect 
+export function ChecklistSelectionStep({
+  templates,
+  selectedTemplate,
+  onSelectTemplate,
+  onNext,
+  onBack
 }: ChecklistSelectionStepProps) {
-  const [loading, setLoading] = useState(false);
-  
-  const getTemplateTypeLabel = (type: string) => {
-    const types = {
-      custom: "Personalizado",
-      srq20: "SRQ-20",
-      phq9: "PHQ-9",
-      gad7: "GAD-7",
-      mbi: "MBI",
-      audit: "AUDIT",
-      pss: "PSS",
-      copsoq: "COPSOQ",
-      jcq: "JCQ",
-      eri: "ERI",
-      disc: "DISC",
-      psicossocial: "Psicossocial",
-      personal_life: "Vida Pessoal",
-      evaluation_360: "Avaliação 360°"
-    };
-    return types[type as keyof typeof types] || type;
+  const [filter, setFilter] = useState<string>("all");
+
+  const getTemplateIcon = (type: string) => {
+    switch (type) {
+      case "disc": return <Target className="h-5 w-5" />;
+      case "psicossocial": return <Activity className="h-5 w-5" />;
+      case "srq20":
+      case "phq9":
+      case "gad7":
+      case "mbi":
+      case "audit":
+      case "pss": return <Brain className="h-5 w-5" />;
+      case "evaluation_360": return <Users className="h-5 w-5" />;
+      default: return <FileText className="h-5 w-5" />;
+    }
   };
 
-  const handleTemplateSelect = async (templateId: string) => {
-    setLoading(true);
-    try {
-      const templateData = STANDARD_QUESTIONNAIRE_TEMPLATES.find(t => t.id === templateId);
-      if (!templateData) {
-        throw new Error("Template não encontrado");
-      }
+  const getTemplateColor = (type: string) => {
+    switch (type) {
+      case "disc": return "bg-orange-50 border-orange-200 hover:bg-orange-100";
+      case "psicossocial": return "bg-blue-50 border-blue-200 hover:bg-blue-100";
+      case "srq20":
+      case "phq9":
+      case "gad7": return "bg-purple-50 border-purple-200 hover:bg-purple-100";
+      case "mbi":
+      case "audit":
+      case "pss": return "bg-red-50 border-red-200 hover:bg-red-100";
+      case "evaluation_360": return "bg-green-50 border-green-200 hover:bg-green-100";
+      default: return "bg-gray-50 border-gray-200 hover:bg-gray-100";
+    }
+  };
 
-      const dbTemplateType = mapAppTemplateTypeToDb(templateData.type);
+  const filteredTemplates = filter === "all" 
+    ? templates 
+    : templates.filter(t => t.type === filter);
 
-      // Primeiro verificar se o template já existe na base de dados
-      const { data: existingTemplate, error: fetchError } = await supabase
-        .from('checklist_templates')
-        .select('*')
-        .eq('title', templateData.name)
-        .eq('type', dbTemplateType as any)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('Erro ao buscar template existente:', fetchError);
-      }
-
-      let finalTemplate: ChecklistTemplate;
-
-      if (existingTemplate) {
-        // Se já existe, usar o template existente
-        finalTemplate = {
-          id: existingTemplate.id,
-          title: existingTemplate.title,
-          description: existingTemplate.description || "",
-          type: templateData.type,
-          scaleType: templateData.scaleType,
-          questions: [], // As questões serão carregadas conforme necessário
-          createdAt: new Date(existingTemplate.created_at),
-          isStandard: existingTemplate.is_standard,
-          estimatedTimeMinutes: existingTemplate.estimated_time_minutes,
-          instructions: existingTemplate.instructions
-        };
-      } else {
-        // Se não existe, criar e salvar o template
-        const tempTemplate = createStandardTemplate(templateId);
-        if (!tempTemplate) {
-          throw new Error("Template não encontrado");
-        }
-
-        // Salvar template na base de dados
-        const { data: savedTemplate, error: saveError } = await supabase
-          .from('checklist_templates')
-          .insert({
-            title: tempTemplate.title,
-            description: tempTemplate.description,
-            type: mapAppTemplateTypeToDb(tempTemplate.type),
-            scale_type: scaleTypeToDbScaleType(tempTemplate.scaleType),
-            is_standard: true,
-            is_active: true,
-            estimated_time_minutes: tempTemplate.estimatedTimeMinutes,
-            instructions: tempTemplate.instructions
-          } as any)
-          .select()
-          .single();
-
-        if (saveError) {
-          console.error('Erro ao salvar template:', saveError);
-          throw new Error("Erro ao salvar template na base de dados");
-        }
-
-        // Salvar questões do template
-        if (tempTemplate.questions && tempTemplate.questions.length > 0) {
-          const questionsToInsert = tempTemplate.questions.map((question, index) => ({
-            template_id: savedTemplate.id,
-            question_text: question.text,
-            order_number: index + 1,
-            target_factor: 'targetFactor' in question ? question.targetFactor : question.category || 'general',
-            weight: 'weight' in question ? question.weight : 1
-          }));
-
-          const { error: questionsError } = await supabase
-            .from('questions')
-            .insert(questionsToInsert);
-
-          if (questionsError) {
-            console.error('Erro ao salvar questões:', questionsError);
-            // Não falhar se as questões não forem salvas, pois o template principal já foi criado
-          }
-        }
-
-        finalTemplate = {
-          id: savedTemplate.id,
-          title: savedTemplate.title,
-          description: savedTemplate.description || "",
-          type: tempTemplate.type,
-          scaleType: tempTemplate.scaleType,
-          questions: tempTemplate.questions,
-          createdAt: new Date(savedTemplate.created_at),
-          isStandard: savedTemplate.is_standard,
-          estimatedTimeMinutes: savedTemplate.estimated_time_minutes,
-          instructions: savedTemplate.instructions
-        };
-      }
-
-      onChecklistSelect(finalTemplate);
-      toast.success(`Template "${finalTemplate.title}" selecionado com sucesso!`);
-    } catch (error) {
-      console.error('Erro ao processar template:', error);
-      toast.error("Erro ao processar template selecionado");
-    } finally {
-      setLoading(false);
+  const getEstimatedQuestions = (template: ChecklistTemplate): number => {
+    if (template.questions && Array.isArray(template.questions)) {
+      return template.questions.length;
+    }
+    
+    // Estimativas baseadas no tipo quando não há perguntas carregadas
+    switch (template.type) {
+      case "psicossocial": return 49; // MTE completo
+      case "disc": return 24;
+      case "srq20": return 20;
+      case "phq9": return 9;
+      case "gad7": return 7;
+      case "mbi": return 22;
+      case "audit": return 10;
+      case "pss": return 14;
+      default: return template.estimatedTimeMinutes ? Math.round(template.estimatedTimeMinutes / 0.5) : 10;
     }
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Selecionar Checklist</h3>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">Selecionar Template de Avaliação</h2>
         <p className="text-muted-foreground">
-          Escolha o checklist que será enviado para a avaliação. O link será gerado automaticamente com o nome do questionário.
+          Escolha o tipo de avaliação que será aplicada aos funcionários
         </p>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {STANDARD_QUESTIONNAIRE_TEMPLATES.map(template => (
-          <Card 
+      {/* Filtros */}
+      <div className="flex flex-wrap gap-2 justify-center">
+        <Button
+          variant={filter === "all" ? "default" : "outline"}
+          onClick={() => setFilter("all")}
+          size="sm"
+        >
+          Todos
+        </Button>
+        <Button
+          variant={filter === "disc" ? "default" : "outline"}
+          onClick={() => setFilter("disc")}
+          size="sm"
+        >
+          DISC
+        </Button>
+        <Button
+          variant={filter === "psicossocial" ? "default" : "outline"}
+          onClick={() => setFilter("psicossocial")}
+          size="sm"
+        >
+          Psicossocial
+        </Button>
+        <Button
+          variant={filter === "evaluation_360" ? "default" : "outline"}
+          onClick={() => setFilter("evaluation_360")}
+          size="sm"
+        >
+          360°
+        </Button>
+        <Button
+          variant={filter === "custom" ? "default" : "outline"}
+          onClick={() => setFilter("custom")}
+          size="sm"
+        >
+          Personalizado
+        </Button>
+      </div>
+
+      {/* Lista de Templates */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+        {filteredTemplates.map((template) => (
+          <Card
             key={template.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              selectedChecklist?.title === template.name ? 'ring-2 ring-primary' : ''
-            } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
-            onClick={() => handleTemplateSelect(template.id)}
+            className={`cursor-pointer transition-all ${getTemplateColor(template.type)} ${
+              selectedTemplate?.id === template.id ? 'ring-2 ring-primary' : ''
+            }`}
+            onClick={() => onSelectTemplate(template)}
           >
             <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-base">{template.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {template.description}
-                    </p>
-                  </div>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                {getTemplateIcon(template.type)}
+                {template.title}
+                {template.isStandard && (
+                  <Badge variant="secondary" className="text-xs">Padrão</Badge>
+                )}
+              </CardTitle>
+              <CardDescription className="text-xs line-clamp-2">
+                {template.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Tipo:</span>
+                  <Badge variant="outline" className="text-xs">
+                    {getTemplateTypeDisplayName({ type: template.type })}
+                  </Badge>
                 </div>
                 
-                {selectedChecklist?.title === template.name && (
-                  <Badge>Selecionado</Badge>
-                )}
-              </div>
-            </CardHeader>
-            
-            <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge variant="secondary" className="text-xs">
-                  <Star className="h-3 w-3 mr-1" />
-                  Padrão
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {getTemplateTypeLabel(template.type)}
-                </Badge>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  {template.questions.length} questões
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <FileText className="h-3 w-3" />
+                    Perguntas:
+                  </span>
+                  <span className="font-medium">{getEstimatedQuestions(template)}</span>
                 </div>
+
                 {template.estimatedTimeMinutes && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    ~{template.estimatedTimeMinutes} min
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      Tempo:
+                    </span>
+                    <span className="font-medium">{template.estimatedTimeMinutes} min</span>
                   </div>
                 )}
-              </div>
 
-              {template.instructions && (
-                <div className="mt-3 p-3 bg-muted/50 rounded-md">
-                  <p className="text-sm">{template.instructions}</p>
-                </div>
-              )}
+                {/* Informações específicas do tipo */}
+                {template.type === "psicossocial" && (
+                  <div className="mt-2 p-2 bg-blue-100 rounded text-xs">
+                    <strong>NR-01:</strong> Conforme Guia MTE de Fatores Psicossociais
+                  </div>
+                )}
 
-              <div className="mt-3 p-2 bg-green-50 rounded-md border border-green-200">
-                <p className="text-xs text-green-700">
-                  <strong>Link gerado:</strong> avaliacao.unomed.med.br/checklist/{template.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')}
-                </p>
+                {template.type === "evaluation_360" && template.isAnonymous && (
+                  <div className="mt-2 p-2 bg-green-100 rounded text-xs">
+                    <strong>Anônima:</strong> Identidade dos avaliadores protegida
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {loading && (
-        <div className="text-center text-sm text-muted-foreground">
-          Processando template selecionado...
+      {filteredTemplates.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Nenhum template encontrado para o filtro selecionado.</p>
         </div>
       )}
+
+      {/* Navegação */}
+      <div className="flex justify-between pt-4">
+        <Button variant="outline" onClick={onBack}>
+          Voltar
+        </Button>
+        <Button 
+          onClick={onNext}
+          disabled={!selectedTemplate}
+        >
+          Continuar
+        </Button>
+      </div>
     </div>
   );
 }

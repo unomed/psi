@@ -135,60 +135,13 @@ export function getDefaultDiscQuestions(): DiscQuestion[] {
   ];
 }
 
-// ETAPA 1: Função síncrona para fallback (mantém compatibilidade)
+// FUNÇÃO SÍNCRONA: Para compatibilidade com código existente
 export function getDefaultPsicossocialQuestions(): PsicossocialQuestion[] {
   return getFallbackPsicossocialQuestions();
 }
 
-// ETAPA 2: Nova função assíncrona para buscar do banco
-export async function loadPsicossocialQuestionsFromDatabase(): Promise<PsicossocialQuestion[]> {
-  try {
-    console.log("Buscando perguntas psicossociais do banco de dados...");
-    
-    // Buscar o template MTE no banco
-    const { data: template, error: templateError } = await supabase
-      .from('checklist_templates')
-      .select('id, title')
-      .eq('title', 'Avaliação Psicossocial - MTE Completa')
-      .eq('type', 'psicossocial')
-      .eq('is_standard', true)
-      .single();
-
-    if (templateError || !template) {
-      console.log("Template MTE não encontrado, usando perguntas de exemplo");
-      return getFallbackPsicossocialQuestions();
-    }
-
-    // Buscar perguntas do template
-    const { data: questions, error: questionsError } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('template_id', template.id)
-      .order('order_number');
-
-    if (questionsError || !questions || questions.length === 0) {
-      console.log("Perguntas não encontradas, usando fallback");
-      return getFallbackPsicossocialQuestions();
-    }
-
-    console.log(`${questions.length} perguntas psicossociais carregadas do banco`);
-
-    // Mapear perguntas do banco para formato da aplicação
-    return questions.map(q => ({
-      id: q.id,
-      text: q.question_text,
-      category: q.target_factor || 'geral',
-      weight: q.weight || 1
-    }));
-
-  } catch (error) {
-    console.error("Erro ao buscar perguntas psicossociais:", error);
-    return getFallbackPsicossocialQuestions();
-  }
-}
-
-// Função de fallback com perguntas básicas
-function getFallbackPsicossocialQuestions(): PsicossocialQuestion[] {
+// NOVA FUNÇÃO: Para fallback síncrono
+export function getFallbackPsicossocialQuestions(): PsicossocialQuestion[] {
   return [
     {
       id: crypto.randomUUID(),
@@ -221,6 +174,61 @@ function getFallbackPsicossocialQuestions(): PsicossocialQuestion[] {
       weight: 1
     }
   ];
+}
+
+// FUNÇÃO ASSÍNCRONA: Para carregar do banco de dados
+export async function loadPsicossocialQuestionsFromDatabase(): Promise<PsicossocialQuestion[]> {
+  try {
+    console.log("🔍 Buscando perguntas psicossociais MTE do banco de dados...");
+    
+    // Buscar o template MTE no banco
+    const { data: template, error: templateError } = await supabase
+      .from('checklist_templates')
+      .select('id, title')
+      .eq('title', 'Avaliação Psicossocial - MTE Completa')
+      .eq('type', 'psicossocial')
+      .eq('is_standard', true)
+      .single();
+
+    if (templateError || !template) {
+      console.log("⚠️ Template MTE não encontrado, usando perguntas de fallback");
+      return getFallbackPsicossocialQuestions();
+    }
+
+    console.log(`✅ Template MTE encontrado: ${template.title} (ID: ${template.id})`);
+
+    // Buscar perguntas do template
+    const { data: questions, error: questionsError } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('template_id', template.id)
+      .order('order_number');
+
+    if (questionsError || !questions || questions.length === 0) {
+      console.log("⚠️ Perguntas não encontradas no template, usando fallback");
+      return getFallbackPsicossocialQuestions();
+    }
+
+    console.log(`🎯 ${questions.length} perguntas psicossociais MTE carregadas do banco`);
+
+    // Mapear perguntas do banco para formato da aplicação
+    const mappedQuestions = questions.map(q => ({
+      id: q.id,
+      text: q.question_text,
+      category: q.target_factor || 'geral',
+      weight: q.weight || 1
+    }));
+
+    // Validar categorias das perguntas
+    const categoriesFound = new Set(mappedQuestions.map(q => q.category));
+    console.log(`📊 Categorias encontradas: ${Array.from(categoriesFound).join(', ')}`);
+
+    return mappedQuestions;
+
+  } catch (error) {
+    console.error("❌ Erro ao buscar perguntas psicossociais:", error);
+    return getFallbackPsicossocialQuestions();
+  }
 }
 
 // Generic function to get default questions based on type

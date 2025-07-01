@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, FileText, Users, Briefcase, Target, Heart, RefreshCw, Brain, Activity } from "lucide-react";
 import { PREDEFINED_PSYCHOSOCIAL_TEMPLATES, createPsychosocialTemplate } from "@/data/psychosocialQuestionnaires";
 import { STANDARD_QUESTIONNAIRE_TEMPLATES, createStandardTemplate } from "@/data/standardQuestionnaires";
-import { getDefaultQuestions } from "@/services/checklist/templateUtils";
+import { getDefaultQuestions, getFallbackPsicossocialQuestions } from "@/services/checklist/templateUtils";
 import { ScaleType } from "@/types";
 
 interface QuestionnaireTemplateSelectorProps {
@@ -46,8 +46,14 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
       id: template.id,
       name: template.name,
       description: template.description,
-      categories: template.questions.map(q => 'category' in q ? q.category : 'Geral').filter((v, i, a) => a.indexOf(v) === i),
-      type: 'standard'
+      categories: template.questions.length > 0 ? 
+        template.questions
+          .filter(q => 'category' in q)
+          .map(q => 'category' in q ? q.category : 'Geral')
+          .filter((v, i, a) => a.indexOf(v) === i) :
+        ['Categoria Padrão'],
+      type: 'standard',
+      estimatedQuestions: template.questions.length || (template.id.includes('psicossocial') ? 49 : 10)
     })),
     // Templates psicossociais existentes
     ...PREDEFINED_PSYCHOSOCIAL_TEMPLATES.map(template => ({
@@ -55,7 +61,8 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
       name: template.name,
       description: template.description,
       categories: template.categories,
-      type: 'psychosocial'
+      type: 'psychosocial',
+      estimatedQuestions: template.categories.length * 3 // Estimativa baseada em categorias
     }))
   ];
 
@@ -124,6 +131,11 @@ export function QuestionnaireTemplateSelector({ onSelectTemplate, onCancel }: Qu
                       </Badge>
                     )}
                   </div>
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  <span>Perguntas estimadas: </span>
+                  <span className="font-medium">{template.estimatedQuestions}</span>
                 </div>
                 
                 {selectedTemplate === template.id && (

@@ -4,7 +4,7 @@ import { ScaleType } from "@/types";
 import { DiscFactorType } from "@/types/disc";
 import { 
   getDefaultDiscQuestions, 
-  getDefaultPsicossocialQuestions, 
+  getFallbackPsicossocialQuestions, 
   getSRQ20Questions, 
   getPHQ9Questions, 
   getGAD7Questions,
@@ -58,7 +58,7 @@ export const STANDARD_QUESTIONNAIRE_TEMPLATES = [
     description: "Avaliação completa baseada no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego",
     type: "psicossocial" as const,
     scaleType: ScaleType.Psicossocial,
-    questions: getDefaultPsicossocialQuestions(),
+    questions: getFallbackPsicossocialQuestions(), // Usar versão síncrona para compatibilidade
     estimatedTimeMinutes: 25,
     instructions: "Avalie cada afirmação considerando sua experiência no trabalho nos últimos 6 meses."
   },
