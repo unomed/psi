@@ -18,6 +18,8 @@ export function usePsicossocialAssessment({ template, onSubmit }: UsePsicossocia
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
+  console.log(`[usePsicossocialAssessment] Template: ${template.title}, Perguntas: ${questions.length}`);
+
   const handleResponseChange = (value: string) => {
     setResponses({
       ...responses,
@@ -53,8 +55,12 @@ export function usePsicossocialAssessment({ template, onSubmit }: UsePsicossocia
     setIsSubmitting(true);
 
     try {
+      console.log("[usePsicossocialAssessment] Iniciando cálculo de risco...");
+      
       // Calcular scores usando a nova função de análise
       const riskAnalysis = calculatePsicossocialRisk(responses, questions);
+      
+      console.log("[usePsicossocialAssessment] Análise de risco concluída:", riskAnalysis);
       
       // Preparar dados detalhados para o resultado
       const resultData = {

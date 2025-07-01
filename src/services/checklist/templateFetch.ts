@@ -5,6 +5,8 @@ import { dbScaleTypeToScaleType } from "@/types/scale";
 import { mapDbTemplateTypeToApp } from "./templateUtils";
 
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
+  console.log("Buscando templates de checklist...");
+  
   const { data, error } = await supabase
     .from('checklist_templates')
     .select('*, questions(*)')
@@ -16,7 +18,12 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
     throw error;
   }
 
+  console.log("Templates encontrados:", data?.length || 0);
+  
   return (data || []).map(template => {
+    console.log(`Processando template: ${template.title} (${template.type})`);
+    console.log(`Perguntas no template: ${template.questions?.length || 0}`);
+    
     const templateType = mapDbTemplateTypeToApp(template.type);
     
     let questions: (DiscQuestion | PsicossocialQuestion)[] = [];
@@ -32,9 +39,11 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       questions = (template.questions || []).map(q => ({
         id: q.id,
         text: q.question_text,
-        category: q.target_factor || "Geral"
+        category: q.target_factor || "geral",
+        weight: q.weight || 1
       }));
     } else {
+      // Para outros tipos, usar formato DISC como fallback
       questions = (template.questions || []).map(q => ({
         id: q.id,
         text: q.question_text,
@@ -43,17 +52,21 @@ export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
       })) as DiscQuestion[];
     }
 
-    return {
+    const mappedTemplate = {
       id: template.id,
       title: template.title,
       description: template.description || "",
-      type: templateType, // Now properly typed as ChecklistTemplateType
+      type: templateType,
       scaleType: dbScaleTypeToScaleType(template.scale_type), 
       isStandard: template.is_standard || false,
       companyId: template.company_id,
       derivedFromId: template.derived_from_id,
       questions,
-      createdAt: new Date(template.created_at)
+      createdAt: new Date(template.created_at),
+      estimatedTimeMinutes: template.estimated_time_minutes
     };
+
+    console.log(`Template mapeado: ${mappedTemplate.title} com ${mappedTemplate.questions.length} perguntas`);
+    return mappedTemplate;
   });
 }

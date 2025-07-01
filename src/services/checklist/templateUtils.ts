@@ -1,5 +1,4 @@
 
-
 import { DiscFactorType, DiscQuestion } from "@/types/disc";
 import { PsicossocialQuestion, ChecklistTemplateType } from "@/types/checklist";
 import { ScaleType } from "@/types";
@@ -195,6 +194,9 @@ export function calculatePsicossocialRisk(responses: Record<string, number>, que
   const categoryScores: Record<string, number> = {};
   const categoryCounts: Record<string, number> = {};
 
+  console.log("Calculando risco psicossocial para", questions.length, "perguntas");
+  console.log("Respostas:", responses);
+
   // Agrupar respostas por categoria
   questions.forEach(question => {
     const category = question.category;
@@ -214,6 +216,8 @@ export function calculatePsicossocialRisk(responses: Record<string, number>, que
     const average = categoryScores[category] / categoryCounts[category];
     categoryScores[category] = Math.round((average / 5) * 100);
   });
+
+  console.log("Scores por categoria:", categoryScores);
 
   // Calcular risco geral ponderado
   let weightedSum = 0;
@@ -243,6 +247,8 @@ export function calculatePsicossocialRisk(responses: Record<string, number>, que
   const criticalCategories = Object.entries(categoryScores)
     .filter(([_, score]) => score >= 70)
     .map(([category, _]) => PSICOSSOCIAL_CATEGORIES[category as PsicossocialCategory] || category);
+
+  console.log("Risco calculado:", { overallRisk, riskLevel, criticalCategories });
 
   return {
     categoryScores,
@@ -342,6 +348,7 @@ export function mapDbTemplateTypeToApp(dbType: string): ChecklistTemplateType {
     'evaluation_360': 'evaluation_360'
   };
   
+  console.log(`Mapeando tipo do banco '${dbType}' para tipo da aplicação:`, typeMap[dbType] || 'custom');
   return typeMap[dbType] || 'custom';
 }
 

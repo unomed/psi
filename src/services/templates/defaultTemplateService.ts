@@ -1,83 +1,60 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { MTE_PSICOSSOCIAL_TEMPLATE } from "@/data/psicossocialTemplates";
 
 export async function createDefaultPsicossocialTemplate(): Promise<string | null> {
   try {
+    console.log("Verificando se já existe um template psicossocial padrão...");
+    
     // Verificar se já existe um template psicossocial padrão
     const { data: existingTemplates } = await supabase
       .from('checklist_templates')
       .select('id')
-      .eq('type', 'custom')
+      .eq('type', 'psicossocial')
       .eq('is_standard', true)
+      .eq('title', 'Avaliação Psicossocial - MTE Completa')
       .limit(1);
 
     if (existingTemplates && existingTemplates.length > 0) {
-      console.log('Template psicossocial padrão já existe');
+      console.log('Template psicossocial MTE já existe:', existingTemplates[0].id);
       return existingTemplates[0].id;
     }
 
-    // Criar o template base
-    const templateData = {
-      title: 'Avaliação de Riscos Psicossociais - MTE',
-      description: 'Template baseado no Guia de Fatores de Riscos Psicossociais do Ministério do Trabalho e Emprego',
-      type: 'custom' as const,
-      scale_type: 'custom' as const,
-      is_active: true,
-      is_standard: true,
-      company_id: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    const { data: template, error: templateError } = await supabase
+    console.log('Template psicossocial MTE não encontrado. Ele deve ser criado via migração SQL.');
+    
+    // O template agora é criado via migração SQL, não programaticamente
+    // Verificar se existe qualquer template psicossocial
+    const { data: anyPsicossocialTemplate } = await supabase
       .from('checklist_templates')
-      .insert(templateData)
-      .select()
-      .single();
+      .select('id')
+      .eq('type', 'psicossocial')
+      .limit(1);
 
-    if (templateError) {
-      console.error('Erro ao criar template:', templateError);
-      throw templateError;
+    if (anyPsicossocialTemplate && anyPsicossocialTemplate.length > 0) {
+      console.log('Encontrado template psicossocial existente:', anyPsicossocialTemplate[0].id);
+      return anyPsicossocialTemplate[0].id;
     }
 
-    // Criar as questões
-    const questionsData = MTE_PSICOSSOCIAL_TEMPLATE.map((question, index) => ({
-      template_id: template.id,
-      question_text: question.text,
-      order_number: index + 1,
-      target_factor: question.category,
-      weight: 1.0,
-      reverse_scored: false
-    }));
-
-    const { error: questionsError } = await supabase
-      .from('questions')
-      .insert(questionsData);
-
-    if (questionsError) {
-      console.error('Erro ao criar questões:', questionsError);
-      throw questionsError;
-    }
-
-    console.log('Template psicossocial padrão criado com sucesso:', template.id);
-    return template.id;
+    console.log('Nenhum template psicossocial encontrado.');
+    return null;
 
   } catch (error) {
-    console.error('Erro ao criar template padrão:', error);
+    console.error('Erro ao verificar template padrão:', error);
     return null;
   }
 }
 
 export async function initializeDefaultTemplates() {
   try {
+    console.log("Inicializando templates padrão...");
+    
     const psicossocialTemplateId = await createDefaultPsicossocialTemplate();
     
     if (psicossocialTemplateId) {
-      console.log('Templates padrão inicializados com sucesso');
+      console.log('Templates padrão verificados com sucesso');
       return true;
     }
     
+    console.log('Nenhum template psicossocial encontrado - deve ser criado via migração');
     return false;
   } catch (error) {
     console.error('Erro ao inicializar templates padrão:', error);
