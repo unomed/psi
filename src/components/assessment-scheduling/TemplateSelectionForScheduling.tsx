@@ -20,6 +20,19 @@ interface TemplateSelectionForSchedulingProps {
   selectedTemplate: ChecklistTemplate | null;
 }
 
+// Interface estendida para templates com propriedades customizadas
+interface ExtendedTemplate {
+  id: string;
+  name: string;
+  description: string;
+  categories: string[];
+  estimatedQuestions: number;
+  estimatedTimeMinutes: number;
+  typeLabel: string;
+  isCustom?: boolean;
+  originalTemplate?: ChecklistTemplate;
+}
+
 export function TemplateSelectionForScheduling({
   onTemplateSelect,
   onBack,
@@ -42,11 +55,11 @@ export function TemplateSelectionForScheduling({
   const { checklists: customTemplates, isLoading: isLoadingCustom } = useChecklistTemplates();
 
   // Combinar templates padrão e customizados
-  const allTemplates = useMemo(() => {
+  const allTemplates = useMemo((): ExtendedTemplate[] => {
     const standardTemplates = useTemplatesPage().filteredTemplates;
     
     // Converter templates customizados para formato compatível
-    const convertedCustomTemplates = customTemplates.map(template => ({
+    const convertedCustomTemplates: ExtendedTemplate[] = customTemplates.map(template => ({
       id: template.id,
       name: template.title,
       description: template.description || '',
@@ -54,11 +67,22 @@ export function TemplateSelectionForScheduling({
       estimatedQuestions: template.questions?.length || 0,
       estimatedTimeMinutes: template.estimatedTimeMinutes || 30,
       typeLabel: template.type.toUpperCase(),
-      isCustom: true, // Marcar como customizado
-      originalTemplate: template // Manter referência ao template original
+      isCustom: true,
+      originalTemplate: template
     }));
 
-    return [...standardTemplates, ...convertedCustomTemplates];
+    // Converter templates padrão para formato compatível
+    const convertedStandardTemplates: ExtendedTemplate[] = standardTemplates.map(template => ({
+      id: template.id,
+      name: template.name,
+      description: template.description,
+      categories: template.categories || [],
+      estimatedQuestions: template.estimatedQuestions,
+      estimatedTimeMinutes: template.estimatedTimeMinutes,
+      typeLabel: template.typeLabel
+    }));
+
+    return [...convertedStandardTemplates, ...convertedCustomTemplates];
   }, [customTemplates]);
 
   // Aplicar filtros nos templates combinados
@@ -82,16 +106,12 @@ export function TemplateSelectionForScheduling({
     // Filtro por tipo
     if (filterType !== "all") {
       templates = templates.filter(template => {
-        if (template.isCustom) {
+        if (template.isCustom && template.originalTemplate) {
           // Para templates customizados, usar o tipo original
-          return template.originalTemplate?.type === filterType.toLowerCase();
+          return template.originalTemplate.type === filterType.toLowerCase();
         } else {
-          // Para templates padrão, usar lógica existente
-          const typeLabel = template.id.includes("disc") ? "DISC" :
-                           template.id.includes("psicossocial") ? "Psicossocial" :
-                           template.id.includes("360") ? "360°" :
-                           template.id.includes("personal") ? "Vida Pessoal" : "Saúde Mental";
-          return typeLabel === filterType;
+          // Para templates padrão, usar o typeLabel
+          return template.typeLabel === filterType;
         }
       });
     }
@@ -123,7 +143,6 @@ export function TemplateSelectionForScheduling({
       const customTemplate = customTemplates.find(t => t.id === templateId);
       if (customTemplate) {
         console.log("✅ Template customizado encontrado:", customTemplate.title);
-        // Template customizado já está no formato correto
         template = customTemplate;
       } else {
         // Template padrão - usar createTemplateFromId
