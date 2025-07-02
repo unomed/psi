@@ -69,6 +69,17 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
 
       console.log('[EmployeeAuthNative] Login bem-sucedido:', newSession);
       
+      // Configurar sessão do funcionário no Supabase
+      try {
+        await supabase.rpc('set_employee_session', {
+          employee_id_value: employeeData.employee_id
+        });
+        console.log('[EmployeeAuthNative] Sessão do funcionário configurada no Supabase');
+      } catch (sessionError) {
+        console.error('[EmployeeAuthNative] Erro ao configurar sessão no Supabase:', sessionError);
+        // Não falhar o login por causa disso, mas log o erro
+      }
+      
       // Salvar sessão no localStorage
       localStorage.setItem('employee-session', JSON.stringify(newSession));
       localStorage.setItem('current_employee_id', employeeData.employee_id);
