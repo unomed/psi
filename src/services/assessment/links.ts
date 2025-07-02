@@ -74,9 +74,9 @@ export async function generateAssessmentLink(
     console.log("Existing link check result:", existingLink);
 
     if (existingLink?.token) {
-      // Usar o domínio correto para links existentes - NOVO FLUXO: direcionar para o portal
-      const link = `https://avaliacao.unomed.med.br/employee-portal?employee=${employeeId}&assessment=${existingLink.id}`;
-      console.log("Using existing link:", link);
+      // SEMPRE direcionar para o portal - redirecionamento automático
+      const link = `https://avaliacao.unomed.med.br/portal`;
+      console.log("Using existing link (redirected to portal):", link);
       return link;
     }
 
@@ -121,9 +121,9 @@ export async function generateAssessmentLink(
 
     console.log("Link generated successfully:", data);
 
-    // Return the complete URL with the correct domain - NOVO FLUXO: direcionar para o portal
-    const finalLink = `https://avaliacao.unomed.med.br/employee-portal?employee=${employeeId}&assessment=${data.id}`;
-    console.log("Final link generated:", finalLink);
+    // SEMPRE direcionar para o portal - redirecionamento automático
+    const finalLink = `https://avaliacao.unomed.med.br/portal`;
+    console.log("Final link generated (redirected to portal):", finalLink);
     return finalLink;
   } catch (error) {
     console.error("Error generating link:", error);
