@@ -67,46 +67,36 @@ export function ChecklistTabs({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
-      <TabsList className="grid w-full max-w-2xl grid-cols-5">
-        <TabsTrigger value="templates">
-          <ClipboardCheck className="h-4 w-4 mr-2" />
-          Modelos
-        </TabsTrigger>
-        <TabsTrigger value="all">
+      <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-slate-50 p-1 rounded-lg">
+        <TabsTrigger 
+          value="all"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-100 data-[state=active]:to-blue-200 data-[state=active]:text-blue-800 data-[state=active]:border-blue-300 transition-all duration-200"
+        >
           <ClipboardList className="h-4 w-4 mr-2" />
           Todos
         </TabsTrigger>
-        <TabsTrigger value="results">
+        <TabsTrigger 
+          value="results"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-100 data-[state=active]:to-green-200 data-[state=active]:text-green-800 data-[state=active]:border-green-300 transition-all duration-200"
+        >
           <ClipboardList className="h-4 w-4 mr-2" />
           Resultados
         </TabsTrigger>
-        <TabsTrigger value="email">
+        <TabsTrigger 
+          value="email"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-100 data-[state=active]:to-purple-200 data-[state=active]:text-purple-800 data-[state=active]:border-purple-300 transition-all duration-200"
+        >
           <Mail className="h-4 w-4 mr-2" />
           Envio Email
         </TabsTrigger>
-        <TabsTrigger value="history">
+        <TabsTrigger 
+          value="history"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-100 data-[state=active]:to-orange-200 data-[state=active]:text-orange-800 data-[state=active]:border-orange-300 transition-all duration-200"
+        >
           <History className="h-4 w-4 mr-2" />
           Histórico
         </TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="templates" className="mt-6">
-        {checklists.length === 0 ? (
-          <ChecklistEmptyState 
-            type="templates" 
-            onCreateTemplate={onCreateTemplate} 
-          />
-        ) : (
-          <TemplatesTable
-            templates={checklists}
-            onEditTemplate={onEditTemplate}
-            onDeleteTemplate={onDeleteTemplate}
-            onCopyTemplate={onCopyTemplate}
-            onStartAssessment={onStartAssessment}
-            isDeleting={isDeleting}
-          />
-        )}
-      </TabsContent>
       
       <TabsContent value="all" className="mt-6">
         {checklists.length === 0 ? (
