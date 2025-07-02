@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -306,18 +305,15 @@ export function EmployeeAssessmentForm({ assessmentId, employeeId }: EmployeeAss
       const riskLevel = calculateRiskLevel();
       console.log("[EmployeeAssessmentForm] Nível de risco calculado:", riskLevel);
       
-      // Usar a estrutura correta da tabela assessment_responses incluindo company_id
+      // Usar APENAS os campos que existem na tabela assessment_responses
       const responsePayload = {
         template_id: template.id,
         employee_id: employeeId,
-        employee_name: session?.employee?.employeeName || "",
-        company_id: session?.employee?.companyId, // Incluir company_id da sessão
         response_data: answers,
-        completed_at: new Date().toISOString(),
-        risk_level: riskLevel
+        completed_at: new Date().toISOString()
       };
       
-      console.log("[EmployeeAssessmentForm] Payload final:", responsePayload);
+      console.log("[EmployeeAssessmentForm] Payload corrigido:", responsePayload);
       
       try {
         const { data: responseData, error: responseError } = await supabase
