@@ -23,6 +23,12 @@ export function useTemplateSelectionLogic() {
   const [isConverting, setIsConverting] = useState(false);
 
   // Hook para templates padrão
+  const templatesPageData = useTemplatesPage();
+  
+  // Hook para templates customizados do banco
+  const { checklists: customTemplates, isLoading: isLoadingCustom } = useChecklistTemplates();
+
+  // Extrair funções de busca e filtro dos templates
   const {
     searchTerm,
     setSearchTerm,
@@ -31,10 +37,7 @@ export function useTemplateSelectionLogic() {
     clearFilters,
     hasActiveFilters,
     validateTemplate
-  } = useTemplatesPage();
-
-  // Hook para templates customizados do banco
-  const { checklists: customTemplates, isLoading: isLoadingCustom } = useChecklistTemplates();
+  } = templatesPageData;
 
   // Função para gerar typeLabel baseado no template
   const generateTypeLabel = (template: any): string => {
@@ -54,7 +57,7 @@ export function useTemplateSelectionLogic() {
 
   // Combinar templates padrão e customizados
   const allTemplates = useMemo((): ExtendedTemplate[] => {
-    const standardTemplates = useTemplatesPage().filteredTemplates;
+    const standardTemplates = templatesPageData.filteredTemplates || [];
     
     // Converter templates customizados para formato compatível
     const convertedCustomTemplates: ExtendedTemplate[] = customTemplates.map(template => ({
@@ -81,7 +84,7 @@ export function useTemplateSelectionLogic() {
     }));
 
     return [...convertedStandardTemplates, ...convertedCustomTemplates];
-  }, [customTemplates]);
+  }, [customTemplates, templatesPageData.filteredTemplates]);
 
   // Aplicar filtros nos templates combinados
   const filteredTemplates = useMemo(() => {
