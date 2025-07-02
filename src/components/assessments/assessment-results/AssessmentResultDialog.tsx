@@ -113,6 +113,23 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
     );
   };
 
+  const getScaleText = (value: any, scaleType: string = 'likert5') => {
+    const numValue = Number(value);
+    
+    if (scaleType === 'likert5') {
+      const likert5Scale = {
+        1: 'Nunca',
+        2: 'Raramente', 
+        3: 'Às vezes',
+        4: 'Frequentemente',
+        5: 'Sempre'
+      };
+      return likert5Scale[numValue] || `Valor: ${value}`;
+    }
+    
+    return String(value);
+  };
+
   const renderResponseData = () => {
     if (!result.responseData && !result.response_data) return null;
     
@@ -120,6 +137,7 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
     if (!responseData || typeof responseData !== 'object') return null;
 
     const questions = result.questions || [];
+    const templateType = result.checklist_templates?.type || result.templateType;
     
     // Se temos questões do template, vamos mapear as respostas com as perguntas
     if (questions.length > 0) {
@@ -134,7 +152,8 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
           
           return {
             question: question.question_text,
-            answer: answer !== undefined ? answer : 'Não respondido'
+            answer: answer !== undefined ? answer : 'Não respondido',
+            questionId: question.id
           };
         })
         .filter(item => item.answer !== 'Não respondido');
@@ -167,10 +186,15 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
                 </div>
                 <div className="text-sm">
                   <span className="font-medium">Resposta: </span>
-                  {typeof item.answer === 'number' ? 
-                    `${item.answer} ${item.answer === 1 ? 'ponto' : 'pontos'}` : 
-                    String(item.answer)
-                  }
+                  <span className="text-primary font-medium">
+                    {templateType === 'psicossocial' ? 
+                      getScaleText(item.answer, 'likert5') : 
+                      String(item.answer)
+                    }
+                  </span>
+                  {templateType === 'psicossocial' && typeof item.answer === 'number' && (
+                    <span className="text-muted-foreground ml-2">({item.answer})</span>
+                  )}
                 </div>
               </div>
             ))}
