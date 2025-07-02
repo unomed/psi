@@ -4,6 +4,7 @@ import { ChecklistTemplate, ScaleType } from "@/types";
 import { createTemplateFromId } from "@/utils/templateIntegration";
 import { useTemplatesPage } from "@/hooks/useTemplatesPage";
 import { useChecklistTemplates } from "@/hooks/checklist/useChecklistTemplates";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 // Interface estendida para templates com propriedades customizadas
@@ -136,69 +137,84 @@ export function useTemplateSelectionLogic() {
     setIsConverting(true);
     
     try {
-      console.log("🔄 Convertendo template para agendamento:", templateId);
+      console.log("🔄 Selecionando template para agendamento:", templateId);
       
       let template: ChecklistTemplate | null = null;
 
-      // Verificar se é template customizado
+      // Primeiro, verificar se é template customizado (do banco de dados)
       const customTemplate = customTemplates.find(t => t.id === templateId);
       if (customTemplate) {
         console.log("✅ Template customizado encontrado:", customTemplate.title);
         template = customTemplate;
       } else {
-        // Template padrão - usar createTemplateFromId
-        const standardTemplate = createTemplateFromId(templateId);
-        if (!standardTemplate) {
-          throw new Error(`Template padrão ${templateId} não encontrado`);
-        }
+        // Se não é template customizado, verificar se existe no banco de dados
+        const { data: existingTemplate, error: fetchError } = await supabase
+          .from('checklist_templates')
+          .select(`
+            *,
+            questions(*)
+          `)
+          .eq('id', templateId)
+          .single();
 
-        // Converter para ChecklistTemplate
-        template = {
-          id: standardTemplate.id,
-          title: standardTemplate.title,
-          description: standardTemplate.description || '',
-          type: standardTemplate.type,
-          questions: standardTemplate.questions || [],
-          createdAt: new Date(),
-          scaleType: standardTemplate.scaleType || ScaleType.Likert,
-          isStandard: true,
-          estimatedTimeMinutes: standardTemplate.estimatedTimeMinutes,
-          instructions: standardTemplate.instructions,
-          interpretationGuide: standardTemplate.interpretationGuide,
-          maxScore: standardTemplate.maxScore,
-          cutoffScores: standardTemplate.cutoffScores,
-          isActive: true,
-          version: 1,
-          // Database compatibility fields
-          estimated_time_minutes: standardTemplate.estimatedTimeMinutes,
-          is_standard: true,
-          scale_type: standardTemplate.scaleType || 'likert5',
-          created_at: new Date().toISOString(),
-          is_active: true,
-          cutoff_scores: standardTemplate.cutoffScores,
-          max_score: standardTemplate.maxScore,
-          interpretation_guide: standardTemplate.interpretationGuide
-        };
+        if (existingTemplate && !fetchError) {
+          console.log("✅ Template encontrado no banco:", existingTemplate.title);
+          template = {
+            id: existingTemplate.id,
+            title: existingTemplate.title,
+            description: existingTemplate.description || '',
+            type: existingTemplate.type,
+            questions: [] as any[], // Evitar problemas de tipo com as perguntas do banco
+            createdAt: new Date(existingTemplate.created_at),
+            scaleType: existingTemplate.scale_type as any,
+            isStandard: existingTemplate.is_standard,
+            estimatedTimeMinutes: existingTemplate.estimated_time_minutes,
+            isActive: existingTemplate.is_active,
+            interpretationGuide: existingTemplate.interpretation_guide,
+            cutoffScores: existingTemplate.cutoff_scores,
+            maxScore: existingTemplate.max_score,
+            version: existingTemplate.version,
+            // Database compatibility fields
+            estimated_time_minutes: existingTemplate.estimated_time_minutes,
+            is_standard: existingTemplate.is_standard,
+            scale_type: existingTemplate.scale_type,
+            created_at: existingTemplate.created_at,
+            is_active: existingTemplate.is_active,
+            cutoff_scores: existingTemplate.cutoff_scores,
+            max_score: existingTemplate.max_score,
+            interpretation_guide: existingTemplate.interpretation_guide
+          };
+        } else {
+          // Template não encontrado no banco
+          console.error("❌ Template não encontrado no banco de dados:", templateId);
+          throw new Error(`Template "${templateId}" não foi encontrado. Use apenas templates salvos no sistema.`);
+        }
       }
 
-      // Validar template
-      if (!validateTemplate(template)) {
+      // Validar template final
+      if (!template || !template.id) {
+        throw new Error(`Template ${templateId} não pôde ser processado`);
+      }
+
+      // Validação adicional usando a função validateTemplate se disponível
+      if (validateTemplate && !validateTemplate(template)) {
         throw new Error(`Template ${templateId} não é válido`);
       }
 
-      console.log("✅ Template convertido com sucesso:", {
+      console.log("✅ Template selecionado com sucesso:", {
         id: template.id,
         title: template.title,
-        questions: template.questions.length,
+        questions: template.questions?.length || 0,
         type: template.type,
-        isCustom: !!customTemplate
+        isCustom: !!customTemplate,
+        existsInDb: true
       });
 
       onTemplateSelect(template);
       toast.success(`Template "${template.title}" selecionado para agendamento!`);
       
     } catch (error) {
-      console.error("❌ Erro ao converter template:", error);
+      console.error("❌ Erro ao selecionar template:", error);
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast.error("Erro ao selecionar template", {
         description: errorMessage
