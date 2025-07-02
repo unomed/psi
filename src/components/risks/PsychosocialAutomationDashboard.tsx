@@ -169,23 +169,18 @@ export function PsychosocialAutomationDashboard({ selectedCompanyId }: Psychosoc
             Controles de Automação
           </CardTitle>
           <CardDescription>
-            Gerencie o processamento automático de análises psicossociais
+            Esta funcionalidade foi movida para Configurações → Automação Avançada
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Play className="h-4 w-4 mr-2" />
-              Iniciar Processamento
-            </Button>
-            <Button variant="outline" size="sm">
-              <Pause className="h-4 w-4 mr-2" />
-              Pausar Sistema
-            </Button>
-            <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reprocessar Falhas
-            </Button>
+          <div className="text-center py-4 text-muted-foreground">
+            <p className="mb-4">Os controles de processamento foram consolidados na página de Automação Avançada.</p>
+            <a 
+              href="/configuracoes/automacao-avancada" 
+              className="text-primary hover:underline font-medium"
+            >
+              Ir para Automação Avançada →
+            </a>
           </div>
         </CardContent>
       </Card>
