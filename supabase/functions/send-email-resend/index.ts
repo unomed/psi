@@ -86,7 +86,7 @@ serve(async (req) => {
     }
     
     // Gerar QR Code para o portal do funcionário
-    const employeePortalUrl = `${req.headers.get('origin') || 'https://your-domain.com'}/funcionario`;
+    const employeePortalUrl = `https://avaliacao.unomed.med.br/portal`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(employeePortalUrl)}`;
     
     let emailSubject = requestData.customSubject || `${companyName} - Convite para Avaliação Psicossocial`;
