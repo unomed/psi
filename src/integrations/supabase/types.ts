@@ -824,6 +824,48 @@ export type Database = {
           },
         ]
       }
+      company_notifications: {
+        Row: {
+          body_template: string
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          notification_type: string
+          recipient_email: string
+          subject_template: string
+          trigger_event: string
+          updated_at: string
+        }
+        Insert: {
+          body_template: string
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          notification_type: string
+          recipient_email: string
+          subject_template: string
+          trigger_event: string
+          updated_at?: string
+        }
+        Update: {
+          body_template?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          notification_type?: string
+          recipient_email?: string
+          subject_template?: string
+          trigger_event?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       credit_purchases: {
         Row: {
           amount_paid: number
@@ -1269,6 +1311,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_emails: {
+        Row: {
+          assessment_response_id: string | null
+          body: string
+          company_id: string
+          created_at: string
+          id: string
+          notification_type: string
+          recipient_email: string
+          risk_analysis_id: string | null
+          sent_at: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          assessment_response_id?: string | null
+          body: string
+          company_id: string
+          created_at?: string
+          id?: string
+          notification_type: string
+          recipient_email: string
+          risk_analysis_id?: string | null
+          sent_at?: string
+          status?: string
+          subject: string
+        }
+        Update: {
+          assessment_response_id?: string | null
+          body?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          notification_type?: string
+          recipient_email?: string
+          risk_analysis_id?: string | null
+          sent_at?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
       }
       notification_settings: {
         Row: {
@@ -3239,12 +3323,29 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      populate_processing_jobs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       process_frprt_classification: {
         Args: { p_assessment_response_id: string }
         Returns: Json
       }
       process_psychosocial_assessment_auto: {
         Args: { p_assessment_response_id: string }
+        Returns: Json
+      }
+      process_psychosocial_assessment_with_notifications: {
+        Args: { p_assessment_response_id: string }
+        Returns: Json
+      }
+      send_company_notification: {
+        Args: {
+          p_company_id: string
+          p_trigger_event: string
+          p_assessment_response_id?: string
+          p_risk_analysis_id?: string
+        }
         Returns: Json
       }
       set_employee_session: {
