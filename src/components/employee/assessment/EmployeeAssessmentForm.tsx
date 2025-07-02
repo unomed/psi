@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -293,15 +294,8 @@ export function EmployeeAssessmentForm({ assessmentId, employeeId }: EmployeeAss
       const riskLevel = calculateRiskLevel();
       console.log("[EmployeeAssessmentForm] Nível de risco calculado:", riskLevel);
       
-      // Usar a estrutura correta da tabela assessment_responses com as novas colunas
-      const responsePayload: {
-        template_id: string;
-        employee_id: string;
-        employee_name: string;
-        response_data: Record<string, string>;
-        completed_at: string;
-        risk_level: string;
-      } = {
+      // Usar a estrutura correta da tabela assessment_responses - SEM company_id
+      const responsePayload = {
         template_id: template.id,
         employee_id: employeeId,
         employee_name: session?.employee?.employeeName || "",
@@ -309,6 +303,8 @@ export function EmployeeAssessmentForm({ assessmentId, employeeId }: EmployeeAss
         completed_at: new Date().toISOString(),
         risk_level: riskLevel
       };
+      
+      console.log("[EmployeeAssessmentForm] Payload final:", responsePayload);
       
       try {
         const { data: responseData, error: responseError } = await supabase
@@ -319,6 +315,8 @@ export function EmployeeAssessmentForm({ assessmentId, employeeId }: EmployeeAss
           console.error("[EmployeeAssessmentForm] Erro ao salvar respostas:", responseError);
           throw responseError;
         }
+
+        console.log("[EmployeeAssessmentForm] Resposta salva com sucesso:", responseData);
       } catch (error) {
         console.error("[EmployeeAssessmentForm] Erro ao salvar respostas:", error);
         toast.error("Erro ao salvar suas respostas. Tente novamente.");
@@ -327,11 +325,7 @@ export function EmployeeAssessmentForm({ assessmentId, employeeId }: EmployeeAss
       }
 
       // Atualizar o status da avaliação para 'completed' com as novas colunas
-      const updatePayload: {
-        status: string;
-        completed_at: string;
-        risk_level: string;
-      } = {
+      const updatePayload = {
         status: 'completed',
         completed_at: new Date().toISOString(),
         risk_level: riskLevel
