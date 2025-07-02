@@ -70,25 +70,18 @@ export const avaliacoesItems: MenuItem[] = [
     permission: "checklists:read"
   },
   {
+    title: "Agendamentos",
+    icon: Calendar,
+    href: "/agendamentos",
+    roles: ["admin", "manager"],
+    permission: "assessments:schedule"
+  },
+  {
     title: "Resultados",
     icon: BarChart3,
     href: "/resultados",
     roles: ["admin", "manager"],
     permission: "assessment_results:read"
-  },
-  {
-    title: "Comparação",
-    icon: FileCheck,
-    href: "/candidatos/comparacao",
-    roles: ["admin", "manager"],
-    permission: "assessments:read"
-  },
-  {
-    title: "Avaliações",
-    icon: Calendar,
-    href: "/candidatos/avaliacoes",
-    roles: ["admin", "manager"],
-    permission: "assessments:schedule"
   }
 ];
 
@@ -109,18 +102,29 @@ export const gestaoItems: MenuItem[] = [
     permission: "action_plans:read"
   },
   {
-    title: "Agendamentos",
-    icon: Calendar,
-    href: "/agendamentos",
-    roles: ["admin", "manager"],
-    permission: "assessments:schedule"
-  },
-  {
     title: "Relatórios",
     icon: TrendingUp,
     href: "/relatorios",
     roles: ["admin", "manager"],
     permission: "reports:read"
+  }
+];
+
+// Candidatos items - NOVA SEÇÃO
+export const candidatosItems: MenuItem[] = [
+  {
+    title: "Avaliações",
+    icon: Calendar,
+    href: "/candidatos/avaliacoes",
+    roles: ["admin", "manager"],
+    permission: "assessments:schedule"
+  },
+  {
+    title: "Comparação",
+    icon: FileCheck,
+    href: "/candidatos/comparacao",
+    roles: ["admin", "manager"],
+    permission: "assessments:read"
   }
 ];
 
@@ -141,5 +145,6 @@ export const menuItems: MenuItem[] = [
   ...cadastrosItems,
   ...avaliacoesItems,
   ...gestaoItems,
+  ...candidatosItems,
   ...portaisItems
 ];

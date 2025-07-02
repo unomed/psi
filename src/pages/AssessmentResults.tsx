@@ -1,35 +1,78 @@
-
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, FileText } from "lucide-react";
-import { AssessmentResultsTableReal } from "@/components/assessments/assessment-results/AssessmentResultsTableReal";
-import { AssessmentAnalytics } from "@/components/assessments/assessment-analytics/AssessmentAnalytics";
-import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Search, Filter, FileText, TrendingUp, Users, Brain, Eye, Download } from "lucide-react";
+import { useAssessmentResultsData } from "@/hooks/useAssessmentResultsData";
 import { useAuth } from "@/contexts/AuthContext";
+import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { AssessmentResultDialog } from "@/components/assessments/assessment-results/AssessmentResultDialog";
 
 export default function AssessmentResults() {
   const { userRole, userCompanies } = useAuth();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    // Auto-select first company for non-superadmin users
     if (userRole !== 'superadmin' && userCompanies.length > 0) {
       return userCompanies[0].companyId;
     }
     return null;
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [riskFilter, setRiskFilter] = useState("all");
+  const [selectedResult, setSelectedResult] = useState<any>(null);
+  const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
+
+  const { data: results = [], isLoading } = useAssessmentResultsData(selectedCompanyId);
 
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompanyId(companyId || null);
   };
 
+  const filteredResults = results.filter(result => {
+    const matchesSearch = result.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         result.templateTitle.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRisk = riskFilter === 'all' || result.riskLevel === riskFilter;
+
+    return matchesSearch && matchesRisk;
+  });
+
+  const handleViewResult = (result: any) => {
+    setSelectedResult(result);
+    setIsResultDialogOpen(true);
+  };
+
+  const getRiskLevelColor = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'Alto': return 'bg-red-100 text-red-800';
+      case 'Médio': return 'bg-yellow-100 text-yellow-800';
+      case 'Baixo': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (!selectedCompanyId && userRole !== 'superadmin') {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">Selecione uma empresa para ver os resultados</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Resultados das Avaliações</h1>
-        <p className="text-muted-foreground">
-          Visualize e analise os resultados das avaliações psicossociais realizadas
-        </p>
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Resultados das Avaliações</h1>
+          <p className="text-muted-foreground">
+            Visualize e analise os resultados das avaliações realizadas
+          </p>
+        </div>
+        <Button variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Exportar
+        </Button>
       </div>
 
       <CompanySelectorReal
@@ -37,27 +80,89 @@ export default function AssessmentResults() {
         onCompanyChange={handleCompanyChange}
       />
 
-      {/* Tabs */}
-      <Tabs defaultValue="results" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="results" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Resultados
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Análises
-          </TabsTrigger>
-        </TabsList>
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Buscar por funcionário ou template..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={riskFilter} onValueChange={setRiskFilter}>
+          <SelectTrigger className="w-40">
+            <Filter className="mr-2 h-4 w-4" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os riscos</SelectItem>
+            <SelectItem value="Alto">Alto risco</SelectItem>
+            <SelectItem value="Médio">Médio risco</SelectItem>
+            <SelectItem value="Baixo">Baixo risco</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        <TabsContent value="results">
-          <AssessmentResultsTableReal companyId={selectedCompanyId} />
-        </TabsContent>
+      <div className="grid grid-cols-1 gap-4">
+        {isLoading ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Carregando resultados...</p>
+          </div>
+        ) : filteredResults.length === 0 ? (
+          <div className="text-center py-8">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">Nenhum resultado encontrado</p>
+            <p className="text-muted-foreground">
+              Tente ajustar os filtros ou realize algumas avaliações
+            </p>
+          </div>
+        ) : (
+          filteredResults.map(result => (
+            <Card key={result.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{result.employeeName}</CardTitle>
+                    <CardDescription>{result.templateTitle}</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge className={getRiskLevelColor(result.riskLevel)}>
+                      {result.riskLevel}
+                    </Badge>
+                    <Badge variant="outline">
+                      {result.templateType.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-muted-foreground">
+                    Concluído em: {new Date(result.completedAt).toLocaleDateString('pt-BR')}
+                  </div>
+                  <Button 
+                    size="sm"
+                    onClick={() => handleViewResult(result)}
+                  >
+                    <Eye className="mr-2 h-3 w-3" />
+                    Ver Resultado
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
-        <TabsContent value="analytics">
-          <AssessmentAnalytics companyId={selectedCompanyId} />
-        </TabsContent>
-      </Tabs>
+      <AssessmentResultDialog
+        result={selectedResult}
+        isOpen={isResultDialogOpen}
+        onClose={() => {
+          setIsResultDialogOpen(false);
+          setSelectedResult(null);
+        }}
+      />
     </div>
   );
 }
