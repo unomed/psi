@@ -8,11 +8,22 @@ import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
 import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
 import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
 import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
+import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function GestaoRiscos() {
-  const { userCompanies } = useAuth();
-  const companyId = userCompanies && userCompanies.length > 0 ? userCompanies[0].companyId : undefined;
+  const { userRole, userCompanies } = useAuth();
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
+    // Auto-select first company for non-superadmin users
+    if (userRole !== 'superadmin' && userCompanies.length > 0) {
+      return userCompanies[0].companyId;
+    }
+    return null;
+  });
+
+  const handleCompanyChange = (companyId: string) => {
+    setSelectedCompanyId(companyId || null);
+  };
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -24,6 +35,11 @@ export default function GestaoRiscos() {
           </p>
         </div>
       </div>
+
+      <CompanySelectorReal
+        selectedCompanyId={selectedCompanyId}
+        onCompanyChange={handleCompanyChange}
+      />
 
       <Tabs defaultValue="psychosocial" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
@@ -61,7 +77,7 @@ export default function GestaoRiscos() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PsychosocialRiskAnalysis companyId={companyId} />
+              <PsychosocialRiskAnalysis companyId={selectedCompanyId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -78,7 +94,7 @@ export default function GestaoRiscos() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PsychosocialProcessingMonitor companyId={companyId} />
+              <PsychosocialProcessingMonitor companyId={selectedCompanyId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -106,7 +122,7 @@ export default function GestaoRiscos() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <RiskAssessmentsTable companyId={companyId} />
+              <RiskAssessmentsTable companyId={selectedCompanyId} />
             </CardContent>
           </Card>
         </TabsContent>
