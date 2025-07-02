@@ -52,11 +52,27 @@ export function useAssessmentCriteriaSettings() {
         .update(newSettings)
         .eq("id", settings.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error updating settings:", error);
         throw error;
+      }
+      
+      // Se não retornou dados, vamos buscar os dados atualizados
+      if (!data) {
+        const { data: updatedData, error: fetchError } = await supabase
+          .from("assessment_criteria_settings")
+          .select("*")
+          .eq("id", settings.id)
+          .single();
+          
+        if (fetchError) {
+          console.error("Error fetching updated settings:", fetchError);
+          throw fetchError;
+        }
+        
+        return updatedData;
       }
       
       return data;
@@ -64,7 +80,9 @@ export function useAssessmentCriteriaSettings() {
     onSuccess: (data) => {
       // Invalidar queries e atualizar cache
       queryClient.invalidateQueries({ queryKey: ["assessment-criteria-settings"] });
-      queryClient.setQueryData(["assessment-criteria-settings"], data);
+      if (data) {
+        queryClient.setQueryData(["assessment-criteria-settings"], data);
+      }
       toast.success("Configurações atualizadas com sucesso");
     },
     onError: (error) => {
