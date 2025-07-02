@@ -43,15 +43,28 @@ export function useAssessmentCriteriaSettings() {
 
   const { mutateAsync: updateSettings } = useMutation({
     mutationFn: async (newSettings: Partial<AssessmentCriteriaSettings>) => {
-      const { error } = await supabase
+      if (!settings?.id) {
+        throw new Error("Settings ID not found");
+      }
+      
+      const { data, error } = await supabase
         .from("assessment_criteria_settings")
         .update(newSettings)
-        .eq("id", settings?.id);
+        .eq("id", settings.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating settings:", error);
+        throw error;
+      }
+      
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidar queries e atualizar cache
       queryClient.invalidateQueries({ queryKey: ["assessment-criteria-settings"] });
+      queryClient.setQueryData(["assessment-criteria-settings"], data);
       toast.success("Configurações atualizadas com sucesso");
     },
     onError: (error) => {

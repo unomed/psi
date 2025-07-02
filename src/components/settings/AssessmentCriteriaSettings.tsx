@@ -52,24 +52,30 @@ export const AssessmentCriteriaSettings = () => {
 
   const handleSaveSampling = async () => {
     try {
+      console.log("Salvando dados de amostragem:", samplingData);
       await updateSettings(samplingData);
     } catch (error) {
+      console.error("Erro ao salvar:", error);
       toast.error("Erro ao salvar configurações");
     }
   };
 
   const handleSaveGovernance = async () => {
     try {
+      console.log("Salvando dados de governança:", governanceData);
       await updateSettings(governanceData);
     } catch (error) {
+      console.error("Erro ao salvar:", error);
       toast.error("Erro ao salvar configurações");
     }
   };
 
   const handleSavePeriodicity = async () => {
     try {
+      console.log("Salvando dados de periodicidade:", periodicityData);
       await updateSettings(periodicityData);
     } catch (error) {
+      console.error("Erro ao salvar:", error);
       toast.error("Erro ao salvar configurações");
     }
   };
