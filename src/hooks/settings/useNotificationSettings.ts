@@ -35,11 +35,25 @@ export function useNotificationSettings() {
       const { data, error } = await supabase
         .from('notification_settings')
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching notification settings:', error);
         return null;
+      }
+
+      // Se não há configurações, retorna valores padrão
+      if (!data) {
+        return {
+          id: '',
+          email_notifications: true,
+          system_notifications: true,
+          risk_alerts: true,
+          deadline_alerts: true,
+          notification_frequency: 'daily',
+          high_risk_threshold: 80,
+          deadline_warning_days: 7
+        };
       }
 
       return data;
