@@ -1,7 +1,7 @@
 
 import { Employee } from "@/types/employee";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "@/components/employees/columns";
+import { createColumns } from "@/components/employees/columns";
 import { EmptyEmployeeState } from "@/components/employees/EmptyEmployeeState";
 import { EmployeeSearch } from "@/components/employees/EmployeeSearch";
 
@@ -14,6 +14,7 @@ interface EmployeeListSectionProps {
   onEdit: (employee: Employee) => void;
   onDelete: (employee: Employee) => void;
   onView: (employee: Employee) => void;
+  employeeMoods?: Record<string, any>;
 }
 
 export function EmployeeListSection({
@@ -24,7 +25,8 @@ export function EmployeeListSection({
   onCreateClick,
   onEdit,
   onDelete,
-  onView
+  onView,
+  employeeMoods
 }: EmployeeListSectionProps) {
   return (
     <>
@@ -39,7 +41,7 @@ export function EmployeeListSection({
         <EmptyEmployeeState onCreateClick={onCreateClick} />
       ) : (
         <DataTable 
-          columns={columns} 
+          columns={createColumns(employeeMoods)} 
           data={filteredEmployees || []}
           isLoading={isLoading}
           meta={{

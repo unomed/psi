@@ -8,6 +8,7 @@ import { EmployeeCompanySelector } from "@/components/employees/EmployeeCompanyS
 import { EmployeeListSection } from "@/components/employees/EmployeeListSection";
 import { useEmployeeCompanyFilter } from "@/hooks/employees/useEmployeeCompanyFilter";
 import { useEmployeeOperations } from "@/hooks/employees/useEmployeeOperations";
+import { useEmployeesWithMood } from "@/hooks/useEmployeesWithMood";
 
 export default function Funcionarios() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +50,9 @@ export default function Funcionarios() {
     return matchesName || matchesCpf || matchesEmail;
   });
 
+  // Hook para buscar dados de humor dos funcionários
+  const { employeeMoods, loading: moodLoading } = useEmployeesWithMood(filteredByCompany);
+
   return (
     <div className="space-y-8">
       <EmployeeHeader 
@@ -76,6 +80,7 @@ export default function Funcionarios() {
           onEdit={handleEditClick}
           onDelete={handleDeleteClick}
           onView={handleViewClick}
+          employeeMoods={employeeMoods}
         />
       )}
 
