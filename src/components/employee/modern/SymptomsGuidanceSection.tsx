@@ -444,14 +444,14 @@ export function SymptomsGuidanceSection() {
               <Phone className="h-5 w-5 text-blue-500" />
               <div className="text-left">
                 <p className="font-medium">Telefone</p>
-                <p className="text-sm text-gray-500">(11) 4321-5678</p>
+                <p className="text-sm text-gray-500">(42) 3232-2273</p>
               </div>
             </Button>
             <Button variant="outline" className="border-blue-200 hover:bg-blue-50 hover:text-blue-700 flex items-center justify-center gap-2 h-auto py-3">
               <Mail className="h-5 w-5 text-blue-500" />
               <div className="text-left">
                 <p className="font-medium">E-mail</p>
-                <p className="text-sm text-gray-500">saude@empresa.com</p>
+                <p className="text-sm text-gray-500">atendimento@unomed.med.br</p>
               </div>
             </Button>
             <Button variant="outline" className="border-blue-200 hover:bg-blue-50 hover:text-blue-700 flex items-center justify-center gap-2 h-auto py-3">
