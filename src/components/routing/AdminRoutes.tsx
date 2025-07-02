@@ -13,7 +13,7 @@ import Relatorios from "@/pages/Relatorios";
 import NR01Page from "@/pages/relatorios/NR01Page";
 import Faturamento from "@/pages/Faturamento";
 import AssessmentPage from "@/pages/AssessmentPage";
-import AssessmentScheduling from "@/pages/AssessmentScheduling";
+import Agendamentos from "@/pages/Agendamentos";
 import CandidatosComparacao from "@/pages/CandidatosComparacao";
 import CandidatosAvaliacoes from "@/pages/CandidatosAvaliacoes";
 
@@ -52,7 +52,7 @@ export function AdminRoutes() {
       {/* GESTÃO - Rotas padronizadas em português */}
       <Route path="/gestao-riscos" element={<GestaoRiscos />} />
       <Route path="/plano-acao" element={<PlanoAcao />} />
-      <Route path="/agendamentos" element={<AssessmentScheduling />} />
+      <Route path="/agendamentos" element={<Agendamentos />} />
       <Route path="/relatorios" element={<Relatorios />} />
       <Route path="/relatorios/nr01" element={<NR01Page />} />
       

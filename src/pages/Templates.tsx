@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Plus, Search, Filter, FileText, Users, Brain, TrendingUp, Eye } from "lucide-react";
+import { Plus, Search, Filter, FileText, Users, Brain, TrendingUp, Eye, Edit, Calendar } from "lucide-react";
 import { ChecklistTemplateWorkflow } from "@/components/checklists/ChecklistTemplateWorkflow";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -168,13 +168,19 @@ export default function Templates() {
           <div>
             <h1 className="text-3xl font-bold">Templates de Avaliação</h1>
             <p className="text-muted-foreground">
-              Gerencie templates para diferentes tipos de avaliação
+              Crie, edite e gerencie templates para diferentes tipos de avaliação
             </p>
           </div>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Template
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = '/agendamentos'}>
+              <Calendar className="mr-2 h-4 w-4" />
+              Agendar Avaliações
+            </Button>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Template
+            </Button>
+          </div>
         </div>
 
         {/* Company Selector */}
@@ -356,10 +362,10 @@ export default function Templates() {
                           <Button 
                             size="sm" 
                             className="flex-1"
-                            onClick={() => window.location.href = '/agendamentos'}
+                            onClick={() => window.location.href = `/templates/${template.id}/edit`}
                           >
-                            <FileText className="mr-2 h-3 w-3" />
-                            Agendar
+                            <Edit className="mr-2 h-3 w-3" />
+                            Editar
                           </Button>
                         </div>
                       </div>
@@ -370,77 +376,45 @@ export default function Templates() {
             </div>
           </TabsContent>
 
-          <TabsContent value="candidatos" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categorizedTemplates.candidatos.map(template => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{template.title}</CardTitle>
-                    <CardDescription>{template.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between items-center">
-                      <Badge className={getTemplateTypeColor(template.type)}>
-                        {getTemplateTypeLabel(template.type)}
-                      </Badge>
-                      <Button size="sm">Usar</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="funcionarios" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categorizedTemplates.funcionarios.map(template => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{template.title}</CardTitle>
-                    <CardDescription>{template.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between items-center">
-                      <Badge className={getTemplateTypeColor(template.type)}>
-                        {getTemplateTypeLabel(template.type)}
-                      </Badge>
-                      <Button size="sm">Usar</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="avaliacao360" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categorizedTemplates.avaliacao360.map(template => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{template.title}</CardTitle>
-                    <CardDescription>{template.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between items-center">
-                      <Badge className={getTemplateTypeColor(template.type)}>
-                        {getTemplateTypeLabel(template.type)}
-                      </Badge>
-                      <Button size="sm">Usar</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+          {/* Tabs por categoria */}
+          {Object.entries(categorizedTemplates).map(([category, categoryTemplates]) => (
+            <TabsContent key={category} value={category} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categoryTemplates.map((template: any) => (
+                  <Card key={template.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">{template.title}</CardTitle>
+                      <CardDescription>{template.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex justify-between items-center">
+                        <Badge className={getTemplateTypeColor(template.type)}>
+                          {getTemplateTypeLabel(template.type)}
+                        </Badge>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Eye className="mr-2 h-3 w-3" />
+                            Ver
+                          </Button>
+                          <Button size="sm">
+                            <Edit className="mr-2 h-3 w-3" />
+                            Editar
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          ))}
         </Tabs>
 
-        {/* Dialog de Criação */}
+        {/* Dialog de criação */}
         <ChecklistTemplateWorkflow
           isOpen={isCreateDialogOpen}
           onClose={() => setIsCreateDialogOpen(false)}
           onSubmit={handleCreateTemplate}
-          existingTemplate={null}
-          isEditing={false}
         />
       </div>
     </TooltipProvider>

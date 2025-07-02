@@ -13,7 +13,7 @@ import Relatorios from "@/pages/Relatorios";
 import NR01Page from "@/pages/relatorios/NR01Page";
 import Faturamento from "@/pages/Faturamento";
 import AssessmentPage from "@/pages/AssessmentPage";
-import AssessmentScheduling from "@/pages/AssessmentScheduling";
+import Agendamentos from "@/pages/Agendamentos";
 
 // DEPRECATED: Use AdminRoutes instead
 // Esta função é mantida apenas para compatibilidade, mas deve usar AdminRoutes
@@ -38,7 +38,7 @@ export function MainRoutes() {
       <Route path="/relatorios/nr01" element={<NR01Page />} />
       <Route path="/faturamento" element={<Faturamento />} />
       <Route path="/assessments/:id" element={<AssessmentPage />} />
-      <Route path="/agendamentos" element={<AssessmentScheduling />} />
+      <Route path="/agendamentos" element={<Agendamentos />} />
     </Routes>
   );
 }
