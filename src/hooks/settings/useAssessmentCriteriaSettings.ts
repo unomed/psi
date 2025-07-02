@@ -47,32 +47,27 @@ export function useAssessmentCriteriaSettings() {
         throw new Error("Settings ID not found");
       }
       
-      const { data, error } = await supabase
+      // Primeiro fazer o update sem retorno
+      const { error: updateError } = await supabase
         .from("assessment_criteria_settings")
         .update(newSettings)
-        .eq("id", settings.id)
-        .select()
-        .maybeSingle();
+        .eq("id", settings.id);
 
-      if (error) {
-        console.error("Error updating settings:", error);
-        throw error;
+      if (updateError) {
+        console.error("Error updating settings:", updateError);
+        throw updateError;
       }
       
-      // Se não retornou dados, vamos buscar os dados atualizados
-      if (!data) {
-        const { data: updatedData, error: fetchError } = await supabase
-          .from("assessment_criteria_settings")
-          .select("*")
-          .eq("id", settings.id)
-          .single();
+      // Depois buscar os dados atualizados
+      const { data, error: fetchError } = await supabase
+        .from("assessment_criteria_settings")
+        .select("*")
+        .eq("id", settings.id)
+        .single();
           
-        if (fetchError) {
-          console.error("Error fetching updated settings:", fetchError);
-          throw fetchError;
-        }
-        
-        return updatedData;
+      if (fetchError) {
+        console.error("Error fetching updated settings:", fetchError);
+        throw fetchError;
       }
       
       return data;
