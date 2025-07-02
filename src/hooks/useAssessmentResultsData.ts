@@ -20,6 +20,11 @@ export interface AssessmentResultData {
   rawScore?: number;
   normalizedScore?: number;
   responseData?: any;
+  questions?: Array<{
+    id: string;
+    question_text: string;
+    order_number: number;
+  }>;
 }
 
 export function useAssessmentResultsData(companyId?: string | null) {
@@ -49,7 +54,12 @@ export function useAssessmentResultsData(companyId?: string | null) {
           response_data,
           checklist_templates!inner(
             title,
-            type
+            type,
+            questions(
+              id,
+              question_text,
+              order_number
+            )
           ),
           employees(
             id,
@@ -125,7 +135,8 @@ export function useAssessmentResultsData(companyId?: string | null) {
           notes: result.notes,
           rawScore: result.raw_score,
           normalizedScore: result.normalized_score,
-          responseData: result.response_data
+          responseData: result.response_data,
+          questions: result.checklist_templates?.questions || []
         };
       });
     },

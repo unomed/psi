@@ -119,31 +119,73 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
     const responseData = result.responseData || result.response_data;
     if (!responseData || typeof responseData !== 'object') return null;
 
-    // Filtrar apenas campos que são respostas úteis, ignorando IDs técnicos
-    const filteredData = Object.entries(responseData).filter(([key, value]) => {
-      // Ignorar campos técnicos
-      if (key === 'total_score' || key === 'raw_score' || key === 'factors_scores') return false;
-      // Ignorar IDs (geralmente são strings longas com hífens)
-      if (typeof key === 'string' && key.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/)) return false;
-      // Ignorar valores que parecem ser IDs técnicos
-      if (typeof value === 'string' && value.match(/^[a-f0-9]{8}-[a-f0-9]{4}/)) return false;
-      return true;
-    });
+    const questions = result.questions || [];
+    
+    // Se temos questões do template, vamos mapear as respostas com as perguntas
+    if (questions.length > 0) {
+      const questionsWithAnswers = questions
+        .sort((a, b) => a.order_number - b.order_number)
+        .map(question => {
+          // Procurar a resposta para esta questão no responseData
+          const answer = responseData[question.id] || 
+                        Object.entries(responseData).find(([key, value]) => 
+                          key.includes(question.id.substring(0, 8))
+                        )?.[1];
+          
+          return {
+            question: question.question_text,
+            answer: answer !== undefined ? answer : 'Não respondido'
+          };
+        })
+        .filter(item => item.answer !== 'Não respondido');
 
-    if (filteredData.length === 0) {
+      if (questionsWithAnswers.length === 0) {
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Respostas do Questionário</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                As respostas do questionário foram processadas e os resultados estão disponíveis acima.
+              </p>
+            </CardContent>
+          </Card>
+        );
+      }
+
       return (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Respostas do Questionário</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              As respostas do questionário foram processadas e os resultados estão disponíveis acima.
-            </p>
+          <CardContent className="space-y-4">
+            {questionsWithAnswers.map((item, index) => (
+              <div key={index} className="p-4 bg-muted/50 rounded-lg">
+                <div className="font-medium text-sm mb-2 text-primary">
+                  {item.question}
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Resposta: </span>
+                  {typeof item.answer === 'number' ? 
+                    `${item.answer} ${item.answer === 1 ? 'ponto' : 'pontos'}` : 
+                    String(item.answer)
+                  }
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       );
     }
+
+    // Fallback: mostrar dados filtrados se não há questões mapeadas
+    const filteredData = Object.entries(responseData).filter(([key, value]) => {
+      if (key === 'total_score' || key === 'raw_score' || key === 'factors_scores') return false;
+      if (typeof key === 'string' && key.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/)) return false;
+      if (typeof value === 'string' && value.match(/^[a-f0-9]{8}-[a-f0-9]{4}/)) return false;
+      return true;
+    });
 
     return (
       <Card>
@@ -151,16 +193,22 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
           <CardTitle className="text-lg">Respostas do Questionário</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {filteredData.map(([key, value], index) => (
-            <div key={index} className="p-3 bg-muted/50 rounded-lg">
-              <div className="font-medium text-sm mb-1">
-                {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {filteredData.length > 0 ? (
+            filteredData.map(([key, value], index) => (
+              <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                <div className="font-medium text-sm mb-1">
+                  {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">
-                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              As respostas do questionário foram processadas e os resultados estão disponíveis acima.
+            </p>
+          )}
         </CardContent>
       </Card>
     );
