@@ -29,9 +29,9 @@ export default function Agendamentos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
 
-  // Buscar templates disponíveis para agendamento
+  // Buscar apenas templates criados e salvos no banco (mesma consulta que /templates)
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: ['templates-scheduling', selectedCompanyId],
+    queryKey: ['templates-for-scheduling', selectedCompanyId],
     queryFn: async () => {
       let query = supabase
         .from('checklist_templates')
@@ -48,7 +48,8 @@ export default function Agendamentos() {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      // Só retornar templates que realmente existem no banco (não templates padrão não salvos)
+      return (data || []).filter(template => template.id && template.title);
     },
     enabled: !!selectedCompanyId || userRole === 'superadmin'
   });
