@@ -76,9 +76,10 @@ export function AssessmentItem({
       <div className="flex gap-2 flex-wrap">
         <Button
           size="sm"
-          variant="outline"
+          variant="default"
           onClick={() => onGenerateLink(assessment)}
           disabled={generatingLink === assessment.id}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           <Link className="h-4 w-4 mr-1" />
           {generatingLink === assessment.id ? "Gerando..." : "Gerar Link"}
@@ -87,8 +88,9 @@ export function AssessmentItem({
         {assessment.linkUrl && (
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => onCopyLink(assessment.linkUrl)}
+            className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
           >
             <Copy className="h-4 w-4 mr-1" />
             Copiar Link
@@ -99,9 +101,10 @@ export function AssessmentItem({
           <>
             <Button
               size="sm"
-              variant="outline"
+              variant="default"
               onClick={() => onSendEmail(assessment.id)}
               disabled={sendingEmail === assessment.id || assessment.status === 'completed'}
+              className="bg-green-600 hover:bg-green-700 text-white border-green-600"
             >
               <Mail className="h-4 w-4 mr-1" />
               {sendingEmail === assessment.id ? "Enviando..." : "Enviar Email"}
@@ -112,6 +115,7 @@ export function AssessmentItem({
               variant="outline"
               onClick={() => onEditAssessment(assessment)}
               disabled={assessment.status === 'completed'}
+              className="border-blue-500 text-blue-600 hover:bg-blue-50"
             >
               <Edit className="h-4 w-4 mr-1" />
               Editar
