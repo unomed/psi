@@ -5,6 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useNotificationSettings } from "@/hooks/settings/useNotificationSettings";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function NotificationSettings() {
   const { settings, isLoading, updateSettings } = useNotificationSettings();
@@ -12,6 +14,7 @@ export default function NotificationSettings() {
   const [systemNotifications, setSystemNotifications] = useState(settings?.system_notifications ?? true);
   const [riskAlerts, setRiskAlerts] = useState(settings?.risk_alerts ?? true);
   const [deadlineAlerts, setDeadlineAlerts] = useState(settings?.deadline_alerts ?? true);
+  const [testingNotifications, setTestingNotifications] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -29,6 +32,27 @@ export default function NotificationSettings() {
       riskAlerts,
       deadlineAlerts
     });
+  };
+
+  const handleTestNotifications = async () => {
+    setTestingNotifications(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-notifications', {
+        body: { test: true }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Teste de notificações executado com sucesso!');
+      console.log('Resultado do teste:', data);
+    } catch (error) {
+      console.error('Erro no teste de notificações:', error);
+      toast.error('Erro ao executar teste de notificações');
+    } finally {
+      setTestingNotifications(false);
+    }
   };
 
   return (
@@ -76,7 +100,19 @@ export default function NotificationSettings() {
           />
         </div>
 
-        <Button onClick={handleSave} className="w-full">Salvar Configurações</Button>
+        <div className="flex gap-3">
+          <Button onClick={handleSave} className="flex-1">
+            Salvar Configurações
+          </Button>
+          <Button 
+            onClick={handleTestNotifications}
+            variant="outline"
+            disabled={testingNotifications || !emailNotifications}
+            className="flex-1"
+          >
+            {testingNotifications ? 'Testando...' : 'Testar Notificações'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
