@@ -72,10 +72,10 @@ export function useAssessmentSchedulingWithAutomation() {
           }
         }
 
-        // Verificar se já existe agendamento para este funcionário, template e data
+        // Verificar se já existe agendamento para este funcionário, template e data específica
         const { data: existingAssessment, error: checkError } = await supabase
           .from('scheduled_assessments')
-          .select('id')
+          .select('id, scheduled_date')
           .eq('employee_id', assessmentData.employeeId)
           .eq('template_id', assessmentData.templateId)
           .eq('scheduled_date', assessmentData.scheduledDate.toISOString().split('T')[0])
@@ -87,7 +87,7 @@ export function useAssessmentSchedulingWithAutomation() {
         }
 
         if (existingAssessment) {
-          throw new Error(`Já existe um agendamento para ${assessmentData.employeeName} nesta data com este template.`);
+          throw new Error(`Já existe um agendamento para ${assessmentData.employeeName} na data ${new Date(assessmentData.scheduledDate).toLocaleDateString('pt-BR')} com este template. Para reagendar, escolha uma data diferente.`);
         }
 
         // Criar o registro de agendamento primeiro
