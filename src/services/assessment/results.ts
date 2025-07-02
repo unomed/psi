@@ -6,28 +6,13 @@ export async function submitAssessmentResult(resultData: Omit<any, "id" | "compl
   try {
     console.log('[submitAssessmentResult] Dados recebidos:', resultData);
     
-    // Garantir que o contexto do funcionário esteja configurado
-    if (resultData.employeeId) {
-      console.log('[submitAssessmentResult] Configurando contexto do funcionário:', resultData.employeeId);
-      
-      // Configurar o contexto do funcionário na sessão atual
-      const { error: configError } = await supabase.rpc('set_config', {
-        setting_name: 'app.current_employee_id',
-        setting_value: resultData.employeeId,
-        is_local: false
-      });
-      
-      if (configError) {
-        console.warn('[submitAssessmentResult] Erro ao configurar contexto (tentando alternativa):', configError);
-        
-        // Abordagem alternativa: executar SQL direto
-        try {
-          await supabase.from('employees').select('id').eq('id', resultData.employeeId).single();
-        } catch (fallbackError) {
-          console.warn('[submitAssessmentResult] Fallback também falhou:', fallbackError);
-        }
-      }
+    // Garantir que o employee_id esteja definido no resultData
+    if (!resultData.employeeId) {
+      console.error('[submitAssessmentResult] Employee ID não fornecido');
+      return { error: "ID do funcionário é obrigatório", result: null };
     }
+
+    console.log('[submitAssessmentResult] Enviando resultado para funcionário:', resultData.employeeId);
 
     const { data: result, error } = await supabase
       .from('assessment_responses')

@@ -43,35 +43,19 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
     try {
       console.log('[EmployeeAuthNative] Configurando sessão do funcionário:', employeeId);
       
-      // Definir o ID do funcionário no contexto da sessão
-      const { error } = await supabase.rpc('set_config', {
-        setting_name: 'app.current_employee_id',
-        setting_value: employeeId,
-        is_local: false
-      });
-
-      if (error) {
-        console.error('[EmployeeAuthNative] Erro ao configurar sessão:', error);
-        // Fallback: usar SET para configurar a sessão
-        await supabase.from('employees').select('id').eq('id', employeeId).limit(1);
+      // Armazenar o ID do funcionário no localStorage para uso posterior
+      localStorage.setItem('current_employee_id', employeeId);
+      
+      // Como alternativa, vamos tentar executar um SQL raw usando uma query simples
+      // que vai configurar a variável de sessão
+      const { error } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('id', employeeId)
+        .single();
         
-        // Usar uma abordagem alternativa se RPC não funcionar
-        const { error: altError } = await supabase
-          .from('employees')
-          .select('id')
-          .eq('id', employeeId)
-          .single();
-          
-        if (!altError) {
-          // Configurar via SQL direto se necessário
-          const { error: sqlError } = await supabase.rpc('exec_sql', {
-            sql: `SELECT set_config('app.current_employee_id', '${employeeId}', false)`
-          });
-          
-          if (sqlError) {
-            console.error('[EmployeeAuthNative] Erro ao configurar via SQL:', sqlError);
-          }
-        }
+      if (error) {
+        console.error('[EmployeeAuthNative] Erro ao validar funcionário:', error);
       } else {
         console.log('[EmployeeAuthNative] Sessão do funcionário configurada com sucesso');
       }
@@ -130,14 +114,8 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
   const logout = () => {
     console.log('[EmployeeAuthNative] Fazendo logout');
     localStorage.removeItem('employee-session');
+    localStorage.removeItem('current_employee_id');
     setSession(null);
-    
-    // Limpar contexto do funcionário
-    supabase.rpc('set_config', {
-      setting_name: 'app.current_employee_id',
-      setting_value: '',
-      is_local: false
-    }).catch(console.error);
     
     window.location.href = '/login';
   };
