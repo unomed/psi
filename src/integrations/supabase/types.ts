@@ -1658,6 +1658,36 @@ export type Database = {
         }
         Relationships: []
       }
+      psychosocial_background_settings: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          id: string
+          is_processing_enabled: boolean | null
+          max_concurrent_jobs: number | null
+          processing_interval_seconds: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_processing_enabled?: boolean | null
+          max_concurrent_jobs?: number | null
+          processing_interval_seconds?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_processing_enabled?: boolean | null
+          max_concurrent_jobs?: number | null
+          processing_interval_seconds?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       psychosocial_category_weights: {
         Row: {
           category: string

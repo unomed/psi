@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { backgroundProcessor } from "@/services/riskManagement/automation/backgroundProcessor";
 import type { ProcessingStatus } from "@/services/riskManagement/automation/backgroundProcessor";
+import { toast } from "sonner";
 
 export function useBackgroundProcessor() {
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus | null>(null);
@@ -29,10 +30,12 @@ export function useBackgroundProcessor() {
     mutationFn: () => backgroundProcessor.startProcessing(),
     onSuccess: () => {
       console.log('Background processing started');
+      toast.success('Processamento em background iniciado e salvo!');
       refetchStatus();
     },
     onError: (error) => {
       console.error('Failed to start processing:', error);
+      toast.error('Erro ao iniciar processamento em background');
     }
   });
 
@@ -41,10 +44,12 @@ export function useBackgroundProcessor() {
     mutationFn: () => backgroundProcessor.stopProcessing(),
     onSuccess: () => {
       console.log('Background processing stopped');
+      toast.success('Processamento em background pausado e salvo!');
       refetchStatus();
     },
     onError: (error) => {
       console.error('Failed to stop processing:', error);
+      toast.error('Erro ao pausar processamento em background');
     }
   });
 

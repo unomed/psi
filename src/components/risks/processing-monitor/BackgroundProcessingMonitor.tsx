@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useBackgroundProcessor } from "@/hooks/usePsychosocialAutomation/useBackgroundProcessor";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { toast } from "sonner";
 
 export function BackgroundProcessingMonitor() {
   const { 

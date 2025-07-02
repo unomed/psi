@@ -39,26 +39,94 @@ export class BackgroundProcessor {
   async startProcessing(): Promise<void> {
     if (this.isRunning) return;
     
-    this.isRunning = true;
-    console.log('Background processor started');
-    
-    this.processingInterval = setInterval(async () => {
-      await this.processQueue();
-    }, this.PROCESSING_INTERVAL);
+    try {
+      // Salvar estado no banco de dados
+      const { error } = await supabase
+        .from('psychosocial_background_settings')
+        .upsert({
+          company_id: null,
+          is_processing_enabled: true,
+          max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
+          processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
+        }, {
+          onConflict: 'company_id'
+        });
+
+      if (error) {
+        console.error('Error saving processing state:', error);
+        throw error;
+      }
+
+      this.isRunning = true;
+      console.log('Background processor started and saved to database');
+      
+      this.processingInterval = setInterval(async () => {
+        await this.processQueue();
+      }, this.PROCESSING_INTERVAL);
+    } catch (error) {
+      console.error('Failed to start background processing:', error);
+      throw error;
+    }
   }
 
   async stopProcessing(): Promise<void> {
     if (!this.isRunning) return;
     
-    this.isRunning = false;
-    if (this.processingInterval) {
-      clearInterval(this.processingInterval);
-      this.processingInterval = null;
+    try {
+      // Salvar estado no banco de dados
+      const { error } = await supabase
+        .from('psychosocial_background_settings')
+        .upsert({
+          company_id: null,
+          is_processing_enabled: false,
+          max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
+          processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
+        }, {
+          onConflict: 'company_id'
+        });
+
+      if (error) {
+        console.error('Error saving processing state:', error);
+        throw error;
+      }
+
+      this.isRunning = false;
+      if (this.processingInterval) {
+        clearInterval(this.processingInterval);
+        this.processingInterval = null;
+      }
+      console.log('Background processor stopped and saved to database');
+    } catch (error) {
+      console.error('Failed to stop background processing:', error);
+      throw error;
     }
-    console.log('Background processor stopped');
   }
 
   async getProcessingStatus(): Promise<ProcessingStatus> {
+    // Carregar estado do banco de dados
+    const { data: settings } = await supabase
+      .from('psychosocial_background_settings')
+      .select('is_processing_enabled')
+      .is('company_id', null)
+      .single();
+
+    // Sincronizar estado local com o banco
+    const isProcessingFromDB = settings?.is_processing_enabled || false;
+    if (isProcessingFromDB && !this.isRunning) {
+      // Se está habilitado no banco mas não está rodando localmente, iniciar
+      this.isRunning = true;
+      this.processingInterval = setInterval(async () => {
+        await this.processQueue();
+      }, this.PROCESSING_INTERVAL);
+    } else if (!isProcessingFromDB && this.isRunning) {
+      // Se está desabilitado no banco mas está rodando localmente, parar
+      this.isRunning = false;
+      if (this.processingInterval) {
+        clearInterval(this.processingInterval);
+        this.processingInterval = null;
+      }
+    }
+
     const { data: queueJobs } = await supabase
       .from('psychosocial_processing_jobs')
       .select('*')
@@ -70,7 +138,7 @@ export class BackgroundProcessor {
       .eq('status', 'processing');
 
     return {
-      isProcessing: this.isRunning,
+      isProcessing: isProcessingFromDB,
       queueLength: queueJobs?.length || 0,
       activeJobs: activeJobs?.length || 0,
       processingRate: this.calculateProcessingRate()
