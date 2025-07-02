@@ -95,6 +95,7 @@ export type Database = {
           completion_date: string | null
           created_at: string
           created_by: string | null
+          deadline_notification_sent: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -116,6 +117,7 @@ export type Database = {
           completion_date?: string | null
           created_at?: string
           created_by?: string | null
+          deadline_notification_sent?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -137,6 +139,7 @@ export type Database = {
           completion_date?: string | null
           created_at?: string
           created_by?: string | null
+          deadline_notification_sent?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -2077,6 +2080,7 @@ export type Database = {
           id: string
           mandatory_measures: Json | null
           next_evaluation_date: string | null
+          notification_sent_at: string | null
           recommended_actions: Json | null
           risk_score: number
           role_id: string | null
@@ -2096,6 +2100,7 @@ export type Database = {
           id?: string
           mandatory_measures?: Json | null
           next_evaluation_date?: string | null
+          notification_sent_at?: string | null
           recommended_actions?: Json | null
           risk_score: number
           role_id?: string | null
@@ -2115,6 +2120,7 @@ export type Database = {
           id?: string
           mandatory_measures?: Json | null
           next_evaluation_date?: string | null
+          notification_sent_at?: string | null
           recommended_actions?: Json | null
           risk_score?: number
           role_id?: string | null
