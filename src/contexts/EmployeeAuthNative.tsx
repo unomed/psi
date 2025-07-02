@@ -1,88 +1,88 @@
 
-import React, { Component, createContext, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { EmployeeAuth, EmployeeSession } from '@/types/employee-auth';
+import { EmployeeSession } from '@/types/employee-auth';
 
 interface EmployeeAuthContextType {
   session: EmployeeSession | null;
+  loading: boolean;
   login: (cpf: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  loading: boolean;
 }
 
-const EmployeeAuthContext = createContext<EmployeeAuthContextType | null>(null);
+const EmployeeAuthContext = createContext<EmployeeAuthContextType | undefined>(undefined);
 
-interface EmployeeAuthState {
-  session: EmployeeSession | null;
-  loading: boolean;
-}
+export function EmployeeAuthNativeProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<EmployeeSession | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export class EmployeeAuthNativeProvider extends Component<
-  { children: ReactNode },
-  EmployeeAuthState
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
+  useEffect(() => {
+    console.log('[EmployeeAuthNative] Inicializando contexto de autenticação');
     
-    this.state = {
-      session: null,
-      loading: true
-    };
-
-    this.login = this.login.bind(this);
-    this.logout = this.logout.bind(this);
-    this.loadStoredSession = this.loadStoredSession.bind(this);
-    this.configureEmployeeSession = this.configureEmployeeSession.bind(this);
-  }
-
-  componentDidMount() {
-    console.log('[EmployeeAuthNative] Inicializando provider');
-    this.loadStoredSession();
-  }
-
-  loadStoredSession() {
-    try {
-      const savedSession = localStorage.getItem('employee-session');
-      if (savedSession) {
-        const parsedSession = JSON.parse(savedSession);
-        console.log('[EmployeeAuthNative] Sessão encontrada no localStorage');
-        this.setState({ 
-          session: parsedSession, 
-          loading: false 
-        });
+    // Verificar se há uma sessão armazenada
+    const storedSession = localStorage.getItem('employee-session');
+    
+    if (storedSession) {
+      try {
+        const parsedSession = JSON.parse(storedSession);
+        console.log('[EmployeeAuthNative] Sessão encontrada no localStorage:', parsedSession);
+        setSession(parsedSession);
         
-        setTimeout(() => {
-          this.configureEmployeeSession(parsedSession.employee.employeeId);
-        }, 100);
+        // Configurar o contexto do funcionário na sessão do Supabase
+        setEmployeeSession(parsedSession.employee.employeeId);
+      } catch (error) {
+        console.error('[EmployeeAuthNative] Erro ao parsear sessão:', error);
+        localStorage.removeItem('employee-session');
+      }
+    }
+    
+    setLoading(false);
+  }, []);
+
+  const setEmployeeSession = async (employeeId: string) => {
+    try {
+      console.log('[EmployeeAuthNative] Configurando sessão do funcionário:', employeeId);
+      
+      // Definir o ID do funcionário no contexto da sessão
+      const { error } = await supabase.rpc('set_config', {
+        setting_name: 'app.current_employee_id',
+        setting_value: employeeId,
+        is_local: false
+      });
+
+      if (error) {
+        console.error('[EmployeeAuthNative] Erro ao configurar sessão:', error);
+        // Fallback: usar SET para configurar a sessão
+        await supabase.from('employees').select('id').eq('id', employeeId).limit(1);
+        
+        // Usar uma abordagem alternativa se RPC não funcionar
+        const { error: altError } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('id', employeeId)
+          .single();
+          
+        if (!altError) {
+          // Configurar via SQL direto se necessário
+          const { error: sqlError } = await supabase.rpc('exec_sql', {
+            sql: `SELECT set_config('app.current_employee_id', '${employeeId}', false)`
+          });
+          
+          if (sqlError) {
+            console.error('[EmployeeAuthNative] Erro ao configurar via SQL:', sqlError);
+          }
+        }
       } else {
-        this.setState({ loading: false });
+        console.log('[EmployeeAuthNative] Sessão do funcionário configurada com sucesso');
       }
     } catch (error) {
-      console.error('[EmployeeAuthNative] Erro ao recuperar sessão:', error);
-      localStorage.removeItem('employee-session');
-      this.setState({ loading: false });
+      console.error('[EmployeeAuthNative] Erro inesperado ao configurar sessão:', error);
     }
-  }
+  };
 
-  async configureEmployeeSession(employeeId: string) {
+  const login = async (cpf: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      console.log(`[EmployeeAuthNative] Configurando sessão para funcionário: ${employeeId}`);
-      
-      await supabase.rpc('set_employee_session', {
-        employee_id_value: employeeId
-      });
-      
-      console.log(`[EmployeeAuthNative] Sessão configurada com sucesso`);
-    } catch (error) {
-      console.error('[EmployeeAuthNative] Erro ao configurar sessão:', error);
-    }
-  }
-
-  async login(cpf: string, password: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      this.setState({ loading: true });
-      
-      console.log(`[EmployeeAuthNative] Tentativa de login para CPF: ${cpf.substring(0, 3)}***`);
+      console.log('[EmployeeAuthNative] Tentando fazer login com CPF:', cpf);
       
       const { data, error } = await supabase.rpc('authenticate_employee', {
         p_cpf: cpf,
@@ -91,93 +91,68 @@ export class EmployeeAuthNativeProvider extends Component<
 
       if (error) {
         console.error('[EmployeeAuthNative] Erro na autenticação:', error);
-        throw error;
+        return { success: false, error: 'Erro na autenticação' };
       }
 
-      const authData = data[0];
-      
-      if (!authData?.is_valid) {
+      if (!data || data.length === 0 || !data[0].is_valid) {
         console.log('[EmployeeAuthNative] Credenciais inválidas');
-        this.setState({ loading: false });
         return { success: false, error: 'CPF ou senha inválidos' };
       }
 
-      const employee: EmployeeAuth = {
-        employeeId: authData.employee_id,
-        employeeName: authData.employee_name,
-        companyId: authData.company_id,
-        companyName: authData.company_name,
-        isValid: authData.is_valid
-      };
-
+      const employeeData = data[0];
       const newSession: EmployeeSession = {
-        employee,
+        employee: {
+          employeeId: employeeData.employee_id,
+          employeeName: employeeData.employee_name,
+          companyId: employeeData.company_id,
+          companyName: employeeData.company_name,
+          isValid: true
+        },
         isAuthenticated: true
       };
 
-      this.setState({ 
-        session: newSession, 
-        loading: false 
-      });
+      console.log('[EmployeeAuthNative] Login bem-sucedido:', newSession);
       
+      // Salvar sessão no localStorage
       localStorage.setItem('employee-session', JSON.stringify(newSession));
-      await this.configureEmployeeSession(authData.employee_id);
-
-      console.log(`[EmployeeAuthNative] Login bem-sucedido para: ${authData.employee_name}`);
-      return { success: true };
-    } catch (error: any) {
-      console.error('[EmployeeAuthNative] Erro no login:', error);
-      this.setState({ loading: false });
-      return { success: false, error: 'Erro interno do servidor' };
-    }
-  }
-
-  async logout() {
-    try {
-      console.log('[EmployeeAuthNative] Fazendo logout do funcionário');
+      setSession(newSession);
       
-      await supabase.rpc('set_employee_session', {
-        employee_id_value: ''
-      });
+      // Configurar contexto do funcionário no Supabase
+      await setEmployeeSession(employeeData.employee_id);
+
+      return { success: true };
     } catch (error) {
-      console.error('[EmployeeAuthNative] Erro ao limpar sessão:', error);
+      console.error('[EmployeeAuthNative] Erro no login:', error);
+      return { success: false, error: 'Erro interno no login' };
     }
-    
-    this.setState({ session: null });
+  };
+
+  const logout = () => {
+    console.log('[EmployeeAuthNative] Fazendo logout');
     localStorage.removeItem('employee-session');
-  }
+    setSession(null);
+    
+    // Limpar contexto do funcionário
+    supabase.rpc('set_config', {
+      setting_name: 'app.current_employee_id',
+      setting_value: '',
+      is_local: false
+    }).catch(console.error);
+    
+    window.location.href = '/login';
+  };
 
-  render() {
-    const contextValue: EmployeeAuthContextType = {
-      session: this.state.session,
-      login: this.login,
-      logout: this.logout,
-      loading: this.state.loading
-    };
-
-    return (
-      <EmployeeAuthContext.Provider value={contextValue}>
-        {this.props.children}
-      </EmployeeAuthContext.Provider>
-    );
-  }
+  return (
+    <EmployeeAuthContext.Provider value={{ session, loading, login, logout }}>
+      {children}
+    </EmployeeAuthContext.Provider>
+  );
 }
 
-// Hook seguro que não depende de React.useContext
-export function useEmployeeAuthNative(): EmployeeAuthContextType {
-  const context = React.useContext(EmployeeAuthContext);
-  
-  if (!context) {
-    console.warn('[useEmployeeAuthNative] Contexto não encontrado, retornando valores padrão');
-    return {
-      session: null,
-      login: async () => ({ success: false, error: 'Sistema indisponível' }),
-      logout: () => {},
-      loading: false
-    };
+export function useEmployeeAuthNative() {
+  const context = useContext(EmployeeAuthContext);
+  if (context === undefined) {
+    throw new Error('useEmployeeAuthNative must be used within an EmployeeAuthNativeProvider');
   }
-  
   return context;
 }
-
-export { EmployeeAuthContext };

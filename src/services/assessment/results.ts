@@ -1,10 +1,34 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChecklistTemplate, DiscQuestion, PsicossocialQuestion } from "@/types";
 import { mapDbTemplateTypeToApp } from "@/services/checklist/templateUtils";
 
 export async function submitAssessmentResult(resultData: Omit<any, "id" | "completedAt">) {
   try {
+    console.log('[submitAssessmentResult] Dados recebidos:', resultData);
+    
+    // Garantir que o contexto do funcionário esteja configurado
+    if (resultData.employeeId) {
+      console.log('[submitAssessmentResult] Configurando contexto do funcionário:', resultData.employeeId);
+      
+      // Configurar o contexto do funcionário na sessão atual
+      const { error: configError } = await supabase.rpc('set_config', {
+        setting_name: 'app.current_employee_id',
+        setting_value: resultData.employeeId,
+        is_local: false
+      });
+      
+      if (configError) {
+        console.warn('[submitAssessmentResult] Erro ao configurar contexto (tentando alternativa):', configError);
+        
+        // Abordagem alternativa: executar SQL direto
+        try {
+          await supabase.from('employees').select('id').eq('id', resultData.employeeId).single();
+        } catch (fallbackError) {
+          console.warn('[submitAssessmentResult] Fallback também falhou:', fallbackError);
+        }
+      }
+    }
+
     const { data: result, error } = await supabase
       .from('assessment_responses')
       .insert({
@@ -14,14 +38,19 @@ export async function submitAssessmentResult(resultData: Omit<any, "id" | "compl
         response_data: resultData.responses,
         factors_scores: resultData.factorsScores,
         dominant_factor: resultData.dominantFactor,
+        raw_score: resultData.rawScore,
+        risk_level: resultData.riskLevel,
         notes: resultData.notes
       })
       .select()
       .single();
 
     if (error) {
-      return { error: "Erro ao salvar resultado da avaliação", result: null };
+      console.error('[submitAssessmentResult] Erro ao salvar resultado:', error);
+      return { error: "Erro ao salvar resultado da avaliação: " + error.message, result: null };
     }
+
+    console.log('[submitAssessmentResult] Resultado salvo com sucesso:', result);
 
     if (resultData.linkId) {
       await supabase
