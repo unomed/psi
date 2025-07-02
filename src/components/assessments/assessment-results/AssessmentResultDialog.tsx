@@ -15,7 +15,9 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
   if (!result) return null;
 
   const renderDISCResults = () => {
-    if (!result.factors_scores) return null;
+    if (!result.factorsScores && !result.factors_scores) return null;
+
+    const scores = result.factorsScores || result.factors_scores;
 
     const factors = ['D', 'I', 'S', 'C'];
     const factorNames = {
@@ -32,7 +34,7 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
         </CardHeader>
         <CardContent className="space-y-4">
           {factors.map(factor => {
-            const score = result.factors_scores[factor] || 0;
+            const score = scores[factor] || 0;
             const percentage = Math.round(score * 100);
             
             return (
@@ -53,7 +55,7 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
           <div className="mt-6 p-4 bg-primary/5 rounded-lg">
             <h4 className="font-medium mb-2">Fator Dominante</h4>
             <p className="text-lg font-semibold text-primary">
-              {result.dominant_factor}
+              {result.dominant_factor || result.dominantFactor}
             </p>
           </div>
         </CardContent>
@@ -62,9 +64,10 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
   };
 
   const renderPsicossocialResults = () => {
-    if (!result.factors_scores) return null;
+    if (!result.factorsScores && !result.factors_scores) return null;
 
-    const categories = Object.keys(result.factors_scores);
+    const scores = result.factorsScores || result.factors_scores;
+    const categories = Object.keys(scores);
     
     return (
       <Card>
@@ -73,7 +76,7 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
         </CardHeader>
         <CardContent className="space-y-4">
           {categories.map(category => {
-            const score = result.factors_scores[category];
+            const score = scores[category];
             const percentage = Math.round(score * 20); // Convert 1-5 scale to percentage
             
             const riskLevel = 
@@ -110,6 +113,37 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
     );
   };
 
+  const renderResponseData = () => {
+    if (!result.responseData && !result.response_data) return null;
+    
+    const responseData = result.responseData || result.response_data;
+    if (!responseData || typeof responseData !== 'object') return null;
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Respostas do Questionário</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {Object.entries(responseData).map(([key, value], index) => {
+            if (key === 'total_score' || key === 'raw_score' || key === 'factors_scores') return null;
+            
+            return (
+              <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                <div className="font-medium text-sm mb-1">
+                  {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+    );
+  };
+
   const getTemplateType = () => {
     return result.checklist_templates?.type || 'custom';
   };
@@ -135,7 +169,10 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    <strong>Data:</strong> {new Date(result.completed_at).toLocaleDateString('pt-BR')}
+                    <strong>Data:</strong> {result.completed_at || result.completedAt ? 
+                      new Date(result.completed_at || result.completedAt).toLocaleDateString('pt-BR') : 
+                      'Data não disponível'
+                    }
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -174,22 +211,24 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
           </Card>
 
           {/* Scores Gerais */}
-          {(result.rawScore || result.normalizedScore) && (
+          {(result.rawScore || result.raw_score || result.normalizedScore || result.normalized_score) && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Pontuações Gerais</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {result.rawScore && (
+                  {(result.rawScore || result.raw_score) && (
                     <div className="text-center p-3 bg-primary/5 rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{result.rawScore}</div>
+                      <div className="text-2xl font-bold text-primary">{result.rawScore || result.raw_score}</div>
                       <div className="text-sm text-muted-foreground">Score Bruto</div>
                     </div>
                   )}
-                  {result.normalizedScore && (
+                  {(result.normalizedScore || result.normalized_score) && (
                     <div className="text-center p-3 bg-secondary/5 rounded-lg">
-                      <div className="text-2xl font-bold">{result.normalizedScore.toFixed(1)}</div>
+                      <div className="text-2xl font-bold">
+                        {(result.normalizedScore || result.normalized_score).toFixed(1)}
+                      </div>
                       <div className="text-sm text-muted-foreground">Score Normalizado</div>
                     </div>
                   )}
@@ -204,6 +243,9 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
 
           {/* Resultados */}
           {getTemplateType() === 'disc' ? renderDISCResults() : renderPsicossocialResults()}
+
+          {/* Respostas do Questionário */}
+          {renderResponseData()}
 
           {/* Classificação */}
           {result.classification && (
