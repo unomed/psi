@@ -228,20 +228,32 @@ export default function Templates() {
 
         {/* Templates por Categoria */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
-            <TabsTrigger value="overview">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-slate-50 p-1 rounded-lg">
+            <TabsTrigger 
+              value="overview"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-100 data-[state=active]:to-blue-200 data-[state=active]:text-blue-800 data-[state=active]:border-blue-300 transition-all duration-200"
+            >
               <TrendingUp className="h-4 w-4 mr-2" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="candidatos">
+            <TabsTrigger 
+              value="candidatos"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-100 data-[state=active]:to-green-200 data-[state=active]:text-green-800 data-[state=active]:border-green-300 transition-all duration-200"
+            >
               <Users className="h-4 w-4 mr-2" />
               Candidatos
             </TabsTrigger>
-            <TabsTrigger value="funcionarios">
+            <TabsTrigger 
+              value="funcionarios"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-100 data-[state=active]:to-purple-200 data-[state=active]:text-purple-800 data-[state=active]:border-purple-300 transition-all duration-200"
+            >
               <Brain className="h-4 w-4 mr-2" />
               Funcionários
             </TabsTrigger>
-            <TabsTrigger value="avaliacao360">
+            <TabsTrigger 
+              value="avaliacao360"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-100 data-[state=active]:to-orange-200 data-[state=active]:text-orange-800 data-[state=active]:border-orange-300 transition-all duration-200"
+            >
               <TrendingUp className="h-4 w-4 mr-2" />
               360°
             </TabsTrigger>
