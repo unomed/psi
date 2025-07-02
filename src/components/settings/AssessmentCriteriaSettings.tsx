@@ -16,6 +16,16 @@ export const AssessmentCriteriaSettings = () => {
     minimum_employee_percentage: settings?.minimum_employee_percentage || 30,
     require_all_sectors: settings?.require_all_sectors || false
   });
+  
+  // Atualizar estado quando settings mudar
+  React.useEffect(() => {
+    if (settings) {
+      setSamplingData({
+        minimum_employee_percentage: settings.minimum_employee_percentage || 30,
+        require_all_sectors: settings.require_all_sectors || false
+      });
+    }
+  }, [settings]);
   const [governanceData, setGovernanceData] = useState({
     notify_managers_on_high_risk: settings?.notify_managers_on_high_risk || true as boolean,
     require_reassessment_for_high_risk: settings?.require_reassessment_for_high_risk || true as boolean
