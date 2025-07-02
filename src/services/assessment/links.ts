@@ -277,15 +277,23 @@ export async function sendAssessmentEmail(assessmentId: string): Promise<void> {
     
     console.log("Employee data retrieved:", { name: employee.name, hasEmail: !!employee.email });
     
-    // Generate link if not exists
+    // Generate link if not exists - sem criar novos agendamentos
     let linkUrl = assessment.link_url;
     if (!linkUrl) {
-      console.log("Generating assessment link...");
-      linkUrl = await generateAssessmentLink(assessment.employee_id, assessment.template_id);
-      if (!linkUrl) {
-        throw new Error("Falha ao gerar link de avaliação");
+      console.log("Reutilizando link existente ou direcionando para portal...");
+      // Sempre direcionar para o portal - evita criação de novos registros
+      linkUrl = `https://avaliacao.unomed.med.br/portal`;
+      
+      // Atualizar o agendamento atual com o link do portal
+      const { error: updateError } = await supabase
+        .from('scheduled_assessments')
+        .update({ link_url: linkUrl })
+        .eq('id', assessmentId);
+        
+      if (updateError) {
+        console.warn("Erro ao atualizar link do agendamento:", updateError);
       }
-      console.log("Assessment link generated successfully");
+      console.log("Link do portal definido para agendamento existente");
     }
     
     console.log("Calling send-email-resend edge function...");

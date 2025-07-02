@@ -72,6 +72,24 @@ export function useAssessmentSchedulingWithAutomation() {
           }
         }
 
+        // Verificar se já existe agendamento para este funcionário, template e data
+        const { data: existingAssessment, error: checkError } = await supabase
+          .from('scheduled_assessments')
+          .select('id')
+          .eq('employee_id', assessmentData.employeeId)
+          .eq('template_id', assessmentData.templateId)
+          .eq('scheduled_date', assessmentData.scheduledDate.toISOString().split('T')[0])
+          .neq('status', 'completed')
+          .maybeSingle();
+
+        if (checkError) {
+          console.error("Erro ao verificar agendamento existente:", checkError);
+        }
+
+        if (existingAssessment) {
+          throw new Error(`Já existe um agendamento para ${assessmentData.employeeName} nesta data com este template.`);
+        }
+
         // Criar o registro de agendamento primeiro
         const { data: scheduledAssessment, error: scheduleError } = await supabase
           .from('scheduled_assessments')
