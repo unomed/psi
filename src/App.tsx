@@ -30,7 +30,7 @@ function AppContent() {
   const [portalMode, setPortalMode] = useState<'admin' | 'employee'>(() => {
     // Verificar se a URL atual é do portal de funcionário
     const currentPath = window.location.pathname;
-    if (currentPath.startsWith('/employee-portal') || currentPath.startsWith('/portal') || currentPath.startsWith('/avaliacao/') || currentPath.startsWith('/assessment/')) {
+    if (currentPath.startsWith('/portal') || currentPath.startsWith('/login') || currentPath.startsWith('/employee-portal') || currentPath.startsWith('/avaliacao/') || currentPath.startsWith('/assessment/')) {
       return 'employee';
     }
     
@@ -45,7 +45,7 @@ function AppContent() {
     
     // Se está acessando uma rota de funcionário, mudar para modo employee
     if (currentPath.startsWith('/employee-portal')) {
-      console.log('[App] Detectado acesso ao portal de funcionário, alternando modo');
+      console.log('[App] Detectado acesso ao portal de funcionário via /employee-portal, alternando modo');
       setPortalMode('employee');
       
       // Extrair parâmetros da URL original
@@ -68,6 +68,13 @@ function AppContent() {
       
       console.log('[App] Redirecionando para:', finalPath);
       navigate(finalPath, { replace: true });
+      return;
+    }
+    
+    // Se está acessando rotas do portal do funcionário diretamente
+    if (currentPath.startsWith('/portal') || currentPath.startsWith('/login')) {
+      console.log('[App] Detectado acesso direto ao portal do funcionário, alternando modo');
+      setPortalMode('employee');
       return;
     }
     

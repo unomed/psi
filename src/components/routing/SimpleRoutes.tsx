@@ -49,6 +49,7 @@ export function SimpleRoutes() {
         {!isAuthenticated ? (
           <>
             <Route path="/login" element={<EmployeeLoginPage />} />
+            {/* Redirect all unauthenticated access to employee login */}
             <Route path="/*" element={<Navigate to="/login" replace />} />
           </>
         ) : (
@@ -56,6 +57,7 @@ export function SimpleRoutes() {
             <Route path="/portal" element={<EmployeePortalPage />} />
             <Route path="/portal/assessment/:assessmentId" element={<EmployeeAssessmentPage />} />
             <Route path="/portal/assessment/success" element={<AssessmentSuccessPage />} />
+            {/* Redirect authenticated users to portal */}
             <Route path="/*" element={<Navigate to="/portal" replace />} />
           </>
         )}
