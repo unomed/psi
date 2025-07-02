@@ -119,26 +119,48 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
     const responseData = result.responseData || result.response_data;
     if (!responseData || typeof responseData !== 'object') return null;
 
+    // Filtrar apenas campos que são respostas úteis, ignorando IDs técnicos
+    const filteredData = Object.entries(responseData).filter(([key, value]) => {
+      // Ignorar campos técnicos
+      if (key === 'total_score' || key === 'raw_score' || key === 'factors_scores') return false;
+      // Ignorar IDs (geralmente são strings longas com hífens)
+      if (typeof key === 'string' && key.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/)) return false;
+      // Ignorar valores que parecem ser IDs técnicos
+      if (typeof value === 'string' && value.match(/^[a-f0-9]{8}-[a-f0-9]{4}/)) return false;
+      return true;
+    });
+
+    if (filteredData.length === 0) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Respostas do Questionário</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              As respostas do questionário foram processadas e os resultados estão disponíveis acima.
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Respostas do Questionário</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {Object.entries(responseData).map(([key, value], index) => {
-            if (key === 'total_score' || key === 'raw_score' || key === 'factors_scores') return null;
-            
-            return (
-              <div key={index} className="p-3 bg-muted/50 rounded-lg">
-                <div className="font-medium text-sm mb-1">
-                  {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                </div>
+          {filteredData.map(([key, value], index) => (
+            <div key={index} className="p-3 bg-muted/50 rounded-lg">
+              <div className="font-medium text-sm mb-1">
+                {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </div>
-            );
-          })}
+              <div className="text-sm text-muted-foreground">
+                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
     );
