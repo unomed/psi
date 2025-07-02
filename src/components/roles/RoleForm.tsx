@@ -7,6 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BasicInfoFields } from "./form/BasicInfoFields";
 import { SkillsInput } from "./form/SkillsInput";
+import { RequiredTagsSection } from "./form/RequiredTagsSection";
 import { toast } from "sonner";
 
 const roleSchema = z.object({
@@ -23,6 +24,7 @@ interface RoleFormProps {
   onSubmit: (values: RoleFormValues) => void;
   defaultValues?: Partial<RoleFormValues>;
   sectors: { id: string; name: string }[];
+  roleId?: string; // Para permitir gerenciar tags obrigatórias
 }
 
 const RISK_LEVELS = [
@@ -31,7 +33,7 @@ const RISK_LEVELS = [
   { value: "high", label: "Alto" }
 ].filter(level => level.value && String(level.value).trim() !== ""); // Ensure RISK_LEVELS are valid
 
-export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
+export function RoleForm({ onSubmit, defaultValues, sectors, roleId }: RoleFormProps) {
   const [skills, setSkills] = React.useState<string[]>(defaultValues?.requiredSkills || []);
 
   const form = useForm<RoleFormValues>({
@@ -147,6 +149,13 @@ export function RoleForm({ onSubmit, defaultValues, sectors }: RoleFormProps) {
             </FormItem>
           )}
         />
+
+        {/* Tags Obrigatórias - só aparece se roleId existir */}
+        {roleId && (
+          <RequiredTagsSection 
+            roleId={roleId}
+          />
+        )}
 
         <div className="flex justify-end">
           <Button type="submit">

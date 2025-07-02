@@ -116,7 +116,7 @@ export default function Funcoes() {
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingRole ? 'Editar Função' : 'Nova Função'}</DialogTitle>
           </DialogHeader>
@@ -124,6 +124,7 @@ export default function Funcoes() {
             onSubmit={handleCreateRole}
             defaultValues={editingRole || undefined}
             sectors={selectedCompany ? (sectors?.filter(s => s.companyId === selectedCompany) || []) : []}
+            roleId={editingRole?.id} // Passando o ID da função para permitir gerenciamento de tags
           />
         </DialogContent>
       </Dialog>

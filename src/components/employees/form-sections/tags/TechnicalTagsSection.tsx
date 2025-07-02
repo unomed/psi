@@ -5,6 +5,7 @@ import { useRoleRequiredTags } from "@/hooks/useRoleRequiredTags";
 import { AddTagDialog } from "./AddTagDialog";
 import { MissingRequiredTags } from "./MissingRequiredTags";
 import { CurrentTagsList } from "./CurrentTagsList";
+import { EmployeeComplianceIndicator } from "./EmployeeComplianceIndicator";
 import { TagSystemDebug } from "./TagSystemDebug";
 import { TagMigrationStatus } from "./TagMigrationStatus";
 import { TagSystemErrorBoundary } from "./TagSystemErrorBoundary";
@@ -172,6 +173,14 @@ export function TechnicalTagsSection({ employeeId, selectedRole, onTagsChange }:
 
         {/* Aviso sobre problemas no sistema */}
         <TagSystemWarnings hasDataIssues={hasDataIssues} />
+
+        {/* Indicador de Compliance - só para funcionários com função */}
+        {employeeId && selectedRole && (
+          <EmployeeComplianceIndicator
+            employeeId={employeeId}
+            roleId={selectedRole}
+          />
+        )}
 
         {/* Tags obrigatórias em falta */}
         {missingRequiredTags.length > 0 && (
