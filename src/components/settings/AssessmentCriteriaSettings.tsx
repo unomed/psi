@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,21 @@ export const AssessmentCriteriaSettings = () => {
     reassessment_max_days: settings?.reassessment_max_days || 90,
     enable_recurrence_reminders: settings?.enable_recurrence_reminders || true as boolean
   });
+
+  // Sincronizar todos os estados quando settings mudar
+  useEffect(() => {
+    if (settings) {
+      setGovernanceData({
+        notify_managers_on_high_risk: settings.notify_managers_on_high_risk || true,
+        require_reassessment_for_high_risk: settings.require_reassessment_for_high_risk || true
+      });
+      
+      setPeriodicityData({
+        reassessment_max_days: settings.reassessment_max_days || 90,
+        enable_recurrence_reminders: settings.enable_recurrence_reminders || true
+      });
+    }
+  }, [settings]);
 
   const handleSaveSampling = async () => {
     try {
