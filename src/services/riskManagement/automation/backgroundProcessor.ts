@@ -40,19 +40,37 @@ export class BackgroundProcessor {
     if (this.isRunning) return;
     
     try {
-      // Salvar estado no banco de dados usando upsert para configuração global
-      const { error } = await supabase
+      // Atualizar configuração global usando UPDATE/INSERT manual
+      // Primeiro tentar UPDATE
+      const { data: updateData, error: updateError } = await supabase
         .from('psychosocial_background_settings')
-        .upsert({
-          company_id: null,
+        .update({
           is_processing_enabled: true,
           max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
-          processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
-        });
+          processing_interval_seconds: this.PROCESSING_INTERVAL / 1000,
+          updated_at: new Date().toISOString()
+        })
+        .is('company_id', null)
+        .select();
 
-      if (error) {
-        console.error('Error saving processing state:', error);
-        throw error;
+      // Se não atualizou nenhum registro (não existe), inserir novo
+      if (!updateError && (!updateData || updateData.length === 0)) {
+        const { error: insertError } = await supabase
+          .from('psychosocial_background_settings')
+          .insert({
+            company_id: null,
+            is_processing_enabled: true,
+            max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
+            processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
+          });
+        
+        if (insertError) {
+          console.error('Error inserting processing state:', insertError);
+          throw insertError;
+        }
+      } else if (updateError) {
+        console.error('Error updating processing state:', updateError);
+        throw updateError;
       }
 
       this.isRunning = true;
@@ -71,19 +89,37 @@ export class BackgroundProcessor {
     if (!this.isRunning) return;
     
     try {
-      // Salvar estado no banco de dados usando upsert para configuração global
-      const { error } = await supabase
+      // Atualizar configuração global usando UPDATE/INSERT manual
+      // Primeiro tentar UPDATE
+      const { data: updateData, error: updateError } = await supabase
         .from('psychosocial_background_settings')
-        .upsert({
-          company_id: null,
+        .update({
           is_processing_enabled: false,
           max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
-          processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
-        });
+          processing_interval_seconds: this.PROCESSING_INTERVAL / 1000,
+          updated_at: new Date().toISOString()
+        })
+        .is('company_id', null)
+        .select();
 
-      if (error) {
-        console.error('Error saving processing state:', error);
-        throw error;
+      // Se não atualizou nenhum registro (não existe), inserir novo
+      if (!updateError && (!updateData || updateData.length === 0)) {
+        const { error: insertError } = await supabase
+          .from('psychosocial_background_settings')
+          .insert({
+            company_id: null,
+            is_processing_enabled: false,
+            max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
+            processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
+          });
+        
+        if (insertError) {
+          console.error('Error inserting processing state:', insertError);
+          throw insertError;
+        }
+      } else if (updateError) {
+        console.error('Error updating processing state:', updateError);
+        throw updateError;
       }
 
       this.isRunning = false;
