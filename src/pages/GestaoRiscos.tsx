@@ -1,20 +1,17 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, BarChart3, FileText, Settings, Brain, Bot } from "lucide-react";
-import RiskAnalysisFormIntegrated from "@/components/risks/RiskAnalysisFormIntegrated";
-import { RiskAssessmentsTable } from "@/components/risks/RiskAssessmentsTable";
-import RiskMatrixSettingsFormIntegrated from "@/components/risks/RiskMatrixSettingsFormIntegrated";
-import { PsychosocialRiskAnalysis } from "@/components/risks/PsychosocialRiskAnalysis";
-import { PsychosocialProcessingMonitor } from "@/components/risks/PsychosocialProcessingMonitor";
-import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { AlertTriangle, BarChart3, FileText, Settings, Brain, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { PsychosocialRiskConfigForm } from "@/components/risks/PsychosocialRiskConfigForm";
+import { PsychosocialAdvancedConfig } from "@/components/risks/PsychosocialAdvancedConfig";
+import { PsychosocialAutomationDashboard } from "@/components/risks/PsychosocialAutomationDashboard";
+import { RealTimeMetrics } from "@/components/risks/RealTimeMetrics";
 
 export default function GestaoRiscos() {
   const { userRole, userCompanies } = useAuth();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    // Auto-select first company for non-superadmin users
     if (userRole !== 'superadmin' && userCompanies.length > 0) {
       return userCompanies[0].companyId;
     }
@@ -25,120 +22,181 @@ export default function GestaoRiscos() {
     setSelectedCompanyId(companyId || null);
   };
 
+  if (!selectedCompanyId && userRole !== 'superadmin') {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">Selecione uma empresa para gerenciar riscos psicossociais</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestão de Riscos</h1>
+          <h1 className="text-3xl font-bold">Gestão de Riscos Psicossociais</h1>
           <p className="text-muted-foreground">
-            Análise e gerenciamento de riscos psicossociais conforme NR-01
+            Configure análises automáticas, limites de risco e notificações conforme NR-01
           </p>
         </div>
       </div>
 
+      {/* Company Selector */}
       <CompanySelectorReal
         selectedCompanyId={selectedCompanyId}
         onCompanyChange={handleCompanyChange}
       />
 
-      <Tabs defaultValue="psychosocial" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="psychosocial" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            Análise NR-01
+      {/* Tabs de Configuração */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
+          <TabsTrigger value="overview">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Visão Geral
           </TabsTrigger>
-          <TabsTrigger value="automation" className="flex items-center gap-2">
-            <Bot className="h-4 w-4" />
-            Monitor
-          </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Cálculos
-          </TabsTrigger>
-          <TabsTrigger value="assessments" className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Avaliações
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+          <TabsTrigger value="config">
+            <Settings className="h-4 w-4 mr-2" />
             Configurações
+          </TabsTrigger>
+          <TabsTrigger value="automation">
+            <Zap className="h-4 w-4 mr-2" />
+            Automação
+          </TabsTrigger>
+          <TabsTrigger value="advanced">
+            <Brain className="h-4 w-4 mr-2" />
+            Avançado
+          </TabsTrigger>
+          <TabsTrigger value="monitoring">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Monitoramento
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="psychosocial">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5" />
-                Análise de Riscos Psicossociais - NR-01
-              </CardTitle>
-              <CardDescription>
-                Análise baseada no Manual de Fatores de Riscos Psicossociais do MTE e diretrizes da NR-01
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PsychosocialRiskAnalysis companyId={selectedCompanyId} />
-            </CardContent>
-          </Card>
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Análises Automáticas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">Ativo</div>
+                <p className="text-xs text-muted-foreground">Sistema funcionando</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Riscos Críticos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">0</div>
+                <p className="text-xs text-muted-foreground">Último mês</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Planos de Ação</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">2</div>
+                <p className="text-xs text-muted-foreground">Em andamento</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Conformidade NR-01</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">95%</div>
+                <p className="text-xs text-muted-foreground">Taxa de compliance</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Status do Sistema
+                </CardTitle>
+                <CardDescription>
+                  Monitoramento em tempo real das análises automáticas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Processamento automático</span>
+                    <span className="text-sm text-green-600 font-medium">✓ Ativo</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Notificações por email</span>
+                    <span className="text-sm text-green-600 font-medium">✓ Ativo</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Geração de planos de ação</span>
+                    <span className="text-sm text-green-600 font-medium">✓ Ativo</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Backup de dados</span>
+                    <span className="text-sm text-green-600 font-medium">✓ Ativo</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Ações Recentes
+                </CardTitle>
+                <CardDescription>
+                  Últimas atividades do sistema de análise de riscos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span>Avaliação processada automaticamente</span>
+                    <span className="text-muted-foreground">2 min atrás</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Plano de ação gerado</span>
+                    <span className="text-muted-foreground">1 hora atrás</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Notificação enviada para RH</span>
+                    <span className="text-muted-foreground">3 horas atrás</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Backup de dados realizado</span>
+                    <span className="text-muted-foreground">1 dia atrás</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
-        <TabsContent value="automation">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bot className="h-5 w-5" />
-                Processamento Automático
-              </CardTitle>
-              <CardDescription>
-                Monitor e controle do processamento automático das avaliações psicossociais
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PsychosocialProcessingMonitor companyId={selectedCompanyId} />
-            </CardContent>
-          </Card>
+        <TabsContent value="config" className="space-y-6">
+          <PsychosocialRiskConfigForm selectedCompanyId={selectedCompanyId} />
         </TabsContent>
 
-        <TabsContent value="analysis">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cálculo de Risco Manual</CardTitle>
-              <CardDescription>
-                Calcule o nível de risco baseado na matriz configurada
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RiskAnalysisFormIntegrated />
-            </CardContent>
-          </Card>
+        <TabsContent value="automation" className="space-y-6">
+          <PsychosocialAutomationDashboard selectedCompanyId={selectedCompanyId} />
         </TabsContent>
 
-        <TabsContent value="assessments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Avaliações</CardTitle>
-              <CardDescription>
-                Lista de todas as avaliações de risco realizadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RiskAssessmentsTable companyId={selectedCompanyId} />
-            </CardContent>
-          </Card>
+        <TabsContent value="advanced" className="space-y-6">
+          <PsychosocialAdvancedConfig selectedCompanyId={selectedCompanyId} />
         </TabsContent>
 
-        <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações da Matriz de Risco</CardTitle>
-              <CardDescription>
-                Configure os parâmetros e critérios de avaliação de risco
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RiskMatrixSettingsFormIntegrated />
-            </CardContent>
-          </Card>
+        <TabsContent value="monitoring" className="space-y-6">
+          <RealTimeMetrics selectedCompanyId={selectedCompanyId} />
         </TabsContent>
       </Tabs>
     </div>

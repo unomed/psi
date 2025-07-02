@@ -1,290 +1,262 @@
-
-import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { Settings, Save, RotateCcw } from "lucide-react";
-import { usePsychosocialRiskConfig } from "@/hooks/usePsychosocialRiskConfig";
-import { PsychosocialRiskConfig, DEFAULT_CONFIG } from "@/services/riskManagement/psychosocialRiskConfig";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { RiskErrorBoundary } from "./error-boundary/RiskErrorBoundary";
-
-const configSchema = z.object({
-  threshold_low: z.number().min(0).max(100),
-  threshold_medium: z.number().min(0).max(100),
-  threshold_high: z.number().min(0).max(100),
-  periodicidade_dias: z.number().min(30).max(365),
-  prazo_acao_critica_dias: z.number().min(1).max(30),
-  prazo_acao_alta_dias: z.number().min(1).max(90),
-  auto_generate_plans: z.boolean(),
-  notification_enabled: z.boolean(),
-}).refine((data) => data.threshold_low < data.threshold_medium, {
-  message: "Threshold baixo deve ser menor que o médio",
-  path: ["threshold_medium"],
-}).refine((data) => data.threshold_medium < data.threshold_high, {
-  message: "Threshold médio deve ser menor que o alto",
-  path: ["threshold_high"],
-});
-
-type ConfigFormData = z.infer<typeof configSchema>;
+import { Separator } from "@/components/ui/separator";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface PsychosocialRiskConfigFormProps {
-  companyId?: string;
+  selectedCompanyId: string | null;
 }
 
-export function PsychosocialRiskConfigForm({ companyId }: PsychosocialRiskConfigFormProps) {
-  const { config, isLoading, updateConfig } = usePsychosocialRiskConfig(companyId);
+export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRiskConfigFormProps) {
+  const queryClient = useQueryClient();
 
-  const form = useForm<ConfigFormData>({
-    resolver: zodResolver(configSchema),
-    defaultValues: config || DEFAULT_CONFIG,
+  const { data: config, isLoading } = useQuery({
+    queryKey: ['psychosocial-risk-config', selectedCompanyId],
+    queryFn: async () => {
+      if (!selectedCompanyId) return null;
+      
+      const { data, error } = await supabase
+        .from('psychosocial_risk_config')
+        .select('*')
+        .eq('company_id', selectedCompanyId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+    enabled: !!selectedCompanyId
   });
 
-  React.useEffect(() => {
-    if (config) {
-      form.reset(config);
-    }
-  }, [config, form]);
+  const updateConfigMutation = useMutation({
+    mutationFn: async (configData: any) => {
+      if (!selectedCompanyId) throw new Error('Company ID required');
 
-  const onSubmit = (data: ConfigFormData) => {
-    if (!config) return;
-    
-    const updatedConfig: PsychosocialRiskConfig = {
-      ...config,
-      ...data,
+      const { data, error } = await supabase
+        .from('psychosocial_risk_config')
+        .upsert({
+          company_id: selectedCompanyId,
+          ...configData
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Configurações salvas com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ['psychosocial-risk-config'] });
+    },
+    onError: (error) => {
+      console.error("Erro ao salvar configurações:", error);
+      toast.error("Erro ao salvar configurações");
+    }
+  });
+
+  const handleSave = (formData: FormData) => {
+    const configData = {
+      auto_generation_enabled: formData.get('auto_generation_enabled') === 'on',
+      manager_notification_enabled: formData.get('manager_notification_enabled') === 'on',
+      hr_notification_enabled: formData.get('hr_notification_enabled') === 'on',
+      compliance_requirements: {
+        nr01_compliance: formData.get('nr01_compliance') === 'on',
+        risk_assessment_frequency: formData.get('risk_assessment_frequency') || '90',
+        action_plan_mandatory: formData.get('action_plan_mandatory') === 'on'
+      },
+      custom_thresholds: {
+        low_risk: parseInt(formData.get('low_risk') as string) || 30,
+        medium_risk: parseInt(formData.get('medium_risk') as string) || 60,
+        high_risk: parseInt(formData.get('high_risk') as string) || 80
+      }
     };
 
-    updateConfig.mutate(updatedConfig);
+    updateConfigMutation.mutate(configData);
   };
 
-  const handleResetToDefault = () => {
-    form.reset(DEFAULT_CONFIG);
-  };
-
-  if (isLoading) {
+  if (!selectedCompanyId) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Configurações de Risco Psicossocial
-          </CardTitle>
-          <CardDescription>
-            Configure os parâmetros para análise e geração automática de planos de ação conforme NR-01
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoadingSkeleton lines={6} />
-        </CardContent>
-      </Card>
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">Selecione uma empresa para configurar</p>
+      </div>
     );
   }
 
+  if (isLoading) {
+    return <div className="text-center p-8">Carregando configurações...</div>;
+  }
+
   return (
-    <RiskErrorBoundary>
+    <form action={handleSave} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Configurações de Risco Psicossocial
-          </CardTitle>
+          <CardTitle>Automação e Processamento</CardTitle>
           <CardDescription>
-            Configure os parâmetros para análise e geração automática de planos de ação conforme NR-01
+            Configure como o sistema deve processar automaticamente as avaliações psicossociais
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Thresholds de Risco */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium text-gray-900">Limites de Classificação de Risco</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="threshold_low"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Risco Baixo (máx.)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>Score máximo para risco baixo</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="threshold_medium"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Risco Médio (máx.)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>Score máximo para risco médio</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="threshold_high"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Risco Alto (máx.)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>Score máximo para risco alto</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto_generation_enabled">Geração automática de planos de ação</Label>
+              <p className="text-sm text-muted-foreground">
+                Criar automaticamente planos de ação para riscos altos e críticos
+              </p>
+            </div>
+            <Switch 
+              id="auto_generation_enabled" 
+              name="auto_generation_enabled"
+              defaultChecked={config?.auto_generation_enabled ?? true}
+            />
+          </div>
 
-              {/* Periodicidade */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium text-gray-900">Periodicidade e Prazos</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="periodicidade_dias"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Periodicidade de Avaliação</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>Dias entre avaliações</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="prazo_acao_critica_dias"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prazo Ação Crítica</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>Dias para ação em risco crítico</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="prazo_acao_alta_dias"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prazo Ação Alta</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormDescription>Dias para ação em risco alto</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+          <Separator />
 
-              {/* Automações */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium text-gray-900">Automações</h4>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="auto_generate_plans"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Geração Automática de Planos</FormLabel>
-                          <FormDescription>
-                            Gerar planos de ação automaticamente para riscos altos e críticos
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="notification_enabled"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Notificações Automáticas</FormLabel>
-                          <FormDescription>
-                            Enviar notificações quando riscos críticos forem identificados
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="manager_notification_enabled">Notificar gestores</Label>
+              <p className="text-sm text-muted-foreground">
+                Enviar emails para gestores quando riscos forem identificados
+              </p>
+            </div>
+            <Switch 
+              id="manager_notification_enabled" 
+              name="manager_notification_enabled"
+              defaultChecked={config?.manager_notification_enabled ?? true}
+            />
+          </div>
 
-              <div className="flex justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleResetToDefault}
-                  disabled={updateConfig.isPending}
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Restaurar Padrão
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={updateConfig.isPending}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {updateConfig.isPending ? 'Salvando...' : 'Salvar Configurações'}
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="hr_notification_enabled">Notificar RH</Label>
+              <p className="text-sm text-muted-foreground">
+                Enviar emails para equipe de RH sobre análises de risco
+              </p>
+            </div>
+            <Switch 
+              id="hr_notification_enabled" 
+              name="hr_notification_enabled"
+              defaultChecked={config?.hr_notification_enabled ?? true}
+            />
+          </div>
         </CardContent>
       </Card>
-    </RiskErrorBoundary>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Limites de Risco Customizados</CardTitle>
+          <CardDescription>
+            Defina os percentuais que determinam os níveis de risco para sua empresa
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="low_risk">Risco Baixo (até %)</Label>
+              <Input
+                id="low_risk"
+                name="low_risk"
+                type="number"
+                min="0"
+                max="100"
+                defaultValue={config?.custom_thresholds?.low_risk || 30}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="medium_risk">Risco Médio (até %)</Label>
+              <Input
+                id="medium_risk"
+                name="medium_risk"
+                type="number"
+                min="0"
+                max="100"
+                defaultValue={config?.custom_thresholds?.medium_risk || 60}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="high_risk">Risco Alto (até %)</Label>
+              <Input
+                id="high_risk"
+                name="high_risk"
+                type="number"
+                min="0"
+                max="100"
+                defaultValue={config?.custom_thresholds?.high_risk || 80}
+              />
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Acima do valor de Risco Alto será considerado Risco Crítico
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Conformidade NR-01</CardTitle>
+          <CardDescription>
+            Configurações específicas para atender aos requisitos da Norma Regulamentadora 01
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="nr01_compliance">Conformidade obrigatória NR-01</Label>
+              <p className="text-sm text-muted-foreground">
+                Aplicar todos os requisitos obrigatórios da NR-01
+              </p>
+            </div>
+            <Switch 
+              id="nr01_compliance" 
+              name="nr01_compliance"
+              defaultChecked={config?.compliance_requirements?.nr01_compliance ?? true}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="risk_assessment_frequency">Frequência de reavaliação (dias)</Label>
+            <Input
+              id="risk_assessment_frequency"
+              name="risk_assessment_frequency"
+              type="number"
+              min="30"
+              max="365"
+              defaultValue={config?.compliance_requirements?.risk_assessment_frequency || 90}
+            />
+            <p className="text-sm text-muted-foreground">
+              Período para reavaliação automática de riscos identificados
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="action_plan_mandatory">Plano de ação obrigatório</Label>
+              <p className="text-sm text-muted-foreground">
+                Exigir plano de ação para todos os riscos médios, altos e críticos
+              </p>
+            </div>
+            <Switch 
+              id="action_plan_mandatory" 
+              name="action_plan_mandatory"
+              defaultChecked={config?.compliance_requirements?.action_plan_mandatory ?? true}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button 
+          type="submit" 
+          disabled={updateConfigMutation.isPending}
+        >
+          {updateConfigMutation.isPending ? "Salvando..." : "Salvar Configurações"}
+        </Button>
+      </div>
+    </form>
   );
 }
