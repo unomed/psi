@@ -131,13 +131,7 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
               <CardTitle className="text-lg">Informações Gerais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    <strong>Funcionário:</strong> {result.employees?.name || result.employee_name || 'Anônimo'}
-                  </span>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
@@ -147,21 +141,83 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    <strong>Template:</strong> {result.checklist_templates?.title || 'Sem título'}
+                    <strong>Template:</strong> {result.checklist_templates?.title || result.templateTitle || 'Sem título'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    <strong>Tipo:</strong> {getTemplateType().toUpperCase()}
+                    <strong>Tipo:</strong> {(result.templateType || getTemplateType()).toUpperCase()}
                   </span>
                 </div>
               </div>
+              
+              {(result.sector || result.role) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                  {result.sector && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        <strong>Setor:</strong> {result.sector}
+                      </span>
+                    </div>
+                  )}
+                  {result.role && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        <strong>Função:</strong> {result.role}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
+          {/* Scores Gerais */}
+          {(result.rawScore || result.normalizedScore) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Pontuações Gerais</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {result.rawScore && (
+                    <div className="text-center p-3 bg-primary/5 rounded-lg">
+                      <div className="text-2xl font-bold text-primary">{result.rawScore}</div>
+                      <div className="text-sm text-muted-foreground">Score Bruto</div>
+                    </div>
+                  )}
+                  {result.normalizedScore && (
+                    <div className="text-center p-3 bg-secondary/5 rounded-lg">
+                      <div className="text-2xl font-bold">{result.normalizedScore.toFixed(1)}</div>
+                      <div className="text-sm text-muted-foreground">Score Normalizado</div>
+                    </div>
+                  )}
+                  <div className="text-center p-3 bg-accent/5 rounded-lg">
+                    <div className="text-2xl font-bold">{result.riskLevel}</div>
+                    <div className="text-sm text-muted-foreground">Nível de Risco</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Resultados */}
           {getTemplateType() === 'disc' ? renderDISCResults() : renderPsicossocialResults()}
+
+          {/* Classificação */}
+          {result.classification && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Classificação</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Badge variant="outline" className="text-base px-3 py-1">
+                  {result.classification.toUpperCase()}
+                </Badge>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Notas adicionais */}
           {result.notes && (

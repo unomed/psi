@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Download, FileText, Search, Filter } from "lucide-react";
+import { Eye, FileText, Search, Filter } from "lucide-react";
 import { useAssessmentResultsData } from "@/hooks/useAssessmentResultsData";
 import { AssessmentResultDialog } from "./AssessmentResultDialog";
 import { formatDateTime } from "@/utils/dateFormat";
@@ -27,15 +27,12 @@ export function AssessmentResultsTableReal({ companyId }: AssessmentResultsTable
     setIsResultDialogOpen(true);
   };
 
-  const handleExport = (result: any) => {
-    console.log("Exportar resultado:", result.id);
-    // TODO: Implement real export functionality
-  };
 
   // Filter results based on search and filters
   const filteredResults = results.filter(result => {
-    const matchesSearch = result.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         result.templateTitle.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = result.templateTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (result.sector && result.sector.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                         (result.role && result.role.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesRisk = filterRisk === "all" || result.riskLevel === filterRisk;
     const matchesType = filterType === "all" || result.templateType === filterType;
@@ -73,7 +70,7 @@ export function AssessmentResultsTableReal({ companyId }: AssessmentResultsTable
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar funcionário ou avaliação..."
+                  placeholder="Buscar avaliação, setor ou função..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-full sm:w-64"
@@ -125,7 +122,7 @@ export function AssessmentResultsTableReal({ companyId }: AssessmentResultsTable
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-medium">{result.employeeName}</h4>
+                      <h4 className="font-medium">{result.templateTitle}</h4>
                       <Badge
                         variant={
                           result.riskLevel === 'Alto' ? 'destructive' :
@@ -140,8 +137,7 @@ export function AssessmentResultsTableReal({ companyId }: AssessmentResultsTable
                       </Badge>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
-                      <span className="font-medium">{result.templateTitle}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                       <span>{formatDateTime(result.completedAt)}</span>
                       <div className="flex gap-2">
                         {result.sector && <span>Setor: {result.sector}</span>}
@@ -165,14 +161,6 @@ export function AssessmentResultsTableReal({ companyId }: AssessmentResultsTable
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       Ver Detalhes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExport(result)}
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Exportar
                     </Button>
                   </div>
                 </div>

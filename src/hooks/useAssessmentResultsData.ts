@@ -17,6 +17,9 @@ export interface AssessmentResultData {
   role?: string;
   classification?: string;
   notes?: string;
+  rawScore?: number;
+  normalizedScore?: number;
+  responseData?: any;
 }
 
 export function useAssessmentResultsData(companyId?: string | null) {
@@ -40,6 +43,10 @@ export function useAssessmentResultsData(companyId?: string | null) {
           factors_scores,
           classification,
           notes,
+          raw_score,
+          normalized_score,
+          risk_level,
+          response_data,
           checklist_templates!inner(
             title,
             type
@@ -115,7 +122,10 @@ export function useAssessmentResultsData(companyId?: string | null) {
           sector,
           role,
           classification: result.classification,
-          notes: result.notes
+          notes: result.notes,
+          rawScore: result.raw_score,
+          normalizedScore: result.normalized_score,
+          responseData: result.response_data
         };
       });
     },
