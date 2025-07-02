@@ -27,9 +27,6 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
         const parsedSession = JSON.parse(storedSession);
         console.log('[EmployeeAuthNative] Sessão encontrada no localStorage:', parsedSession);
         setSession(parsedSession);
-        
-        // Configurar o contexto do funcionário na sessão do Supabase
-        setEmployeeSession(parsedSession.employee.employeeId);
       } catch (error) {
         console.error('[EmployeeAuthNative] Erro ao parsear sessão:', error);
         localStorage.removeItem('employee-session');
@@ -38,31 +35,6 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
     
     setLoading(false);
   }, []);
-
-  const setEmployeeSession = async (employeeId: string) => {
-    try {
-      console.log('[EmployeeAuthNative] Configurando sessão do funcionário:', employeeId);
-      
-      // Armazenar o ID do funcionário no localStorage para uso posterior
-      localStorage.setItem('current_employee_id', employeeId);
-      
-      // Como alternativa, vamos tentar executar um SQL raw usando uma query simples
-      // que vai configurar a variável de sessão
-      const { error } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('id', employeeId)
-        .single();
-        
-      if (error) {
-        console.error('[EmployeeAuthNative] Erro ao validar funcionário:', error);
-      } else {
-        console.log('[EmployeeAuthNative] Sessão do funcionário configurada com sucesso');
-      }
-    } catch (error) {
-      console.error('[EmployeeAuthNative] Erro inesperado ao configurar sessão:', error);
-    }
-  };
 
   const login = async (cpf: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -99,10 +71,8 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
       
       // Salvar sessão no localStorage
       localStorage.setItem('employee-session', JSON.stringify(newSession));
+      localStorage.setItem('current_employee_id', employeeData.employee_id);
       setSession(newSession);
-      
-      // Configurar contexto do funcionário no Supabase
-      await setEmployeeSession(employeeData.employee_id);
 
       return { success: true };
     } catch (error) {
