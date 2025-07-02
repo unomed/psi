@@ -61,7 +61,7 @@ export default function AutomacaoAvancadaPage() {
         </TabsContent>
 
         <TabsContent value="advanced">
-          <PsychosocialAdvancedConfig companyId={companyId} />
+          <PsychosocialAdvancedConfig selectedCompanyId={companyId} />
         </TabsContent>
       </Tabs>
     </div>

@@ -206,7 +206,7 @@ export function PsychosocialAutomationDashboard({ selectedCompanyId }: Psychosoc
                   <div className="flex items-center gap-3">
                     {getStatusIcon(job.status)}
                     <div>
-                      <p className="text-sm font-medium">{job.job_type}</p>
+                      <p className="text-sm font-medium">Job de Processamento</p>
                       <p className="text-xs text-muted-foreground">
                         Criado: {new Date(job.created_at).toLocaleString('pt-BR')}
                       </p>

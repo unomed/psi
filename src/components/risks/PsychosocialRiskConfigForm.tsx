@@ -59,21 +59,19 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
     }
   });
 
-  const handleSave = (formData: FormData) => {
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
     const configData = {
-      auto_generation_enabled: formData.get('auto_generation_enabled') === 'on',
-      manager_notification_enabled: formData.get('manager_notification_enabled') === 'on',
-      hr_notification_enabled: formData.get('hr_notification_enabled') === 'on',
-      compliance_requirements: {
-        nr01_compliance: formData.get('nr01_compliance') === 'on',
-        risk_assessment_frequency: formData.get('risk_assessment_frequency') || '90',
-        action_plan_mandatory: formData.get('action_plan_mandatory') === 'on'
-      },
-      custom_thresholds: {
-        low_risk: parseInt(formData.get('low_risk') as string) || 30,
-        medium_risk: parseInt(formData.get('medium_risk') as string) || 60,
-        high_risk: parseInt(formData.get('high_risk') as string) || 80
-      }
+      auto_generate_plans: formData.get('auto_generate_plans') === 'on',
+      notification_enabled: formData.get('notification_enabled') === 'on',
+      threshold_low: parseInt(formData.get('threshold_low') as string) || 30,
+      threshold_medium: parseInt(formData.get('threshold_medium') as string) || 60,
+      threshold_high: parseInt(formData.get('threshold_high') as string) || 80,
+      periodicidade_dias: parseInt(formData.get('periodicidade_dias') as string) || 90,
+      prazo_acao_alta_dias: parseInt(formData.get('prazo_acao_alta_dias') as string) || 30,
+      prazo_acao_critica_dias: parseInt(formData.get('prazo_acao_critica_dias') as string) || 15
     };
 
     updateConfigMutation.mutate(configData);
@@ -92,7 +90,7 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
   }
 
   return (
-    <form action={handleSave} className="space-y-6">
+    <form onSubmit={handleSave} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Automação e Processamento</CardTitle>
@@ -103,15 +101,15 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="auto_generation_enabled">Geração automática de planos de ação</Label>
+              <Label htmlFor="auto_generate_plans">Geração automática de planos de ação</Label>
               <p className="text-sm text-muted-foreground">
                 Criar automaticamente planos de ação para riscos altos e críticos
               </p>
             </div>
             <Switch 
-              id="auto_generation_enabled" 
-              name="auto_generation_enabled"
-              defaultChecked={config?.auto_generation_enabled ?? true}
+              id="auto_generate_plans" 
+              name="auto_generate_plans"
+              defaultChecked={config?.auto_generate_plans ?? true}
             />
           </div>
 
@@ -119,29 +117,15 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="manager_notification_enabled">Notificar gestores</Label>
+              <Label htmlFor="notification_enabled">Notificações habilitadas</Label>
               <p className="text-sm text-muted-foreground">
-                Enviar emails para gestores quando riscos forem identificados
+                Enviar notificações quando riscos forem identificados
               </p>
             </div>
             <Switch 
-              id="manager_notification_enabled" 
-              name="manager_notification_enabled"
-              defaultChecked={config?.manager_notification_enabled ?? true}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="hr_notification_enabled">Notificar RH</Label>
-              <p className="text-sm text-muted-foreground">
-                Enviar emails para equipe de RH sobre análises de risco
-              </p>
-            </div>
-            <Switch 
-              id="hr_notification_enabled" 
-              name="hr_notification_enabled"
-              defaultChecked={config?.hr_notification_enabled ?? true}
+              id="notification_enabled" 
+              name="notification_enabled"
+              defaultChecked={config?.notification_enabled ?? true}
             />
           </div>
         </CardContent>
@@ -157,36 +141,36 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="low_risk">Risco Baixo (até %)</Label>
+              <Label htmlFor="threshold_low">Risco Baixo (até %)</Label>
               <Input
-                id="low_risk"
-                name="low_risk"
+                id="threshold_low"
+                name="threshold_low"
                 type="number"
                 min="0"
                 max="100"
-                defaultValue={config?.custom_thresholds?.low_risk || 30}
+                defaultValue={config?.threshold_low || 30}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="medium_risk">Risco Médio (até %)</Label>
+              <Label htmlFor="threshold_medium">Risco Médio (até %)</Label>
               <Input
-                id="medium_risk"
-                name="medium_risk"
+                id="threshold_medium"
+                name="threshold_medium"
                 type="number"
                 min="0"
                 max="100"
-                defaultValue={config?.custom_thresholds?.medium_risk || 60}
+                defaultValue={config?.threshold_medium || 60}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="high_risk">Risco Alto (até %)</Label>
+              <Label htmlFor="threshold_high">Risco Alto (até %)</Label>
               <Input
-                id="high_risk"
-                name="high_risk"
+                id="threshold_high"
+                name="threshold_high"
                 type="number"
                 min="0"
                 max="100"
-                defaultValue={config?.custom_thresholds?.high_risk || 80}
+                defaultValue={config?.threshold_high || 80}
               />
             </div>
           </div>
@@ -198,53 +182,46 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
 
       <Card>
         <CardHeader>
-          <CardTitle>Conformidade NR-01</CardTitle>
+          <CardTitle>Prazos e Periodicidade</CardTitle>
           <CardDescription>
-            Configurações específicas para atender aos requisitos da Norma Regulamentadora 01
+            Configure prazos para reavaliações e ações conforme NR-01
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="nr01_compliance">Conformidade obrigatória NR-01</Label>
-              <p className="text-sm text-muted-foreground">
-                Aplicar todos os requisitos obrigatórios da NR-01
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="periodicidade_dias">Periodicidade (dias)</Label>
+              <Input
+                id="periodicidade_dias"
+                name="periodicidade_dias"
+                type="number"
+                min="30"
+                max="365"
+                defaultValue={config?.periodicidade_dias || 90}
+              />
             </div>
-            <Switch 
-              id="nr01_compliance" 
-              name="nr01_compliance"
-              defaultChecked={config?.compliance_requirements?.nr01_compliance ?? true}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="risk_assessment_frequency">Frequência de reavaliação (dias)</Label>
-            <Input
-              id="risk_assessment_frequency"
-              name="risk_assessment_frequency"
-              type="number"
-              min="30"
-              max="365"
-              defaultValue={config?.compliance_requirements?.risk_assessment_frequency || 90}
-            />
-            <p className="text-sm text-muted-foreground">
-              Período para reavaliação automática de riscos identificados
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="action_plan_mandatory">Plano de ação obrigatório</Label>
-              <p className="text-sm text-muted-foreground">
-                Exigir plano de ação para todos os riscos médios, altos e críticos
-              </p>
+            <div className="space-y-2">
+              <Label htmlFor="prazo_acao_alta_dias">Prazo ação risco alto (dias)</Label>
+              <Input
+                id="prazo_acao_alta_dias"
+                name="prazo_acao_alta_dias"
+                type="number"
+                min="1"
+                max="90"
+                defaultValue={config?.prazo_acao_alta_dias || 30}
+              />
             </div>
-            <Switch 
-              id="action_plan_mandatory" 
-              name="action_plan_mandatory"
-              defaultChecked={config?.compliance_requirements?.action_plan_mandatory ?? true}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="prazo_acao_critica_dias">Prazo ação risco crítico (dias)</Label>
+              <Input
+                id="prazo_acao_critica_dias"
+                name="prazo_acao_critica_dias"
+                type="number"
+                min="1"
+                max="30"
+                defaultValue={config?.prazo_acao_critica_dias || 15}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

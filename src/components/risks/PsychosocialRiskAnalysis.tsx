@@ -259,7 +259,7 @@ export function PsychosocialRiskAnalysis({ companyId }: PsychosocialRiskAnalysis
       </TabsContent>
 
       <TabsContent value="config">
-        <PsychosocialRiskConfigForm companyId={companyId} />
+        <PsychosocialRiskConfigForm selectedCompanyId={companyId} />
       </TabsContent>
     </Tabs>
   );

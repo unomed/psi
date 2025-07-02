@@ -35,11 +35,7 @@ export function RealTimeMetrics({ selectedCompanyId }: RealTimeMetricsProps) {
       
       const { data, error } = await supabase
         .from('psychosocial_risk_analysis')
-        .select(`
-          *,
-          employees:employee_id(name),
-          sectors:sector_id(name)
-        `)
+        .select('*')
         .eq('company_id', selectedCompanyId)
         .order('evaluation_date', { ascending: false })
         .limit(5);
@@ -183,10 +179,9 @@ export function RealTimeMetrics({ selectedCompanyId }: RealTimeMetricsProps) {
                   <div className="flex items-center gap-3">
                     <div>
                       <p className="text-sm font-medium">
-                        {analysis.employees?.name || 'Funcionário não identificado'}
+                        Análise ID: {analysis.id.slice(0, 8)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {analysis.sectors?.name || 'Setor não identificado'} • 
                         Score: {analysis.risk_score || 0}%
                       </p>
                     </div>

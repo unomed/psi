@@ -18,7 +18,7 @@ export default function AutomacaoPsicossocialPage() {
         </div>
       </div>
 
-      <PsychosocialAutomationDashboard companyId={companyId} />
+      <PsychosocialAutomationDashboard selectedCompanyId={companyId} />
     </div>
   );
 }
