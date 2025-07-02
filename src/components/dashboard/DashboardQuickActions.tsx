@@ -30,7 +30,7 @@ export function DashboardQuickActions() {
       title: "Agendamento Integrado", 
       description: "Sistema completo de agendamento",
       icon: Calendar,
-      href: "/agendamento",
+      href: "/agendamentos",
       color: "bg-green-500"
     },
     {
