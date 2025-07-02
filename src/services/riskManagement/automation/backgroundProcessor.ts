@@ -40,7 +40,7 @@ export class BackgroundProcessor {
     if (this.isRunning) return;
     
     try {
-      // Salvar estado no banco de dados
+      // Salvar estado no banco de dados usando upsert para configuração global
       const { error } = await supabase
         .from('psychosocial_background_settings')
         .upsert({
@@ -48,8 +48,6 @@ export class BackgroundProcessor {
           is_processing_enabled: true,
           max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
           processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
-        }, {
-          onConflict: 'company_id'
         });
 
       if (error) {
@@ -73,7 +71,7 @@ export class BackgroundProcessor {
     if (!this.isRunning) return;
     
     try {
-      // Salvar estado no banco de dados
+      // Salvar estado no banco de dados usando upsert para configuração global
       const { error } = await supabase
         .from('psychosocial_background_settings')
         .upsert({
@@ -81,8 +79,6 @@ export class BackgroundProcessor {
           is_processing_enabled: false,
           max_concurrent_jobs: this.MAX_CONCURRENT_JOBS,
           processing_interval_seconds: this.PROCESSING_INTERVAL / 1000
-        }, {
-          onConflict: 'company_id'
         });
 
       if (error) {
