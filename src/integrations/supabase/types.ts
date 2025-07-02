@@ -2161,39 +2161,63 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           file_url: string | null
+          frprt_findings: Json | null
+          generated_at: string | null
+          generated_by: string | null
           generation_date: string | null
           id: string
+          period_end: string | null
+          period_start: string | null
           recipients_sent: Json | null
           report_data: Json
           report_name: string
+          report_title: string | null
+          report_type: string | null
           scheduled_report_id: string | null
           status: string | null
+          total_assessments: number | null
         }
         Insert: {
           company_id: string
           created_at?: string | null
           error_message?: string | null
           file_url?: string | null
+          frprt_findings?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
           generation_date?: string | null
           id?: string
+          period_end?: string | null
+          period_start?: string | null
           recipients_sent?: Json | null
           report_data: Json
           report_name: string
+          report_title?: string | null
+          report_type?: string | null
           scheduled_report_id?: string | null
           status?: string | null
+          total_assessments?: number | null
         }
         Update: {
           company_id?: string
           created_at?: string | null
           error_message?: string | null
           file_url?: string | null
+          frprt_findings?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
           generation_date?: string | null
           id?: string
+          period_end?: string | null
+          period_start?: string | null
           recipients_sent?: Json | null
           report_data?: Json
           report_name?: string
+          report_title?: string | null
+          report_type?: string | null
           scheduled_report_id?: string | null
           status?: string | null
+          total_assessments?: number | null
         }
         Relationships: [
           {
@@ -2207,16 +2231,27 @@ export type Database = {
       }
       risk_assessments: {
         Row: {
+          action_deadline: string | null
           assessment_response_id: string | null
           company_id: string
+          compliance_status: string | null
           created_at: string
           created_by: string | null
           employee_id: string | null
+          exposure_intensity: string | null
+          frprt_condicoes_psicossociais: number | null
+          frprt_equilibrio_trabalho_vida: number | null
+          frprt_organizacao_trabalho: number | null
+          frprt_reconhecimento_crescimento: number | null
+          frprt_relacoes_socioprofissionais: number | null
           id: string
+          manifestations_found: Json | null
           mitigation_actions: Json | null
           next_assessment_date: string | null
+          overall_risk_level: string | null
           probability_index: number
           recommended_action: string | null
+          required_actions: Json | null
           risk_factors: Json | null
           risk_level: string
           risk_value: number
@@ -2227,16 +2262,27 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          action_deadline?: string | null
           assessment_response_id?: string | null
           company_id: string
+          compliance_status?: string | null
           created_at?: string
           created_by?: string | null
           employee_id?: string | null
+          exposure_intensity?: string | null
+          frprt_condicoes_psicossociais?: number | null
+          frprt_equilibrio_trabalho_vida?: number | null
+          frprt_organizacao_trabalho?: number | null
+          frprt_reconhecimento_crescimento?: number | null
+          frprt_relacoes_socioprofissionais?: number | null
           id?: string
+          manifestations_found?: Json | null
           mitigation_actions?: Json | null
           next_assessment_date?: string | null
+          overall_risk_level?: string | null
           probability_index: number
           recommended_action?: string | null
+          required_actions?: Json | null
           risk_factors?: Json | null
           risk_level: string
           risk_value: number
@@ -2247,16 +2293,27 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          action_deadline?: string | null
           assessment_response_id?: string | null
           company_id?: string
+          compliance_status?: string | null
           created_at?: string
           created_by?: string | null
           employee_id?: string | null
+          exposure_intensity?: string | null
+          frprt_condicoes_psicossociais?: number | null
+          frprt_equilibrio_trabalho_vida?: number | null
+          frprt_organizacao_trabalho?: number | null
+          frprt_reconhecimento_crescimento?: number | null
+          frprt_relacoes_socioprofissionais?: number | null
           id?: string
+          manifestations_found?: Json | null
           mitigation_actions?: Json | null
           next_assessment_date?: string | null
+          overall_risk_level?: string | null
           probability_index?: number
           recommended_action?: string | null
+          required_actions?: Json | null
           risk_factors?: Json | null
           risk_level?: string
           risk_value?: number
@@ -2929,6 +2986,10 @@ export type Database = {
           is_valid: boolean
         }[]
       }
+      calculate_company_frprt_metrics: {
+        Args: { p_company_id: string; p_sector_id?: string }
+        Returns: Json
+      }
       calculate_psychosocial_metrics: {
         Args: { p_company_id: string; p_calculation_date?: string }
         Returns: {
@@ -3177,6 +3238,10 @@ export type Database = {
       migrate_employee_tags_from_jsonb: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      process_frprt_classification: {
+        Args: { p_assessment_response_id: string }
+        Returns: Json
       }
       process_psychosocial_assessment_auto: {
         Args: { p_assessment_response_id: string }
