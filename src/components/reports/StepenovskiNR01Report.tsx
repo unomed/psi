@@ -611,7 +611,7 @@ export function StepenovskiNR01Report({
                 <tr><td><strong>Endereço</strong></td><td>{frprtData.company?.address || 'Rua Maria Antônia Vileski, 115 - Jardim Arapongas - Castro/PR'}</td></tr>
                 <tr><td><strong>CNAE</strong></td><td>8630-5/03 - Atividade médica ambulatorial com recursos para realização de exames complementares</td></tr>
                 <tr><td><strong>Grau de Risco</strong></td><td>3 (Médio)</td></tr>
-                <tr><td><strong>Funcionários Avaliados</strong></td><td>{frprtData.frprtMetrics.totalAssessments} colaboradores</td></tr>
+                <tr><td><strong>Funcionários</strong></td><td>{frprtData.frprtMetrics.totalAssessments} colaboradores</td></tr>
                 <tr><td><strong>Data da Avaliação</strong></td><td>{new Date().toLocaleDateString('pt-BR')}</td></tr>
                 <tr><td><strong>Responsável Técnico</strong></td><td>Arildo Pinto Stepenovski - Técnico em Segurança do Trabalho - MTE 27545</td></tr>
               </tbody>
