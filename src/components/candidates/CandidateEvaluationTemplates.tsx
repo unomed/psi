@@ -172,6 +172,28 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Templates de Avaliação para Candidatos</h2>
+          <p className="text-muted-foreground">
+            Templates específicos para avaliação e seleção de candidatos
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsSchedulingOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Agendar Avaliação
+          </Button>
+          <Button onClick={() => setIsTemplateSelectionOpen(true)} variant="outline">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Template
+          </Button>
+        </div>
+      </div>
+
       {/* Card destacado para Avaliação DISC Padrão */}
       <Card className="border-2 border-primary/20 bg-gradient-to-r from-blue-50 to-indigo-50">
         <CardHeader>
@@ -269,41 +291,103 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
         </Select>
       </div>
 
-      {/* Template DISC Padrão */}
-      <Card className="hover:shadow-md transition-shadow max-w-md">
-        <CardHeader className="pb-3">
-          <div className="flex justify-between items-start">
-            <CardTitle className="text-lg">
-              Avaliação DISC Padrão
-            </CardTitle>
-            <Badge className="bg-blue-100 text-blue-800">
-              DISC
-            </Badge>
+      {/* Lista de Templates */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {isLoading ? (
+          <div className="col-span-full text-center py-8">
+            <p className="text-muted-foreground">Carregando templates...</p>
           </div>
-          <CardDescription>
-            Avaliação de perfil comportamental baseada na metodologia DISC
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Tempo estimado:</span>
-              <span>30 min</span>
-            </div>
-            
-            <Badge variant="secondary" className="text-xs">
-              Template padrão
-            </Badge>
+        ) : candidateTemplates.length === 0 ? (
+          <div className="col-span-full text-center py-8">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">Nenhum template encontrado</p>
+            <p className="text-muted-foreground">
+              {searchTerm || typeFilter !== 'all' 
+                ? 'Tente ajustar os filtros de busca'
+                : 'Crie templates específicos para avaliação de candidatos'
+              }
+            </p>
+          </div>
+        ) : (
+          candidateTemplates.map(template => (
+            <Card key={template.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg line-clamp-2">
+                    {template.title}
+                  </CardTitle>
+                  <Badge className={getTemplateTypeColor(template.type)}>
+                    {getTemplateTypeLabel(template.type)}
+                  </Badge>
+                </div>
+                <CardDescription className="line-clamp-3">
+                  {template.description || 'Sem descrição disponível'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Tempo estimado:</span>
+                    <span>{template.estimated_time_minutes || 30} min</span>
+                  </div>
+                  
+                  {template.company_id ? (
+                    <Badge variant="outline" className="text-xs">
+                      Template da empresa
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      Template padrão
+                    </Badge>
+                  )}
 
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Eye className="mr-2 h-3 w-3" />
-                Visualizar
-              </Button>
-              <Button size="sm" className="flex-1" onClick={() => setIsSchedulingOpen(true)}>
-                <FileText className="mr-2 h-3 w-3" />
-                Usar
-              </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="mr-2 h-3 w-3" />
+                      Visualizar
+                    </Button>
+                    <Button size="sm" className="flex-1">
+                      <FileText className="mr-2 h-3 w-3" />
+                      Usar
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Estatísticas */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Estatísticas dos Templates</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600">
+                {candidateTemplates.filter(t => t.type === 'disc').length}
+              </p>
+              <p className="text-sm text-muted-foreground">Templates DISC</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600">
+                {candidateTemplates.filter(t => t.type === 'custom').length}
+              </p>
+              <p className="text-sm text-muted-foreground">Templates Personalizados</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600">
+                {candidateTemplates.filter(t => t.type === 'custom').length}
+              </p>
+              <p className="text-sm text-muted-foreground">Templates Personalizados</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-orange-600">
+                {candidateTemplates.filter(t => !t.company_id).length}
+              </p>
+              <p className="text-sm text-muted-foreground">Templates Padrão</p>
             </div>
           </div>
         </CardContent>
