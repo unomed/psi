@@ -75,8 +75,8 @@ export default function Relatorios() {
   };
 
   const generatePrintableReport = () => {
-    const selectedCompanyData = userCompanies.find(c => c.companyId === selectedCompany);
-    const companyName = selectedCompanyData?.companyName || 'Empresa';
+    // Nome fixo da empresa conforme solicitado
+    const companyName = 'Stepenovski Clinica Médica LTDA';
     
     // Buscar dados reais da empresa
     const companyId = selectedCompany;
@@ -90,6 +90,14 @@ export default function Relatorios() {
     const riscoAlto = reportsData?.highRiskEmployees || 0;
     const riscoMedio = reportsData?.mediumRiskEmployees || 0;
     const riscoBaixo = reportsData?.lowRiskEmployees || 0;
+    
+    // Dados de setores e funções
+    const setoresData = reportsData?.riskBySector || [];
+    const funcoesData = reportsData?.riskByRole || [];
+    
+    // Preparar labels e dados para gráficos
+    const sectorsLabels = setoresData.map(s => s.sector || 'Setor não definido');
+    const rolesLabels = funcoesData.map(r => r.role || 'Função não definida');
     
     const reportHtml = `
 <!DOCTYPE html>
@@ -658,7 +666,6 @@ export default function Relatorios() {
             </div>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #4CAF50;">
-                <div class="company-logo" style="margin: 0 auto 15px auto;">${companyName.substring(0, 8).toUpperCase()}</div>
                 <p style="color: #666;">
                     🏛️ Este relatório atende integralmente às exigências da NR-01 para identificação, 
                     avaliação e controle dos FRPRT, constituindo documento oficial para apresentação 
@@ -793,27 +800,29 @@ export default function Relatorios() {
             }
         });
 
-        // Gráfico por Setor (Radar)
+        // Gráfico por Setor (Barras Horizontais)
         const sectorCtx = document.getElementById('sectorChart').getContext('2d');
         new Chart(sectorCtx, {
-            type: 'radar',
+            type: 'bar',
             data: {
-                labels: ['Organização do Trabalho', 'Condições Ambientais', 'Relações Socioprofissionais', 'Reconhecimento', 'Trabalho-Vida'],
-                datasets: [{
-                    label: 'Score FRPRT por Categoria',
-                    data: [
-                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 40 + riscoAlto * 80) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)},
-                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 35 + riscoAlto * 75) / (riscoAlto + riscoMedio + riscoBaixo)) : 30)},
-                        28,
-                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 45 + riscoAlto * 70) / (riscoAlto + riscoMedio + riscoBaixo)) : 40)},
-                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 38 + riscoAlto * 65) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)}
-                    ],
-                    borderColor: colors.info,
-                    backgroundColor: colors.info + '30',
-                    pointBackgroundColor: colors.info,
-                    pointBorderColor: '#ffffff',
-                    pointRadius: 5
-                }]
+                labels: ${JSON.stringify(sectorsLabels.length > 0 ? sectorsLabels : ['Administrativo', 'Operacional'])},
+                datasets: [
+                    {
+                        label: 'Alto Risco',
+                        data: ${JSON.stringify(setoresData.map(s => s.high) || [riscoAlto, Math.round(riscoAlto * 0.6)])},
+                        backgroundColor: '#ef444480'
+                    },
+                    {
+                        label: 'Médio Risco',
+                        data: ${JSON.stringify(setoresData.map(s => s.medium) || [riscoMedio, Math.round(riscoMedio * 0.8)])},
+                        backgroundColor: '#f59e0b80'
+                    },
+                    {
+                        label: 'Baixo Risco',
+                        data: ${JSON.stringify(setoresData.map(s => s.low) || [riscoBaixo, Math.round(riscoBaixo * 1.2)])},
+                        backgroundColor: '#10b98180'
+                    }
+                ]
             },
             options: {
                 responsive: true,
@@ -856,32 +865,22 @@ export default function Relatorios() {
         new Chart(functionCtx, {
             type: 'bar',
             data: {
-                labels: ['Todas as Funções'],
+                labels: ${JSON.stringify(rolesLabels.length > 0 ? rolesLabels : ['Médico', 'Enfermeiro', 'Técnico', 'Administrativo'])},
                 datasets: [
                     {
-                        label: 'Organização do Trabalho',
-                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 40 + riscoAlto * 80) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)}],
-                        backgroundColor: colors.danger + '80'
+                        label: 'Alto Risco',
+                        data: ${JSON.stringify(funcoesData.map(r => r.high) || [Math.round(riscoAlto * 0.4), Math.round(riscoAlto * 0.3), Math.round(riscoAlto * 0.2), Math.round(riscoAlto * 0.1)])},
+                        backgroundColor: '#ef444480'
                     },
                     {
-                        label: 'Condições Ambientais',
-                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 35 + riscoAlto * 75) / (riscoAlto + riscoMedio + riscoBaixo)) : 30)}],
-                        backgroundColor: colors.info + '80'
+                        label: 'Médio Risco',
+                        data: ${JSON.stringify(funcoesData.map(r => r.medium) || [Math.round(riscoMedio * 0.3), Math.round(riscoMedio * 0.4), Math.round(riscoMedio * 0.2), Math.round(riscoMedio * 0.1)])},
+                        backgroundColor: '#f59e0b80'
                     },
                     {
-                        label: 'Relações',
-                        data: [28],
-                        backgroundColor: colors.success + '80'
-                    },
-                    {
-                        label: 'Reconhecimento',
-                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 45 + riscoAlto * 70) / (riscoAlto + riscoMedio + riscoBaixo)) : 40)}],
-                        backgroundColor: colors.warning + '80'
-                    },
-                    {
-                        label: 'Trabalho-Vida',
-                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 38 + riscoAlto * 65) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)}],
-                        backgroundColor: colors.secondary + '80'
+                        label: 'Baixo Risco',
+                        data: ${JSON.stringify(funcoesData.map(r => r.low) || [Math.round(riscoBaixo * 0.2), Math.round(riscoBaixo * 0.3), Math.round(riscoBaixo * 0.3), Math.round(riscoBaixo * 0.2)])},
+                        backgroundColor: '#10b98180'
                     }
                 ]
             },
@@ -908,10 +907,9 @@ export default function Relatorios() {
                     },
                     y: {
                         beginAtZero: true,
-                        max: 100,
                         ticks: {
                             callback: function(value) {
-                                return value + '%';
+                                return value + ' funcionários';
                             },
                             color: '#6b7280'
                         },
