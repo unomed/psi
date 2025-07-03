@@ -21,6 +21,7 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [isDiscDialogOpen, setIsDiscDialogOpen] = useState(false);
+  const [isTemplateSelectionOpen, setIsTemplateSelectionOpen] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [scheduleDate, setScheduleDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -176,7 +177,7 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
             Templates específicos para avaliação e seleção de candidatos
           </p>
         </div>
-        <Button onClick={() => window.location.href = '/templates'}>
+        <Button onClick={() => setIsTemplateSelectionOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Template
         </Button>
@@ -502,6 +503,186 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Seleção de Template */}
+      <Dialog open={isTemplateSelectionOpen} onOpenChange={setIsTemplateSelectionOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Selecionar Template para Candidatos</DialogTitle>
+            <DialogDescription>
+              Escolha um template para criar avaliações para candidatos
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Buscar templates disponíveis */}
+            <TemplateSelectionGrid
+              selectedCompany={selectedCompany}
+              onTemplateSelect={(template) => {
+                // Lógica para usar o template selecionado
+                console.log('Template selecionado:', template);
+                setIsTemplateSelectionOpen(false);
+                toast.success(`Template "${template.title}" selecionado para candidatos`);
+              }}
+              typeFilter="all"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Componente para seleção de templates
+function TemplateSelectionGrid({ 
+  selectedCompany, 
+  onTemplateSelect, 
+  typeFilter 
+}: { 
+  selectedCompany: string | null; 
+  onTemplateSelect: (template: any) => void;
+  typeFilter: string;
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const { data: templates = [], isLoading } = useQuery({
+    queryKey: ['candidate-template-selection', selectedCompany],
+    queryFn: async () => {
+      if (!selectedCompany) return [];
+      
+      let query = supabase
+        .from('checklist_templates')
+        .select('*')
+        .eq('is_active', true);
+
+      query = query.or(`company_id.eq.${selectedCompany},company_id.is.null`);
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedCompany
+  });
+
+  const getTemplateTypeLabel = (type: string) => {
+    switch (type) {
+      case 'disc': return 'DISC';
+      case 'psicossocial': return 'Psicossocial';
+      case 'custom': return 'Personalizado';
+      default: return type.toUpperCase();
+    }
+  };
+
+  const getTemplateTypeColor = (type: string) => {
+    switch (type) {
+      case 'disc': return 'bg-blue-100 text-blue-800';
+      case 'psicossocial': return 'bg-red-100 text-red-800';
+      case 'custom': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const filteredTemplates = templates.filter(template => {
+    const matchesSearch = !searchTerm || 
+      template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      template.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando templates...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Filtro de busca */}
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Buscar templates..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Grid de Templates */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredTemplates.length === 0 ? (
+          <div className="col-span-full text-center py-8">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">Nenhum template encontrado</p>
+            <p className="text-muted-foreground">
+              {searchTerm 
+                ? 'Tente ajustar os filtros de busca'
+                : 'Crie templates na página /templates primeiro'
+              }
+            </p>
+          </div>
+        ) : (
+          filteredTemplates.map(template => (
+            <Card key={template.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg line-clamp-2">
+                    {template.title}
+                  </CardTitle>
+                  <Badge className={getTemplateTypeColor(template.type)}>
+                    {getTemplateTypeLabel(template.type)}
+                  </Badge>
+                </div>
+                <CardDescription className="line-clamp-3">
+                  {template.description || 'Sem descrição disponível'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Tempo estimado:</span>
+                    <span>{template.estimated_time_minutes || 30} min</span>
+                  </div>
+                  
+                  {template.company_id ? (
+                    <Badge variant="outline" className="text-xs">
+                      Template da empresa
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      Template padrão
+                    </Badge>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="mr-2 h-3 w-3" />
+                      Preview
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => onTemplateSelect(template)}
+                    >
+                      <FileText className="mr-2 h-3 w-3" />
+                      Usar
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 }
