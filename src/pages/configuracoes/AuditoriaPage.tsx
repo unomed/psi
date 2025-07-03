@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { RoleCheck } from '@/components/auth/RoleCheck';
@@ -12,6 +12,7 @@ import { Shield, Activity, Clock, Settings } from 'lucide-react';
 export default function AuditoriaPage() {
   const { userCompanies } = useAuth();
   const currentCompanyId = userCompanies?.[0]?.companyId;
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
     <RoleCheck allowedRoles={['superadmin', 'admin']}>
@@ -24,7 +25,7 @@ export default function AuditoriaPage() {
             </p>
           </div>
 
-          <Tabs defaultValue="dashboard" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="dashboard">
                 <Activity className="h-4 w-4 mr-2" />
@@ -44,19 +45,22 @@ export default function AuditoriaPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="dashboard">
+            <TabsContent value="dashboard" key="dashboard">
               <AuditDashboard companyId={currentCompanyId} />
             </TabsContent>
 
-            <TabsContent value="logs">
+            <TabsContent value="logs" key="logs">
               <AuditLogsList companyId={currentCompanyId} />
             </TabsContent>
 
-            <TabsContent value="activity">
-              <AuditLogsList companyId={currentCompanyId} />
+            <TabsContent value="activity" key="activity">
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Atividade Recente (Últimas 24h)</h2>
+                <AuditLogsList companyId={currentCompanyId} />
+              </div>
             </TabsContent>
 
-            <TabsContent value="generator">
+            <TabsContent value="generator" key="generator">
               <AuditLogGenerator />
             </TabsContent>
           </Tabs>
