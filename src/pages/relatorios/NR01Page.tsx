@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NR01ComplianceReport } from '@/components/reports/NR01ComplianceReport';
+import { StepenovskiNR01Report } from '@/components/reports/StepenovskiNR01Report';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DatePickerWithRange } from '@/components/reports/DatePickerWithRange';
@@ -75,7 +75,7 @@ export default function NR01Page() {
 
       {/* Relatório */}
       {selectedCompany && dateRange.from && dateRange.to && (
-        <NR01ComplianceReport
+        <StepenovskiNR01Report
           companyId={selectedCompany}
           periodStart={dateRange.from.toISOString()}
           periodEnd={dateRange.to.toISOString()}

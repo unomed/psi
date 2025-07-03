@@ -7,7 +7,7 @@ import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistributio
 import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
-import { NR01ComplianceReport } from "@/components/reports/NR01ComplianceReport";
+import { StepenovskiNR01Report } from "@/components/reports/StepenovskiNR01Report";
 import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
 import { FileText, Download, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1034,7 +1034,7 @@ export default function Relatorios() {
         
         <TabsContent value="frprt" className="space-y-6 mt-6">
           {selectedCompany && dateRange.from && dateRange.to ? (
-            <NR01ComplianceReport
+            <StepenovskiNR01Report
               companyId={selectedCompany}
               periodStart={dateRange.from.toISOString()}
               periodEnd={dateRange.to.toISOString()}
