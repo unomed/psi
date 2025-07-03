@@ -2,10 +2,11 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PsychosocialAutomationDashboard } from "@/components/risks/PsychosocialAutomationDashboard";
+import { PsychosocialAdvancedConfig } from "@/components/risks/PsychosocialAdvancedConfig";
 import { NotificationManager } from "@/components/automation/NotificationManager";
 import { ProcessingJobsMonitor } from "@/components/automation/ProcessingJobsMonitor";
 import { useAuth } from "@/contexts/AuthContext";
-import { Bell, Activity, Settings } from "lucide-react";
+import { Bell, Activity, Settings, Brain } from "lucide-react";
 
 export default function AutomacaoPsicossocialPage() {
   const { userCompanies } = useAuth();
@@ -23,10 +24,14 @@ export default function AutomacaoPsicossocialPage() {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="dashboard">
             <Settings className="h-4 w-4 mr-2" />
             Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="ai">
+            <Brain className="h-4 w-4 mr-2" />
+            Inteligência Artificial
           </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="h-4 w-4 mr-2" />
@@ -40,6 +45,10 @@ export default function AutomacaoPsicossocialPage() {
         
         <TabsContent value="dashboard">
           <PsychosocialAutomationDashboard selectedCompanyId={companyId} />
+        </TabsContent>
+        
+        <TabsContent value="ai">
+          <PsychosocialAdvancedConfig selectedCompanyId={companyId} />
         </TabsContent>
         
         <TabsContent value="notifications">
