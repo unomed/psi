@@ -176,7 +176,7 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
             Templates específicos para avaliação e seleção de candidatos
           </p>
         </div>
-        <Button>
+        <Button onClick={() => window.location.href = '/templates'}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Template
         </Button>
