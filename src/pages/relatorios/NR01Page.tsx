@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NR01ComplianceReport } from '@/components/reports/NR01ComplianceReport';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,7 +54,7 @@ export default function NR01Page() {
                 </SelectTrigger>
                 <SelectContent>
                   {companies.map((company) => (
-                    <SelectItem key={company.companyId} value={company.companyId}>
+                    <SelectItem key={company.companyId} value={String(company.companyId)}>
                       {company.companyName}
                     </SelectItem>
                   ))}
