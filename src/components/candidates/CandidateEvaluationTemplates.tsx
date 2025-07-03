@@ -12,6 +12,7 @@ import { FileText, Search, Filter, Plus, Eye, Calendar, Users, Brain } from "luc
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CandidateSchedulingWorkflow } from "./CandidateSchedulingWorkflow";
 
 interface CandidateEvaluationTemplatesProps {
   selectedCompany: string | null;
@@ -22,6 +23,7 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
   const [typeFilter, setTypeFilter] = useState("all");
   const [isDiscDialogOpen, setIsDiscDialogOpen] = useState(false);
   const [isTemplateSelectionOpen, setIsTemplateSelectionOpen] = useState(false);
+  const [isSchedulingOpen, setIsSchedulingOpen] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   const [scheduleDate, setScheduleDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -177,10 +179,19 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
             Templates específicos para avaliação e seleção de candidatos
           </p>
         </div>
-        <Button onClick={() => setIsTemplateSelectionOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Template
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsSchedulingOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Agendar Avaliação
+          </Button>
+          <Button onClick={() => setIsTemplateSelectionOpen(true)} variant="outline">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Template
+          </Button>
+        </div>
       </div>
 
       {/* Card destacado para Avaliação DISC Padrão */}
@@ -234,15 +245,20 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
               <Button 
                 size="lg" 
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
-                onClick={() => setIsDiscDialogOpen(true)}
+                onClick={() => setIsSchedulingOpen(true)}
                 disabled={candidates.length === 0}
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                Agendar para Candidatos
+                Agendar Avaliação Completa
               </Button>
-              <Button variant="outline" size="lg">
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => setIsDiscDialogOpen(true)}
+                disabled={candidates.length === 0}
+              >
                 <Eye className="mr-2 h-4 w-4" />
-                Visualizar Template
+                Agendamento Rápido
               </Button>
             </div>
           </div>
@@ -529,6 +545,13 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Agendamento Completo */}
+      <CandidateSchedulingWorkflow 
+        isOpen={isSchedulingOpen}
+        onClose={() => setIsSchedulingOpen(false)}
+        selectedCompany={selectedCompany}
+      />
     </div>
   );
 }
