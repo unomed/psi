@@ -115,7 +115,15 @@ export function useAssessmentResultsData(companyId?: string | null) {
         // Handle employee data - it can be an array or single object from Supabase
         const employeesArray = Array.isArray(result.employees) ? result.employees : (result.employees ? [result.employees] : []);
         const employee = employeesArray[0]; // Get first employee from array
-        const employeeName = result.employee_name || (employee?.name) || 'Anônimo';
+        
+        // Para conformidade com NR-01 e NR-17, manter anonimato nas avaliações psicossociais
+        const isAnonymousAssessment = result.checklist_templates?.type === 'psicossocial' || 
+                                    result.checklist_templates?.title?.toLowerCase().includes('psicossocial');
+        
+        const employeeName = isAnonymousAssessment 
+          ? `Funcionário ${result.id.slice(-6).toUpperCase()}` // Código anônimo baseado no ID
+          : (result.employee_name || employee?.name || 'Anônimo');
+        
         const sector = employee?.sectors?.name;
         const role = employee?.roles?.name;
 

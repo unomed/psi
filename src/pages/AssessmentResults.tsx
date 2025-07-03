@@ -19,7 +19,7 @@ export default function AssessmentResults() {
     return null;
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [riskFilter, setRiskFilter] = useState("all");
+  const [riskFilter, setRiskFilter] = useState("todos");
   const [selectedResult, setSelectedResult] = useState<any>(null);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
 
@@ -30,10 +30,10 @@ export default function AssessmentResults() {
   };
 
   const filteredResults = results.filter(result => {
-    const matchesSearch = result.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         result.templateTitle.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (result.employeeName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (result.templateTitle || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRisk = riskFilter === 'all' || result.riskLevel === riskFilter;
+    const matchesRisk = riskFilter === "todos" || result.riskLevel === riskFilter;
 
     return matchesSearch && matchesRisk;
   });
@@ -96,7 +96,7 @@ export default function AssessmentResults() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os riscos</SelectItem>
+            <SelectItem value="todos">Todos os riscos</SelectItem>
             <SelectItem value="Alto">Alto risco</SelectItem>
             <SelectItem value="Médio">Médio risco</SelectItem>
             <SelectItem value="Baixo">Baixo risco</SelectItem>
