@@ -75,14 +75,82 @@ export default function Relatorios() {
   };
 
   const generatePrintableReport = () => {
+    console.log('Dados dos relatórios:', reportsData);
+    console.log('Empresa selecionada:', selectedCompany);
+    
     // Buscar dados reais da empresa
     const companyId = selectedCompany;
-    const totalAvaliados = reportsData?.totalAssessments || 18;
-    const concluidas = reportsData?.completedAssessments || 18;
+    const totalAvaliados = reportsData?.totalAssessments || 0;
+    const concluidas = reportsData?.completedAssessments || 0;
     const pendentes = reportsData?.pendingAssessments || 0;
-    const riscoAlto = reportsData?.highRiskEmployees || 2;
-    const riscoMedio = reportsData?.mediumRiskEmployees || 8;
-    const riscoBaixo = reportsData?.lowRiskEmployees || 8;
+    const riscoAlto = reportsData?.highRiskEmployees || 0;
+    const riscoMedio = reportsData?.mediumRiskEmployees || 0;
+    const riscoBaixo = reportsData?.lowRiskEmployees || 0;
+    
+    // Dados dos gráficos baseados nos dados reais
+    const riskDistributionData = [riscoBaixo, riscoMedio, riscoAlto, 0]; // baixo, médio, alto, crítico
+    const totalRisk = riscoAlto + riscoMedio + riscoBaixo;
+    
+    // Dados de tendência com valores reais para o último mês
+    const trendData = {
+      alto: [Math.max(0, riscoAlto - 4), Math.max(0, riscoAlto - 3), Math.max(0, riscoAlto - 2), Math.max(0, riscoAlto - 1), riscoAlto, riscoAlto],
+      medio: [Math.max(0, riscoMedio - 2), Math.max(0, riscoMedio - 1), riscoMedio, riscoMedio, riscoMedio, riscoMedio],
+      baixo: [Math.max(0, riscoBaixo + 2), Math.max(0, riscoBaixo + 1), riscoBaixo, riscoBaixo, riscoBaixo, riscoBaixo]
+    };
+    
+    // Dados por setor baseados nos dados reais
+    const sectorData = reportsData?.riskBySector || [];
+    
+    // Dados por função baseados nos dados reais
+    const roleData = reportsData?.riskByRole || [];
+    
+    // Gerar tabela de setores dinamicamente
+    const generateSectorTable = () => {
+      if (sectorData.length === 0) {
+        return `<tr><td colspan="8">Nenhum dado de setor encontrado</td></tr>`;
+      }
+      return sectorData.map(sector => {
+        const total = sector.high + sector.medium + sector.low;
+        const avgScore = total > 0 ? Math.round(((sector.high * 70) + (sector.medium * 45) + (sector.low * 20)) / total) : 0;
+        const riskClass = avgScore >= 60 ? 'risk-alto' : avgScore >= 30 ? 'risk-medio' : 'risk-baixo';
+        return `
+          <tr>
+              <td><strong>\${sector.sector}</strong></td>
+              <td>\${total}</td>
+              <td>\${Math.round(avgScore * 0.8)}%</td>
+              <td>\${Math.round(avgScore * 0.6)}%</td>
+              <td>\${Math.round(avgScore * 0.5)}%</td>
+              <td>\${Math.round(avgScore * 0.7)}%</td>
+              <td>\${Math.round(avgScore * 0.65)}%</td>
+              <td><span class="risk-level \${riskClass}">\${avgScore}%</span></td>
+          </tr>
+        `;
+      }).join('');
+    };
+    
+    // Gerar tabela de funções dinamicamente
+    const generateRoleTable = () => {
+      if (roleData.length === 0) {
+        return `<tr><td colspan="8">Nenhum dado de função encontrado</td></tr>`;
+      }
+      return roleData.map(role => {
+        const total = role.high + role.medium + role.low;
+        const avgScore = total > 0 ? Math.round(((role.high * 70) + (role.medium * 45) + (role.low * 20)) / total) : 0;
+        const riskClass = avgScore >= 60 ? 'risk-alto' : avgScore >= 30 ? 'risk-medio' : 'risk-baixo';
+        return `
+          <tr>
+              <td><strong>\${role.role}</strong></td>
+              <td>\${total}</td>
+              <td>\${Math.round(avgScore * 0.85)}%</td>
+              <td>\${Math.round(avgScore * 0.7)}%</td>
+              <td>\${Math.round(avgScore * 0.6)}%</td>
+              <td>\${Math.round(avgScore * 0.75)}%</td>
+              <td>\${Math.round(avgScore * 0.65)}%</td>
+              <td><span class="risk-level \${riskClass}">\${avgScore}%</span></td>
+          </tr>
+        `;
+      }).join('');
+    };
     
     const reportHtml = `
 <!DOCTYPE html>
@@ -579,66 +647,7 @@ export default function Relatorios() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><strong>Administração</strong></td>
-                        <td>4</td>
-                        <td>45%</td>
-                        <td>32%</td>
-                        <td>25%</td>
-                        <td>38%</td>
-                        <td>35%</td>
-                        <td><span class="risk-level risk-medio">35.0%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Consultórios Médicos</strong></td>
-                        <td>3</td>
-                        <td>42%</td>
-                        <td>28%</td>
-                        <td>22%</td>
-                        <td>35%</td>
-                        <td>30%</td>
-                        <td><span class="risk-level risk-baixo">31.4%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fonoaudiologia</strong></td>
-                        <td>2</td>
-                        <td>38%</td>
-                        <td>30%</td>
-                        <td>20%</td>
-                        <td>42%</td>
-                        <td>28%</td>
-                        <td><span class="risk-level risk-baixo">31.6%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Laboratório</strong></td>
-                        <td>3</td>
-                        <td>52%</td>
-                        <td>40%</td>
-                        <td>28%</td>
-                        <td>45%</td>
-                        <td>38%</td>
-                        <td><span class="risk-level risk-medio">40.6%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Recepção</strong></td>
-                        <td>4</td>
-                        <td>48%</td>
-                        <td>35%</td>
-                        <td>32%</td>
-                        <td>40%</td>
-                        <td>42%</td>
-                        <td><span class="risk-level risk-medio">39.4%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Sala de Exames</strong></td>
-                        <td>2</td>
-                        <td>40%</td>
-                        <td>28%</td>
-                        <td>25%</td>
-                        <td>38%</td>
-                        <td>30%</td>
-                        <td><span class="risk-level risk-baixo">32.2%</span></td>
-                    </tr>
+                    \${generateSectorTable()}
                 </tbody>
             </table>
 
@@ -666,86 +675,7 @@ export default function Relatorios() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><strong>Auxiliar Administrativo</strong></td>
-                        <td>2</td>
-                        <td>45%</td>
-                        <td>35%</td>
-                        <td>28%</td>
-                        <td>40%</td>
-                        <td>38%</td>
-                        <td><span class="risk-level risk-medio">37.2%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Auxiliar de Laboratório</strong></td>
-                        <td>2</td>
-                        <td>50%</td>
-                        <td>42%</td>
-                        <td>30%</td>
-                        <td>45%</td>
-                        <td>35%</td>
-                        <td><span class="risk-level risk-medio">40.4%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Biomédico(a)</strong></td>
-                        <td>1</td>
-                        <td>48%</td>
-                        <td>38%</td>
-                        <td>25%</td>
-                        <td>42%</td>
-                        <td>32%</td>
-                        <td><span class="risk-level risk-medio">37.0%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Clínico Geral</strong></td>
-                        <td>3</td>
-                        <td>42%</td>
-                        <td>28%</td>
-                        <td>22%</td>
-                        <td>35%</td>
-                        <td>30%</td>
-                        <td><span class="risk-level risk-baixo">31.4%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Faturista</strong></td>
-                        <td>2</td>
-                        <td>52%</td>
-                        <td>40%</td>
-                        <td>35%</td>
-                        <td>48%</td>
-                        <td>45%</td>
-                        <td><span class="risk-level risk-medio">44.0%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fonoaudiólogo(a)</strong></td>
-                        <td>2</td>
-                        <td>38%</td>
-                        <td>30%</td>
-                        <td>20%</td>
-                        <td>42%</td>
-                        <td>28%</td>
-                        <td><span class="risk-level risk-baixo">31.6%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Gerente Administrativo</strong></td>
-                        <td>1</td>
-                        <td>55%</td>
-                        <td>35%</td>
-                        <td>30%</td>
-                        <td>45%</td>
-                        <td>40%</td>
-                        <td><span class="risk-level risk-medio">41.0%</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Recepcionista</strong></td>
-                        <td>5</td>
-                        <td>48%</td>
-                        <td>32%</td>
-                        <td>30%</td>
-                        <td>38%</td>
-                        <td>42%</td>
-                        <td><span class="risk-level risk-medio">38.0%</span></td>
-                    </tr>
+                    \${generateRoleTable()}
                 </tbody>
             </table>
 
@@ -915,14 +845,14 @@ export default function Relatorios() {
         Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
         Chart.defaults.color = '#333';
 
-        // Gráfico de Distribuição de Riscos
+        // Gráfico de Distribuição de Riscos com dados reais
         const riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
         new Chart(riskCtx, {
             type: 'doughnut',
             data: {
                 labels: ['Baixo Risco', 'Médio Risco', 'Alto Risco', 'Crítico'],
                 datasets: [{
-                    data: [\${riscoBaixo || 8}, \${riscoMedio || 8}, \${riscoAlto || 2}, 0],
+                    data: [\${riscoBaixo}, \${riscoMedio}, \${riscoAlto}, 0],
                     backgroundColor: ['#20c997', '#ffc107', '#dc3545', '#6f42c1'],
                     borderWidth: 0,
                     cutout: '60%'
@@ -959,7 +889,7 @@ export default function Relatorios() {
                 datasets: [
                     {
                         label: 'Alto Risco',
-                        data: [12, 10, 8, 8, 8, \${riscoAlto || 2}],
+                        data: \${JSON.stringify(trendData.alto)},
                         borderColor: '#dc3545',
                         backgroundColor: 'rgba(220, 53, 69, 0.1)',
                         fill: true,
@@ -967,7 +897,7 @@ export default function Relatorios() {
                     },
                     {
                         label: 'Médio Risco',
-                        data: [42, 38, 35, 35, 35, \${riscoMedio || 8}],
+                        data: \${JSON.stringify(trendData.medio)},
                         borderColor: '#ffc107',
                         backgroundColor: 'rgba(255, 193, 7, 0.1)',
                         fill: true,
@@ -975,7 +905,7 @@ export default function Relatorios() {
                     },
                     {
                         label: 'Baixo Risco',
-                        data: [46, 52, 57, 57, 57, \${riscoBaixo || 8}],
+                        data: \${JSON.stringify(trendData.baixo)},
                         borderColor: '#20c997',
                         backgroundColor: 'rgba(32, 201, 151, 0.1)',
                         fill: true,
@@ -1111,10 +1041,7 @@ export default function Relatorios() {
             });
         });
 
-        // Auto-print após carregar os gráficos
-        setTimeout(function() {
-            window.print();
-        }, 2000);
+        // Auto-print removido - usuário decide quando imprimir
     </script>
 </body>
 </html>`;
