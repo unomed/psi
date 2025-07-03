@@ -81,10 +81,10 @@ export function useReportsData(companyId?: string) {
         const completedAssessments = assessments?.filter(a => a.completed_at).length || 0;
         const pendingAssessments = totalAssessments - completedAssessments;
 
-        // Categorizar por risco baseado no percentile
-        const highRiskEmployees = assessments?.filter(a => a.percentile && a.percentile >= 70).length || 0;
-        const mediumRiskEmployees = assessments?.filter(a => a.percentile && a.percentile >= 30 && a.percentile < 70).length || 0;
-        const lowRiskEmployees = assessments?.filter(a => a.percentile && a.percentile < 30).length || 0;
+        // Categorizar por risco baseado no raw_score (escala 0-100)
+        const highRiskEmployees = assessments?.filter(a => a.raw_score && a.raw_score >= 60).length || 0;
+        const mediumRiskEmployees = assessments?.filter(a => a.raw_score && a.raw_score >= 30 && a.raw_score < 60).length || 0;
+        const lowRiskEmployees = assessments?.filter(a => a.raw_score && a.raw_score < 30).length || 0;
 
         // Avaliações por mês
         const assessmentsByMonth = getAssessmentsByMonth(assessments || []);
@@ -155,15 +155,15 @@ function getRiskByRole(assessments: any[]) {
     // Handle employees as either array or single object
     const employees = Array.isArray(assessment.employees) ? assessment.employees[0] : assessment.employees;
     
-    if (employees?.roles?.name && assessment.percentile !== null) {
+    if (employees?.roles?.name && assessment.raw_score !== null) {
       const roleName = employees.roles.name;
       if (!roleRisks[roleName]) {
         roleRisks[roleName] = { high: 0, medium: 0, low: 0 };
       }
 
-      if (assessment.percentile >= 70) {
+      if (assessment.raw_score >= 60) {
         roleRisks[roleName].high++;
-      } else if (assessment.percentile >= 30) {
+      } else if (assessment.raw_score >= 30) {
         roleRisks[roleName].medium++;
       } else {
         roleRisks[roleName].low++;
@@ -184,15 +184,15 @@ function getRiskBySector(assessments: any[]) {
     // Handle employees as either array or single object
     const employees = Array.isArray(assessment.employees) ? assessment.employees[0] : assessment.employees;
     
-    if (employees?.sectors?.name && assessment.percentile !== null) {
+    if (employees?.sectors?.name && assessment.raw_score !== null) {
       const sectorName = employees.sectors.name;
       if (!sectorRisks[sectorName]) {
         sectorRisks[sectorName] = { high: 0, medium: 0, low: 0 };
       }
 
-      if (assessment.percentile >= 70) {
+      if (assessment.raw_score >= 60) {
         sectorRisks[sectorName].high++;
-      } else if (assessment.percentile >= 30) {
+      } else if (assessment.raw_score >= 30) {
         sectorRisks[sectorName].medium++;
       } else {
         sectorRisks[sectorName].low++;

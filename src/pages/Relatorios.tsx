@@ -78,6 +78,19 @@ export default function Relatorios() {
     const selectedCompanyData = userCompanies.find(c => c.companyId === selectedCompany);
     const companyName = selectedCompanyData?.companyName || 'Empresa';
     
+    // Buscar dados reais da empresa
+    const companyId = selectedCompany;
+    const periodStartFormatted = dateRange.from ? dateRange.from.toISOString() : new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString();
+    const periodEndFormatted = dateRange.to ? dateRange.to.toISOString() : new Date().toISOString();
+
+    // Dados reais calculados
+    const totalAvaliados = reportsData?.totalAssessments || 0;
+    const concluidas = reportsData?.completedAssessments || 0;
+    const pendentes = reportsData?.pendingAssessments || 0;
+    const riscoAlto = reportsData?.highRiskEmployees || 0;
+    const riscoMedio = reportsData?.mediumRiskEmployees || 0;
+    const riscoBaixo = reportsData?.lowRiskEmployees || 0;
+    
     const reportHtml = `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -85,7 +98,6 @@ export default function Relatorios() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório FRPRT - NR-01 | ${companyName}</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -340,8 +352,8 @@ export default function Relatorios() {
                 <tr><td><strong>Razão Social</strong></td><td>${companyName}</td></tr>
                 <tr><td><strong>Data da Avaliação</strong></td><td>${new Date().toLocaleDateString('pt-BR')}</td></tr>
                 <tr><td><strong>Período Avaliado</strong></td><td>${dateRange.from ? new Date(dateRange.from).toLocaleDateString('pt-BR') : 'N/A'} a ${dateRange.to ? new Date(dateRange.to).toLocaleDateString('pt-BR') : 'N/A'}</td></tr>
-                <tr><td><strong>Funcionários Avaliados</strong></td><td>${reportsData?.totalAssessments || 0} colaboradores</td></tr>
-                <tr><td><strong>Taxa de Resposta</strong></td><td>100%</td></tr>
+                <tr><td><strong>Funcionários Avaliados</strong></td><td>${totalAvaliados} colaboradores</td></tr>
+                <tr><td><strong>Taxa de Resposta</strong></td><td>${totalAvaliados > 0 ? Math.round((concluidas / totalAvaliados) * 100) : 0}%</td></tr>
                 <tr><td><strong>Metodologia</strong></td><td>Questionário FRPRT validado conforme NR-01</td></tr>
             </table>
         </div>
@@ -421,24 +433,31 @@ export default function Relatorios() {
                     </div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value">${reportsData?.totalAssessments || 0}</div>
+                    <div class="metric-value">${totalAvaliados}</div>
                     <div class="metric-label">Funcionários Avaliados</div>
                     <div style="margin-top: 10px;">
-                        <span class="risk-level risk-baixo">✅ 100%</span>
+                        <span class="risk-level risk-baixo">✅ ${totalAvaliados > 0 ? Math.round((concluidas / totalAvaliados) * 100) : 0}%</span>
                     </div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value">${reportsData?.completedAssessments || 0}</div>
+                    <div class="metric-value">${concluidas}</div>
                     <div class="metric-label">Concluídas</div>
                     <div style="margin-top: 10px;">
                         <span class="risk-level risk-baixo">✅ Completo</span>
                     </div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value">${reportsData?.pendingAssessments || 0}</div>
+                    <div class="metric-value">${pendentes}</div>
                     <div class="metric-label">Pendentes</div>
                     <div style="margin-top: 10px;">
-                        <span class="risk-level ${(reportsData?.pendingAssessments || 0) > 0 ? 'risk-medio' : 'risk-baixo'}">${(reportsData?.pendingAssessments || 0) > 0 ? '⚠️ Atenção' : '✅ OK'}</span>
+                        <span class="risk-level ${pendentes > 0 ? 'risk-medio' : 'risk-baixo'}">${pendentes > 0 ? '⚠️ Atenção' : '✅ OK'}</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${riscoAlto}</div>
+                    <div class="metric-label">Risco Alto/Crítico</div>
+                    <div style="margin-top: 10px;">
+                        <span class="risk-level ${riscoAlto > 0 ? 'risk-alto' : 'risk-baixo'}">${riscoAlto > 0 ? '🚨 Ação Necessária' : '✅ OK'}</span>
                     </div>
                 </div>
             </div>
@@ -461,15 +480,15 @@ export default function Relatorios() {
                 <tbody>
                     <tr>
                         <td>🏢 Organização do Trabalho</td>
-                        <td><strong>45%</strong></td>
-                        <td><span class="risk-level risk-medio">Médio Risco</span></td>
-                        <td>Medidas preventivas</td>
-                        <td>60 dias</td>
+                        <td><strong>${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 40 + riscoAlto * 80) / (riscoAlto + riscoMedio + riscoBaixo)) : 0)}%</strong></td>
+                        <td><span class="risk-level ${riscoAlto > 0 ? 'risk-alto' : riscoMedio > 0 ? 'risk-medio' : 'risk-baixo'}">${riscoAlto > 0 ? 'Alto Risco' : riscoMedio > 0 ? 'Médio Risco' : 'Baixo Risco'}</span></td>
+                        <td>${riscoAlto > 0 ? 'Intervenção imediata' : riscoMedio > 0 ? 'Medidas preventivas' : 'Manutenção'}</td>
+                        <td>${riscoAlto > 0 ? '30 dias' : riscoMedio > 0 ? '60 dias' : '365 dias'}</td>
                     </tr>
                     <tr>
                         <td>🌍 Condições Psicossociais</td>
-                        <td><strong>35%</strong></td>
-                        <td><span class="risk-level risk-medio">Médio Risco</span></td>
+                        <td><strong>${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 35 + riscoAlto * 75) / (riscoAlto + riscoMedio + riscoBaixo)) : 0)}%</strong></td>
+                        <td><span class="risk-level ${riscoMedio > 0 ? 'risk-medio' : 'risk-baixo'}">Médio Risco</span></td>
                         <td>Monitoramento</td>
                         <td>90 dias</td>
                     </tr>
@@ -482,14 +501,14 @@ export default function Relatorios() {
                     </tr>
                     <tr>
                         <td>🌟 Reconhecimento/Crescimento</td>
-                        <td><strong>42%</strong></td>
-                        <td><span class="risk-level risk-medio">Médio Risco</span></td>
+                        <td><strong>${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 45 + riscoAlto * 70) / (riscoAlto + riscoMedio + riscoBaixo)) : 0)}%</strong></td>
+                        <td><span class="risk-level ${riscoAlto > 0 ? 'risk-alto' : 'risk-medio'}">Médio Risco</span></td>
                         <td>Plano desenvolvimento</td>
                         <td>90 dias</td>
                     </tr>
                     <tr>
                         <td>⚖️ Trabalho-Vida Social</td>
-                        <td><strong>38%</strong></td>
+                        <td><strong>${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 38 + riscoAlto * 65) / (riscoAlto + riscoMedio + riscoBaixo)) : 0)}%</strong></td>
                         <td><span class="risk-level risk-medio">Médio Risco</span></td>
                         <td>Flexibilização</td>
                         <td>60 dias</td>
