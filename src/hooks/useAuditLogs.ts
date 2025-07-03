@@ -20,11 +20,7 @@ export function useAuditLogs(filters: AuditLogFilters = {}) {
       
       let query = supabase
         .from('audit_logs')
-        .select(`
-          *,
-          profiles!audit_logs_user_id_fkey(full_name),
-          companies!audit_logs_company_id_fkey(name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -53,14 +49,50 @@ export function useAuditLogs(filters: AuditLogFilters = {}) {
         query = query.lte('created_at', filters.dateTo);
       }
 
-      const { data, error } = await query;
+      const { data: logsData, error } = await query;
       
       if (error) {
         console.error('Erro ao buscar logs de auditoria:', error);
         throw error;
       }
 
-      return data || [];
+      if (!logsData || logsData.length === 0) {
+        return [];
+      }
+
+      // Buscar nomes dos usuários separadamente
+      const userIds = [...new Set(logsData.map(log => log.user_id).filter(Boolean))];
+      const companyIds = [...new Set(logsData.map(log => log.company_id).filter(Boolean))];
+      
+      let profilesMap = new Map();
+      let companiesMap = new Map();
+
+      // Buscar profiles se existem user_ids
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', userIds);
+        
+        profilesMap = new Map(profilesData?.map(p => [p.id, p.full_name]) || []);
+      }
+
+      // Buscar companies se existem company_ids
+      if (companyIds.length > 0) {
+        const { data: companiesData } = await supabase
+          .from('companies')
+          .select('id, name')
+          .in('id', companyIds);
+        
+        companiesMap = new Map(companiesData?.map(c => [c.id, c.name]) || []);
+      }
+
+      // Mapear os dados de volta
+      return logsData.map(log => ({
+        ...log,
+        profiles: { full_name: profilesMap.get(log.user_id) || 'Sistema' },
+        companies: log.company_id ? { name: companiesMap.get(log.company_id) || 'N/A' } : null
+      }));
     },
     retry: 2
   });
