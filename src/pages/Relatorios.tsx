@@ -7,6 +7,7 @@ import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistributio
 import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
+import { NR01ComplianceReport } from "@/components/reports/NR01ComplianceReport";
 import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
 import { FileText, Download, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -110,8 +111,9 @@ export default function Relatorios() {
       />
       
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="frprt">FRPRT Detalhado</TabsTrigger>
           <TabsTrigger value="sectors">Por Setor</TabsTrigger>
           <TabsTrigger value="roles">Por Função</TabsTrigger>
         </TabsList>
@@ -170,6 +172,28 @@ export default function Relatorios() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="frprt" className="space-y-6 mt-6">
+          {selectedCompany && dateRange.from && dateRange.to ? (
+            <NR01ComplianceReport
+              companyId={selectedCompany}
+              periodStart={dateRange.from.toISOString()}
+              periodEnd={dateRange.to.toISOString()}
+            />
+          ) : (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <div className="text-center space-y-2">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
+                  <h3 className="text-lg font-medium">Relatório FRPRT</h3>
+                  <p className="text-muted-foreground">
+                    Selecione uma empresa e período para visualizar o relatório detalhado de conformidade NR-01
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
         
         <TabsContent value="sectors" className="space-y-6 mt-6">
