@@ -968,115 +968,13 @@ export default function Relatorios() {
         userRole={userRole}
       />
       
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="frprt">FRPRT Detalhado</TabsTrigger>
-          <TabsTrigger value="sectors">Por Setor</TabsTrigger>
-          <TabsTrigger value="roles">Por Função</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="overview" className="space-y-6 mt-6">
-          {/* Conformidade NR-01 */}
-          <NR01ComplianceOverview filters={filters} />
-          
-          {/* Gráficos principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={filters} />
-            <RiskTrendChart filters={filters} />
-          </div>
-          
-          {/* Resumo de avaliações */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Resumo de Avaliações
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardContent className="p-4">
-                      <p className="text-lg font-semibold text-blue-700">Total de Avaliações</p>
-                      <p className="text-2xl font-bold mt-1 text-blue-900">
-                        {reportsData?.totalAssessments || 0}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-green-50 border-green-200">
-                    <CardContent className="p-4">
-                      <p className="text-lg font-semibold text-green-700">Concluídas</p>
-                      <p className="text-2xl font-bold mt-1 text-green-900">
-                        {reportsData?.completedAssessments || 0}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-yellow-50 border-yellow-200">
-                    <CardContent className="p-4">
-                      <p className="text-lg font-semibold text-yellow-700">Pendentes</p>
-                      <p className="text-2xl font-bold mt-1 text-yellow-900">
-                        {reportsData?.pendingAssessments || 0}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="frprt" className="space-y-6 mt-6">
-          {selectedCompany && dateRange.from && dateRange.to ? (
-            <StepenovskiNR01Report
-              companyId={selectedCompany}
-              periodStart={dateRange.from.toISOString()}
-              periodEnd={dateRange.to.toISOString()}
-              selectedSector={selectedSector}
-              selectedRole={selectedRole}
-            />
-          ) : (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <div className="text-center space-y-2">
-                  <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
-                  <h3 className="text-lg font-medium">Relatório FRPRT</h3>
-                  <p className="text-muted-foreground">
-                    Selecione uma empresa e período para visualizar o relatório detalhado de conformidade NR-01
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="sectors" className="space-y-6 mt-6">
-          <SectorRiskFactors 
-            filters={filters} 
-            fullWidth 
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={filters} />
-            <RiskTrendChart filters={filters} />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="roles" className="space-y-6 mt-6">
-          <RoleRiskComparison 
-            filters={filters} 
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={filters} />
-            <RiskTrendChart filters={filters} />
-          </div>
-        </TabsContent>
-      </Tabs>
+      <div className="text-center py-12">
+        <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+        <h2 className="text-2xl font-semibold text-muted-foreground mb-2">Relatórios Removidos</h2>
+        <p className="text-muted-foreground">
+          Os relatórios foram removidos desta página conforme solicitado.
+        </p>
+      </div>
     </div>
   );
 }
