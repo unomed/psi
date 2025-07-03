@@ -7,7 +7,7 @@ import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistributio
 import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
-import { StepenovskiNR01Report } from "@/components/reports/StepenovskiNR01Report";
+
 import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
 import { FileText, Download, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1033,27 +1033,17 @@ export default function Relatorios() {
         </TabsContent>
         
         <TabsContent value="frprt" className="space-y-6 mt-6">
-          {selectedCompany && dateRange.from && dateRange.to ? (
-            <StepenovskiNR01Report
-              companyId={selectedCompany}
-              periodStart={dateRange.from.toISOString()}
-              periodEnd={dateRange.to.toISOString()}
-              selectedSector={selectedSector}
-              selectedRole={selectedRole}
-            />
-          ) : (
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <div className="text-center space-y-2">
-                  <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
-                  <h3 className="text-lg font-medium">Relatório FRPRT</h3>
-                  <p className="text-muted-foreground">
-                    Selecione uma empresa e período para visualizar o relatório detalhado de conformidade NR-01
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <div className="text-center space-y-2">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
+                <h3 className="text-lg font-medium">Relatório FRPRT Removido</h3>
+                <p className="text-muted-foreground">
+                  O relatório FRPRT foi removido conforme solicitado
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="sectors" className="space-y-6 mt-6">

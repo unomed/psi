@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StepenovskiNR01Report } from '@/components/reports/StepenovskiNR01Report';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DatePickerWithRange } from '@/components/reports/DatePickerWithRange';
@@ -73,13 +73,19 @@ export default function NR01Page() {
         </CardContent>
       </Card>
 
-      {/* Relatório */}
+      {/* Relatório removido */}
       {selectedCompany && dateRange.from && dateRange.to && (
-        <StepenovskiNR01Report
-          companyId={selectedCompany}
-          periodStart={dateRange.from.toISOString()}
-          periodEnd={dateRange.to.toISOString()}
-        />
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="text-center space-y-2">
+              <Shield className="h-12 w-12 text-muted-foreground mx-auto" />
+              <h3 className="text-lg font-medium">Relatório Removido</h3>
+              <p className="text-muted-foreground">
+                O relatório FRPRT foi removido conforme solicitado
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {!selectedCompany && (
