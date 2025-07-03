@@ -1,6 +1,5 @@
 
 import { CandidateTagsSection } from "./CandidateTagsSection";
-import { TechnicalTagsSection } from "./tags/TechnicalTagsSection";
 
 interface EmployeeTagsSelectorProps {
   employeeId?: string;
@@ -26,13 +25,19 @@ export function EmployeeTagsSelector({
         isCandidate={isCandidate}
       />
 
-      {/* Seção de competências técnicas (para funcionários) */}
-      {!isCandidate && (
-        <TechnicalTagsSection
-          employeeId={employeeId}
-          selectedRole={selectedRole}
-          onTagsChange={onTagsChange}
-        />
+      {/* Seção simplificada para funcionários */}
+      {!isCandidate && employeeId && (
+        <div className="space-y-4 border p-4 rounded-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-lg font-semibold">Tags do Funcionário</label>
+              <p className="text-sm text-muted-foreground mt-1">Tags técnicas e competências</p>
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Sistema de tags simplificado
+          </div>
+        </div>
       )}
     </div>
   );
