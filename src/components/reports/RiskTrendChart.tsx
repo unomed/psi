@@ -16,19 +16,27 @@ interface RiskTrendChartProps {
 
 export function RiskTrendChart({ filters }: RiskTrendChartProps) {
   const { data: trendData, isLoading } = useQuery({
-    queryKey: ['riskTrend', filters.selectedCompany],
+    queryKey: ['riskTrend', filters.selectedCompany, filters.selectedSector, filters.selectedRole],
     queryFn: async () => {
       let query = supabase
         .from('assessment_responses')
         .select(`
           completed_at,
           percentile,
-          employees!inner(company_id)
+          employees!inner(company_id, sector_id, role_id)
         `)
         .not('completed_at', 'is', null);
 
       if (filters.selectedCompany) {
         query = query.eq('employees.company_id', filters.selectedCompany);
+      }
+
+      if (filters.selectedSector && filters.selectedSector !== 'all-sectors') {
+        query = query.eq('employees.sector_id', filters.selectedSector);
+      }
+
+      if (filters.selectedRole && filters.selectedRole !== 'all-roles') {
+        query = query.eq('employees.role_id', filters.selectedRole);
       }
 
       const { data, error } = await query;

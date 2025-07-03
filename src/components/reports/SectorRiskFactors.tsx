@@ -15,7 +15,11 @@ interface SectorRiskFactorsProps {
 }
 
 export function SectorRiskFactors({ filters, fullWidth = false }: SectorRiskFactorsProps) {
-  const { reportsData, isLoading } = useReportsData(filters.selectedCompany || undefined);
+  const { reportsData, isLoading } = useReportsData(
+    filters.selectedCompany || undefined, 
+    filters.selectedSector, 
+    filters.selectedRole
+  );
 
   if (isLoading) {
     return (
