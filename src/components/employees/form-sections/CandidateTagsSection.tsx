@@ -15,17 +15,6 @@ interface CandidateTagsSectionProps {
   isCandidate: boolean;
 }
 
-const BEHAVIORAL_TAGS = [
-  { id: 'comprometido', name: 'Comprometido', category: 'comportamental' },
-  { id: 'atento', name: 'Atento', category: 'comportamental' },
-  { id: 'proativo', name: 'Proativo', category: 'comportamental' },
-  { id: 'comunicativo', name: 'Comunicativo', category: 'comportamental' },
-  { id: 'lideranca', name: 'Liderança', category: 'comportamental' },
-  { id: 'trabalho-equipe', name: 'Trabalho em Equipe', category: 'comportamental' },
-  { id: 'criativo', name: 'Criativo', category: 'comportamental' },
-  { id: 'organizado', name: 'Organizado', category: 'comportamental' }
-];
-
 const TAG_LEVELS = [
   { value: 'baixo', label: 'Baixo', color: 'bg-red-100 text-red-800' },
   { value: 'medio', label: 'Médio', color: 'bg-yellow-100 text-yellow-800' },
@@ -37,8 +26,11 @@ export function CandidateTagsSection({ employeeId, onTagsChange, isCandidate }: 
   const [selectedTagType, setSelectedTagType] = useState<string>("");
   const [selectedLevel, setSelectedLevel] = useState<string>("medio");
 
-  const { employeeTags, addEmployeeTag, removeEmployeeTag } = useEmployeeTags(employeeId);
-  const { tagTypes } = useTagTypes();
+  const { employeeTags, addEmployeeTag, removeEmployeeTag, isLoading } = useEmployeeTags(employeeId);
+  const { tagTypes, isLoading: isLoadingTagTypes } = useTagTypes();
+
+  // Filtrar tags comportamentais disponíveis
+  const behavioralTags = tagTypes.filter(tag => tag.category === 'comportamental' || tag.category === 'skill');
 
   const handleAddTag = async () => {
     if (!employeeId || !selectedTagType) return;
@@ -87,6 +79,20 @@ export function CandidateTagsSection({ employeeId, onTagsChange, isCandidate }: 
   };
 
   if (!isCandidate) return null;
+  
+  // Loading state to prevent loops
+  if (isLoading || isLoadingTagTypes) {
+    return (
+      <div className="space-y-4 border-2 border-dashed border-orange-300 p-4 rounded-md bg-orange-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-lg font-semibold text-orange-800">Tags Comportamentais (Candidato)</Label>
+            <p className="text-sm text-orange-600 mt-1">Carregando tipos de tags...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 border-2 border-dashed border-orange-300 p-4 rounded-md bg-orange-50">
@@ -114,14 +120,13 @@ export function CandidateTagsSection({ employeeId, onTagsChange, isCandidate }: 
                     <SelectValue placeholder="Selecione uma competência" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tagTypes
-                      .filter(tag => tag.category === 'comportamental' || tag.category === 'skill')
-                      .map(tag => (
+                    {behavioralTags.length > 0 ? (
+                      behavioralTags.map(tag => (
                         <SelectItem key={tag.id} value={tag.id}>
                           {tag.name}
                         </SelectItem>
-                      ))}
-                    {tagTypes.filter(tag => tag.category === 'comportamental' || tag.category === 'skill').length === 0 && (
+                      ))
+                    ) : (
                       <div className="p-2 text-sm text-muted-foreground">
                         Nenhuma tag comportamental disponível. Use o gerenciamento de tags para criar novas.
                       </div>

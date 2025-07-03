@@ -115,7 +115,7 @@ export function useEmployeeTags(employeeId?: string) {
 }
 
 export function useTagTypes() {
-  const { data: tagTypes = [], isLoading } = useQuery({
+  const { data: tagTypes = [], isLoading, error } = useQuery({
     queryKey: ['tag-types'],
     queryFn: async (): Promise<EmployeeTagType[]> => {
       console.log("[useTagTypes] Buscando tipos de tags...");
@@ -134,11 +134,14 @@ export function useTagTypes() {
 
       console.log("[useTagTypes] Tipos encontrados:", data);
       return data || [];
-    }
+    },
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   return {
     tagTypes,
-    isLoading
+    isLoading,
+    error
   };
 }
