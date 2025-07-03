@@ -86,10 +86,6 @@ export default function Relatorios() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleExportPDF}>
-            <Download className="mr-2 h-4 w-4" />
-            Exportar PDF
-          </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
             Imprimir
