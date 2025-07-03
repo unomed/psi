@@ -9,6 +9,7 @@ import {
   cadastrosItems, 
   avaliacoesItems, 
   gestaoItems,
+  candidatosItems,
   portaisItems
 } from "./sidebar/menuItems";
 import { settingsItems } from "./sidebar/settingsItems";
@@ -70,6 +71,21 @@ export function AppSidebar() {
         <SidebarSection title="GESTÃO">
           <SidebarMenu className="space-y-1">
             {gestaoItems.map((item) => (
+              <MenuItemGuard 
+                key={item.href} 
+                allowedRoles={item.roles} 
+                requiredPermission={item.permission}
+              >
+                <SidebarMenuItem item={item} />
+              </MenuItemGuard>
+            ))}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* CANDIDATOS */}
+        <SidebarSection title="CANDIDATOS">
+          <SidebarMenu className="space-y-1">
+            {candidatosItems.map((item) => (
               <MenuItemGuard 
                 key={item.href} 
                 allowedRoles={item.roles} 
