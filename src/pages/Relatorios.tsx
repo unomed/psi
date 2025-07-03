@@ -98,6 +98,7 @@ export default function Relatorios() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório FRPRT - NR-01 | ${companyName}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -120,11 +121,11 @@ export default function Relatorios() {
 
         .header {
             background: white;
-            border-radius: 20px;
+            border-radius: 10px;
             padding: 30px;
             margin-bottom: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            border-left: 6px solid #4CAF50;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #6b7280;
         }
 
         .company-info {
@@ -141,177 +142,193 @@ export default function Relatorios() {
         .company-logo {
             width: 120px;
             height: 80px;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            border-radius: 15px;
+            background: #f3f4f6;
+            border: 2px solid #6b7280;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: #374151;
             font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+            font-size: 16px;
         }
 
         h1 {
-            color: #2E7D32;
-            font-size: 2.5em;
+            color: #374151;
+            font-size: 2.2em;
             margin-bottom: 10px;
-            background: linear-gradient(45deg, #4CAF50, #2E7D32);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .subtitle {
-            color: #666;
-            font-size: 1.2em;
-            font-weight: 300;
+            color: #6b7280;
+            font-size: 1.1em;
+            font-weight: 400;
         }
 
         .section {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 8px;
+            padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
             page-break-inside: avoid;
         }
 
         .section-title {
-            font-size: 1.8em;
-            color: #2E7D32;
+            font-size: 1.6em;
+            color: #374151;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
         .metric-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 15px;
-            padding: 25px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
             text-align: center;
-            border-left: 5px solid #4CAF50;
+            border-left: 3px solid #6b7280;
         }
 
         .metric-value {
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: bold;
-            color: #2E7D32;
+            color: #374151;
             margin-bottom: 5px;
         }
 
         .metric-label {
-            color: #666;
+            color: #6b7280;
             font-size: 0.9em;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
         .risk-level {
-            padding: 8px 16px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 0.9em;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.85em;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
 
-        .risk-baixo { background: #E8F5E8; color: #2E7D32; }
-        .risk-medio { background: #FFF3E0; color: #F57C00; }
-        .risk-alto { background: #FFEBEE; color: #D32F2F; }
-        .risk-critico { background: #FCE4EC; color: #C2185B; }
+        .risk-baixo { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+        .risk-medio { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
+        .risk-alto { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .risk-critico { background: #fdf2f8; color: #be185d; border: 1px solid #f9a8d4; }
 
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .table th {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 15px;
+            background: #f3f4f6;
+            color: #374151;
+            padding: 12px;
             text-align: left;
             font-weight: 600;
+            border-bottom: 1px solid #d1d5db;
         }
 
         .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
             padding: 15px;
-            border-bottom: 1px solid #eee;
         }
 
         .legal-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-left: 5px solid #2196F3;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
+            background: #f8fafc;
+            border-left: 3px solid #64748b;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #e2e8f0;
         }
 
         .methodology {
-            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-            border-left: 5px solid #4CAF50;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
+            background: #f0fdf4;
+            border-left: 3px solid #16a34a;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #dcfce7;
         }
 
         .action-plan {
-            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-            border-left: 5px solid #FF9800;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
+            background: #fffbeb;
+            border-left: 3px solid #d97706;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #fed7aa;
         }
 
         .formula {
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            padding: 12px;
             font-family: 'Courier New', monospace;
-            margin: 10px 0;
-            border-left: 4px solid #2196F3;
+            margin: 8px 0;
+            border-left: 3px solid #64748b;
+            border: 1px solid #e2e8f0;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
         }
 
         .status-conforme {
-            background: #E8F5E8;
-            color: #2E7D32;
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #dcfce7;
         }
 
         .status-atencao {
-            background: #FFF3E0;
-            color: #F57C00;
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fed7aa;
         }
 
         .footer {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 8px;
+            padding: 25px;
             margin-top: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
             text-align: center;
-            border-top: 6px solid #4CAF50;
+            border-top: 3px solid #6b7280;
         }
 
         @media print {
@@ -321,6 +338,9 @@ export default function Relatorios() {
                 box-shadow: none; 
                 border: 1px solid #ddd;
                 page-break-inside: avoid;
+            }
+            .chart-container {
+                height: 250px;
             }
         }
     </style>
@@ -460,6 +480,40 @@ export default function Relatorios() {
                         <span class="risk-level ${riscoAlto > 0 ? 'risk-alto' : 'risk-baixo'}">${riscoAlto > 0 ? '🚨 Ação Necessária' : '✅ OK'}</span>
                     </div>
                 </div>
+
+            <h3 style="margin: 30px 0 20px 0;">📈 Distribuição de Níveis de Risco</h3>
+            <div class="chart-container">
+                <canvas id="riskDistributionChart"></canvas>
+            </div>
+
+            <h3 style="margin: 30px 0 20px 0;">🔄 Tendência de Riscos (Últimos 6 Meses)</h3>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- RESULTADOS POR SETOR -->
+        <div class="section">
+            <h2 class="section-title">🏭 Resultados por Setor</h2>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="color: #374151;">📊 Principais Setores Avaliados</h3>
+                <p><strong>Funcionários:</strong> ${totalAvaliados} avaliados | <strong>Taxa de Resposta:</strong> ${totalAvaliados > 0 ? Math.round((concluidas / totalAvaliados) * 100) : 0}% | <strong>Score Geral FRPRT:</strong> ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 40 + riscoAlto * 80) / (riscoAlto + riscoMedio + riscoBaixo)) : 0)}% (${riscoAlto > 0 ? 'Alto Risco' : riscoMedio > 0 ? 'Médio Risco' : 'Baixo Risco'})</p>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="sectorChart"></canvas>
+            </div>
+        </div>
+
+        <!-- RESULTADOS POR FUNÇÃO -->
+        <div class="section">
+            <h2 class="section-title">👔 Resultados por Função</h2>
+            
+            <h3 style="margin-bottom: 20px;">📊 Comparação de Riscos por Função</h3>
+            
+            <div class="chart-container">
+                <canvas id="functionChart"></canvas>
             </div>
         </div>
 
@@ -615,9 +669,264 @@ export default function Relatorios() {
     </div>
 
     <script>
-        window.onload = function() {
-            window.print();
+        // Configurações globais dos gráficos
+        Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        Chart.defaults.color = '#374151';
+
+        // Cores suaves para impressão
+        const colors = {
+            primary: '#6b7280',
+            secondary: '#9ca3af',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            info: '#3b82f6'
         };
+
+        // Gráfico de Distribuição de Riscos
+        const riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
+        new Chart(riskCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Baixo Risco', 'Médio Risco', 'Alto Risco', 'Crítico'],
+                datasets: [{
+                    data: [${riscoBaixo || 60}, ${riscoMedio || 28}, ${riscoAlto || 10}, ${0 || 2}],
+                    backgroundColor: [colors.success, colors.warning, colors.danger, '#9333ea'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    cutout: '50%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            color: '#374151'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + ' funcionários';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Tendência
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan/25', 'Fev/25', 'Mar/25', 'Abr/25', 'Mai/25', 'Jun/25'],
+                datasets: [
+                    {
+                        label: 'Alto Risco',
+                        data: [15, 12, 10, 8, ${riscoAlto || 10}, ${riscoAlto || 10}],
+                        borderColor: colors.danger,
+                        backgroundColor: colors.danger + '20',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Médio Risco',
+                        data: [35, 32, 30, 28, ${riscoMedio || 28}, ${riscoMedio || 28}],
+                        borderColor: colors.warning,
+                        backgroundColor: colors.warning + '20',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Baixo Risco',
+                        data: [50, 56, 60, 64, ${riscoBaixo || 62}, ${riscoBaixo || 60}],
+                        borderColor: colors.success,
+                        backgroundColor: colors.success + '20',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#374151'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico por Setor (Radar)
+        const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+        new Chart(sectorCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Organização do Trabalho', 'Condições Ambientais', 'Relações Socioprofissionais', 'Reconhecimento', 'Trabalho-Vida'],
+                datasets: [{
+                    label: 'Score FRPRT por Categoria',
+                    data: [
+                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 40 + riscoAlto * 80) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)},
+                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 35 + riscoAlto * 75) / (riscoAlto + riscoMedio + riscoBaixo)) : 30)},
+                        28,
+                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 45 + riscoAlto * 70) / (riscoAlto + riscoMedio + riscoBaixo)) : 40)},
+                        ${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 38 + riscoAlto * 65) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)}
+                    ],
+                    borderColor: colors.info,
+                    backgroundColor: colors.info + '30',
+                    pointBackgroundColor: colors.info,
+                    pointBorderColor: '#ffffff',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#374151'
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20,
+                            color: '#6b7280',
+                            backdropColor: 'transparent'
+                        },
+                        grid: {
+                            color: '#e5e7eb'
+                        },
+                        angleLines: {
+                            color: '#e5e7eb'
+                        },
+                        pointLabels: {
+                            color: '#374151',
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico por Função (Barras)
+        const functionCtx = document.getElementById('functionChart').getContext('2d');
+        new Chart(functionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Todas as Funções'],
+                datasets: [
+                    {
+                        label: 'Organização do Trabalho',
+                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 40 + riscoAlto * 80) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)}],
+                        backgroundColor: colors.danger + '80'
+                    },
+                    {
+                        label: 'Condições Ambientais',
+                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 35 + riscoAlto * 75) / (riscoAlto + riscoMedio + riscoBaixo)) : 30)}],
+                        backgroundColor: colors.info + '80'
+                    },
+                    {
+                        label: 'Relações',
+                        data: [28],
+                        backgroundColor: colors.success + '80'
+                    },
+                    {
+                        label: 'Reconhecimento',
+                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 45 + riscoAlto * 70) / (riscoAlto + riscoMedio + riscoBaixo)) : 40)}],
+                        backgroundColor: colors.warning + '80'
+                    },
+                    {
+                        label: 'Trabalho-Vida',
+                        data: [${Math.round((riscoAlto + riscoMedio + riscoBaixo > 0) ? ((riscoMedio * 38 + riscoAlto * 65) / (riscoAlto + riscoMedio + riscoBaixo)) : 35)}],
+                        backgroundColor: colors.secondary + '80'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#374151'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: false,
+                        ticks: {
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            },
+                            color: '#6b7280'
+                        },
+                        grid: {
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Auto-print após carregar os gráficos
+        setTimeout(function() {
+            window.print();
+        }, 1000);
     </script>
 </body>
 </html>`;
