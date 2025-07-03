@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Search, Filter, Plus, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { FileText, Search, Filter, Plus, Eye, Calendar, Users, Brain } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface CandidateEvaluationTemplatesProps {
   selectedCompany: string | null;
@@ -16,6 +20,10 @@ interface CandidateEvaluationTemplatesProps {
 export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvaluationTemplatesProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [isDiscDialogOpen, setIsDiscDialogOpen] = useState(false);
+  const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [notes, setNotes] = useState("");
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['candidate-templates', selectedCompany],
@@ -31,6 +39,25 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
 
       const { data, error } = await query.order('created_at', { ascending: false });
       
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedCompany
+  });
+
+  // Buscar candidatos (funcionários com tipo 'candidato')
+  const { data: candidates = [] } = useQuery({
+    queryKey: ['candidates', selectedCompany],
+    queryFn: async () => {
+      if (!selectedCompany) return [];
+      
+      const { data, error } = await supabase
+        .from('employees')
+        .select('id, name, email, cpf')
+        .eq('company_id', selectedCompany)
+        .eq('employee_type', 'candidato')
+        .eq('status', 'active');
+        
       if (error) throw error;
       return data || [];
     },
@@ -76,6 +103,62 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
     }
   };
 
+  const handleScheduleDisc = async () => {
+    if (selectedCandidates.length === 0) {
+      toast.error("Selecione pelo menos um candidato");
+      return;
+    }
+
+    if (!scheduleDate) {
+      toast.error("Selecione uma data para o agendamento");
+      return;
+    }
+
+    try {
+      // Buscar template DISC padrão
+      const { data: discTemplate } = await supabase
+        .from('checklist_templates')
+        .select('id')
+        .eq('type', 'disc')
+        .eq('is_standard', true)
+        .single();
+
+      if (!discTemplate) {
+        toast.error("Template DISC padrão não encontrado");
+        return;
+      }
+
+      // Buscar usuário atual
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData.user?.id;
+
+      // Criar agendamentos para cada candidato
+      const schedules = selectedCandidates.map(candidateId => ({
+        employee_id: candidateId,
+        template_id: discTemplate.id,
+        scheduled_date: scheduleDate,
+        status: 'scheduled',
+        notes: notes || 'Avaliação DISC para candidato',
+        created_by: currentUserId
+      }));
+
+      const { error } = await supabase
+        .from('scheduled_assessments')
+        .insert(schedules);
+
+      if (error) throw error;
+
+      toast.success(`Avaliação DISC agendada para ${selectedCandidates.length} candidato(s)`);
+      setIsDiscDialogOpen(false);
+      setSelectedCandidates([]);
+      setScheduleDate("");
+      setNotes("");
+    } catch (error) {
+      console.error('Erro ao agendar avaliação DISC:', error);
+      toast.error("Erro ao agendar avaliação DISC");
+    }
+  };
+
   if (!selectedCompany) {
     return (
       <div className="text-center p-8">
@@ -98,6 +181,72 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
           Novo Template
         </Button>
       </div>
+
+      {/* Card destacado para Avaliação DISC Padrão */}
+      <Card className="border-2 border-primary/20 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Brain className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-blue-800">Avaliação DISC Padrão</CardTitle>
+                <CardDescription className="text-blue-600">
+                  Avaliação de perfil comportamental baseada na metodologia DISC
+                </CardDescription>
+              </div>
+            </div>
+            <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+              Recomendado
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-blue-600" />
+                <span>Tempo: ~20-30 min</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-blue-600" />
+                <span>{candidates.length} candidatos disponíveis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-blue-600" />
+                <span>Relatório automático</span>
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg border">
+              <h4 className="font-medium mb-2">O que avalia:</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                <div className="bg-red-50 text-red-700 px-2 py-1 rounded">Dominância</div>
+                <div className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded">Influência</div>
+                <div className="bg-green-50 text-green-700 px-2 py-1 rounded">Estabilidade</div>
+                <div className="bg-blue-50 text-blue-700 px-2 py-1 rounded">Conformidade</div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                size="lg" 
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                onClick={() => setIsDiscDialogOpen(true)}
+                disabled={candidates.length === 0}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                Agendar para Candidatos
+              </Button>
+              <Button variant="outline" size="lg">
+                <Eye className="mr-2 h-4 w-4" />
+                Visualizar Template
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filtros */}
       <div className="flex gap-4 items-center">
@@ -226,6 +375,133 @@ export function CandidateEvaluationTemplates({ selectedCompany }: CandidateEvalu
           </div>
         </CardContent>
       </Card>
+      {/* Dialog para agendar Avaliação DISC */}
+      <Dialog open={isDiscDialogOpen} onOpenChange={setIsDiscDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-blue-600" />
+              Agendar Avaliação DISC
+            </DialogTitle>
+            <DialogDescription>
+              Selecione os candidatos e defina a data para a avaliação comportamental DISC
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Seleção de candidatos */}
+            <div>
+              <Label className="text-base font-medium mb-3 block">
+                Candidatos Disponíveis ({candidates.length})
+              </Label>
+              
+              {candidates.length === 0 ? (
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <Users className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-gray-600">Nenhum candidato encontrado</p>
+                  <p className="text-sm text-gray-500">
+                    Cadastre funcionários com tipo "candidato" para aparecerem aqui
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto border rounded-lg">
+                  {candidates.map((candidate) => (
+                    <div
+                      key={candidate.id}
+                      className={`p-3 border-b last:border-b-0 cursor-pointer transition-colors ${
+                        selectedCandidates.includes(candidate.id)
+                          ? 'bg-blue-50 border-blue-200'
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => {
+                        setSelectedCandidates(prev =>
+                          prev.includes(candidate.id)
+                            ? prev.filter(id => id !== candidate.id)
+                            : [...prev, candidate.id]
+                        );
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-4 h-4 border-2 rounded ${
+                          selectedCandidates.includes(candidate.id)
+                            ? 'bg-blue-600 border-blue-600'
+                            : 'border-gray-300'
+                        }`}>
+                          {selectedCandidates.includes(candidate.id) && (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{candidate.name}</p>
+                          <p className="text-sm text-gray-600">{candidate.email}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Data do agendamento */}
+            <div>
+              <Label htmlFor="schedule-date" className="text-base font-medium">
+                Data do Agendamento
+              </Label>
+              <Input
+                id="schedule-date"
+                type="datetime-local"
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                className="mt-1"
+                min={new Date().toISOString().slice(0, 16)}
+              />
+            </div>
+
+            {/* Observações */}
+            <div>
+              <Label htmlFor="notes" className="text-base font-medium">
+                Observações (opcional)
+              </Label>
+              <Textarea
+                id="notes"
+                placeholder="Adicione observações sobre a avaliação..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+
+            {/* Resumo da seleção */}
+            {selectedCandidates.length > 0 && (
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-800 mb-2">Resumo do Agendamento</h4>
+                <div className="text-sm text-blue-700">
+                  <p><strong>{selectedCandidates.length}</strong> candidato(s) selecionado(s)</p>
+                  <p><strong>Avaliação:</strong> DISC - Perfil Comportamental</p>
+                  <p><strong>Duração estimada:</strong> 20-30 minutos por candidato</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDiscDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleScheduleDisc}
+              disabled={selectedCandidates.length === 0 || !scheduleDate}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Agendar Avaliação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
