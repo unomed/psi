@@ -4,86 +4,44 @@ import { Button } from '@/components/ui/button';
 import { Download, FileText, Shield, CheckCircle, AlertTriangle, TrendingUp, Brain, Users, Star, Scale, Building } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { Progress } from '@/components/ui/progress';
+import { useFRPRTReportData } from '@/hooks/reports/useFRPRTReportData';
 
 interface NR01ComplianceReportProps {
   companyId: string;
   periodStart: string;
   periodEnd: string;
+  selectedSector?: string;
+  selectedRole?: string;
 }
 
 export function NR01ComplianceReport({ 
   companyId, 
   periodStart, 
-  periodEnd 
+  periodEnd,
+  selectedSector,
+  selectedRole
 }: NR01ComplianceReportProps) {
   
-  // Fetch compliance data and detailed metrics
-  const { data: reportData, isLoading } = useQuery({
-    queryKey: ['nr01-frprt-report', companyId, periodStart, periodEnd],
-    queryFn: async () => {
-      // Buscar dados consolidados
-      const [assessments, risks, actionPlans, companyData] = await Promise.all([
-        // Avaliações completadas no período
-        supabase
-          .from('assessment_responses')
-          .select(`
-            *,
-            employees!inner(
-              company_id, name, sector_id, role_id,
-              sectors(name),
-              roles(name)
-            ),
-            checklist_templates(title, type)
-          `)
-          .eq('employees.company_id', companyId)
-          .gte('completed_at', periodStart)
-          .lte('completed_at', periodEnd),
-        
-        // Análises de risco psicossocial
-        supabase
-          .from('psychosocial_risk_analysis')
-          .select('*')
-          .eq('company_id', companyId)
-          .gte('evaluation_date', periodStart)
-          .lte('evaluation_date', periodEnd),
-        
-        // Planos de ação
-        supabase
-          .from('action_plans')
-          .select('*')
-          .eq('company_id', companyId)
-          .gte('created_at', periodStart)
-          .lte('created_at', periodEnd),
-
-        // Dados da empresa
-        supabase
-          .from('companies')
-          .select('*')
-          .eq('id', companyId)
-          .single()
-      ]);
-
-      return {
-        assessments: assessments.data || [],
-        risks: risks.data || [],
-        actionPlans: actionPlans.data || [],
-        company: companyData.data
-      };
-    },
-    enabled: !!companyId
-  });
+  // Buscar dados FRPRT detalhados com filtros aplicados
+  const { frprtData, isLoading, error } = useFRPRTReportData(
+    companyId, 
+    periodStart, 
+    periodEnd,
+    selectedSector,
+    selectedRole
+  );
 
   const generateReport = async () => {
+    if (!frprtData) return;
+    
     try {
       const reportBlob = await generatePDFReport();
       const url = URL.createObjectURL(reportBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Relatorio_NR01_FRPRT_${reportData?.company?.name}_${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = `Relatorio_NR01_FRPRT_${frprtData.company?.name}_${new Date().toISOString().split('T')[0]}.pdf`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -98,12 +56,10 @@ export function NR01ComplianceReport({
   };
 
   const generateHTMLReport = (): string => {
-    if (!reportData) return '';
+    if (!frprtData) return '';
     
-    const { assessments, risks, actionPlans, company } = reportData;
-    
-    // Calculate FRPRT metrics
-    const frprtMetrics = calculateFRPRTMetrics(assessments, risks);
+    const { filteredData, frprtMetrics, company, actionPlans } = frprtData;
+    const { assessments } = filteredData;
     
     return `
       <html>
@@ -422,7 +378,21 @@ export function NR01ComplianceReport({
     );
   }
 
-  if (!reportData) {
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-lg font-medium">Erro ao carregar dados</p>
+          <p className="text-muted-foreground">
+            {error.message || 'Não foi possível carregar os dados do relatório'}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!frprtData) {
     return (
       <Card>
         <CardContent className="text-center py-8">
@@ -436,8 +406,8 @@ export function NR01ComplianceReport({
     );
   }
 
-  const { assessments, risks, actionPlans, company } = reportData;
-  const frprtMetrics = calculateFRPRTMetrics(assessments, risks);
+  const { filteredData, frprtMetrics, company, actionPlans } = frprtData;
+  const { assessments } = filteredData;
 
   return (
     <div className="space-y-6">

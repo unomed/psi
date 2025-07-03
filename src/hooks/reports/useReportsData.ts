@@ -36,11 +36,11 @@ export interface ReportData {
   }>;
 }
 
-export function useReportsData(companyId?: string) {
+export function useReportsData(companyId?: string, selectedSector?: string, selectedRole?: string) {
   const { userRole } = useAuth();
 
   const { data: reportsData, isLoading } = useQuery({
-    queryKey: ['reportsData', companyId],
+    queryKey: ['reportsData', companyId, selectedSector, selectedRole],
     queryFn: async (): Promise<ReportData> => {
       try {
         // Buscar setores reais
@@ -71,6 +71,15 @@ export function useReportsData(companyId?: string) {
 
         if (companyId && userRole !== 'superadmin') {
           assessmentsQuery = assessmentsQuery.eq('employees.company_id', companyId);
+        }
+
+        // Aplicar filtros de setor e função
+        if (selectedSector && selectedSector !== 'all-sectors') {
+          assessmentsQuery = assessmentsQuery.eq('employees.sector_id', selectedSector);
+        }
+
+        if (selectedRole && selectedRole !== 'all-roles') {
+          assessmentsQuery = assessmentsQuery.eq('employees.role_id', selectedRole);
         }
 
         const { data: assessments, error: assessmentsError } = await assessmentsQuery;

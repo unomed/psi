@@ -34,7 +34,7 @@ export function ReportFilters({
   userRole
 }: ReportFiltersProps) {
   // Buscar setores e funções reais do banco de dados
-  const { reportsData } = useReportsData(selectedCompany || undefined);
+  const { reportsData } = useReportsData(selectedCompany || undefined, selectedSector, selectedRole);
 
   const validCompanies = (userCompanies || []).filter(company =>
     company &&

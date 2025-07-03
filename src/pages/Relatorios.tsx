@@ -31,7 +31,7 @@ export default function Relatorios() {
   
   const { userRole, userCompanies } = useAuth();
   const { verifyCompanyAccess } = useCompanyAccessCheck();
-  const { reportsData, isLoading } = useReportsData(selectedCompany || undefined);
+  const { reportsData, isLoading } = useReportsData(selectedCompany || undefined, selectedSector, selectedRole);
   
   // Verificar se o usuário tem acesso à empresa selecionada
   useEffect(() => {
@@ -1038,6 +1038,8 @@ export default function Relatorios() {
               companyId={selectedCompany}
               periodStart={dateRange.from.toISOString()}
               periodEnd={dateRange.to.toISOString()}
+              selectedSector={selectedSector}
+              selectedRole={selectedRole}
             />
           ) : (
             <Card>
