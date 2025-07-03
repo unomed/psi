@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { useEmployeeTags, useTagTypes } from "@/hooks/useEmployeeTags";
 
 interface CandidateTagsSectionProps {
@@ -43,12 +44,17 @@ export function CandidateTagsSection({ employeeId, onTagsChange, isCandidate }: 
     if (!employeeId || !selectedTagType) return;
 
     try {
-      const tagName = BEHAVIORAL_TAGS.find(t => t.id === selectedTagType)?.name || '';
-      const tagWithLevel = `${tagName} (${selectedLevel})`;
+      // Buscar a tag pelo ID nos tipos disponíveis
+      const targetTagType = tagTypes.find(t => t.id === selectedTagType);
+      
+      if (!targetTagType) {
+        toast.error('Tipo de tag não encontrado. Atualize a página e tente novamente.');
+        return;
+      }
       
       await addEmployeeTag.mutateAsync({
         employeeId,
-        tagTypeId: selectedTagType,
+        tagTypeId: targetTagType.id,
         notes: `Nível: ${selectedLevel}`
       });
       
@@ -57,7 +63,7 @@ export function CandidateTagsSection({ employeeId, onTagsChange, isCandidate }: 
       setSelectedLevel("medio");
       
       if (onTagsChange) {
-        const newTags = [...employeeTags.map(t => t.tag_type?.name || ''), tagWithLevel];
+        const newTags = [...employeeTags.map(t => t.tag_type?.name || ''), targetTagType.name];
         onTagsChange(newTags);
       }
     } catch (error) {
@@ -108,11 +114,18 @@ export function CandidateTagsSection({ employeeId, onTagsChange, isCandidate }: 
                     <SelectValue placeholder="Selecione uma competência" />
                   </SelectTrigger>
                   <SelectContent>
-                    {BEHAVIORAL_TAGS.map(tag => (
-                      <SelectItem key={tag.id} value={tag.id}>
-                        {tag.name}
-                      </SelectItem>
-                    ))}
+                    {tagTypes
+                      .filter(tag => tag.category === 'comportamental' || tag.category === 'skill')
+                      .map(tag => (
+                        <SelectItem key={tag.id} value={tag.id}>
+                          {tag.name}
+                        </SelectItem>
+                      ))}
+                    {tagTypes.filter(tag => tag.category === 'comportamental' || tag.category === 'skill').length === 0 && (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        Nenhuma tag comportamental disponível. Use o gerenciamento de tags para criar novas.
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

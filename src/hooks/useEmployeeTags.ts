@@ -43,6 +43,11 @@ export function useEmployeeTags(employeeId?: string) {
     }) => {
       console.log("[useEmployeeTags] Tentando adicionar tag:", { employeeId, tagTypeId });
       
+      // Se o tagTypeId é temporário, significa que precisamos criar o tipo primeiro
+      if (tagTypeId.startsWith('temp-')) {
+        throw new Error('Tipo de tag temporário não suportado. Use o sistema de gerenciamento de tags.');
+      }
+      
       const { data, error } = await supabase
         .from('employee_tags')
         .insert({
