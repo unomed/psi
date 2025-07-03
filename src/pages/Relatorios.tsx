@@ -591,9 +591,10 @@ export default function Relatorios() {
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0;">
                 <div>
-                    <strong>Responsável Técnico:</strong><br>
-                    Sistema de Gestão FRPRT<br>
-                    Conforme NR-01<br>
+                    <strong>📋 Responsável Técnico:</strong><br>
+                    Arildo Pinto Stepenovski<br>
+                    👨‍💼 Técnico em Segurança do Trabalho<br>
+                    🆔 Registro MTE: 27545<br>
                 </div>
                 <div>
                     <strong>Data de Emissão:</strong><br>
