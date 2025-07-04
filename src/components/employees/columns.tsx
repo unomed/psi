@@ -91,15 +91,29 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
     header: "Ações",
     cell: ({ row, table }) => {
       const employee = row.original;
+      console.log('🔍 Actions cell rendering for employee:', employee?.name, 'ID:', employee?.id);
+      
       const meta = table.options.meta as {
         onEdit: (employee: Employee) => void;
         onDelete: (employee: Employee) => void;
         onView: (employee: Employee) => void;
       };
 
+      console.log('📋 Table meta:', {
+        meta,
+        hasOnEdit: typeof meta?.onEdit === 'function',
+        hasOnDelete: typeof meta?.onDelete === 'function',
+        hasOnView: typeof meta?.onView === 'function'
+      });
+
       // Verificar se os handlers existem
       if (!meta || !meta.onEdit || !meta.onDelete || !meta.onView) {
-        console.warn('Action handlers not found in table meta', meta);
+        console.error('❌ Action handlers not found in table meta', {
+          meta,
+          onEdit: meta?.onEdit,
+          onDelete: meta?.onDelete,
+          onView: meta?.onView
+        });
         return <div className="text-muted-foreground">-</div>;
       }
 
@@ -109,13 +123,24 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
             variant="ghost"
             size="icon"
             onClick={(e) => {
+              console.log('👁️ View button CLICKED - START', {
+                employee: employee.name,
+                employeeId: employee.id,
+                event: e.type,
+                target: e.target
+              });
+              
               e.preventDefault();
               e.stopPropagation();
-              console.log('View button clicked', employee.name);
+              
+              console.log('👁️ View button - prevented defaults');
+              
               try {
+                console.log('👁️ Calling meta.onView with employee:', employee);
                 meta.onView(employee);
+                console.log('👁️ meta.onView called successfully');
               } catch (error) {
-                console.error('Error calling onView:', error);
+                console.error('❌ Error calling onView:', error);
               }
             }}
             title="Visualizar"
@@ -126,13 +151,24 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
             variant="ghost"
             size="icon"
             onClick={(e) => {
+              console.log('✏️ Edit button CLICKED - START', {
+                employee: employee.name,
+                employeeId: employee.id,
+                event: e.type,
+                target: e.target
+              });
+              
               e.preventDefault();
               e.stopPropagation();
-              console.log('Edit button clicked', employee.name);
+              
+              console.log('✏️ Edit button - prevented defaults');
+              
               try {
+                console.log('✏️ Calling meta.onEdit with employee:', employee);
                 meta.onEdit(employee);
+                console.log('✏️ meta.onEdit called successfully');
               } catch (error) {
-                console.error('Error calling onEdit:', error);
+                console.error('❌ Error calling onEdit:', error);
               }
             }}
             title="Editar"
@@ -143,13 +179,24 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
             variant="ghost"
             size="icon"
             onClick={(e) => {
+              console.log('🗑️ Delete button CLICKED - START', {
+                employee: employee.name,
+                employeeId: employee.id,
+                event: e.type,
+                target: e.target
+              });
+              
               e.preventDefault();
               e.stopPropagation();
-              console.log('Delete button clicked', employee.name);
+              
+              console.log('🗑️ Delete button - prevented defaults');
+              
               try {
+                console.log('🗑️ Calling meta.onDelete with employee:', employee);
                 meta.onDelete(employee);
+                console.log('🗑️ meta.onDelete called successfully');
               } catch (error) {
-                console.error('Error calling onDelete:', error);
+                console.error('❌ Error calling onDelete:', error);
               }
             }}
             title="Excluir"
