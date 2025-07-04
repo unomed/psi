@@ -102,7 +102,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => meta.onView(employee)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('View button clicked', employee);
+              meta.onView(employee);
+            }}
             title="Visualizar"
           >
             <Eye className="h-4 w-4" />
@@ -110,7 +115,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => meta.onEdit(employee)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Edit button clicked', employee);
+              meta.onEdit(employee);
+            }}
             title="Editar"
           >
             <Pencil className="h-4 w-4" />
@@ -118,7 +128,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => meta.onDelete(employee)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Delete button clicked', employee);
+              meta.onDelete(employee);
+            }}
             title="Excluir"
           >
             <Trash2 className="h-4 w-4 text-destructive" />
