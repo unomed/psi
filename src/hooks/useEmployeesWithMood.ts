@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Employee } from '@/types/employee';
 
@@ -14,34 +14,47 @@ interface EmployeeMoodData {
 export function useEmployeesWithMood(employees: Employee[] | undefined) {
   const [employeeMoods, setEmployeeMoods] = useState<Record<string, EmployeeMoodData>>({});
   const [loading, setLoading] = useState(false);
+  const lastEmployeeIds = useRef<string>('');
 
-  // Memoizar os IDs dos funcionários para evitar re-execução desnecessária
-  const employeeIds = useMemo(() => {
-    return employees?.map(emp => emp.id) || [];
-  }, [employees]);
-
-  const fetchEmployeeMoods = useCallback(async () => {
+  const fetchEmployeeMoods = async () => {
     if (!employees || employees.length === 0) {
       console.log('useEmployeesWithMood: No employees provided');
       setEmployeeMoods({});
       return;
     }
+
+    const employeeIds = employees.map(emp => emp.id);
+    const currentEmployeeIds = employeeIds.join(',');
     
+    // Evitar re-fetch se os IDs não mudaram
+    if (currentEmployeeIds === lastEmployeeIds.current) {
+      return;
+    }
+    
+    lastEmployeeIds.current = currentEmployeeIds;
     setLoading(true);
+    
     try {
-      console.log('useEmployeesWithMood: Fetching mood data for employees:', employeeIds);
+      console.log('useEmployeesWithMood: Fetching mood data for employees:', employeeIds.length);
       
       // Verificar se há uma sessão ativa
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        console.error('useEmployeesWithMood: Session error:', sessionError);
-        setEmployeeMoods({});
-        return;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         console.warn('useEmployeesWithMood: No active session');
-        setEmployeeMoods({});
+        // Criar estrutura vazia para não quebrar a UI
+        const emptyMoodData: Record<string, EmployeeMoodData> = {};
+        employees.forEach(employee => {
+          emptyMoodData[employee.id] = {
+            employeeId: employee.id,
+            avgMood: null,
+            totalLogs: 0,
+            lastMoodDate: null,
+            lastMoodEmoji: null,
+            lastMoodDescription: null
+          };
+        });
+        setEmployeeMoods(emptyMoodData);
         return;
       }
       
@@ -107,28 +120,26 @@ export function useEmployeesWithMood(employees: Employee[] | undefined) {
     } catch (error) {
       console.error('Erro ao buscar dados de humor dos funcionários:', error);
       // Em caso de falha geral, definir estrutura vazia para não quebrar a UI
-      if (employees) {
-        const emptyMoodData: Record<string, EmployeeMoodData> = {};
-        employees.forEach(employee => {
-          emptyMoodData[employee.id] = {
-            employeeId: employee.id,
-            avgMood: null,
-            totalLogs: 0,
-            lastMoodDate: null,
-            lastMoodEmoji: null,
-            lastMoodDescription: null
-          };
-        });
-        setEmployeeMoods(emptyMoodData);
-      }
+      const emptyMoodData: Record<string, EmployeeMoodData> = {};
+      employees?.forEach(employee => {
+        emptyMoodData[employee.id] = {
+          employeeId: employee.id,
+          avgMood: null,
+          totalLogs: 0,
+          lastMoodDate: null,
+          lastMoodEmoji: null,
+          lastMoodDescription: null
+        };
+      });
+      setEmployeeMoods(emptyMoodData);
     } finally {
       setLoading(false);
     }
-  }, [employees, employeeIds]);
+  };
 
   useEffect(() => {
     fetchEmployeeMoods();
-  }, [fetchEmployeeMoods]);
+  }, [employees]);
 
   return {
     employeeMoods,

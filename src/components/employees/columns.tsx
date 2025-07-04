@@ -97,6 +97,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
         onView: (employee: Employee) => void;
       };
 
+      // Verificar se os handlers existem
+      if (!meta || !meta.onEdit || !meta.onDelete || !meta.onView) {
+        console.warn('Action handlers not found in table meta', meta);
+        return <div className="text-muted-foreground">-</div>;
+      }
+
       return (
         <div className="flex gap-2">
           <Button
@@ -105,8 +111,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('View button clicked', employee);
-              meta.onView(employee);
+              console.log('View button clicked', employee.name);
+              try {
+                meta.onView(employee);
+              } catch (error) {
+                console.error('Error calling onView:', error);
+              }
             }}
             title="Visualizar"
           >
@@ -118,8 +128,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Edit button clicked', employee);
-              meta.onEdit(employee);
+              console.log('Edit button clicked', employee.name);
+              try {
+                meta.onEdit(employee);
+              } catch (error) {
+                console.error('Error calling onEdit:', error);
+              }
             }}
             title="Editar"
           >
@@ -131,8 +145,12 @@ export const createColumns = (employeeMoods?: Record<string, any>): ColumnDef<Em
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Delete button clicked', employee);
-              meta.onDelete(employee);
+              console.log('Delete button clicked', employee.name);
+              try {
+                meta.onDelete(employee);
+              } catch (error) {
+                console.error('Error calling onDelete:', error);
+              }
             }}
             title="Excluir"
           >
