@@ -19,7 +19,10 @@ export default function Perfil() {
     id: string;
     full_name: string;
     email: string | undefined;
+    phone?: string;
+    position?: string;
     role: string | null;
+    avatar_url?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -48,7 +51,10 @@ export default function Perfil() {
           id: profileData.id,
           full_name: profileData.full_name || '',
           email: emailData[0]?.email,
-          role: userRole
+          phone: profileData.phone || '',
+          position: profileData.position || '',
+          role: userRole,
+          avatar_url: profileData.avatar_url
         });
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -73,6 +79,8 @@ export default function Perfil() {
         .from('profiles')
         .update({
           full_name: profile.full_name,
+          phone: profile.phone,
+          position: profile.position,
         })
         .eq('id', user.id);
         
@@ -87,6 +95,10 @@ export default function Perfil() {
     }
   };
   
+  const handleAvatarUpdate = (newUrl: string) => {
+    setProfile(prev => prev ? { ...prev, avatar_url: newUrl } : prev);
+  };
+
   if (loading) {
     return <ProfileSkeleton />;
   }
@@ -95,9 +107,12 @@ export default function Perfil() {
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Meu Perfil</h1>
       
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
-          <ProfileInfo profile={profile} />
+          <ProfileInfo 
+            profile={profile} 
+            onAvatarUpdate={handleAvatarUpdate}
+          />
           <PasswordChangeForm />
         </div>
         
@@ -117,6 +132,26 @@ export default function Perfil() {
                   value={profile?.full_name || ''}
                   onChange={(e) => setProfile(prev => prev ? {...prev, full_name: e.target.value} : prev)}
                   placeholder="Seu nome completo" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone</Label>
+                <Input 
+                  id="phone" 
+                  value={profile?.phone || ''}
+                  onChange={(e) => setProfile(prev => prev ? {...prev, phone: e.target.value} : prev)}
+                  placeholder="(11) 99999-9999" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="position">Cargo</Label>
+                <Input 
+                  id="position" 
+                  value={profile?.position || ''}
+                  onChange={(e) => setProfile(prev => prev ? {...prev, position: e.target.value} : prev)}
+                  placeholder="Seu cargo na empresa" 
                 />
               </div>
               

@@ -1736,22 +1736,31 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string | null
           full_name: string | null
           id: string
           is_active: boolean
+          phone: string | null
+          position: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
           full_name?: string | null
           id: string
           is_active?: boolean
+          phone?: string | null
+          position?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
           is_active?: boolean
+          phone?: string | null
+          position?: string | null
         }
         Relationships: []
       }
