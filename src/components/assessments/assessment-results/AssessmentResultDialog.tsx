@@ -14,6 +14,38 @@ interface AssessmentResultDialogProps {
 export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentResultDialogProps) {
   if (!result) return null;
 
+  // Calcular o nível de risco baseado no raw_score
+  const calculateRiskLevel = () => {
+    // Se já tem risk_level preenchido e não é null, usar ele
+    if (result.risk_level && result.risk_level.toLowerCase() !== 'null') {
+      return result.risk_level;
+    }
+    
+    // Calcular baseado no raw_score (mesma lógica do processamento automático)
+    if (result.raw_score || result.rawScore) {
+      const score = result.raw_score || result.rawScore;
+      if (score >= 80) return 'Crítico';
+      if (score >= 60) return 'Alto';
+      if (score >= 40) return 'Médio';
+      return 'Baixo';
+    }
+    
+    // Fallback para factors_scores (DISC)
+    if (result.factors_scores || result.factorsScores) {
+      const scores = result.factors_scores || result.factorsScores;
+      const scoreValues = Object.values(scores) as number[];
+      const avgScore = scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length;
+      
+      if (avgScore >= 0.8) return 'Alto';
+      if (avgScore >= 0.6) return 'Médio';
+      return 'Baixo';
+    }
+    
+    return 'Baixo';
+  };
+
+  const riskLevel = calculateRiskLevel();
+
   const renderDISCResults = () => {
     if (!result.factorsScores && !result.factors_scores) return null;
 
@@ -327,7 +359,7 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
                     </div>
                   )}
                   <div className="text-center p-3 bg-accent/5 rounded-lg">
-                    <div className="text-2xl font-bold">{result.riskLevel}</div>
+                    <div className="text-2xl font-bold">{riskLevel}</div>
                     <div className="text-sm text-muted-foreground">Nível de Risco</div>
                   </div>
                 </div>
