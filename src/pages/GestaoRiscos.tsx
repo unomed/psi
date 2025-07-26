@@ -2,30 +2,32 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, BarChart3, FileText, Settings, Brain, Zap } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { useCompany } from "@/contexts/CompanyContext";
 import { PsychosocialRiskConfigForm } from "@/components/risks/PsychosocialRiskConfigForm";
 import { PsychosocialAdvancedConfig } from "@/components/risks/PsychosocialAdvancedConfig";
 import { PsychosocialAutomationDashboard } from "@/components/risks/PsychosocialAutomationDashboard";
 import { RealTimeMetrics } from "@/components/risks/RealTimeMetrics";
 
 export default function GestaoRiscos() {
-  const { userRole, userCompanies } = useAuth();
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    if (userRole !== 'superadmin' && userCompanies.length > 0) {
-      return userCompanies[0].companyId;
-    }
-    return null;
-  });
+  const { selectedCompanyId } = useCompany();
 
-  const handleCompanyChange = (companyId: string) => {
-    setSelectedCompanyId(companyId || null);
-  };
-
-  if (!selectedCompanyId && userRole !== 'superadmin') {
+  // Verificação se empresa está selecionada
+  if (!selectedCompanyId) {
     return (
       <div className="text-center p-8">
-        <p className="text-muted-foreground">Selecione uma empresa para gerenciar riscos psicossociais</p>
+        <div>
+          <h1 className="text-3xl font-bold">Gestão de Riscos Psicossociais</h1>
+          <p className="text-muted-foreground">
+            Configure análises automáticas, limites de risco e notificações conforme NR-01
+          </p>
+        </div>
+        <div className="mt-8">
+          <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium">Selecione uma empresa</h3>
+          <p className="text-muted-foreground">
+            Para gerenciar riscos psicossociais, selecione uma empresa no canto superior direito.
+          </p>
+        </div>
       </div>
     );
   }
@@ -42,11 +44,6 @@ export default function GestaoRiscos() {
         </div>
       </div>
 
-      {/* Company Selector */}
-      <CompanySelectorReal
-        selectedCompanyId={selectedCompanyId}
-        onCompanyChange={handleCompanyChange}
-      />
 
       {/* Tabs de Configuração */}
       <Tabs defaultValue="overview" className="w-full">

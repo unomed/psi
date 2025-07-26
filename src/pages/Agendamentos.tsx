@@ -11,23 +11,37 @@ import { SchedulingWorkflow } from "@/components/assessment-scheduling/Schedulin
 import { ScheduledAssessmentsList } from "@/components/assessment-scheduling/ScheduledAssessmentsList";
 import { AssessmentMetrics } from "@/components/assessment-scheduling/AssessmentMetrics";
 import { EmailTemplateSection } from "@/components/assessment-scheduling/email-templates/EmailTemplateSection";
-import { useAuth } from "@/contexts/AuthContext";
-import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { useCompany } from "@/contexts/CompanyContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Agendamentos() {
-  const { userRole, userCompanies } = useAuth();
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    if (userRole !== 'superadmin' && userCompanies.length > 0) {
-      return userCompanies[0].companyId;
-    }
-    return null;
-  });
+  const { selectedCompanyId } = useCompany();
   const [isSchedulingOpen, setIsSchedulingOpen] = useState(false);
   const [schedulingType, setSchedulingType] = useState<'individual' | 'collective'>('individual');
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+
+  // Verificação se empresa está selecionada
+  if (!selectedCompanyId) {
+    return (
+      <div className="text-center p-8">
+        <div>
+          <h1 className="text-3xl font-bold">Agendamento de Avaliações</h1>
+          <p className="text-muted-foreground">
+            Agende avaliações individuais ou coletivas usando templates existentes
+          </p>
+        </div>
+        <div className="mt-8">
+          <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium">Selecione uma empresa</h3>
+          <p className="text-muted-foreground">
+            Para agendar avaliações, selecione uma empresa no canto superior direito.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Buscar apenas templates criados e salvos no banco (mesma consulta que /templates)
   const { data: templates = [], isLoading } = useQuery({
@@ -51,12 +65,8 @@ export default function Agendamentos() {
       // Só retornar templates que realmente existem no banco (não templates padrão não salvos)
       return (data || []).filter(template => template.id && template.title);
     },
-    enabled: !!selectedCompanyId || userRole === 'superadmin'
+    enabled: !!selectedCompanyId
   });
-
-  const handleCompanyChange = (companyId: string) => {
-    setSelectedCompanyId(companyId || null);
-  };
 
   const getTemplateTypeLabel = (type: string) => {
     switch (type) {
@@ -96,14 +106,6 @@ export default function Agendamentos() {
 
   const filteredTemplates = getFilteredTemplates();
 
-  if (!selectedCompanyId && userRole !== 'superadmin') {
-    return (
-      <div className="text-center p-8">
-        <p className="text-muted-foreground">Selecione uma empresa para agendar avaliações</p>
-      </div>
-    );
-  }
-
   return (
     <TooltipProvider>
       <div className="container mx-auto py-6 space-y-6">
@@ -142,11 +144,6 @@ export default function Agendamentos() {
           </div>
         </div>
 
-        {/* Company Selector */}
-        <CompanySelectorReal
-          selectedCompanyId={selectedCompanyId}
-          onCompanyChange={handleCompanyChange}
-        />
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">

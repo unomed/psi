@@ -4,20 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, FileText, TrendingUp, Users, Brain, Eye, Download } from "lucide-react";
+import { Search, Filter, FileText, Eye, Download } from "lucide-react";
 import { useAssessmentResultsData } from "@/hooks/useAssessmentResultsData";
-import { useAuth } from "@/contexts/AuthContext";
-import { CompanySelectorReal } from "@/components/dashboard/CompanySelectorReal";
+import { useCompany } from "@/contexts/CompanyContext";
 import { AssessmentResultDialog } from "@/components/assessments/assessment-results/AssessmentResultDialog";
 
 export default function AssessmentResults() {
-  const { userRole, userCompanies } = useAuth();
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    if (userRole !== 'superadmin' && userCompanies.length > 0) {
-      return userCompanies[0].companyId;
-    }
-    return null;
-  });
+  const { selectedCompanyId } = useCompany();
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState("todos");
   const [selectedResult, setSelectedResult] = useState<any>(null);
@@ -25,9 +18,26 @@ export default function AssessmentResults() {
 
   const { data: results = [], isLoading } = useAssessmentResultsData(selectedCompanyId);
 
-  const handleCompanyChange = (companyId: string) => {
-    setSelectedCompanyId(companyId || null);
-  };
+  // Verificação se empresa está selecionada
+  if (!selectedCompanyId) {
+    return (
+      <div className="text-center p-8">
+        <div>
+          <h1 className="text-3xl font-bold">Resultados das Avaliações</h1>
+          <p className="text-muted-foreground">
+            Visualize e analise os resultados das avaliações realizadas
+          </p>
+        </div>
+        <div className="mt-8">
+          <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium">Selecione uma empresa</h3>
+          <p className="text-muted-foreground">
+            Para ver os resultados, selecione uma empresa no canto superior direito.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const filteredResults = results.filter(result => {
     const matchesSearch = (result.employeeName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,13 +62,6 @@ export default function AssessmentResults() {
     }
   };
 
-  if (!selectedCompanyId && userRole !== 'superadmin') {
-    return (
-      <div className="text-center p-8">
-        <p className="text-muted-foreground">Selecione uma empresa para ver os resultados</p>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -75,10 +78,6 @@ export default function AssessmentResults() {
         </Button>
       </div>
 
-      <CompanySelectorReal
-        selectedCompanyId={selectedCompanyId}
-        onCompanyChange={handleCompanyChange}
-      />
 
       <div className="flex gap-4 items-center">
         <div className="relative flex-1 max-w-md">
