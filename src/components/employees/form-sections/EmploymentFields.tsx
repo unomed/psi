@@ -204,7 +204,7 @@ export function EmploymentFields({
             <FormLabel>Status</FormLabel>
             <FormControl>
               <Select
-                value={field.value || "active"}
+                value={field.value || ""}
                 onValueChange={field.onChange}
               >
                 <SelectTrigger>
