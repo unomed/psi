@@ -210,7 +210,7 @@ export function useConsolidatedReports(companyId: string | null) {
           ...sector,
           coverage,
           averageScore,
-          riskLevel: sector.scores.length > 0 ? calculateRiskLevel(averageScore).toLowerCase() : 'não avaliado',
+          riskLevel: calculateRiskLevel(averageScore).toLowerCase(),
           riskBreakdown
         };
       });
@@ -259,7 +259,7 @@ export function useConsolidatedReports(companyId: string | null) {
           ...role,
           coverage,
           averageScore,
-          riskLevel: role.scores.length > 0 ? calculateRiskLevel(averageScore).toLowerCase() : 'não avaliado',
+          riskLevel: calculateRiskLevel(averageScore).toLowerCase(),
           riskBreakdown
         };
       });
