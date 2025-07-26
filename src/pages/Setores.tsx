@@ -7,76 +7,37 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import { SectorForm } from "@/components/sectors/SectorForm";
 import type { SectorData } from "@/components/sectors/columns";
-import { useCompanies } from "@/hooks/useCompanies";
 import { useSectors } from "@/hooks/useSectors";
 import { EmptySectorState } from "@/components/sectors/EmptySectorState";
-import { SectorCompanySelect } from "@/components/sectors/SectorCompanySelect";
 import { SectorTable } from "@/components/sectors/SectorTable";
-import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCompany } from "@/contexts/CompanyContext";
 import { FadeIn } from "@/components/ui/fade-in";
 import { PageTransition } from "@/components/ui/page-transition";
-import { StaggerContainer } from "@/components/ui/stagger-container";
 
 export default function Setores() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
-    const saved = localStorage.getItem('selectedCompany');
-    return saved || null;
-  });
   const [sectorToDelete, setSectorToDelete] = useState<SectorData | null>(null);
   const [sectorToEdit, setSectorToEdit] = useState<SectorData | null>(null);
   
-  const { companies } = useCompanies();
+  const { selectedCompanyId } = useCompany();
   const { sectors, isLoading, createSector, updateSector, deleteSector } = useSectors();
-  const { filterResourcesByCompany } = useCompanyAccessCheck();
-  const { userRole } = useAuth();
 
-  // Filter companies based on user access
-  // Convert CompanyData to the format expected by filterResourcesByCompany
-  const formattedCompanies = companies.map(company => ({
-    company_id: company.id,
-    ...company
-  }));
-  
-  const accessibleCompanyRecords = filterResourcesByCompany(formattedCompanies);
-  
-  // Convert back to CompanyData format for the component
-  const accessibleCompanies = accessibleCompanyRecords.map(company => ({
-    id: company.company_id || "",
-    name: company.name || "",
-    cnpj: company.cnpj || "",
-    address: company.address || "",
-    city: company.city || "",
-    state: company.state || "",
-    industry: company.industry || "",
-    contactName: company.contactName || "",
-    contactEmail: company.contactEmail || "",
-    contactPhone: company.contactPhone || "",
-    notes: ""
-  }));
-  
   // Filter sectors based on selected company
-  const filteredSectors = selectedCompany 
-    ? sectors.filter(sector => sector.companyId === selectedCompany)
+  const filteredSectors = selectedCompanyId 
+    ? sectors.filter(sector => sector.companyId === selectedCompanyId)
     : [];
 
-  const handleCompanyChange = (value: string) => {
-    setSelectedCompany(value);
-    localStorage.setItem('selectedCompany', value);
-  };
-
   const handleAddSector = async (data: Omit<SectorData, "id">) => {
-    if (!selectedCompany) {
-      toast.error("Selecione uma empresa");
+    if (!selectedCompanyId) {
+      toast.error("Selecione uma empresa no cabeçalho");
       return;
     }
     
     try {
       await createSector.mutateAsync({
         ...data,
-        companyId: selectedCompany
+        companyId: selectedCompanyId
       });
       setIsDialogOpen(false);
     } catch (error) {
@@ -137,23 +98,14 @@ export default function Setores() {
           </div>
         </FadeIn>
         
-        <FadeIn delay={100}>
-          <SectorCompanySelect 
-            companies={accessibleCompanies}
-            selectedCompany={selectedCompany}
-            onCompanyChange={handleCompanyChange}
-          />
-        </FadeIn>
-        
         <FadeIn delay={200}>
-          {selectedCompany && filteredSectors.length === 0 ? (
+          {!selectedCompanyId ? (
+            <div className="text-center p-8">
+              <p className="text-muted-foreground">Selecione uma empresa no cabeçalho para visualizar os setores</p>
+            </div>
+          ) : selectedCompanyId && filteredSectors.length === 0 ? (
             <EmptySectorState 
-              noCompanySelected={!selectedCompany} 
-              onAddClick={() => setIsDialogOpen(true)}
-            />
-          ) : !selectedCompany ? (
-            <EmptySectorState 
-              noCompanySelected={true} 
+              noCompanySelected={false} 
               onAddClick={() => setIsDialogOpen(true)}
             />
           ) : (

@@ -7,7 +7,6 @@ import { CompanySearch } from "@/components/companies/CompanySearch";
 import { CompanyDialogs } from "@/components/companies/CompanyDialogs";
 import { EmptyCompanyState } from "@/components/companies/EmptyCompanyState";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "@/components/companies/columns";
 
@@ -20,23 +19,24 @@ export default function Empresas() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  const { filteredCompanies } = useCompanyFilter(companies || []);
-
-  // Memoize the displayed companies to prevent unnecessary recalculations
+  // Para empresas, mostrar todas se for superadmin, ou apenas as que o usuário tem acesso
   const displayedCompanies = useMemo(() => {
-    if (!filteredCompanies) return [];
+    if (!companies) return [];
+    
+    // Superadmin vê todas as empresas, outros veem apenas as suas
+    const filteredList = userRole === 'superadmin' ? companies : [];
     
     if (!searchTerm.trim()) {
-      return filteredCompanies;
+      return filteredList;
     }
     
     const lowercaseSearch = searchTerm.toLowerCase();
-    return filteredCompanies.filter(company =>
+    return filteredList.filter(company =>
       company.name?.toLowerCase().includes(lowercaseSearch) ||
       company.cnpj?.toLowerCase().includes(lowercaseSearch) ||
       company.email?.toLowerCase().includes(lowercaseSearch)
     );
-  }, [filteredCompanies, searchTerm]);
+  }, [companies, searchTerm, userRole]);
 
   // Memoize handlers to prevent unnecessary re-renders
   const handleSearchChange = useCallback((value: string) => {

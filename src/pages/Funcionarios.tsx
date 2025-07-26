@@ -4,17 +4,16 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeHeader } from "@/components/employees/EmployeeHeader";
 import { EmployeeDialogs } from "@/components/employees/dialogs/EmployeeDialogs";
 import { TagManagementDialog } from "@/components/employees/dialogs/TagManagementDialog";
-import { EmployeeCompanySelector } from "@/components/employees/EmployeeCompanySelector";
 import { EmployeeListSection } from "@/components/employees/EmployeeListSection";
-import { useEmployeeCompanyFilter } from "@/hooks/employees/useEmployeeCompanyFilter";
 import { useEmployeeOperations } from "@/hooks/employees/useEmployeeOperations";
 import { useEmployeesWithMood } from "@/hooks/useEmployeesWithMood";
+import { useCompany } from "@/contexts/CompanyContext";
 
 export default function Funcionarios() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isTagManagementOpen, setIsTagManagementOpen] = useState(false);
   
-  const { selectedCompany, handleCompanyChange, userCompanies } = useEmployeeCompanyFilter();
+  const { selectedCompanyId } = useCompany();
   const { employees, isLoading } = useEmployees();
   
   const {
@@ -34,11 +33,11 @@ export default function Funcionarios() {
     handleEditClick,
     handleDeleteClick,
     handleViewClick
-  } = useEmployeeOperations(selectedCompany);
+  } = useEmployeeOperations(selectedCompanyId);
 
   // Filtrar funcionários por empresa
-  const filteredByCompany = selectedCompany 
-    ? employees?.filter(employee => employee.company_id === selectedCompany)
+  const filteredByCompany = selectedCompanyId 
+    ? employees?.filter(employee => employee.company_id === selectedCompanyId)
     : [];
 
   const filteredEmployees = filteredByCompany?.filter(employee => {
@@ -60,15 +59,9 @@ export default function Funcionarios() {
         onManageTagsClick={() => setIsTagManagementOpen(true)}
       />
       
-      <EmployeeCompanySelector
-        selectedCompany={selectedCompany}
-        onCompanyChange={handleCompanyChange}
-        userCompanies={userCompanies}
-      />
-      
-      {!selectedCompany ? (
+      {!selectedCompanyId ? (
         <div className="text-center p-8">
-          <p className="text-muted-foreground">Selecione uma empresa para visualizar os funcionários</p>
+          <p className="text-muted-foreground">Selecione uma empresa no cabeçalho para visualizar os funcionários</p>
         </div>
       ) : (
         <EmployeeListSection
@@ -97,7 +90,7 @@ export default function Funcionarios() {
         handleCreate={handleCreate}
         handleEdit={handleEdit}
         handleDelete={handleDelete}
-        companyId={selectedCompany}
+        companyId={selectedCompanyId}
       />
 
       <TagManagementDialog
