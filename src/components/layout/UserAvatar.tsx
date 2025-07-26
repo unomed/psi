@@ -18,10 +18,12 @@ export function UserAvatar() {
   const navigate = useNavigate();
 
   const handleEditProfile = () => {
+    console.log('Navegando para /perfil');
     navigate('/perfil');
   };
 
   const handleChangePassword = () => {
+    console.log('Navegando para /perfil/alterar-senha');
     navigate('/perfil/alterar-senha');
   };
 
