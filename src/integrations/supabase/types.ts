@@ -3222,7 +3222,9 @@ export type Database = {
         Returns: string
       }
       get_dashboard_analytics: {
-        Args: { p_company_id: string; p_period_days?: number }
+        Args:
+          | Record<PropertyKey, never>
+          | { p_company_id: string; p_period_days?: number }
         Returns: Json
       }
       get_employee_mood_stats: {
