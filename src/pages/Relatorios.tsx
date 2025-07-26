@@ -66,10 +66,12 @@ export default function Relatorios() {
     }
     
     try {
-      await generatePDF(consolidatedData, {
+      await generatePDF(consolidatedData, factorData, {
         includeSectorAnalysis: true,
         includeRoleAnalysis: true,
-        includeActionPlans: true
+        includeActionPlans: true,
+        includeFactorAnalysis: true,
+        includeComplianceNR01: true
       });
       toast.success("PDF gerado com sucesso!");
     } catch (error) {
