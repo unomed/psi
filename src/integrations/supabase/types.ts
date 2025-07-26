@@ -3124,8 +3124,8 @@ export type Database = {
     }
     Functions: {
       associate_user_with_company: {
-        Args: { _user_id: string; _company_id: string }
-        Returns: boolean
+        Args: { p_user_id: string; p_company_id: string }
+        Returns: undefined
       }
       authenticate_employee: {
         Args: { p_cpf: string; p_password: string }
@@ -3166,7 +3166,7 @@ export type Database = {
         }[]
       }
       check_company_access: {
-        Args: { user_id: string; company_id: string }
+        Args: { p_company_id: string } | { user_id: string; company_id: string }
         Returns: boolean
       }
       copy_template_for_company: {
@@ -3271,12 +3271,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
-      get_dashboard_analytics: {
-        Args:
-          | Record<PropertyKey, never>
-          | { p_company_id: string; p_period_days?: number }
-        Returns: Json
-      }
       get_employee_mood_stats: {
         Args: { p_employee_id: string; p_days?: number }
         Returns: {
@@ -3361,9 +3355,8 @@ export type Database = {
         }[]
       }
       get_user_emails: {
-        Args: { user_ids: string[] }
+        Args: { p_user_id: string } | { user_ids: string[] }
         Returns: {
-          id: string
           email: string
         }[]
       }
