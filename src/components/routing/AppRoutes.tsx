@@ -109,6 +109,17 @@ export function AppRoutes() {
       {user && (
         <>
           <Route 
+            path="/configuracoes/*" 
+            element={
+              <AdminGuard>
+                <MainLayout>
+                  <SettingsRoutes />
+                </MainLayout>
+              </AdminGuard>
+            } 
+          />
+          
+          <Route 
             path="/perfil" 
             element={
               <AdminGuard>
@@ -125,17 +136,6 @@ export function AppRoutes() {
               <AdminGuard>
                 <MainLayout>
                   <PerfilAlterarSenha />
-                </MainLayout>
-              </AdminGuard>
-            } 
-          />
-          
-          <Route 
-            path="/configuracoes/*" 
-            element={
-              <AdminGuard>
-                <MainLayout>
-                  <SettingsRoutes />
                 </MainLayout>
               </AdminGuard>
             } 
