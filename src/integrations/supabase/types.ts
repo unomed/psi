@@ -3360,7 +3360,7 @@ export type Database = {
         Returns: Json
       }
       set_employee_session: {
-        Args: { employee_id_value: string }
+        Args: { employee_id_value: string } | { employee_id_value: string }
         Returns: undefined
       }
       test_assessment_processing: {
