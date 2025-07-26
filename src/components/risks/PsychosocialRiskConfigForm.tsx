@@ -1,3 +1,15 @@
+/**
+ * COMPONENTE: Configuração de Automação Psicossocial
+ * RESPONSABILIDADE: Apenas automação e processamento (NÃO duplica critérios básicos)
+ * 
+ * REMOVIDO: Limites de risco (duplicação) - agora usa /configuracoes/criterios-avaliacao
+ * MANTIDO: Apenas configurações específicas de automação psicossocial
+ * 
+ * INTEGRAÇÃO:
+ * - CONSOME critérios da tabela assessment_criteria_settings (fonte única)
+ * - Configura apenas: automação, notificações, prazos específicos
+ * - NÃO define thresholds (baixo/médio/alto/crítico)
+ */
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,12 +75,11 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    // CRITÉRIOS DE RISCO: Removidos daqui - agora vêm de /configuracoes/criterios-avaliacao 
+    // APENAS configurações específicas de automação psicossocial
     const configData = {
       auto_generate_plans: formData.get('auto_generate_plans') === 'on',
       notification_enabled: formData.get('notification_enabled') === 'on',
-      threshold_low: parseInt(formData.get('threshold_low') as string) || 30,
-      threshold_medium: parseInt(formData.get('threshold_medium') as string) || 60,
-      threshold_high: parseInt(formData.get('threshold_high') as string) || 80,
       periodicidade_dias: parseInt(formData.get('periodicidade_dias') as string) || 90,
       prazo_acao_alta_dias: parseInt(formData.get('prazo_acao_alta_dias') as string) || 30,
       prazo_acao_critica_dias: parseInt(formData.get('prazo_acao_critica_dias') as string) || 15
@@ -131,54 +142,12 @@ export function PsychosocialRiskConfigForm({ selectedCompanyId }: PsychosocialRi
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Limites de Risco Customizados</CardTitle>
-          <CardDescription>
-            Defina os percentuais que determinam os níveis de risco para sua empresa
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="threshold_low">Risco Baixo (até %)</Label>
-              <Input
-                id="threshold_low"
-                name="threshold_low"
-                type="number"
-                min="0"
-                max="100"
-                defaultValue={config?.threshold_low || 30}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="threshold_medium">Risco Médio (até %)</Label>
-              <Input
-                id="threshold_medium"
-                name="threshold_medium"
-                type="number"
-                min="0"
-                max="100"
-                defaultValue={config?.threshold_medium || 60}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="threshold_high">Risco Alto (até %)</Label>
-              <Input
-                id="threshold_high"
-                name="threshold_high"
-                type="number"
-                min="0"
-                max="100"
-                defaultValue={config?.threshold_high || 80}
-              />
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Acima do valor de Risco Alto será considerado Risco Crítico
-          </p>
-        </CardContent>
-      </Card>
+      {/* REMOVIDO: Card de Limites de Risco - DUPLICAÇÃO ELIMINADA
+          Os critérios de risco (baixo/médio/alto/crítico) agora são definidos APENAS em:
+          /configuracoes/criterios-avaliacao > Tab "Níveis de Risco"
+          
+          Esta página foca apenas em configurações específicas de automação.
+      */}
 
       <Card>
         <CardHeader>

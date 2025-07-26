@@ -1,7 +1,17 @@
 
+/**
+ * HOOK: Dados de Resultados de Avaliação
+ * RESPONSABILIDADE: Buscar e processar resultados usando critérios UNIFICADOS
+ * 
+ * UNIFICAÇÃO IMPLEMENTADA:
+ * - USA fonte única: /configuracoes/criterios-avaliacao
+ * - Cálculo de risco consistente via riskCriteriaUnified
+ * - Elimina valores hardcoded espalhados
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { calculateRiskLevel } from "@/utils/riskCriteriaUnified";
 
 export interface AssessmentResultData {
   id: string;
@@ -107,12 +117,9 @@ export function useAssessmentResultsData(companyId?: string | null) {
           else if (dbRiskLevel === 'medio' || dbRiskLevel === 'médio') riskLevel = 'Médio';
           else riskLevel = 'Baixo';
         }
-        // Calcular baseado no raw_score (mesma lógica do sistema)
+        // ✅ UNIFICADO: Agora usa fonte única de critérios  
         else if (result.raw_score !== null && result.raw_score !== undefined) {
-          if (result.raw_score >= 80) riskLevel = 'Crítico';
-          else if (result.raw_score >= 60) riskLevel = 'Alto';
-          else if (result.raw_score >= 40) riskLevel = 'Médio';
-          else riskLevel = 'Baixo';
+          riskLevel = calculateRiskLevel(result.raw_score);
         }
         // Fallback para classification
         else if (result.classification) {

@@ -1,9 +1,15 @@
 
+/**
+ * COMPONENTE: Dialog de Resultado de Avaliação  
+ * UNIFICADO: Agora usa riskCriteriaUnified para cálculo consistente
+ * RESPONSABILIDADE: Exibir detalhes do resultado com nível de risco correto
+ */
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, User, FileText, TrendingUp } from "lucide-react";
+import { calculateRiskLevel as unifiedCalculateRiskLevel } from "@/utils/riskCriteriaUnified";
 
 interface AssessmentResultDialogProps {
   result: any;
@@ -21,13 +27,10 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
       return result.risk_level;
     }
     
-    // Calcular baseado no raw_score (mesma lógica do processamento automático)
+    // ✅ UNIFICADO: Usa fonte única de critérios de risco
     if (result.raw_score || result.rawScore) {
       const score = result.raw_score || result.rawScore;
-      if (score >= 80) return 'Crítico';
-      if (score >= 60) return 'Alto';
-      if (score >= 40) return 'Médio';
-      return 'Baixo';
+      return unifiedCalculateRiskLevel(score);
     }
     
     // Fallback para factors_scores (DISC)

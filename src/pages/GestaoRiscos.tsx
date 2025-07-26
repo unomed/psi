@@ -1,3 +1,21 @@
+/**
+ * PÁGINA: Gestão de Riscos Psicossociais 
+ * RESPONSABILIDADE: Monitoramento e automação (NÃO duplica critérios)
+ * 
+ * IMPORTANTE: Esta página CONSOME critérios de /configuracoes/criterios-avaliacao
+ * NÃO DEVE duplicar configurações de matriz de risco ou critérios básicos
+ * 
+ * FUNCIONALIDADES:
+ * - Overview: Dashboard de status do sistema
+ * - Configurações: Apenas configs específicas de automação psicossocial
+ * - Automação: Regras de processamento automático  
+ * - Avançado: Configurações técnicas avançadas
+ * - Monitoramento: Métricas em tempo real
+ * 
+ * INTEGRAÇÃO: 
+ * - USA critérios de /configuracoes/criterios-avaliacao (fonte única)
+ * - Foca em AUTOMAÇÃO e MONITORAMENTO, não em definição de critérios
+ */
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

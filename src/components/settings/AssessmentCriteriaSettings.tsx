@@ -10,6 +10,21 @@ import RiskMatrixSettingsForm from "./RiskMatrixSettingsForm";
 import { useAssessmentCriteriaSettings } from "@/hooks/settings/useAssessmentCriteriaSettings";
 import { toast } from "sonner";
 
+/**
+ * COMPONENTE PRINCIPAL: Configurações de Critérios de Avaliação
+ * RESPONSABILIDADE: Fonte ÚNICA de verdade para todos os critérios de risco
+ * 
+ * TABS IMPLEMENTADAS:
+ * - Níveis de Risco: Matriz de risco unificada (via RiskMatrixSettingsForm)
+ * - Amostragem: Critérios de seleção de funcionários para avaliação
+ * - Governança: Regras de reavaliação e notificações
+ * - Periodicidade: Frequência de avaliações baseada em risco
+ * 
+ * INTEGRAÇÃO:
+ * - /gestao-riscos: USA estes critérios (não duplica)
+ * - Hooks unificados: useAssessmentCriteriaSettings (fonte única)
+ * - Automação: Baseada nos critérios definidos aqui
+ */
 export const AssessmentCriteriaSettings = () => {
   const { settings, isLoading, updateSettings } = useAssessmentCriteriaSettings();
   const [samplingData, setSamplingData] = useState({
