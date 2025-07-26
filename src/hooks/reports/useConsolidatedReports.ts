@@ -202,28 +202,15 @@ export function useConsolidatedReports(companyId: string | null) {
 
         const riskBreakdown = { baixo: 0, medio: 0, alto: 0, critico: 0 };
         sector.scores.forEach((score: number) => {
-          const riskLevel = calculateRiskLevel(score);
-          switch (riskLevel) {
-            case 'Baixo':
-              riskBreakdown.baixo++;
-              break;
-            case 'Médio':
-              riskBreakdown.medio++;
-              break;
-            case 'Alto':
-              riskBreakdown.alto++;
-              break;
-            case 'Crítico':
-              riskBreakdown.critico++;
-              break;
-          }
+          const riskLevel = calculateRiskLevel(score).toLowerCase();
+          riskBreakdown[riskLevel as keyof typeof riskBreakdown]++;
         });
 
         return {
           ...sector,
           coverage,
           averageScore,
-          riskLevel: sector.scores.length > 0 ? calculateRiskLevel(averageScore) : 'Não Avaliado',
+          riskLevel: sector.scores.length > 0 ? calculateRiskLevel(averageScore).toLowerCase() : 'não avaliado',
           riskBreakdown
         };
       });
@@ -264,28 +251,15 @@ export function useConsolidatedReports(companyId: string | null) {
 
         const riskBreakdown = { baixo: 0, medio: 0, alto: 0, critico: 0 };
         role.scores.forEach((score: number) => {
-          const riskLevel = calculateRiskLevel(score);
-          switch (riskLevel) {
-            case 'Baixo':
-              riskBreakdown.baixo++;
-              break;
-            case 'Médio':
-              riskBreakdown.medio++;
-              break;
-            case 'Alto':
-              riskBreakdown.alto++;
-              break;
-            case 'Crítico':
-              riskBreakdown.critico++;
-              break;
-          }
+          const riskLevel = calculateRiskLevel(score).toLowerCase();
+          riskBreakdown[riskLevel as keyof typeof riskBreakdown]++;
         });
 
         return {
           ...role,
           coverage,
           averageScore,
-          riskLevel: role.scores.length > 0 ? calculateRiskLevel(averageScore) : 'Não Avaliado',
+          riskLevel: role.scores.length > 0 ? calculateRiskLevel(averageScore).toLowerCase() : 'não avaliado',
           riskBreakdown
         };
       });
