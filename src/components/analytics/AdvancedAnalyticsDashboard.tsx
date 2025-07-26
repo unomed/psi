@@ -17,7 +17,7 @@ interface AdvancedAnalyticsDashboardProps {
 
 export function AdvancedAnalyticsDashboard({ companyId }: AdvancedAnalyticsDashboardProps) {
   const [periodDays, setPeriodDays] = useState(30);
-  const [selectedIndustry, setSelectedIndustry] = useState<string>('');
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   
   const { 
     analytics, 
@@ -199,7 +199,7 @@ export function AdvancedAnalyticsDashboard({ companyId }: AdvancedAnalyticsDashb
                 <SelectValue placeholder="Selecione um setor" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os setores</SelectItem>
+                <SelectItem value="all">Todos os setores</SelectItem>
                 {industries.map(industry => (
                   <SelectItem key={industry} value={industry}>
                     {industry}

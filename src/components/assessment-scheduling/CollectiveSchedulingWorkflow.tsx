@@ -87,7 +87,7 @@ export function CollectiveSchedulingWorkflow({ isOpen, onClose }: CollectiveSche
   // Filtros
   const [selectionMode, setSelectionMode] = useState<'sector' | 'company' | 'manual'>('sector');
   const [selectedSectorId, setSelectedSectorId] = useState<string>('');
-  const [selectedRoleId, setSelectedRoleId] = useState<string>('');
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('active');
 
   const { selectedCompanyId } = useCompany();
@@ -176,7 +176,7 @@ export function CollectiveSchedulingWorkflow({ isOpen, onClose }: CollectiveSche
         query = query.eq('sector_id', selectedSectorId);
       }
 
-      if (selectedRoleId) {
+      if (selectedRoleId && selectedRoleId !== 'all') {
         query = query.eq('role_id', selectedRoleId);
       }
 
@@ -323,7 +323,7 @@ export function CollectiveSchedulingWorkflow({ isOpen, onClose }: CollectiveSche
     setRecurrenceType('none');
     setSelectionMode('sector');
     setSelectedSectorId('');
-    setSelectedRoleId('');
+    setSelectedRoleId('all');
     setIsProcessing(false);
     setProcessingProgress(0);
     setProcessingResults([]);
@@ -452,7 +452,7 @@ export function CollectiveSchedulingWorkflow({ isOpen, onClose }: CollectiveSche
               <SelectValue placeholder="Todas as funções" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as funções</SelectItem>
+              <SelectItem value="all">Todas as funções</SelectItem>
               {roles.map(role => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}

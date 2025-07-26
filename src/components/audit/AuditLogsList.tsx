@@ -71,8 +71,8 @@ const getUserName = (profiles: any): string => {
 
 export function AuditLogsList({ companyId }: AuditLogsListProps) {
   const [filters, setFilters] = useState({
-    module: '',
-    action: '',
+    module: 'all',
+    action: 'all',
     dateFrom: '',
     dateTo: '',
     search: '',
@@ -106,8 +106,8 @@ export function AuditLogsList({ companyId }: AuditLogsListProps) {
 
   const clearFilters = () => {
     setFilters({
-      module: '',
-      action: '',
+      module: 'all',
+      action: 'all',
       dateFrom: '',
       dateTo: '',
       search: '',
@@ -187,7 +187,7 @@ export function AuditLogsList({ companyId }: AuditLogsListProps) {
               <SelectValue placeholder="Módulo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {Object.entries(moduleLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>{label}</SelectItem>
               ))}
@@ -199,7 +199,7 @@ export function AuditLogsList({ companyId }: AuditLogsListProps) {
               <SelectValue placeholder="Ação" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               {Object.entries(actionTypeLabels).map(([key, label]) => (
                 <SelectItem key={key} value={key}>{label}</SelectItem>
               ))}

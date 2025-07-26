@@ -29,11 +29,11 @@ export function useAuditLogs(filters: AuditLogFilters = {}) {
         query = query.eq('user_id', filters.userId);
       }
       
-      if (filters.module) {
+      if (filters.module && filters.module !== 'all') {
         query = query.eq('module', filters.module as any);
       }
       
-      if (filters.action) {
+      if (filters.action && filters.action !== 'all') {
         query = query.eq('action_type', filters.action as any);
       }
       
