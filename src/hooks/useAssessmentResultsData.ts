@@ -11,7 +11,7 @@ export interface AssessmentResultData {
   templateType: string;
   completedAt: string;
   dominantFactor?: string;
-  riskLevel: 'Alto' | 'Médio' | 'Baixo';
+  riskLevel: 'Crítico' | 'Alto' | 'Médio' | 'Baixo';
   factorsScores?: Record<string, number>;
   sector?: string;
   role?: string;
@@ -95,16 +95,35 @@ export function useAssessmentResultsData(companyId?: string | null) {
       }
 
       return (data || []).map(result => {
-        // Calculate risk level based on assessment data
-        let riskLevel: 'Alto' | 'Médio' | 'Baixo' = 'Baixo';
+        // Calculate risk level based on assessment data (mesma lógica unificada)
+        let riskLevel: 'Crítico' | 'Alto' | 'Médio' | 'Baixo' = 'Baixo';
         
-        if (result.classification) {
+        // Primeiro, verificar se já tem risk_level preenchido (não null)
+        if (result.risk_level && result.risk_level.toLowerCase() !== 'null') {
+          // Mapear os valores do banco para os valores padronizados
+          const dbRiskLevel = result.risk_level.toLowerCase();
+          if (dbRiskLevel === 'critico' || dbRiskLevel === 'crítico') riskLevel = 'Crítico';
+          else if (dbRiskLevel === 'alto') riskLevel = 'Alto';
+          else if (dbRiskLevel === 'medio' || dbRiskLevel === 'médio') riskLevel = 'Médio';
+          else riskLevel = 'Baixo';
+        }
+        // Calcular baseado no raw_score (mesma lógica do sistema)
+        else if (result.raw_score !== null && result.raw_score !== undefined) {
+          if (result.raw_score >= 80) riskLevel = 'Crítico';
+          else if (result.raw_score >= 60) riskLevel = 'Alto';
+          else if (result.raw_score >= 40) riskLevel = 'Médio';
+          else riskLevel = 'Baixo';
+        }
+        // Fallback para classification
+        else if (result.classification) {
           if (result.classification === 'severe' || result.classification === 'critical') {
             riskLevel = 'Alto';
           } else if (result.classification === 'moderate') {
             riskLevel = 'Médio';
           }
-        } else if (result.factors_scores) {
+        }
+        // Fallback para factors_scores (DISC)
+        else if (result.factors_scores) {
           const scores = Object.values(result.factors_scores as Record<string, number>);
           const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
           
