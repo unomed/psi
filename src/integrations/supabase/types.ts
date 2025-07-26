@@ -3271,6 +3271,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_dashboard_analytics: {
+        Args: { p_company_id?: string; p_period_days?: number }
+        Returns: Json
+      }
       get_employee_mood_stats: {
         Args: { p_employee_id: string; p_days?: number }
         Returns: {
