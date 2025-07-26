@@ -1,6 +1,6 @@
 
 import { useRoutePermissions } from '@/hooks/permissions/useRoutePermissions';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCompanyBasedPermissions } from '@/hooks/permissions/useCompanyBasedPermissions';
 
 interface MenuItemGuardProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export function MenuItemGuard({
   allowedRoles 
 }: MenuItemGuardProps) {
   const { canAccessRoute, getRouteAccessConfig } = useRoutePermissions();
-  const { userRole } = useAuth();
+  const { isMenuAllowed, userRole } = useCompanyBasedPermissions();
 
   console.log('[MenuItemGuard] Checking access:', {
     userRole,
@@ -25,10 +25,22 @@ export function MenuItemGuard({
     allowedRoles
   });
 
-  // Superadmin sempre tem acesso a tudo
-  if (userRole === 'superadmin') {
-    console.log('[MenuItemGuard] Superadmin access granted');
-    return <>{children}</>;
+  // Determinar chave do menu baseado na rota ou permissão
+  let menuKey: string = routeKey || 'unknown';
+  if (!routeKey && requiredPermission) {
+    const permissionResource = requiredPermission.split(':')[0];
+    if (permissionResource === 'companies') menuKey = 'empresas';
+    if (permissionResource === 'billing') menuKey = 'faturamento';
+    if (permissionResource === 'manage_users') menuKey = 'usuarios';
+    if (permissionResource === 'manage_permissions') menuKey = 'permissoes';
+  }
+
+  // Verificar se o menu é permitido baseado na empresa selecionada
+  const isAllowed = isMenuAllowed(menuKey, requiredPermission, allowedRoles);
+  
+  if (!isAllowed) {
+    console.log('[MenuItemGuard] Access denied for menu:', menuKey);
+    return null;
   }
 
   let routeConfig;

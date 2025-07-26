@@ -1,9 +1,11 @@
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompany } from '@/contexts/CompanyContext';
 import { useCheckPermission } from '@/hooks/useCheckPermission';
 
 export function usePermissionValidation() {
   const { userRole } = useAuth();
+  const { selectedCompanyId } = useCompany();
   const { hasPermission } = useCheckPermission();
 
   const validatePermission = (permission: string): boolean => {
@@ -17,6 +19,16 @@ export function usePermissionValidation() {
   const validateRole = (allowedRoles: string[]): boolean => {
     // Superadmin sempre tem acesso
     if (userRole === 'superadmin') return true;
+    
+    // Se uma empresa específica estiver selecionada e não for superadmin,
+    // aplicar validações de permissão baseadas na empresa
+    if (selectedCompanyId && userRole !== 'superadmin') {
+      // Para usuários admin de empresa específica, verificar se o papel está permitido
+      // E se tem acesso à empresa selecionada
+      if (userRole === 'admin') {
+        return allowedRoles.includes('admin');
+      }
+    }
     
     // Verificar se o papel está na lista permitida
     return userRole ? allowedRoles.includes(userRole) : false;

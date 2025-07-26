@@ -15,11 +15,17 @@ import {
 import { settingsItems } from "./sidebar/settingsItems";
 import { SidebarHeader as CustomSidebarHeader } from "./sidebar/SidebarHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompany } from "@/contexts/CompanyContext";
 
 export function AppSidebar() {
   const { userRole } = useAuth();
+  const { selectedCompanyId, selectedCompanyName } = useCompany();
 
-  console.log('[AppSidebar] Current user role:', userRole);
+  console.log('[AppSidebar] Current context:', {
+    userRole,
+    selectedCompanyId,
+    selectedCompanyName
+  });
 
   return (
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
