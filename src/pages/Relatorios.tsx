@@ -8,6 +8,7 @@ import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
 import { ConsolidatedDashboard } from "@/components/reports/ConsolidatedDashboard";
+import { FactorAnalysisDashboard } from "@/components/reports/FactorAnalysisDashboard";
 import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
 import { FileText, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { DateRange } from "@/types/date";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useReportsData } from "@/hooks/reports/useReportsData";
 import { useConsolidatedReports } from "@/hooks/reports/useConsolidatedReports";
+import { useFactorAnalysis } from "@/hooks/reports/useFactorAnalysis";
 import { usePDFGenerator } from "@/hooks/reports/usePDFGenerator";
 import { toast } from "sonner";
 
@@ -29,6 +31,7 @@ export default function Relatorios() {
   const { selectedCompanyId } = useCompany();
   const { reportsData, isLoading } = useReportsData(selectedCompanyId || undefined, selectedSector, selectedRole);
   const { data: consolidatedData, isLoading: isConsolidatedLoading } = useConsolidatedReports(selectedCompanyId);
+  const { data: factorData, isLoading: isFactorLoading } = useFactorAnalysis(selectedCompanyId);
   const { generatePDF, generateQuickPDF } = usePDFGenerator();
   
   // Verificação se empresa está selecionada
@@ -1085,12 +1088,10 @@ export default function Relatorios() {
       />
       
       <Tabs defaultValue="consolidated" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="consolidated">Dashboard Consolidado</TabsTrigger>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="sectors">Por Setor</TabsTrigger>
-          <TabsTrigger value="roles">Por Função</TabsTrigger>
-          <TabsTrigger value="compliance">Compliance</TabsTrigger>
+          <TabsTrigger value="factors">Fatores de Risco</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance NR-01</TabsTrigger>
         </TabsList>
 
         {/* FASE 4: Tab do Dashboard Consolidado */}
@@ -1104,95 +1105,20 @@ export default function Relatorios() {
           )}
         </TabsContent>
         
-        <TabsContent value="overview" className="space-y-6 mt-6">
-          {/* Conformidade NR-01 */}
+        {/* Nova aba: Análise de Fatores */}
+        <TabsContent value="factors">
+          {factorData && (
+            <FactorAnalysisDashboard 
+              data={factorData}
+              isLoading={isFactorLoading}
+              companyName={consolidatedData?.companyInfo.name || 'Empresa'}
+            />
+          )}
+        </TabsContent>
+
+        {/* Aba de Compliance atualizada */}
+        <TabsContent value="compliance">
           <NR01ComplianceOverview filters={filters} />
-          
-          {/* Gráficos principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={filters} />
-            <RiskTrendChart filters={filters} />
-          </div>
-          
-          {/* Resumo de avaliações */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Resumo de Avaliações
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardContent className="p-4">
-                      <p className="text-lg font-semibold text-blue-700">Total de Avaliações</p>
-                      <p className="text-2xl font-bold mt-1 text-blue-900">
-                        {reportsData?.totalAssessments || 0}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-green-50 border-green-200">
-                    <CardContent className="p-4">
-                      <p className="text-lg font-semibold text-green-700">Concluídas</p>
-                      <p className="text-2xl font-bold mt-1 text-green-900">
-                        {reportsData?.completedAssessments || 0}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-yellow-50 border-yellow-200">
-                    <CardContent className="p-4">
-                      <p className="text-lg font-semibold text-yellow-700">Pendentes</p>
-                      <p className="text-2xl font-bold mt-1 text-yellow-900">
-                        {reportsData?.pendingAssessments || 0}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="frprt" className="space-y-6 mt-6">
-          <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <div className="text-center space-y-2">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
-                <h3 className="text-lg font-medium">Relatório FRPRT Removido</h3>
-                <p className="text-muted-foreground">
-                  O relatório FRPRT foi removido conforme solicitado
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="sectors" className="space-y-6 mt-6">
-          <SectorRiskFactors 
-            filters={filters} 
-            fullWidth 
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={filters} />
-            <RiskTrendChart filters={filters} />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="roles" className="space-y-6 mt-6">
-          <RoleRiskComparison 
-            filters={filters} 
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RiskLevelDistribution filters={filters} />
-            <RiskTrendChart filters={filters} />
-          </div>
         </TabsContent>
       </Tabs>
     </div>
