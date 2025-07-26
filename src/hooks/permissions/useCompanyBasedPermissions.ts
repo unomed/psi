@@ -20,34 +20,34 @@ export function useCompanyBasedPermissions() {
       return true;
     }
 
-    // Se não é superadmin e uma empresa está selecionada
-    if (isCompanySelected && userRole !== 'superadmin') {
+    // Se não é superadmin, aplicar regras específicas
+    if (userRole !== 'superadmin') {
       
       // Menus que devem ser bloqueados para admin de empresa específica
-      const superAdminOnlyMenus = {
-        'empresas': true,        // Gestão de empresas só para superadmin
-        'faturamento': true,     // Faturamento só para superadmin
-        'usuarios': true,        // Gestão de usuários só para superadmin
-        'permissoes': true       // Gestão de permissões só para superadmin
-      };
+      const superAdminOnlyMenus = [
+        'empresas',        // Gestão de empresas só para superadmin
+        'faturamento',     // Faturamento só para superadmin
+        'usuarios',        // Gestão de usuários só para superadmin  
+        'permissoes'       // Gestão de permissões só para superadmin
+      ];
 
       // Verificar se é um menu específico de superadmin
-      if (superAdminOnlyMenus[menuKey as keyof typeof superAdminOnlyMenus]) {
-        console.log('[useCompanyBasedPermissions] Menu blocked for company admin:', menuKey);
+      if (superAdminOnlyMenus.includes(menuKey)) {
+        console.log('[useCompanyBasedPermissions] Menu blocked for non-superadmin:', menuKey);
         return false;
       }
 
       // Verificar por permission também
       if (requiredPermission) {
-        const permissionResource = requiredPermission.split(':')[0];
+        const superAdminOnlyPermissions = [
+          'view_companies',
+          'manage_users', 
+          'manage_permissions',
+          'view_billing'
+        ];
         
-        if (permissionResource === 'companies' && menuKey === 'empresas') {
-          console.log('[useCompanyBasedPermissions] Companies permission blocked for company admin');
-          return false;
-        }
-        
-        if (permissionResource === 'billing' && menuKey === 'faturamento') {
-          console.log('[useCompanyBasedPermissions] Billing permission blocked for company admin');
+        if (superAdminOnlyPermissions.includes(requiredPermission)) {
+          console.log('[useCompanyBasedPermissions] Permission blocked for non-superadmin:', requiredPermission);
           return false;
         }
       }

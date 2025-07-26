@@ -28,11 +28,24 @@ export function MenuItemGuard({
   // Determinar chave do menu baseado na rota ou permissão
   let menuKey: string = routeKey || 'unknown';
   if (!routeKey && requiredPermission) {
-    const permissionResource = requiredPermission.split(':')[0];
-    if (permissionResource === 'companies') menuKey = 'empresas';
-    if (permissionResource === 'billing') menuKey = 'faturamento';
-    if (permissionResource === 'manage_users') menuKey = 'usuarios';
-    if (permissionResource === 'manage_permissions') menuKey = 'permissoes';
+    // Mapear permissão para chave do menu
+    const permissionToMenuMap: Record<string, string> = {
+      'view_companies': 'empresas',
+      'view_employees': 'funcionarios',
+      'view_functions': 'funcoes',
+      'view_sectors': 'setores',
+      'view_checklists': 'templates',
+      'view_scheduling': 'agendamentos',
+      'view_results': 'resultados',
+      'view_risk_management': 'gestao-riscos',
+      'view_action_plans': 'plano-acao',
+      'view_reports': 'relatorios',
+      'view_assessments': 'avaliacoes',
+      'view_billing': 'faturamento',
+      'view_dashboard': 'dashboard'
+    };
+    
+    menuKey = permissionToMenuMap[requiredPermission] || 'unknown';
   }
 
   // Verificar se o menu é permitido baseado na empresa selecionada
