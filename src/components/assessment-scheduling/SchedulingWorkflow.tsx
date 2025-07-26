@@ -14,9 +14,10 @@ import { useAssessmentSchedulingWithAutomation } from "@/hooks/assessment-schedu
 interface SchedulingWorkflowProps {
   isOpen: boolean;
   onClose: () => void;
+  schedulingType?: 'individual' | 'collective';
 }
 
-export function SchedulingWorkflow({ isOpen, onClose }: SchedulingWorkflowProps) {
+export function SchedulingWorkflow({ isOpen, onClose, schedulingType = 'individual' }: SchedulingWorkflowProps) {
   const [currentStep, setCurrentStep] = useState<'template' | 'employee' | 'scheduling'>('template');
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);

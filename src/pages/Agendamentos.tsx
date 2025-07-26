@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Plus, Calendar, Users, FileText, Mail, UserPlus, UsersIcon, Target, Search, Filter, Eye } from "lucide-react";
 import { SchedulingWorkflow } from "@/components/assessment-scheduling/SchedulingWorkflow";
+import { CollectiveSchedulingWorkflow } from "@/components/assessment-scheduling/CollectiveSchedulingWorkflow";
 import { ScheduledAssessmentsList } from "@/components/assessment-scheduling/ScheduledAssessmentsList";
 import { AssessmentMetrics } from "@/components/assessment-scheduling/AssessmentMetrics";
 import { EmailTemplateSection } from "@/components/assessment-scheduling/email-templates/EmailTemplateSection";
@@ -399,10 +400,18 @@ export default function Agendamentos() {
         </Tabs>
 
         {/* Modal de agendamento */}
-        <SchedulingWorkflow 
-          isOpen={isSchedulingOpen}
-          onClose={() => setIsSchedulingOpen(false)}
-        />
+        {schedulingType === 'collective' ? (
+          <CollectiveSchedulingWorkflow 
+            isOpen={isSchedulingOpen}
+            onClose={() => setIsSchedulingOpen(false)}
+          />
+        ) : (
+          <SchedulingWorkflow 
+            isOpen={isSchedulingOpen}
+            onClose={() => setIsSchedulingOpen(false)}
+            schedulingType={schedulingType}
+          />
+        )}
       </div>
     </TooltipProvider>
   );
