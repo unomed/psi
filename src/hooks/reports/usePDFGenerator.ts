@@ -90,7 +90,7 @@ export function usePDFGenerator() {
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      // Adicionar páginas adicionais se necessário
+      // Adicionar páginas adicionais com quebra adequada
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -281,6 +281,8 @@ function createReportElement(
     </div>
 
     ${options.includeSectorAnalysis ? `
+    <!-- Quebra de página para análise por setor -->
+    <div style="page-break-before: always;"></div>
     <!-- Análise por Setor -->
     <div style="margin-bottom: 30px;">
       <h2 style="color: #495057; margin-bottom: 15px;">🏭 Análise por Setor</h2>
@@ -315,6 +317,8 @@ function createReportElement(
     ` : ''}
 
     ${options.includeRoleAnalysis ? `
+    <!-- Quebra de página para análise por função -->
+    <div style="page-break-before: always;"></div>
     <!-- Análise por Função -->
     <div style="margin-bottom: 30px;">
       <h2 style="color: #495057; margin-bottom: 15px;">👥 Análise por Função</h2>

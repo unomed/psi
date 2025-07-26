@@ -206,11 +206,14 @@ export function useConsolidatedReports(companyId: string | null) {
           riskBreakdown[riskLevel as keyof typeof riskBreakdown]++;
         });
 
+        // Se não há avaliações, classificar como "não avaliado"
+        const riskLevel = sector.assessments === 0 ? 'não avaliado' : calculateRiskLevel(averageScore).toLowerCase();
+
         return {
           ...sector,
           coverage,
           averageScore,
-          riskLevel: calculateRiskLevel(averageScore).toLowerCase(),
+          riskLevel,
           riskBreakdown
         };
       });
@@ -255,11 +258,14 @@ export function useConsolidatedReports(companyId: string | null) {
           riskBreakdown[riskLevel as keyof typeof riskBreakdown]++;
         });
 
+        // Se não há avaliações, classificar como "não avaliado"
+        const riskLevel = role.assessments === 0 ? 'não avaliado' : calculateRiskLevel(averageScore).toLowerCase();
+
         return {
           ...role,
           coverage,
           averageScore,
-          riskLevel: calculateRiskLevel(averageScore).toLowerCase(),
+          riskLevel,
           riskBreakdown
         };
       });
