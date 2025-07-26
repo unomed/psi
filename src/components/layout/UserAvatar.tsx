@@ -47,21 +47,13 @@ export function UserAvatar() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent transition-colors">
+        <button className="p-2 rounded-lg hover:bg-accent transition-colors">
           <Avatar className="h-8 w-8">
             <AvatarImage src="" alt="User avatar" />
             <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
               {getInitials(user?.email)}
             </AvatarFallback>
           </Avatar>
-          <div className="hidden md:flex flex-col items-start text-left">
-            <span className="text-sm font-medium text-foreground">
-              {user?.email?.split('@')[0] || 'Usuário'}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {user?.email}
-            </span>
-          </div>
         </button>
       </DropdownMenuTrigger>
       
