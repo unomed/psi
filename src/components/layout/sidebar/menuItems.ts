@@ -24,8 +24,8 @@ export const dashboardItem: MenuItem = {
   title: "Dashboard",
   icon: LayoutDashboard,
   href: "/dashboard",
-  roles: ["admin", "manager"],
-  permission: "dashboard:read"
+  roles: ["admin", "manager", "evaluator"],
+  permission: "view_dashboard"
 };
 
 // Cadastros items - ROTAS PADRONIZADAS EM PORTUGUÊS
@@ -34,29 +34,29 @@ export const cadastrosItems: MenuItem[] = [
     title: "Empresas",
     icon: Building2,
     href: "/empresas",
-    roles: ["admin", "superadmin"],
-    permission: "companies:read"
+    roles: ["superadmin"],
+    permission: "view_companies"
   },
   {
     title: "Funcionários",
     icon: Users,
     href: "/funcionarios",
     roles: ["admin", "manager"],
-    permission: "employees:read"
+    permission: "view_employees"
   },
   {
     title: "Funções",
     icon: UserCircle,
     href: "/funcoes",
     roles: ["admin", "manager"],
-    permission: "roles:read"
+    permission: "view_functions"
   },
   {
     title: "Setores",
     icon: Building2,
     href: "/setores",
     roles: ["admin", "manager"],
-    permission: "sectors:read"
+    permission: "view_sectors"
   }
 ];
 
@@ -67,21 +67,21 @@ export const avaliacoesItems: MenuItem[] = [
     icon: ClipboardList,
     href: "/templates",
     roles: ["admin", "manager"],
-    permission: "checklists:read"
+    permission: "view_checklists"
   },
   {
     title: "Agendamentos",
     icon: Calendar,
     href: "/agendamentos",
     roles: ["admin", "manager"],
-    permission: "assessments:schedule"
+    permission: "view_scheduling"
   },
   {
     title: "Resultados",
     icon: BarChart3,
     href: "/resultados",
-    roles: ["admin", "manager"],
-    permission: "assessment_results:read"
+    roles: ["admin", "manager", "evaluator"],
+    permission: "view_results"
   }
 ];
 
@@ -92,21 +92,21 @@ export const gestaoItems: MenuItem[] = [
     icon: AlertTriangle,
     href: "/gestao-riscos",
     roles: ["admin", "manager"],
-    permission: "psychosocial_risks:read"
+    permission: "view_risk_management"
   },
   {
     title: "Plano de Ação",
     icon: FileText,
     href: "/plano-acao",
     roles: ["admin", "manager"],
-    permission: "action_plans:read"
+    permission: "view_action_plans"
   },
   {
     title: "Relatórios",
     icon: TrendingUp,
     href: "/relatorios",
-    roles: ["admin", "manager"],
-    permission: "reports:read"
+    roles: ["admin", "manager", "evaluator"],
+    permission: "view_reports"
   }
 ];
 
@@ -117,14 +117,14 @@ export const candidatosItems: MenuItem[] = [
     icon: Calendar,
     href: "/candidatos/avaliacoes",
     roles: ["admin", "manager"],
-    permission: "assessments:schedule"
+    permission: "view_assessments"
   },
   {
     title: "Comparação",
     icon: FileCheck,
     href: "/candidatos/comparacao",
     roles: ["admin", "manager"],
-    permission: "assessments:read"
+    permission: "view_assessments"
   }
 ];
 
@@ -134,8 +134,8 @@ export const portaisItems: MenuItem[] = [
     title: "Faturamento",
     icon: CreditCard,
     href: "/faturamento",
-    roles: ["admin", "superadmin"],
-    permission: "billing:read"
+    roles: ["superadmin"],
+    permission: "view_billing"
   }
 ];
 
