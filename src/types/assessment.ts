@@ -27,6 +27,9 @@ export interface ScheduledAssessment {
   checklist_templates?: {
     title: string;
   } | null;
+  // Campos adicionais para debug/compatibilidade
+  scheduled_date?: string;
+  due_date?: string;
 }
 
 // Types for email templates

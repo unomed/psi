@@ -27,6 +27,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             employee_id,
             template_id,
             scheduled_date,
+            due_date,
             sent_at,
             link_url,
             status,
@@ -62,7 +63,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             id: item.id,
             employeeId: item.employee_id,
             templateId: item.template_id,
-            scheduledDate: new Date(item.scheduled_date),
+            scheduledDate: new Date(item.due_date || item.scheduled_date), // Usar due_date prioritariamente
             sentAt: item.sent_at ? new Date(item.sent_at) : null,
             linkUrl: item.link_url || '',
             status: item.status as AssessmentStatus,
@@ -72,7 +73,10 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
             phoneNumber: item.phone_number || undefined,
             company_id: item.company_id,
             employees: employeeDetails,
-            checklist_templates: item.checklist_templates
+            checklist_templates: item.checklist_templates,
+            // Manter dados brutos para debug
+            scheduled_date: item.scheduled_date,
+            due_date: item.due_date
           };
         });
         
