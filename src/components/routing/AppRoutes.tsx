@@ -105,6 +105,29 @@ export function AppRoutes() {
       <Route path="/portal-funcionario" element={<Navigate to="/employee-portal" replace />} />
       <Route path="/portal" element={<Navigate to="/employee-portal" replace />} />
 
+      {/* Rotas de perfil - acessíveis para TODOS os usuários autenticados */}
+      {user && (
+        <>
+          <Route 
+            path="/perfil" 
+            element={
+              <MainLayout>
+                <Perfil />
+              </MainLayout>
+            } 
+          />
+          
+          <Route 
+            path="/perfil/alterar-senha" 
+            element={
+              <MainLayout>
+                <PerfilAlterarSenha />
+              </MainLayout>
+            } 
+          />
+        </>
+      )}
+
       {/* Rotas administrativas protegidas */}
       {user && (
         <>
@@ -114,28 +137,6 @@ export function AppRoutes() {
               <AdminGuard>
                 <MainLayout>
                   <SettingsRoutes />
-                </MainLayout>
-              </AdminGuard>
-            } 
-          />
-          
-          <Route 
-            path="/perfil" 
-            element={
-              <AdminGuard>
-                <MainLayout>
-                  <Perfil />
-                </MainLayout>
-              </AdminGuard>
-            } 
-          />
-          
-          <Route 
-            path="/perfil/alterar-senha" 
-            element={
-              <AdminGuard>
-                <MainLayout>
-                  <PerfilAlterarSenha />
                 </MainLayout>
               </AdminGuard>
             } 
