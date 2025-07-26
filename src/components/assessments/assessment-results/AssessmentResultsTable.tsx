@@ -55,22 +55,34 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
   };
 
   const getStatusBadge = (result: any) => {
-    if (result.dominant_factor) {
-      const riskLevel = getRiskLevel(result);
-      return (
-        <Badge variant={
-          riskLevel === 'Alto' ? 'destructive' : 
-          riskLevel === 'Médio' ? 'secondary' : 
-          'default'
-        }>
-          {riskLevel} Risco
-        </Badge>
-      );
-    }
-    return <Badge variant="outline">Concluída</Badge>;
+    const riskLevel = getRiskLevel(result);
+    return (
+      <Badge variant={
+        riskLevel === 'Crítico' ? 'destructive' : 
+        riskLevel === 'Alto' ? 'destructive' : 
+        riskLevel === 'Médio' ? 'secondary' : 
+        'default'
+      }>
+        {riskLevel}
+      </Badge>
+    );
   };
 
   const getRiskLevel = (result: any) => {
+    // Verificar primeiro se já tem risk_level preenchido
+    if (result.risk_level) {
+      return result.risk_level;
+    }
+    
+    // Calcular baseado no raw_score (mesma lógica do processamento automático)
+    if (result.raw_score) {
+      if (result.raw_score >= 80) return 'Crítico';
+      if (result.raw_score >= 60) return 'Alto';
+      if (result.raw_score >= 40) return 'Médio';
+      return 'Baixo';
+    }
+    
+    // Fallback para factors_scores (DISC)
     if (result.factors_scores) {
       const scores = Object.values(result.factors_scores) as number[];
       const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -79,7 +91,8 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
       if (avgScore >= 0.6) return 'Médio';
       return 'Baixo';
     }
-    return 'Indefinido';
+    
+    return 'Baixo';
   };
 
   if (isLoading) {
