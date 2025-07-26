@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportFilters } from "@/components/reports/ReportFilters";
@@ -9,11 +9,10 @@ import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
 
 import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
-import { FileText, Download, Printer, TrendingUp } from "lucide-react";
+import { FileText, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "@/types/date";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCompanyAccessCheck } from "@/hooks/useCompanyAccessCheck";
+import { useCompany } from "@/contexts/CompanyContext";
 import { useReportsData } from "@/hooks/reports/useReportsData";
 import { toast } from "sonner";
 
@@ -24,46 +23,34 @@ export default function Relatorios() {
   });
   const [selectedSector, setSelectedSector] = useState<string>('all-sectors');
   const [selectedRole, setSelectedRole] = useState<string>('all-roles');
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(() => {
-    const saved = localStorage.getItem('selectedCompany');
-    return saved || null;
-  });
   
-  const { userRole, userCompanies } = useAuth();
-  const { verifyCompanyAccess } = useCompanyAccessCheck();
-  const { reportsData, isLoading } = useReportsData(selectedCompany || undefined, selectedSector, selectedRole);
+  const { selectedCompanyId } = useCompany();
+  const { reportsData, isLoading } = useReportsData(selectedCompanyId || undefined, selectedSector, selectedRole);
   
-  // Verificar se o usuário tem acesso à empresa selecionada
-  useEffect(() => {
-    const checkCompanyAccess = async () => {
-      if (!selectedCompany) return;
-      
-      // Superadmin tem acesso a todas as empresas
-      if (userRole === 'superadmin') return;
-      
-      const hasAccess = await verifyCompanyAccess(selectedCompany);
-      if (!hasAccess) {
-        toast.error('Você não tem acesso à empresa selecionada');
-        
-        // Se o usuário tem pelo menos uma empresa associada, selecionar a primeira
-        if (userCompanies.length > 0) {
-          const firstCompany = userCompanies[0].companyId;
-          setSelectedCompany(firstCompany);
-          localStorage.setItem('selectedCompany', firstCompany);
-        } else {
-          setSelectedCompany(null);
-          localStorage.removeItem('selectedCompany');
-        }
-      }
-    };
-    
-    checkCompanyAccess();
-  }, [selectedCompany, userRole, userCompanies, verifyCompanyAccess]);
-  
-  const handleCompanyChange = (value: string) => {
-    setSelectedCompany(value);
-    localStorage.setItem('selectedCompany', value);
-  };
+  // Verificação se empresa está selecionada
+  if (!selectedCompanyId) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Relatórios NR-01</h1>
+          <p className="text-muted-foreground mt-2">
+            Relatórios consolidados para conformidade legal e análise de riscos psicossociais.
+          </p>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="text-center space-y-2">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
+              <h3 className="text-lg font-medium">Selecione uma empresa</h3>
+              <p className="text-muted-foreground">
+                Para visualizar os relatórios, selecione uma empresa no canto superior direito.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   const handleExportPDF = () => {
     // Implementação futura da exportação PDF
@@ -76,10 +63,10 @@ export default function Relatorios() {
 
   const generatePrintableReport = () => {
     console.log('Dados dos relatórios:', reportsData);
-    console.log('Empresa selecionada:', selectedCompany);
+    console.log('Empresa selecionada:', selectedCompanyId);
     
     // Buscar dados reais da empresa
-    const companyId = selectedCompany;
+    const companyId = selectedCompanyId;
     const totalAvaliados = reportsData?.totalAssessments || 0;
     const concluidas = reportsData?.completedAssessments || 0;
     const pendentes = reportsData?.pendingAssessments || 0;
@@ -1053,7 +1040,7 @@ export default function Relatorios() {
     }
   };
 
-  const filters = { dateRange, selectedSector, selectedRole, selectedCompany };
+  const filters = { dateRange, selectedSector, selectedRole, selectedCompany: selectedCompanyId };
   
   return (
     <div className="space-y-6">
@@ -1079,10 +1066,6 @@ export default function Relatorios() {
         setSelectedSector={setSelectedSector}
         selectedRole={selectedRole}
         setSelectedRole={setSelectedRole}
-        selectedCompany={selectedCompany}
-        onCompanyChange={handleCompanyChange}
-        userCompanies={userCompanies}
-        userRole={userRole}
       />
       
       <Tabs defaultValue="overview" className="w-full">
