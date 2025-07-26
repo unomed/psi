@@ -20,7 +20,7 @@ Equipe de Recursos Humanos`
 
 Este é um lembrete de que você tem uma avaliação psicossocial pendente que precisa ser concluída.
 
-Link da avaliação: {linkUrl}
+🚀 Responder Avaliação: https://avaliacao.unomed.med.br/portal
 
 A sua participação é muito importante.
 
@@ -34,7 +34,7 @@ Equipe de Recursos Humanos`
 Você foi convidado(a) a participar de uma avaliação psicossocial. 
 Por favor, acesse o link abaixo para completar a avaliação.
 
-Link da avaliação: {linkUrl}
+🚀 Responder Avaliação: https://avaliacao.unomed.med.br/portal
 
 Se tiver qualquer dúvida, entre em contato com o RH.
 
