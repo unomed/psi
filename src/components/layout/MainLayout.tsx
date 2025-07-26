@@ -6,6 +6,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationProvider } from "@/components/notifications/NotificationService";
 import { CompanyProvider } from "@/contexts/CompanyContext";
 import { CompanyIndicator } from "./CompanyIndicator";
+import { UserAvatar } from "./UserAvatar";
 import React from "react";
 
 interface MainLayoutProps {
@@ -25,6 +26,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <SidebarTrigger className="-ml-1" />
                 <div className="ml-auto flex items-center space-x-4">
                   <CompanyIndicator />
+                  <UserAvatar />
                 </div>
               </header>
                 <main className="flex-1 overflow-auto p-4">
