@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Calendar, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Loader2, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -21,9 +21,9 @@ interface CompletedAssessment {
   completed_at: string;
   scheduled_date: string;
   risk_level?: string;
-  templates?: AssessmentTemplate;
   template?: AssessmentTemplate;
   response_data?: Record<string, string | number | boolean>;
+  raw_score?: number;
 }
 
 interface CompletedAssessmentsListProps {
@@ -34,6 +34,22 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
   const [assessments, setAssessments] = useState<CompletedAssessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Função para calcular nível de risco baseado no raw_score (mesma lógica do sistema)
+  const calculateRiskLevel = (rawScore: number | null, riskLevel: string | null) => {
+    if (riskLevel && riskLevel.toLowerCase() !== 'null') {
+      return riskLevel;
+    }
+    
+    if (rawScore !== null && rawScore !== undefined) {
+      if (rawScore >= 80) return 'Crítico';
+      if (rawScore >= 60) return 'Alto';
+      if (rawScore >= 40) return 'Médio';
+      return 'Baixo';
+    }
+    
+    return 'Não avaliado';
+  };
 
   useEffect(() => {
     const fetchCompletedAssessments = async () => {
@@ -51,33 +67,29 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
       try {
         console.log("[CompletedAssessmentsList] Buscando avaliações concluídas para o funcionário:", employeeId);
         
-        // Verificar se as colunas risk_level e completed_at existem
-        console.log("[CompletedAssessmentsList] Verificando se as colunas risk_level e completed_at existem");
-        
-        // Buscar avaliações concluídas com as novas colunas
+        // Buscar avaliações concluídas na tabela assessment_responses (fonte única da verdade)
         const { data: assessmentData, error: assessmentError } = await supabase
-          .from('scheduled_assessments')
+          .from('assessment_responses')
           .select(`
             id,
             template_id,
             employee_id,
             employee_name,
-            status,
-            scheduled_date,
             completed_at,
+            raw_score,
             risk_level,
-            templates:checklist_templates(
+            classification,
+            dominant_factor,
+            factors_scores,
+            checklist_templates!inner(
               title,
               type,
               description
             )
           `)
           .eq('employee_id', employeeId)
-          .eq('status', 'completed')
+          .not('completed_at', 'is', null)
           .order('completed_at', { ascending: false });
-        
-        // Converter para o tipo correto
-        const typedAssessmentData = assessmentData as unknown as CompletedAssessment[];
 
         if (assessmentError) {
           console.error("[CompletedAssessmentsList] Erro ao buscar avaliações:", assessmentError);
@@ -86,47 +98,34 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
           return;
         }
 
-        // Processar os dados para incluir as respostas
-        if (typedAssessmentData && typedAssessmentData.length > 0) {
-          const assessmentsWithResponses = await Promise.all(
-            typedAssessmentData.map(async (assessment: CompletedAssessment) => {
-              // Buscar as respostas para cada avaliação com o nível de risco
-              // Usar any para evitar erros de tipagem enquanto as colunas são adicionadas
-              const { data: responseData, error: responseError } = await supabase
-                .from('assessment_responses')
-                .select('response_data, risk_level, completed_at')
-                .eq('template_id', assessment.template_id)
-                .eq('employee_id', assessment.employee_id)
-                .order('completed_at', { ascending: false })
-                .limit(1)
-                .single() as { data: any, error: any };
-                
-              console.log(`[CompletedAssessmentsList] Resposta para avaliação ${assessment.id}:`, responseData);
+        // Processar os dados diretos do assessment_responses
+        if (assessmentData && assessmentData.length > 0) {
+          const processedAssessments = assessmentData.map((assessment: any) => {
+            return {
+              id: assessment.id,
+              template_id: assessment.template_id,
+              employee_id: assessment.employee_id,
+              employee_name: assessment.employee_name || 'Nome não disponível',
+              status: 'completed',
+              completed_at: assessment.completed_at,
+              scheduled_date: assessment.completed_at,
+              risk_level: calculateRiskLevel(assessment.raw_score, assessment.risk_level),
+              template: {
+                title: assessment.checklist_templates?.title || 'Título não disponível',
+                type: assessment.checklist_templates?.type || 'Tipo não disponível',
+                description: assessment.checklist_templates?.description
+              },
+              response_data: {
+                raw_score: assessment.raw_score,
+                dominant_factor: assessment.dominant_factor,
+                classification: assessment.classification
+              },
+              raw_score: assessment.raw_score
+            };
+          });
 
-              if (responseError) {
-                console.error("[CompletedAssessmentsList] Erro ao buscar respostas:", responseError);
-              }
-
-              // Converter response_data para o tipo correto
-              const responseDataTyped = responseData?.response_data as Record<string, string | number | boolean> || {};
-              
-              // Usar o nível de risco da resposta se disponível, ou manter o da avaliação agendada
-              const riskLevel = responseData?.risk_level || assessment.risk_level;
-              console.log(`[CompletedAssessmentsList] Nível de risco para avaliação ${assessment.id}:`, riskLevel);
-              
-              const completedAssessment: CompletedAssessment = {
-                ...assessment,
-                response_data: responseDataTyped,
-                template: assessment.templates,
-                risk_level: riskLevel
-              };
-              
-              return completedAssessment;
-            })
-          );
-
-          console.log("[CompletedAssessmentsList] Avaliações processadas com sucesso:", assessmentsWithResponses.length);
-          setAssessments(assessmentsWithResponses);
+          console.log("[CompletedAssessmentsList] Dados de avaliações processados:", processedAssessments);
+          setAssessments(processedAssessments);
         } else {
           console.log("[CompletedAssessmentsList] Nenhuma avaliação concluída encontrada");
           setAssessments([]);
@@ -142,53 +141,8 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
     fetchCompletedAssessments();
   }, [employeeId]);
 
-  // Função para obter o nível de risco da avaliação
-  const getRiskLevel = (assessment: CompletedAssessment): string => {
-    console.log("[CompletedAssessmentsList] Verificando nível de risco para:", assessment.id);
-    
-    // Usar o nível de risco armazenado no banco de dados
-    if (assessment.risk_level && assessment.risk_level !== "null" && assessment.risk_level !== "undefined") {
-      console.log("[CompletedAssessmentsList] Nível de risco encontrado na avaliação:", assessment.risk_level);
-      return assessment.risk_level;
-    }
-    
-    // Tentar calcular o nível de risco com base nas respostas (escala Likert 1-5)
-    if (assessment.response_data && Object.keys(assessment.response_data).length > 0) {
-      const numericResponses = Object.values(assessment.response_data)
-        .filter(value => !isNaN(Number(value)))
-        .map(value => Number(value));
-
-      if (numericResponses.length > 0) {
-        const average = numericResponses.reduce((sum, value) => sum + value, 0) / numericResponses.length;
-        console.log("[CompletedAssessmentsList] Média calculada:", average);
-        
-        // Determinar nível de risco com base na média (escala Likert 1-5)
-        // Convertendo para porcentagem para compatibilidade com as análises psicossociais
-        const scorePercent = (average - 1) / 4 * 100; // Converte 1-5 para 0-100%
-        
-        let calculatedRisk = "Não avaliado";
-        if (scorePercent >= 80) {
-          calculatedRisk = "Alto";
-        } else if (scorePercent >= 60) {
-          calculatedRisk = "Médio";
-        } else {
-          calculatedRisk = "Baixo";
-        }
-        
-        console.log("[CompletedAssessmentsList] Score percentual:", scorePercent, "Nível de risco calculado:", calculatedRisk);
-        return calculatedRisk;
-      }
-    }
-    
-    // Caso não tenha sido definido (compatibilidade com dados antigos)
-    console.log("[CompletedAssessmentsList] Não foi possível determinar o nível de risco");
-    return "Não avaliado";
-  };
-
   // Função para determinar a cor do badge com base no nível de risco
   const getRiskBadgeColor = (riskLevel: string): string => {
-    console.log("[CompletedAssessmentsList] Determinando cor para nível de risco:", riskLevel);
-    
     if (!riskLevel) {
       return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
     }
@@ -202,6 +156,8 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
         return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
       case 'alto':
         return 'bg-red-100 text-red-800 hover:bg-red-100';
+      case 'crítico':
+        return 'bg-red-200 text-red-900 hover:bg-red-200';
       default:
         return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
     }
@@ -241,7 +197,7 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
   return (
     <div className="space-y-4">
       {assessments.map((assessment) => {
-        const riskLevel = getRiskLevel(assessment);
+        const riskLevel = assessment.risk_level || 'Não avaliado';
         const riskBadgeColor = getRiskBadgeColor(riskLevel);
         
         return (
@@ -255,6 +211,11 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
                   <Badge className={riskBadgeColor}>
                     {riskLevel}
                   </Badge>
+                  {assessment.raw_score && (
+                    <span className="text-sm text-gray-500">
+                      Score: {assessment.raw_score}
+                    </span>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -266,7 +227,7 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar className="h-4 w-4 mr-1" />
-                  <span>Agendado para: {new Date(assessment.scheduled_date).toLocaleDateString('pt-BR')}</span>
+                  <span>Data: {new Date(assessment.completed_at).toLocaleDateString('pt-BR')}</span>
                 </div>
                 {assessment.template?.description && (
                   <p className="text-sm text-gray-600 mt-2">{assessment.template.description}</p>
