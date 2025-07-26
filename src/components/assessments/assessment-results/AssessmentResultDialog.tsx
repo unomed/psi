@@ -8,8 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, User, FileText, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, User, FileText, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
 import { calculateRiskLevel as unifiedCalculateRiskLevel } from "@/utils/riskCriteriaUnified";
+import { useActionPlanAutomation } from "@/hooks/useActionPlanAutomation";
 
 interface AssessmentResultDialogProps {
   result: any;
@@ -19,6 +21,17 @@ interface AssessmentResultDialogProps {
 
 export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentResultDialogProps) {
   if (!result) return null;
+
+  // FASE 2: Integração com automação de planos de ação
+  const { 
+    generateManualPlan, 
+    checkActionPlanRequirements,
+    shouldShowGenerateButton,
+    getActionPlanStatusMessage,
+    isGenerating 
+  } = useActionPlanAutomation();
+  
+  const { data: planRequirements } = checkActionPlanRequirements(result.id);
 
   // Calcular o nível de risco baseado no raw_score
   const calculateRiskLevel = () => {
@@ -366,6 +379,65 @@ export function AssessmentResultDialog({ result, isOpen, onClose }: AssessmentRe
                     <div className="text-sm text-muted-foreground">Nível de Risco</div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* FASE 2: Status e ações do plano automático */}
+          {planRequirements && (
+            <Card className={`border-l-4 ${
+              planRequirements.requires 
+                ? 'border-l-orange-500 bg-orange-50/50' 
+                : 'border-l-green-500 bg-green-50/50'
+            }`}>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  {planRequirements.requires ? (
+                    <AlertTriangle className="h-5 w-5 text-orange-600" />
+                  ) : (
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                  )}
+                  Plano de Ação NR-01
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {planRequirements.requires ? 'Plano Requerido' : 'Status do Plano'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {getActionPlanStatusMessage(
+                        planRequirements.requires,
+                        planRequirements.hasExisting,
+                        planRequirements.riskLevel
+                      )}
+                    </p>
+                  </div>
+                  <Badge variant={planRequirements.requires ? 'destructive' : 'default'}>
+                    Risco {planRequirements.riskLevel}
+                  </Badge>
+                </div>
+                
+                {shouldShowGenerateButton(planRequirements.riskLevel, planRequirements.hasExisting) && (
+                  <Button
+                    onClick={() => generateManualPlan.mutate(result.id)}
+                    disabled={isGenerating}
+                    className="w-full"
+                    size="sm"
+                  >
+                    {isGenerating ? 'Gerando Plano...' : 'Gerar Plano de Ação Automaticamente'}
+                  </Button>
+                )}
+
+                {planRequirements.hasExisting && (
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      ✅ Plano de ação já criado para esta avaliação. 
+                      Verifique a seção "Planos de Ação" para detalhes.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

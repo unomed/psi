@@ -2,6 +2,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { AutomationTriggerResult } from "../types/automationTypes";
 
+// Função utilitária para extrair company_id do resultado do processamento
+function extractCompanyId(result: any): string {
+  // Tentar várias propriedades onde company_id pode estar
+  return result?.company_id || 
+         result?.data?.company_id || 
+         result?.analysis?.company_id ||
+         result?.employee?.company_id ||
+         ''; // Fallback vazio - será tratado na automação
+}
+
 export class AutomationProcessingService {
   // Processar avaliação automaticamente
   static async triggerAutomaticProcessing(assessmentResponseId: string): Promise<AutomationTriggerResult> {
