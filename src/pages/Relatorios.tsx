@@ -1073,12 +1073,6 @@ export default function Relatorios() {
             Relatórios consolidados para conformidade legal e análise de riscos psicossociais.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleExportPDF}>
-            <Printer className="mr-2 h-4 w-4" />
-            Gerar PDF
-          </Button>
-        </div>
       </div>
       
       <ReportFilters 
