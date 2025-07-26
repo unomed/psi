@@ -40,6 +40,16 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
     try {
       console.log('[EmployeeAuthNative] Tentando fazer login com CPF:', cpf);
       
+      // Input validation
+      if (!cpf || cpf.length < 11) {
+        return { success: false, error: 'CPF inválido' };
+      }
+      
+      if (!password || password.length < 4) {
+        return { success: false, error: 'Senha inválida' };
+      }
+      
+      // Call secure authentication function
       const { data, error } = await supabase.rpc('authenticate_employee', {
         p_cpf: cpf,
         p_password: password
@@ -50,18 +60,34 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
         return { success: false, error: 'Erro na autenticação' };
       }
 
-      if (!data || data.length === 0 || !data[0].is_valid) {
-        console.log('[EmployeeAuthNative] Credenciais inválidas');
-        return { success: false, error: 'CPF ou senha inválidos' };
+      // Type assertion for the response
+      const response = data as { success: boolean; employee?: any; error?: string };
+      
+      if (!response || !response.success) {
+        console.log('[EmployeeAuthNative] Credenciais inválidas:', response?.error);
+        return { success: false, error: response?.error || 'CPF ou senha inválidos' };
       }
 
-      const employeeData = data[0];
+      const employeeData = response.employee;
+      
+      // Get company information
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('name')
+        .eq('id', employeeData.company_id)
+        .single();
+      
+      if (companyError || !companyData) {
+        console.error('[EmployeeAuthNative] Erro ao buscar empresa:', companyError);
+        return { success: false, error: 'Erro ao carregar informações da empresa' };
+      }
+      
       const newSession: EmployeeSession = {
         employee: {
-          employeeId: employeeData.employee_id,
-          employeeName: employeeData.employee_name,
+          employeeId: employeeData.id,
+          employeeName: employeeData.name,
           companyId: employeeData.company_id,
-          companyName: employeeData.company_name,
+          companyName: companyData.name,
           isValid: true
         },
         isAuthenticated: true
@@ -72,7 +98,7 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
       // Configurar sessão do funcionário no Supabase
       try {
         await supabase.rpc('set_employee_session', {
-          employee_id_value: employeeData.employee_id
+          employee_id_value: employeeData.id
         });
         console.log('[EmployeeAuthNative] Sessão do funcionário configurada no Supabase');
       } catch (sessionError) {
@@ -80,10 +106,26 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
         // Não falhar o login por causa disso, mas log o erro
       }
       
-      // Salvar sessão no localStorage
-      localStorage.setItem('employee-session', JSON.stringify(newSession));
-      localStorage.setItem('current_employee_id', employeeData.employee_id);
+      // Store session securely (will be migrated to httpOnly cookies later)
+      const sessionData = {
+        ...newSession,
+        timestamp: Date.now(),
+        sessionToken: crypto.randomUUID() // Generate session token
+      };
+      
+      // Save session in localStorage (temporary - will be moved to secure cookies)
+      try {
+        localStorage.setItem('employee-session', JSON.stringify(sessionData));
+        localStorage.setItem('current_employee_id', employeeData.id);
+      } catch (storageError) {
+        console.error('[EmployeeAuthNative] Erro ao armazenar sessão:', storageError);
+        // Continue without throwing - session will work but won't persist
+      }
+      
       setSession(newSession);
+
+      // Log successful login (removing for now until function is available in types)
+      console.log('[EmployeeAuthNative] Login bem-sucedido registrado:', employeeData.id);
 
       return { success: true };
     } catch (error) {

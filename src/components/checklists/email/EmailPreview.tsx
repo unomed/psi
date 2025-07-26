@@ -80,6 +80,13 @@ export function EmailPreview({
                   .replace(/\{\{templateName\}\}/g, templateName)
                   .replace(/\{\{linkUrl\}\}/g, linkUrl || '[Link será gerado automaticamente]')
                   .replace(/\{\{companyName\}\}/g, companyName)
+                  // Basic XSS protection
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#x27;')
+                  .replace(/\n/g, '<br>')
               }}
             />
           </div>

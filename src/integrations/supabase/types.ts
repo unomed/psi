@@ -1054,6 +1054,53 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_credentials: {
+        Row: {
+          created_at: string | null
+          employee_id: string
+          failed_login_attempts: number | null
+          id: string
+          last_login: string | null
+          locked_until: string | null
+          password_changed_at: string | null
+          password_hash: string
+          salt: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id: string
+          failed_login_attempts?: number | null
+          id?: string
+          last_login?: string | null
+          locked_until?: string | null
+          password_changed_at?: string | null
+          password_hash: string
+          salt: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string
+          failed_login_attempts?: number | null
+          id?: string
+          last_login?: string | null
+          locked_until?: string | null
+          password_changed_at?: string | null
+          password_hash?: string
+          salt?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_credentials_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_mood_logs: {
         Row: {
           created_at: string
@@ -3073,13 +3120,7 @@ export type Database = {
       }
       authenticate_employee: {
         Args: { p_cpf: string; p_password: string }
-        Returns: {
-          employee_id: string
-          employee_name: string
-          company_id: string
-          company_name: string
-          is_valid: boolean
-        }[]
+        Returns: Json
       }
       calculate_company_frprt_metrics: {
         Args: { p_company_id: string; p_sector_id?: string }

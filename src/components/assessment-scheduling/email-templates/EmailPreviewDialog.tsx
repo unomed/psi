@@ -114,7 +114,13 @@ export function EmailPreviewDialog({
                 <div className="prose prose-sm max-w-none">
                   <div 
                     dangerouslySetInnerHTML={{ 
-                      __html: processedBody.replace(/\n/g, '<br>') 
+                      __html: processedBody
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#x27;')
+                        .replace(/\n/g, '<br>') 
                     }} 
                   />
                 </div>
