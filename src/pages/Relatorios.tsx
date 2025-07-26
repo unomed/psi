@@ -7,13 +7,15 @@ import { RiskLevelDistribution } from "@/components/reports/RiskLevelDistributio
 import { SectorRiskFactors } from "@/components/reports/SectorRiskFactors";
 import { RoleRiskComparison } from "@/components/reports/RoleRiskComparison";
 import { NR01ComplianceOverview } from "@/components/reports/NR01ComplianceOverview";
-
+import { ConsolidatedDashboard } from "@/components/reports/ConsolidatedDashboard";
 import { RiskTrendChart } from "@/components/reports/RiskTrendChart";
 import { FileText, Printer, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "@/types/date";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useReportsData } from "@/hooks/reports/useReportsData";
+import { useConsolidatedReports } from "@/hooks/reports/useConsolidatedReports";
+import { usePDFGenerator } from "@/hooks/reports/usePDFGenerator";
 import { toast } from "sonner";
 
 export default function Relatorios() {
@@ -26,6 +28,8 @@ export default function Relatorios() {
   
   const { selectedCompanyId } = useCompany();
   const { reportsData, isLoading } = useReportsData(selectedCompanyId || undefined, selectedSector, selectedRole);
+  const { data: consolidatedData, isLoading: isConsolidatedLoading } = useConsolidatedReports(selectedCompanyId);
+  const { generatePDF, generateQuickPDF } = usePDFGenerator();
   
   // Verificação se empresa está selecionada
   if (!selectedCompanyId) {
@@ -52,13 +56,31 @@ export default function Relatorios() {
     );
   }
   
-  const handleExportPDF = () => {
-    // Implementação futura da exportação PDF
-    toast.info("Funcionalidade de exportação será implementada em breve");
+  const handleExportPDF = async () => {
+    if (!consolidatedData) {
+      toast.error("Nenhum dado para exportar");
+      return;
+    }
+    
+    try {
+      await generatePDF(consolidatedData, {
+        includeSectorAnalysis: true,
+        includeRoleAnalysis: true,
+        includeActionPlans: true
+      });
+      toast.success("PDF gerado com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao gerar PDF");
+    }
   };
   
-  const handlePrint = () => {
-    generatePrintableReport();
+  const handleQuickPDF = async () => {
+    try {
+      await generateQuickPDF('consolidated-dashboard', 'relatorio-dashboard');
+      toast.success("PDF rápido gerado!");
+    } catch (error) {
+      toast.error("Erro ao gerar PDF rápido");
+    }
   };
 
   const generatePrintableReport = () => {
@@ -1052,9 +1074,9 @@ export default function Relatorios() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handlePrint}>
+          <Button variant="outline" onClick={handleExportPDF}>
             <Printer className="mr-2 h-4 w-4" />
-            Imprimir
+            Gerar PDF
           </Button>
         </div>
       </div>
@@ -1068,13 +1090,26 @@ export default function Relatorios() {
         setSelectedRole={setSelectedRole}
       />
       
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="consolidated" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="consolidated">Dashboard Consolidado</TabsTrigger>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="frprt">FRPRT Detalhado</TabsTrigger>
           <TabsTrigger value="sectors">Por Setor</TabsTrigger>
           <TabsTrigger value="roles">Por Função</TabsTrigger>
+          <TabsTrigger value="compliance">Compliance</TabsTrigger>
         </TabsList>
+
+        {/* FASE 4: Tab do Dashboard Consolidado */}
+        <TabsContent value="consolidated">
+          {consolidatedData && (
+            <ConsolidatedDashboard 
+              data={consolidatedData}
+              isLoading={isConsolidatedLoading}
+              onGeneratePDF={handleExportPDF}
+              onGenerateQuickPDF={handleQuickPDF}
+            />
+          )}
+        </TabsContent>
         
         <TabsContent value="overview" className="space-y-6 mt-6">
           {/* Conformidade NR-01 */}
