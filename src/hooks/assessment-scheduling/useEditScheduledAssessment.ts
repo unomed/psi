@@ -22,6 +22,7 @@ export function useEditScheduledAssessment() {
         .from('scheduled_assessments')
         .update({
           scheduled_date: assessmentData.scheduledDate.toISOString(),
+          due_date: assessmentData.scheduledDate.toISOString(), // Atualizar também o due_date
           recurrence_type: assessmentData.recurrenceType,
           phone_number: assessmentData.phoneNumber,
           // Reset status to scheduled if it was sent but not completed
