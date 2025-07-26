@@ -1106,7 +1106,6 @@ export default function Relatorios() {
               data={consolidatedData}
               isLoading={isConsolidatedLoading}
               onGeneratePDF={handleExportPDF}
-              onGenerateQuickPDF={handleQuickPDF}
             />
           )}
         </TabsContent>

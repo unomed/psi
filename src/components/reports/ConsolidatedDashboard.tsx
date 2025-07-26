@@ -42,14 +42,12 @@ interface ConsolidatedDashboardProps {
   data: ConsolidatedReportData;
   isLoading: boolean;
   onGeneratePDF: () => void;
-  onGenerateQuickPDF: () => void;
 }
 
 export function ConsolidatedDashboard({ 
   data, 
   isLoading, 
-  onGeneratePDF, 
-  onGenerateQuickPDF 
+  onGeneratePDF
 }: ConsolidatedDashboardProps) {
   if (isLoading) {
     return (
@@ -108,16 +106,10 @@ export function ConsolidatedDashboard({
             Dashboard completo da empresa {data.companyInfo.name}
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={onGenerateQuickPDF}>
-            <Download className="mr-2 h-4 w-4" />
-            PDF Rápido
-          </Button>
-          <Button onClick={onGeneratePDF}>
-            <FileText className="mr-2 h-4 w-4" />
-            Relatório Completo PDF
-          </Button>
-        </div>
+        <Button onClick={onGeneratePDF} size="lg" className="bg-primary hover:bg-primary/90">
+          <FileText className="mr-2 h-4 w-4" />
+          Gerar PDF
+        </Button>
       </div>
 
       {/* Estatísticas principais */}
