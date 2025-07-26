@@ -114,22 +114,6 @@ function AppContent() {
 
   return (
     <>
-      {/* Barra de navegação superior com botão para alternar entre portais */}
-      <div className="fixed top-0 left-0 right-0 bg-slate-800 text-white p-2 z-50 flex justify-between items-center">
-        <div className="font-semibold">
-          {portalMode === 'admin' ? 'Portal Administrativo' : 'Portal do Funcionário'}
-        </div>
-        <button 
-          onClick={togglePortal}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
-        >
-          Alternar para {portalMode === 'admin' ? 'Portal do Funcionário' : 'Portal Administrativo'}
-        </button>
-      </div>
-
-      {/* Espaçamento para compensar a barra fixa */}
-      <div className="pt-12"></div>
-
       {/* Renderização condicional com base no modo selecionado */}
       {portalMode === 'employee' ? (
         <EmployeeAuthNativeProvider>
