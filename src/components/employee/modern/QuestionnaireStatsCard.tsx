@@ -1,8 +1,10 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, ClipboardCheck, Calendar, Award } from "lucide-react";
 import { useEmployeeAssessments } from "@/hooks/useEmployeeAssessments";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuestionnaireStatsCardProps {
   employeeId: string;
@@ -10,8 +12,51 @@ interface QuestionnaireStatsCardProps {
 
 export function QuestionnaireStatsCard({ employeeId }: QuestionnaireStatsCardProps) {
   const { assessments, loading } = useEmployeeAssessments(employeeId);
+  const [completedStats, setCompletedStats] = useState({ total: 0, thisMonth: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  if (loading) {
+  // Buscar estatísticas reais de avaliações concluídas
+  useEffect(() => {
+    const fetchCompletedStats = async () => {
+      if (!employeeId) return;
+      
+      try {
+        setStatsLoading(true);
+        
+        // Buscar avaliações concluídas
+        const { data: completedData, error } = await supabase
+          .from('assessment_responses')
+          .select('completed_at')
+          .eq('employee_id', employeeId)
+          .not('completed_at', 'is', null);
+
+        if (error) {
+          console.error('[QuestionnaireStatsCard] Erro ao buscar estatísticas:', error);
+          return;
+        }
+
+        const currentMonth = new Date();
+        const thisMonth = completedData?.filter(response => {
+          const completedDate = new Date(response.completed_at);
+          return completedDate.getMonth() === currentMonth.getMonth() &&
+                 completedDate.getFullYear() === currentMonth.getFullYear();
+        }).length || 0;
+
+        setCompletedStats({
+          total: completedData?.length || 0,
+          thisMonth
+        });
+      } catch (error) {
+        console.error('[QuestionnaireStatsCard] Erro ao buscar estatísticas:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchCompletedStats();
+  }, [employeeId]);
+
+  if (loading || statsLoading) {
     return (
       <Card className="bg-white border-gray-200">
         <CardHeader>
@@ -31,12 +76,6 @@ export function QuestionnaireStatsCard({ employeeId }: QuestionnaireStatsCardPro
     );
   }
 
-  // Como não temos dados de avaliações completadas no tipo atual,
-  // vamos simular algumas estatísticas básicas
-  const completedAssessments = 0; // Placeholder - seria necessário buscar dados históricos
-  const totalCompleted = completedAssessments;
-  const thisMonthCompleted = 0; // Placeholder
-
   return (
     <Card className="bg-white border-gray-200">
       <CardHeader>
@@ -51,7 +90,7 @@ export function QuestionnaireStatsCard({ employeeId }: QuestionnaireStatsCardPro
             <div className="flex items-center justify-center mb-1">
               <ClipboardCheck className="h-4 w-4 text-blue-600 mr-1" />
             </div>
-            <div className="text-2xl font-bold text-blue-600">{totalCompleted}</div>
+            <div className="text-2xl font-bold text-blue-600">{completedStats.total}</div>
             <div className="text-xs text-gray-600">Total Concluídas</div>
           </div>
           
@@ -59,7 +98,7 @@ export function QuestionnaireStatsCard({ employeeId }: QuestionnaireStatsCardPro
             <div className="flex items-center justify-center mb-1">
               <Calendar className="h-4 w-4 text-green-600 mr-1" />
             </div>
-            <div className="text-2xl font-bold text-green-600">{thisMonthCompleted}</div>
+            <div className="text-2xl font-bold text-green-600">{completedStats.thisMonth}</div>
             <div className="text-xs text-gray-600">Este Mês</div>
           </div>
         </div>
@@ -73,7 +112,7 @@ export function QuestionnaireStatsCard({ employeeId }: QuestionnaireStatsCardPro
           </div>
         </div>
 
-        {totalCompleted >= 5 && (
+        {completedStats.total >= 5 && (
           <div className="flex items-center justify-center p-2 bg-amber-50 rounded-lg">
             <Award className="h-4 w-4 text-amber-600 mr-2" />
             <span className="text-sm text-amber-700 font-medium">

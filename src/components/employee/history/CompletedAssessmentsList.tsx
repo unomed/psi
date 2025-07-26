@@ -152,7 +152,7 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
       return assessment.risk_level;
     }
     
-    // Tentar calcular o nível de risco com base nas respostas
+    // Tentar calcular o nível de risco com base nas respostas (escala Likert 1-5)
     if (assessment.response_data && Object.keys(assessment.response_data).length > 0) {
       const numericResponses = Object.values(assessment.response_data)
         .filter(value => !isNaN(Number(value)))
@@ -162,17 +162,20 @@ export function CompletedAssessmentsList({ employeeId }: CompletedAssessmentsLis
         const average = numericResponses.reduce((sum, value) => sum + value, 0) / numericResponses.length;
         console.log("[CompletedAssessmentsList] Média calculada:", average);
         
-        // Determinar nível de risco com base na média
+        // Determinar nível de risco com base na média (escala Likert 1-5)
+        // Convertendo para porcentagem para compatibilidade com as análises psicossociais
+        const scorePercent = (average - 1) / 4 * 100; // Converte 1-5 para 0-100%
+        
         let calculatedRisk = "Não avaliado";
-        if (average <= 2) {
-          calculatedRisk = "Baixo";
-        } else if (average <= 3.5) {
+        if (scorePercent >= 80) {
+          calculatedRisk = "Alto";
+        } else if (scorePercent >= 60) {
           calculatedRisk = "Médio";
         } else {
-          calculatedRisk = "Alto";
+          calculatedRisk = "Baixo";
         }
         
-        console.log("[CompletedAssessmentsList] Nível de risco calculado:", calculatedRisk);
+        console.log("[CompletedAssessmentsList] Score percentual:", scorePercent, "Nível de risco calculado:", calculatedRisk);
         return calculatedRisk;
       }
     }

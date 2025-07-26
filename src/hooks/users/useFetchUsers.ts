@@ -34,16 +34,16 @@ export const useFetchUsers = () => {
         const userIds = profiles.map(profile => profile.id);
 
         // Get user emails using the secure function
-        const { data: emailData, error: emailError } = await supabase
-          .rpc('get_user_emails', { user_ids: userIds });
+        const emailPromises = userIds.map(async (userId) => {
+          const { data, error } = await supabase.rpc('get_user_emails', { p_user_id: userId });
+          if (error) return null;
+          return { id: userId, email: data?.[0]?.email || '' };
+        });
+        const emailData = await Promise.all(emailPromises);
 
-        if (emailError) {
-          console.error("Erro ao buscar emails:", emailError);
-          toast.error("Erro ao carregar emails dos usuários");
-          throw emailError;
-        }
+        const validEmailData = emailData.filter(item => item !== null);
 
-        console.log("Emails encontrados:", emailData?.length || 0);
+        console.log("Emails encontrados:", validEmailData?.length || 0);
 
         // Get user roles separately
         const { data: userRoles, error: rolesError } = await supabase
@@ -61,7 +61,7 @@ export const useFetchUsers = () => {
 
         // Combine the data
         const users = profiles.map(profile => {
-          const emailInfo = emailData?.find(e => e.id === profile.id);
+          const emailInfo = validEmailData?.find(e => e?.id === profile.id);
           const roleInfo = userRoles?.find(r => r.user_id === profile.id);
           
           return {
