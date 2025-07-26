@@ -290,17 +290,6 @@ export function EmployeeAssessmentForm({ assessmentId, employeeId }: EmployeeAss
       console.log("[EmployeeAssessmentForm] Enviando respostas:", answers);
       console.log("[EmployeeAssessmentForm] Dados da sessão:", session?.employee);
 
-      // Configurar sessão do funcionário no Supabase antes de inserir
-      try {
-        await supabase.rpc('set_employee_session', {
-          employee_id_value: employeeId
-        });
-        console.log("[EmployeeAssessmentForm] Sessão do funcionário configurada");
-      } catch (sessionError) {
-        console.error("[EmployeeAssessmentForm] Erro ao configurar sessão:", sessionError);
-        // Continuar mesmo se falhar, pois as políticas RLS já foram atualizadas
-      }
-
       // Calcular o nível de risco
       const riskLevel = calculateRiskLevel();
       console.log("[EmployeeAssessmentForm] Nível de risco calculado:", riskLevel);

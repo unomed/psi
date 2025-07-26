@@ -55,7 +55,7 @@ export function useEmployeeAssessments(employeeId: string) {
         const formattedAssessments = (data || []).map(assessment => ({
           id: assessment.id,
           templateTitle: assessment.checklist_templates?.title || 'Avaliação',
-          dueDate: assessment.due_date,
+          dueDate: assessment.due_date || assessment.scheduled_date, // Usar scheduled_date se due_date estiver null
           status: assessment.status
         }));
 

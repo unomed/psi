@@ -97,6 +97,7 @@ export function useAssessmentSchedulingWithAutomation() {
             employee_id: assessmentData.employeeId,
             template_id: assessmentData.templateId,
             scheduled_date: assessmentData.scheduledDate.toISOString(),
+            due_date: assessmentData.scheduledDate.toISOString(), // Definir due_date igual ao scheduled_date
             status: 'scheduled',
             recurrence_type: assessmentData.recurrenceType,
             next_scheduled_date: nextScheduledDate?.toISOString(),
