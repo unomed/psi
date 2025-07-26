@@ -165,9 +165,9 @@ export function EmploymentFields({
             <FormLabel>Função</FormLabel>
             <FormControl>
               <Select
-                value={field.value || "no-role-selected"}
+                value={field.value || ""}
                 onValueChange={(value) => {
-                  if (value !== "no-role-selected") {
+                  if (value && value !== "") {
                     field.onChange(value);
                     if (onRoleChange) onRoleChange(value);
                   }
