@@ -69,8 +69,8 @@ export function AssessmentResultsTable({ companyId }: AssessmentResultsTableProp
   };
 
   const getRiskLevel = (result: any) => {
-    // Verificar primeiro se já tem risk_level preenchido
-    if (result.risk_level) {
+    // Verificar primeiro se já tem risk_level preenchido e não é null
+    if (result.risk_level && result.risk_level.toLowerCase() !== 'null') {
       return result.risk_level;
     }
     
