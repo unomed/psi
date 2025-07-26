@@ -74,6 +74,7 @@ export function useEmailSending() {
               employee_id: employee.id,
               template_id: templateId,
               scheduled_date: scheduledDate.toISOString(),
+              due_date: scheduledDate.toISOString(), // Adicionar due_date
               status: 'scheduled',
               employee_name: employee.name,
               created_by: user.id

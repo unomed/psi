@@ -93,6 +93,7 @@ export function useScheduledAssessments({ companyId }: UseScheduledAssessmentsPr
           employee_id: assessmentData.employeeId,
           template_id: assessmentData.templateId,
           scheduled_date: assessmentData.scheduledDate.toISOString(),
+          due_date: assessmentData.scheduledDate.toISOString(), // Adicionar due_date
           status: assessmentData.status,
           recurrence_type: assessmentData.recurrenceType,
           next_scheduled_date: assessmentData.nextScheduledDate?.toISOString(),

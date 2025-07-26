@@ -33,6 +33,7 @@ export function useScheduleAssessment() {
         employee_name: employeeName,
         template_id: selectedTemplate.id,
         scheduled_date: scheduledDate.toISOString(),
+        due_date: scheduledDate.toISOString(), // Adicionar due_date
         status: 'scheduled',
         recurrence_type: recurrenceType,
         next_scheduled_date: nextScheduledDate?.toISOString(),
