@@ -18,13 +18,11 @@ export function UserAvatar() {
   const navigate = useNavigate();
 
   const handleEditProfile = () => {
-    // TODO: Implementar página de perfil
-    toast.info('Funcionalidade em desenvolvimento');
+    navigate('/perfil');
   };
 
   const handleChangePassword = () => {
-    // TODO: Implementar alteração de senha
-    toast.info('Funcionalidade em desenvolvimento');
+    navigate('/perfil/alterar-senha');
   };
 
   const handleSignOut = async () => {

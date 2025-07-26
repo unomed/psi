@@ -15,6 +15,8 @@ import ChecklistPortal from "@/pages/ChecklistPortal";
 import { FormErrorBoundary } from "@/components/ui/form-error-boundary";
 import { EmployeeErrorBoundary } from "@/components/ui/employee-error-boundary";
 import EmployeeLoginIsolated from "@/pages/auth/EmployeeLoginIsolated";
+import Perfil from "@/pages/Perfil";
+import PerfilAlterarSenha from "@/pages/PerfilAlterarSenha";
 
 export function AppRoutes() {
   const { user, loading } = useAuth();
@@ -106,6 +108,28 @@ export function AppRoutes() {
       {/* Rotas administrativas protegidas */}
       {user && (
         <>
+          <Route 
+            path="/perfil" 
+            element={
+              <AdminGuard>
+                <MainLayout>
+                  <Perfil />
+                </MainLayout>
+              </AdminGuard>
+            } 
+          />
+          
+          <Route 
+            path="/perfil/alterar-senha" 
+            element={
+              <AdminGuard>
+                <MainLayout>
+                  <PerfilAlterarSenha />
+                </MainLayout>
+              </AdminGuard>
+            } 
+          />
+          
           <Route 
             path="/configuracoes/*" 
             element={
