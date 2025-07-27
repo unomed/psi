@@ -41,7 +41,7 @@ export function usePDFGenerator() {
   ) => {
     const {
       filename = `relatorio-frprt-${reportData.companyInfo.name}-${format(new Date(), 'yyyy-MM-dd')}`,
-      quality = 1.0,
+      quality = 1.2,
       includeSectorAnalysis = true,
       includeRoleAnalysis = true,
       includeActionPlans = true,
@@ -50,9 +50,9 @@ export function usePDFGenerator() {
     } = options;
 
     try {
-      console.log('📄 [FASE 4] Iniciando geração de PDF:', filename);
+      console.log('📄 [FASE 4] Iniciando geração de PDF completo:', filename);
 
-      // Criar elemento temporário para o relatório
+      // Criar elemento temporário para o relatório COMPLETO
       const reportElement = createReportElement(reportData, factorData, {
         includeSectorAnalysis,
         includeRoleAnalysis,
@@ -61,51 +61,72 @@ export function usePDFGenerator() {
         includeComplianceNR01
       });
 
-      // Adicionar ao DOM temporariamente
+      // Adicionar ao DOM temporariamente (fora da tela)
+      reportElement.style.position = 'absolute';
+      reportElement.style.top = '-9999px';
+      reportElement.style.left = '-9999px';
       document.body.appendChild(reportElement);
 
-      // Configurações do html2canvas
+      // Aguardar renderização completa
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Configurações otimizadas do html2canvas
       const canvas = await html2canvas(reportElement, {
         scale: quality,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         width: 1200,
-        height: reportElement.scrollHeight
+        height: reportElement.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 1200,
+        windowHeight: reportElement.scrollHeight
       });
 
       // Remover elemento do DOM
       document.body.removeChild(reportElement);
 
-      // Configurações do PDF
+      // Configurações do PDF otimizadas
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm
+      const pageHeight = 280; // Altura útil da página (margem)
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
+      
+      const totalPages = Math.ceil(imgHeight / pageHeight);
+      
+      console.log(`📄 Gerando PDF com ${totalPages} páginas`);
 
-      let position = 0;
-
-      // Adicionar primeira página
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Adicionar páginas adicionais com quebra adequada
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      // Adicionar páginas com controle manual
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
+          pdf.addPage();
+        }
+        
+        const sourceY = page * pageHeight * (canvas.height / imgHeight);
+        const sourceHeight = Math.min(pageHeight * (canvas.height / imgHeight), canvas.height - sourceY);
+        
+        // Criar canvas temporário para esta página
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sourceHeight;
+        
+        if (pageCtx) {
+          pageCtx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+          const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
+          pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, pageImgHeight);
+        }
       }
 
       // Download do PDF
       pdf.save(`${filename}.pdf`);
 
-      console.log('✅ [FASE 4] PDF gerado com sucesso:', filename);
+      console.log('✅ [FASE 4] PDF completo gerado com sucesso:', filename);
       return true;
 
     } catch (error) {
-      console.error('❌ [FASE 4] Erro ao gerar PDF:', error);
+      console.error('❌ [FASE 4] Erro ao gerar PDF completo:', error);
       throw error;
     }
   }, []);
@@ -307,7 +328,7 @@ function createReportElement(
               <td style="padding: 12px; text-align: center;">${sector.averageScore.toFixed(1)}</td>
               <td style="padding: 12px; text-align: center;">
                 <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; 
-                  ${getRiskLevelStyle(sector.riskLevel)}">${sector.riskLevel.toUpperCase()}</span>
+                  ${getRiskLevelStyle(sector.riskLevel)}">${sector.riskLevel === 'não avaliado' ? 'NÃO AVALIADO' : sector.riskLevel.toUpperCase()}</span>
               </td>
             </tr>
           `).join('')}
@@ -343,7 +364,7 @@ function createReportElement(
               <td style="padding: 12px; text-align: center;">${role.averageScore.toFixed(1)}</td>
               <td style="padding: 12px; text-align: center;">
                 <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; 
-                  ${getRiskLevelStyle(role.riskLevel)}">${role.riskLevel.toUpperCase()}</span>
+                  ${getRiskLevelStyle(role.riskLevel)}">${role.riskLevel === 'não avaliado' ? 'NÃO AVALIADO' : role.riskLevel.toUpperCase()}</span>
               </td>
             </tr>
           `).join('')}
@@ -550,6 +571,8 @@ function getRiskLevelStyle(riskLevel: string): string {
       return 'background: #ffebee; color: #d32f2f;';
     case 'critico':
       return 'background: #fce4ec; color: #c2185b;';
+    case 'não avaliado':
+      return 'background: #f5f5f5; color: #666;';
     default:
       return 'background: #f5f5f5; color: #666;';
   }
