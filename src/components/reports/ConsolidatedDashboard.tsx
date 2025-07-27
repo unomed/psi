@@ -228,7 +228,7 @@ export function ConsolidatedDashboard({
                     <td className="p-2 text-center">{sector.averageScore.toFixed(1)}</td>
                     <td className="p-2 text-center">
                       <Badge className={getRiskLevelColor(sector.riskLevel)}>
-                        {sector.riskLevel.toUpperCase()}
+                        {sector.riskLevel === 'não avaliado' ? 'Não Avaliado' : sector.riskLevel.toUpperCase()}
                       </Badge>
                     </td>
                   </tr>
@@ -270,7 +270,7 @@ export function ConsolidatedDashboard({
                     <td className="p-2 text-center">{role.averageScore.toFixed(1)}</td>
                     <td className="p-2 text-center">
                       <Badge className={getRiskLevelColor(role.riskLevel)}>
-                        {role.riskLevel.toUpperCase()}
+                        {role.riskLevel === 'não avaliado' ? 'Não Avaliado' : role.riskLevel.toUpperCase()}
                       </Badge>
                     </td>
                   </tr>
@@ -461,7 +461,7 @@ export function ConsolidatedDashboard({
                         </div>
                       </div>
                       <Badge className={getRiskLevelColor(sector.riskLevel)}>
-                        {sector.riskLevel.toUpperCase()}
+                        {sector.riskLevel === 'não avaliado' ? 'Não Avaliado' : sector.riskLevel.toUpperCase()}
                       </Badge>
                     </div>
                   ))}
@@ -531,7 +531,7 @@ export function ConsolidatedDashboard({
                         </div>
                       </div>
                       <Badge className={getRiskLevelColor(role.riskLevel)}>
-                        {role.riskLevel.toUpperCase()}
+                        {role.riskLevel === 'não avaliado' ? 'Não Avaliado' : role.riskLevel.toUpperCase()}
                       </Badge>
                     </div>
                   ))}
