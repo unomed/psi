@@ -87,17 +87,28 @@ export function usePDFGenerator() {
       // Remover elemento do DOM
       document.body.removeChild(reportElement);
 
-      // Configurações do PDF otimizadas
+      // Configurações do PDF com margens adequadas
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 280; // Altura útil da página (margem)
+      
+      // Margens (superior, direita, inferior, esquerda) em mm
+      const margins = {
+        top: 20,
+        right: 15,
+        bottom: 20,
+        left: 15
+      };
+      
+      // Dimensões úteis da página (descontando margens)
+      const pageWidth = 210 - margins.left - margins.right; // 180mm
+      const pageHeight = 297 - margins.top - margins.bottom; // 257mm
+      const imgWidth = pageWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       const totalPages = Math.ceil(imgHeight / pageHeight);
       
-      console.log(`📄 Gerando PDF com ${totalPages} páginas`);
+      console.log(`📄 Gerando PDF com ${totalPages} páginas (com margens adequadas)`);
 
-      // Adicionar páginas com controle manual
+      // Adicionar páginas com controle manual e margens
       for (let page = 0; page < totalPages; page++) {
         if (page > 0) {
           pdf.addPage();
@@ -115,7 +126,16 @@ export function usePDFGenerator() {
         if (pageCtx) {
           pageCtx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
           const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
-          pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, pageImgHeight);
+          
+          // Adicionar imagem respeitando as margens
+          pdf.addImage(
+            pageCanvas.toDataURL('image/png'), 
+            'PNG', 
+            margins.left,  // posição X com margem esquerda
+            margins.top,   // posição Y com margem superior
+            imgWidth, 
+            pageImgHeight
+          );
         }
       }
 
