@@ -106,11 +106,13 @@ export function useFactorAnalysis(companyId: string | null) {
           // Tentar extrair do factors_scores primeiro
           if (assessment.factors_scores && assessment.factors_scores[factor.key]) {
             factorScore = assessment.factors_scores[factor.key];
-          } else if (assessment.response_data) {
-            // Se não tiver factors_scores, calcular baseado no response_data
-            // Aqui você implementaria a lógica de cálculo baseada nas respostas
-            // Por enquanto, vamos usar uma aproximação baseada no raw_score
-            factorScore = (assessment.raw_score || 0) + Math.random() * 20 - 10; // Simulação
+          } else if (assessment.response_data && assessment.response_data[factor.key]) {
+            // Extrair score específico do fator do response_data
+            factorScore = assessment.response_data[factor.key];
+          } else if (assessment.raw_score !== null && assessment.raw_score !== undefined) {
+            // Se não tiver dados específicos do fator, usar o raw_score como base
+            // Dividir proporcionalmente entre os fatores
+            factorScore = assessment.raw_score / RISK_FACTORS.length;
           }
 
           if (factorScore > 0) {
@@ -150,28 +152,38 @@ export function useFactorAnalysis(companyId: string | null) {
           : 0;
 
         // Processar dados por setor
-        factorData.bySector = Array.from(sectorMap.entries()).map(([sectorName, data]) => ({
-          sectorName,
-          baixo: data.baixo,
-          medio: data.medio,
-          alto: data.alto,
-          critico: data.critico,
-          averageScore: data.scores.length > 0 
-            ? data.scores.reduce((a: number, b: number) => a + b, 0) / data.scores.length 
-            : 0
-        }));
+        factorData.bySector = Array.from(sectorMap.entries()).map(([sectorName, data]) => {
+          const totalScore = data.scores.reduce((a: number, b: number) => a + b, 0);
+          const averageScore = data.scores.length > 0 ? totalScore / data.scores.length : 0;
+          
+          return {
+            sectorName,
+            baixo: data.baixo,
+            medio: data.medio,
+            alto: data.alto,
+            critico: data.critico,
+            averageScore,
+            totalScore, // Soma total dos scores
+            collectiveScore: averageScore // Score coletivo (média)
+          };
+        });
 
         // Processar dados por função
-        factorData.byRole = Array.from(roleMap.entries()).map(([roleName, data]) => ({
-          roleName,
-          baixo: data.baixo,
-          medio: data.medio,
-          alto: data.alto,
-          critico: data.critico,
-          averageScore: data.scores.length > 0 
-            ? data.scores.reduce((a: number, b: number) => a + b, 0) / data.scores.length 
-            : 0
-        }));
+        factorData.byRole = Array.from(roleMap.entries()).map(([roleName, data]) => {
+          const totalScore = data.scores.reduce((a: number, b: number) => a + b, 0);
+          const averageScore = data.scores.length > 0 ? totalScore / data.scores.length : 0;
+          
+          return {
+            roleName,
+            baixo: data.baixo,
+            medio: data.medio,
+            alto: data.alto,
+            critico: data.critico,
+            averageScore,
+            totalScore, // Soma total dos scores
+            collectiveScore: averageScore // Score coletivo (média)
+          };
+        });
 
         return factorData;
       });

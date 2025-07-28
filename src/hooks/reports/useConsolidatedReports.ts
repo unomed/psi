@@ -177,7 +177,8 @@ export function useConsolidatedReports(companyId: string | null) {
               sectorName: emp.sectors.name,
               totalEmployees: 0,
               assessments: 0,
-              scores: []
+              scores: [],
+              totalScore: 0 // Para cálculo de soma total
             });
           }
           const sector = sectorMap.get(sectorId);
@@ -190,15 +191,16 @@ export function useConsolidatedReports(companyId: string | null) {
         if (sectorId && sectorMap.has(sectorId)) {
           const sector = sectorMap.get(sectorId);
           sector.assessments++;
-          sector.scores.push(assessment.raw_score || 0);
+          const score = assessment.raw_score || 0;
+          sector.scores.push(score);
+          sector.totalScore += score; // Soma total dos scores
         }
       });
 
       const sectorAnalysis = Array.from(sectorMap.values()).map(sector => {
         const coverage = sector.totalEmployees > 0 ? (sector.assessments / sector.totalEmployees) * 100 : 0;
-        const averageScore = sector.scores.length > 0 
-          ? sector.scores.reduce((a: number, b: number) => a + b, 0) / sector.scores.length 
-          : 0;
+        // Score médio baseado na soma total dividida pelo número de avaliações
+        const averageScore = sector.assessments > 0 ? sector.totalScore / sector.assessments : 0;
 
         const riskBreakdown = { baixo: 0, medio: 0, alto: 0, critico: 0 };
         sector.scores.forEach((score: number) => {
@@ -214,7 +216,9 @@ export function useConsolidatedReports(companyId: string | null) {
           coverage,
           averageScore,
           riskLevel,
-          riskBreakdown
+          riskBreakdown,
+          totalScore: sector.totalScore, // Incluir soma total para referência
+          collectiveScore: averageScore // Score coletivo (média) 
         };
       });
 
@@ -229,7 +233,8 @@ export function useConsolidatedReports(companyId: string | null) {
               roleName: emp.roles.name,
               totalEmployees: 0,
               assessments: 0,
-              scores: []
+              scores: [],
+              totalScore: 0 // Para cálculo de soma total
             });
           }
           const role = roleMap.get(roleId);
@@ -242,15 +247,16 @@ export function useConsolidatedReports(companyId: string | null) {
         if (roleId && roleMap.has(roleId)) {
           const role = roleMap.get(roleId);
           role.assessments++;
-          role.scores.push(assessment.raw_score || 0);
+          const score = assessment.raw_score || 0;
+          role.scores.push(score);
+          role.totalScore += score; // Soma total dos scores
         }
       });
 
       const roleAnalysis = Array.from(roleMap.values()).map(role => {
         const coverage = role.totalEmployees > 0 ? (role.assessments / role.totalEmployees) * 100 : 0;
-        const averageScore = role.scores.length > 0 
-          ? role.scores.reduce((a: number, b: number) => a + b, 0) / role.scores.length 
-          : 0;
+        // Score médio baseado na soma total dividida pelo número de avaliações
+        const averageScore = role.assessments > 0 ? role.totalScore / role.assessments : 0;
 
         const riskBreakdown = { baixo: 0, medio: 0, alto: 0, critico: 0 };
         role.scores.forEach((score: number) => {
@@ -266,7 +272,9 @@ export function useConsolidatedReports(companyId: string | null) {
           coverage,
           averageScore,
           riskLevel,
-          riskBreakdown
+          riskBreakdown,
+          totalScore: role.totalScore, // Incluir soma total para referência
+          collectiveScore: averageScore // Score coletivo (média)
         };
       });
 
