@@ -85,6 +85,22 @@ export function useFactorAnalysis(companyId: string | null) {
 
       if (assessmentsError) throw assessmentsError;
 
+      // Buscar perguntas e suas associações com fatores
+      const { data: questions, error: questionsError } = await supabase
+        .from('questions')
+        .select('id, target_factor')
+        .in('target_factor', RISK_FACTORS.map(f => f.key));
+
+      if (questionsError) throw questionsError;
+
+      // Criar mapa de pergunta ID -> fator
+      const questionToFactorMap = new Map();
+      questions?.forEach(q => {
+        if (q.target_factor) {
+          questionToFactorMap.set(q.id, q.target_factor);
+        }
+      });
+
       // Processar dados por fator
       return RISK_FACTORS.map(factor => {
         const factorData: FactorRiskData = {
@@ -103,16 +119,35 @@ export function useFactorAnalysis(companyId: string | null) {
         assessments?.forEach(assessment => {
           let factorScore = 0;
 
-          // Tentar extrair do factors_scores primeiro
+          // Tentar extrair do factors_scores primeiro (preferencial)
           if (assessment.factors_scores && assessment.factors_scores[factor.key]) {
             factorScore = assessment.factors_scores[factor.key];
-          } else if (assessment.response_data && assessment.response_data[factor.key]) {
-            // Extrair score específico do fator do response_data
-            factorScore = assessment.response_data[factor.key];
-          } else if (assessment.raw_score !== null && assessment.raw_score !== undefined) {
-            // Se não tiver dados específicos do fator, usar o raw_score como base
-            // Dividir proporcionalmente entre os fatores
-            factorScore = assessment.raw_score / RISK_FACTORS.length;
+          } 
+          // Calcular baseado nas respostas específicas das perguntas do fator
+          else if (assessment.response_data) {
+            const responses = assessment.response_data;
+            const factorQuestions = questions?.filter(q => q.target_factor === factor.key) || [];
+            
+            if (factorQuestions.length > 0) {
+              let totalScore = 0;
+              let answeredQuestions = 0;
+              
+              // Somar apenas as respostas das perguntas deste fator específico
+              factorQuestions.forEach(question => {
+                const response = responses[question.id];
+                if (response !== undefined && response !== null) {
+                  // Converter escala Likert (1-5) para porcentagem (0-100)
+                  const normalizedScore = ((Number(response) - 1) / 4) * 100;
+                  totalScore += normalizedScore;
+                  answeredQuestions++;
+                }
+              });
+              
+              // Calcular média apenas das perguntas respondidas deste fator
+              if (answeredQuestions > 0) {
+                factorScore = totalScore / answeredQuestions;
+              }
+            }
           }
 
           if (factorScore > 0) {

@@ -6,3 +6,6 @@ import { AutomationStatisticsService } from "@/services/riskManagement/automatio
 
 // Import the complete hook from the modular version
 export { usePsychosocialAutomation } from "./usePsychosocialAutomation/index";
+
+// Export the new collective risk automation hook
+export { useCollectiveRiskAutomation } from "./usePsychosocialAutomation/useCollectiveRiskAutomation";
