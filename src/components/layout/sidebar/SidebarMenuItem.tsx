@@ -26,11 +26,11 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
     <BaseSidebarMenuItem className="list-none">
       <SidebarMenuButton 
         className={`
-          w-full px-4 py-3 transition-all duration-200 rounded-lg
-          relative group
+          w-full px-4 py-3 transition-all duration-300 rounded-lg
+          relative group text-left
           ${isActive 
-            ? 'bg-sidebar-active-bg text-sidebar-active-text font-semibold shadow-sm border-l-4 border-sidebar-active-border' 
-            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-[1.02]'
+            ? 'bg-primary text-primary-foreground font-semibold shadow-lg border-l-4 border-primary' 
+            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-primary hover:scale-[1.02]'
           }
           ${isSubItem ? 'ml-6 text-sm py-2' : 'text-sm'}
         `}
@@ -41,8 +41,8 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
           className="flex items-center justify-start gap-3 w-full text-left"
         >
             {item.icon && (
-              <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${
-                isActive ? 'text-sidebar-active-text' : 'text-sidebar-foreground group-hover:text-sidebar-accent-foreground'
+              <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-300 ${
+                isActive ? 'text-primary-foreground' : 'text-sidebar-foreground group-hover:text-primary'
               }`} />
             )}
             <span className="font-medium truncate flex-1">{item.title}</span>
@@ -55,13 +55,13 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
             className="flex items-center justify-start gap-3 w-full"
           >
             {item.icon && (
-              <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${
-                isActive ? 'text-sidebar-active-text' : 'text-sidebar-foreground group-hover:text-sidebar-accent-foreground'
+              <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-300 ${
+                isActive ? 'text-primary-foreground' : 'text-sidebar-foreground group-hover:text-primary'
               }`} />
             )}
             <span className="font-medium truncate flex-1">{item.title}</span>
             {isActive && (
-              <div className="w-2 h-2 bg-sidebar-active-border rounded-full flex-shrink-0 animate-pulse" />
+              <div className="w-2 h-2 bg-primary-foreground rounded-full flex-shrink-0 animate-pulse" />
             )}
           </Link>
         )}

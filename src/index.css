@@ -51,8 +51,8 @@
     --sidebar-ring: 262 83% 58%; /* Focus roxo */
     
     /* Estados específicos do sidebar */
-    --sidebar-active-bg: 0 0% 100%; /* Fundo branco para item ativo */
-    --sidebar-active-text: 262 83% 58%; /* Texto roxo para item ativo */
+    --sidebar-active-bg: 262 83% 58%; /* Fundo roxo para item ativo */
+    --sidebar-active-text: 0 0% 100%; /* Texto branco para item ativo */
     --sidebar-active-border: 262 83% 58%; /* Borda esquerda roxa */
   }
 
