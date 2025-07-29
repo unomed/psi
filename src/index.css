@@ -4,89 +4,104 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* 60% - Base neutra (cores dominantes) */
+    --background: 0 0% 100%; /* Branco puro */
+    --foreground: 240 10% 15%; /* Cinza escuro para texto */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 10% 15%;
 
-    --primary: 195 85% 41%; /* Teal-blue */
-    --primary-foreground: 210 40% 98%;
+    /* 10% - Cor de destaque (Roxo moderno) */
+    --primary: 262 83% 58%; /* Roxo moderno #8B5CF6 */
+    --primary-foreground: 0 0% 100%; /* Branco no roxo */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* 30% - Cores secundárias (elementos de suporte) */
+    --secondary: 240 5% 96%; /* Cinza muito claro */
+    --secondary-foreground: 240 10% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 5% 94%; /* Hover sutil */
+    --muted-foreground: 240 4% 46%; /* Texto secundário */
 
-    --accent: 199 89% 48%; /* Accent blue */
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 262 100% 97%; /* Fundo roxo muito claro */
+    --accent-foreground: 262 83% 45%; /* Texto roxo escuro */
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 195 85% 41%;
+    --border: 240 6% 90%; /* Borders sutis */
+    --input: 240 6% 90%;
+    --ring: 262 83% 58%; /* Ring roxo */
 
     --radius: 0.5rem;
 
-    /* Sidebar sizing and positioning */
+    /* Sidebar moderno - tema claro com roxo */
     --sidebar-width: 280px;
     --sidebar-width-icon: 48px;
-
-    /* Sidebar colors - Dark theme with #161616 background */
-    --sidebar-background: 0 0% 8.6%; /* #161616 converted to HSL */
-    --sidebar-foreground: 0 0% 90%; /* Light text for contrast */
-    --sidebar-primary: 169 100% 64%; /* #3dffc5 converted to HSL */
-    --sidebar-primary-foreground: 0 0% 8.6%; /* Dark text on bright background */
-    --sidebar-accent: 0 0% 15%; /* Slightly lighter than background for hover */
-    --sidebar-accent-foreground: 169 100% 64%; /* #3dffc5 for selected/hover text */
-    --sidebar-border: 0 0% 20%; /* Subtle border */
-    --sidebar-ring: 169 100% 64%; /* #3dffc5 for focus rings */
+    
+    --sidebar-background: 0 0% 100%; /* Fundo branco */
+    --sidebar-foreground: 240 10% 15%; /* Texto escuro */
+    --sidebar-primary: 262 83% 58%; /* Roxo para itens ativos */
+    --sidebar-primary-foreground: 0 0% 100%; /* Branco no roxo */
+    --sidebar-accent: 240 5% 94%; /* Hover cinza claro */
+    --sidebar-accent-foreground: 240 10% 15%; /* Texto no hover */
+    --sidebar-border: 240 6% 90%; /* Bordas sutis */
+    --sidebar-ring: 262 83% 58%; /* Focus roxo */
+    
+    /* Estados específicos do sidebar */
+    --sidebar-active-bg: 0 0% 100%; /* Fundo branco para item ativo */
+    --sidebar-active-text: 262 83% 58%; /* Texto roxo para item ativo */
+    --sidebar-active-border: 262 83% 58%; /* Borda esquerda roxa */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* 60% - Base neutra escura */
+    --background: 240 10% 8%; /* Fundo escuro */
+    --foreground: 0 0% 95%; /* Texto claro */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 195 85% 41%;
-    --primary-foreground: 210 40% 98%;
+    /* 10% - Roxo mais suave no dark */
+    --primary: 262 80% 65%; /* Roxo mais claro no dark */
+    --primary-foreground: 240 10% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* 30% - Elementos secundários escuros */
+    --secondary: 240 8% 15%; /* Cinza escuro */
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 240 8% 18%; /* Hover escuro */
+    --muted-foreground: 240 5% 65%; /* Texto secundário */
 
-    --accent: 199 89% 48%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 262 50% 20%; /* Fundo roxo escuro */
+    --accent-foreground: 262 80% 75%; /* Texto roxo claro */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 195 85% 41%;
+    --border: 240 8% 20%; /* Bordas escuras */
+    --input: 240 8% 20%;
+    --ring: 262 80% 65%;
 
-    /* Dark mode sidebar - keeping the same #161616 theme */
-    --sidebar-background: 0 0% 8.6%; /* #161616 */
-    --sidebar-foreground: 0 0% 90%; /* Light text */
-    --sidebar-primary: 169 100% 64%; /* #3dffc5 */
-    --sidebar-primary-foreground: 0 0% 8.6%; /* Dark text on bright background */
-    --sidebar-accent: 0 0% 15%; /* Slightly lighter for hover */
-    --sidebar-accent-foreground: 169 100% 64%; /* #3dffc5 for selected/hover text */
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 169 100% 64%; /* #3dffc5 */
+    /* Sidebar escuro moderno */
+    --sidebar-background: 240 10% 8%; /* Fundo escuro */
+    --sidebar-foreground: 0 0% 90%; /* Texto claro */
+    --sidebar-primary: 262 80% 65%; /* Roxo claro para ativos */
+    --sidebar-primary-foreground: 240 10% 8%; /* Texto escuro no roxo */
+    --sidebar-accent: 240 8% 15%; /* Hover escuro */
+    --sidebar-accent-foreground: 0 0% 95%; /* Texto claro no hover */
+    --sidebar-border: 240 8% 20%; /* Bordas escuras */
+    --sidebar-ring: 262 80% 65%; /* Focus roxo */
+    
+    /* Estados específicos do sidebar escuro */
+    --sidebar-active-bg: 240 8% 15%; /* Fundo escuro para item ativo */
+    --sidebar-active-text: 262 80% 75%; /* Texto roxo claro para item ativo */
+    --sidebar-active-border: 262 80% 65%; /* Borda esquerda roxa */
   }
 }
 

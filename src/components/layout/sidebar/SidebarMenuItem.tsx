@@ -25,20 +25,28 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
   return (
     <BaseSidebarMenuItem className="list-none">
       <SidebarMenuButton 
-        className={`w-full px-3 py-2 transition-all duration-200 rounded-md ${
-          isActive 
-            ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm border-l-2 border-sidebar-primary' 
-            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-        } ${isSubItem ? 'ml-4 text-sm' : 'text-base'}`}
+        className={`
+          w-full px-4 py-3 transition-all duration-200 rounded-lg
+          relative group
+          ${isActive 
+            ? 'bg-sidebar-active-bg text-sidebar-active-text font-semibold shadow-sm border-l-4 border-sidebar-active-border' 
+            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-[1.02]'
+          }
+          ${isSubItem ? 'ml-6 text-sm py-2' : 'text-sm'}
+        `}
       >
         {item.isExternal ? (
           <button 
             onClick={handleNavigation} 
             className="flex items-center gap-3 w-full text-left"
           >
-            {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
-            <span className="font-medium truncate">{item.title}</span>
-            <ExternalLink className="h-4 w-4 ml-auto flex-shrink-0" />
+            {item.icon && (
+              <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${
+                isActive ? 'text-sidebar-active-text' : 'text-sidebar-foreground group-hover:text-sidebar-accent-foreground'
+              }`} />
+            )}
+            <span className="font-medium truncate flex-1">{item.title}</span>
+            <ExternalLink className="h-4 w-4 flex-shrink-0 opacity-60" />
           </button>
         ) : (
           <Link 
@@ -46,8 +54,15 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
             onClick={handleNavigation}
             className="flex items-center gap-3 w-full"
           >
-            {item.icon && <item.icon className="h-5 w-5 flex-shrink-0" />}
-            <span className="font-medium truncate">{item.title}</span>
+            {item.icon && (
+              <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${
+                isActive ? 'text-sidebar-active-text' : 'text-sidebar-foreground group-hover:text-sidebar-accent-foreground'
+              }`} />
+            )}
+            <span className="font-medium truncate flex-1">{item.title}</span>
+            {isActive && (
+              <div className="w-2 h-2 bg-sidebar-active-border rounded-full flex-shrink-0 animate-pulse" />
+            )}
           </Link>
         )}
       </SidebarMenuButton>
@@ -66,13 +81,19 @@ export function SidebarMenuSubItemComponent({
   isActive: boolean; 
 }) {
   return (
-    <div className={`ml-6 py-2 px-3 rounded-md text-sm transition-all duration-200 ${
-      isActive 
-        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm border-l-2 border-sidebar-primary' 
-        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-    }`}>
-      <Link to={href} className="block w-full">
-        {title}
+    <div className={`
+      ml-8 py-2 px-3 rounded-lg text-sm transition-all duration-200 
+      relative group
+      ${isActive 
+        ? 'bg-sidebar-active-bg text-sidebar-active-text font-semibold border-l-3 border-sidebar-active-border' 
+        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-[1.01]'
+      }
+    `}>
+      <Link to={href} className="flex items-center w-full">
+        <span className="flex-1">{title}</span>
+        {isActive && (
+          <div className="w-1.5 h-1.5 bg-sidebar-active-border rounded-full animate-pulse" />
+        )}
       </Link>
     </div>
   );
