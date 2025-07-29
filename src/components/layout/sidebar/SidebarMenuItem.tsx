@@ -36,10 +36,10 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
         `}
       >
         {item.isExternal ? (
-          <button 
-            onClick={handleNavigation} 
-            className="flex items-center gap-3 w-full text-left"
-          >
+        <button 
+          onClick={handleNavigation} 
+          className="flex items-center justify-start gap-3 w-full text-left"
+        >
             {item.icon && (
               <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${
                 isActive ? 'text-sidebar-active-text' : 'text-sidebar-foreground group-hover:text-sidebar-accent-foreground'
@@ -52,7 +52,7 @@ export function SidebarMenuItem({ item, isSubItem = false }: SidebarMenuItemProp
           <Link 
             to={item.href} 
             onClick={handleNavigation}
-            className="flex items-center gap-3 w-full"
+            className="flex items-center justify-start gap-3 w-full"
           >
             {item.icon && (
               <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors duration-200 ${
@@ -89,7 +89,7 @@ export function SidebarMenuSubItemComponent({
         : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:scale-[1.01]'
       }
     `}>
-      <Link to={href} className="flex items-center w-full">
+      <Link to={href} className="flex items-center justify-start w-full">
         <span className="flex-1">{title}</span>
         {isActive && (
           <div className="w-1.5 h-1.5 bg-sidebar-active-border rounded-full animate-pulse" />
