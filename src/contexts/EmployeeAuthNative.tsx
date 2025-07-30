@@ -70,7 +70,8 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
 
       const employeeData = response.employee;
       
-      // Company name already comes from the authenticate_employee function
+      console.log('[EmployeeAuthNative] Usando company_name da função authenticate_employee:', employeeData.company_name);
+      // Company name already comes from the authenticate_employee function - NO MORE MANUAL QUERY
       const companyName = employeeData.company_name;
       
       const newSession: EmployeeSession = {
