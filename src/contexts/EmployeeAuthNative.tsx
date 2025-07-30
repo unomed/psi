@@ -75,7 +75,7 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
         .from('companies')
         .select('name')
         .eq('id', employeeData.company_id)
-        .single();
+        .maybeSingle();
       
       if (companyError || !companyData) {
         console.error('[EmployeeAuthNative] Erro ao buscar empresa:', companyError);
