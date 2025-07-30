@@ -70,24 +70,15 @@ export function EmployeeAuthNativeProvider({ children }: { children: React.React
 
       const employeeData = response.employee;
       
-      // Get company information
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .select('name')
-        .eq('id', employeeData.company_id)
-        .maybeSingle();
-      
-      if (companyError || !companyData) {
-        console.error('[EmployeeAuthNative] Erro ao buscar empresa:', companyError);
-        return { success: false, error: 'Erro ao carregar informações da empresa' };
-      }
+      // Company name already comes from the authenticate_employee function
+      const companyName = employeeData.company_name;
       
       const newSession: EmployeeSession = {
         employee: {
           employeeId: employeeData.id,
           employeeName: employeeData.name,
           companyId: employeeData.company_id,
-          companyName: companyData.name,
+          companyName: companyName,
           isValid: true
         },
         isAuthenticated: true
