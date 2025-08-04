@@ -1766,6 +1766,8 @@ export type Database = {
       }
       psychosocial_automation_config: {
         Row: {
+          ai_config: Json | null
+          ai_enabled: boolean | null
           auto_generate_action_plans: boolean
           auto_process_enabled: boolean
           company_id: string
@@ -1779,6 +1781,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_config?: Json | null
+          ai_enabled?: boolean | null
           auto_generate_action_plans?: boolean
           auto_process_enabled?: boolean
           company_id: string
@@ -1792,6 +1796,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_config?: Json | null
+          ai_enabled?: boolean | null
           auto_generate_action_plans?: boolean
           auto_process_enabled?: boolean
           company_id?: string
