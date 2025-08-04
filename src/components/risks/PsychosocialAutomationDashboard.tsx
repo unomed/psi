@@ -169,18 +169,18 @@ export function PsychosocialAutomationDashboard({ selectedCompanyId }: Psychosoc
             Controles de Automação
           </CardTitle>
           <CardDescription>
-            Esta funcionalidade foi movida para Configurações → Automação Avançada
+            Configure parâmetros avançados de processamento automático
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-muted-foreground">
-            <p className="mb-4">Os controles de processamento foram consolidados na página de Automação Avançada.</p>
-            <a 
-              href="/configuracoes/automacao-avancada" 
-              className="text-primary hover:underline font-medium"
-            >
-              Ir para Automação Avançada →
-            </a>
+          <div className="text-center py-4">
+            <p className="mb-4 text-muted-foreground">
+              Para configurações avançadas de IA e OpenAI, use a aba "Avançado" no menu principal desta página.
+            </p>
+            <div className="text-sm text-muted-foreground">
+              <p>• Configurações de IA estão na aba "Avançado" acima</p>
+              <p>• Configurações de automação psicossocial estão na aba "Automação"</p>
+            </div>
           </div>
         </CardContent>
       </Card>
