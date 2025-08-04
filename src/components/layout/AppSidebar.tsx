@@ -38,19 +38,21 @@ export function AppSidebar() {
             </MenuItemGuard>
           ))}
           
-          {/* Configurações como item expandível */}
-          <div className="mt-8 pt-4 border-t border-sidebar-border">
-            <SidebarMenuItemWithSubmenu
-              title="Configurações"
-              items={settingsItems.map(item => ({
-                title: item.title,
-                href: item.url,
-                icon: item.icon,
-                roles: ["admin", "superadmin"]
-              }))}
-              icon={undefined}
-            />
-          </div>
+          {/* Configurações como item expandível - APENAS SUPERADMIN */}
+          {userRole === 'superadmin' && (
+            <div className="mt-8 pt-4 border-t border-sidebar-border">
+              <SidebarMenuItemWithSubmenu
+                title="Configurações"
+                items={settingsItems.map(item => ({
+                  title: item.title,
+                  href: item.url,
+                  icon: item.icon,
+                  roles: ["superadmin"]
+                }))}
+                icon={undefined}
+              />
+            </div>
+          )}
         </SidebarMenu>
       </SidebarContent>
     </Sidebar>

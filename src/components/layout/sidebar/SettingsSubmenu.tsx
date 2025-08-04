@@ -5,9 +5,16 @@ import { SidebarMenuSubItemComponent } from "./SidebarMenuItem";
 import { CollapsibleMenuItem } from "./CollapsibleMenuItem";
 import { MenuItemGuard } from "./MenuItemGuard";
 import { settingsItems } from "./settingsItems";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function SettingsSubmenu() {
   const location = useLocation();
+  const { userRole } = useAuth();
+
+  // Apenas superadmin pode ver configurações
+  if (userRole !== 'superadmin') {
+    return null;
+  }
 
   const isSettingsActive = location.pathname.startsWith('/configuracoes');
 
