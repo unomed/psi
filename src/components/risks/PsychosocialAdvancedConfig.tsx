@@ -88,7 +88,7 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
         .update({
           ai_enabled: aiEnabled,
           ai_config: {
-            openai_enabled: !!openaiApiKey,
+            openai_enabled: true, // Sempre true se IA está habilitada (chave gerenciada via secrets)
             predictive_analysis: predictiveAnalysis,
             intelligent_recommendations: intelligentRecommendations,
             risk_trend_analysis: riskTrendAnalysis
@@ -104,7 +104,7 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
             company_id: selectedCompanyId,
             ai_enabled: aiEnabled,
             ai_config: {
-              openai_enabled: !!openaiApiKey,
+              openai_enabled: true, // Sempre true se IA está habilitada
               predictive_analysis: predictiveAnalysis,
               intelligent_recommendations: intelligentRecommendations,
               risk_trend_analysis: riskTrendAnalysis
@@ -142,48 +142,33 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
     setLoading(true);
 
     try {
-      console.log('[IA ANÁLISE] Buscando dados de avaliação...');
+      console.log('[IA ANÁLISE] Chamando Edge Function...');
       
-      // Verificar se há dados reais de avaliação para a empresa
-      const { data: assessments, error } = await supabase
-        .from('assessment_responses')
-        .select(`
-          *,
-          employees!inner(
-            company_id, 
-            name, 
-            sector_id, 
-            role_id,
-            sectors(name),
-            roles(name)
-          )
-        `)
-        .eq('employees.company_id', selectedCompanyId)
-        .not('completed_at', 'is', null)
-        .limit(10);
+      // Chamar Edge Function para análise IA
+      const { data, error } = await supabase.functions.invoke('ai-psychosocial-analysis', {
+        body: {
+          company_id: selectedCompanyId
+        }
+      });
 
-      console.log('[IA ANÁLISE] Resultado da query:', { assessments, error, count: assessments?.length });
+      console.log('[IA ANÁLISE] Resposta da Edge Function:', { data, error });
 
       if (error) {
-        console.error('[IA ANÁLISE] Erro na query:', error);
-        toast.error("Erro ao buscar dados de avaliações: " + error.message);
+        console.error('[IA ANÁLISE] Erro na Edge Function:', error);
+        toast.error("Erro ao executar análise: " + error.message);
         return;
       }
 
-      if (!assessments || assessments.length === 0) {
-        console.log('[IA ANÁLISE] Nenhuma avaliação encontrada');
-        toast.info("Nenhuma avaliação encontrada para esta empresa. Complete algumas avaliações primeiro para ver análises reais.");
+      if (!data.success) {
+        console.log('[IA ANÁLISE] Análise não bem-sucedida:', data.message);
+        toast.info(data.message || "Nenhum dado disponível para análise");
         return;
       }
 
-      console.log('[IA ANÁLISE] Processando dados...', assessments);
-
-      // Processar dados reais em vez de usar dados fictícios
-      const realAnalysis = processRealAssessmentData(assessments);
-      console.log('[IA ANÁLISE] Análise processada:', realAnalysis);
+      console.log('[IA ANÁLISE] Análise processada:', data.analysis);
       
-      setAnalysisResults(realAnalysis);
-      toast.success(`Análise concluída! ${assessments.length} avaliações processadas.`);
+      setAnalysisResults(data.analysis);
+      toast.success(`Análise ${data.analysis.analysisType === 'ai-enhanced' ? 'AI-Enhanced' : 'Estatística'} concluída! ${data.assessments_analyzed} avaliações processadas.`);
 
     } catch (err) {
       console.error('[IA ANÁLISE] Erro geral:', err);
@@ -357,18 +342,18 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
                       </p>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="openai_key">Chave API OpenAI (Opcional)</Label>
-                        <Input
-                          id="openai_key"
-                          type="password"
-                          placeholder="sk-..."
-                          value={openaiApiKey}
-                          onChange={(e) => setOpenaiApiKey(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Com OpenAI: análise de texto, insights contextuais, recomendações personalizadas<br/>
-                          Sem OpenAI: análise estatística, predições baseadas em padrões históricos
-                        </p>
+                        <Label htmlFor="openai_key">Configuração OpenAI</Label>
+                        <div className="p-3 bg-blue-50 rounded-lg border">
+                          <p className="text-sm text-blue-700 mb-2">
+                            <strong>✅ Segurança Garantida:</strong> Sua chave OpenAI é armazenada de forma segura nos Supabase Edge Function Secrets.
+                          </p>
+                          <p className="text-xs text-blue-600">
+                            • Configure uma vez nas configurações do Supabase<br/>
+                            • Nunca exposta no frontend<br/>
+                            • Criptografada e protegida<br/>
+                            • Análise AI-powered com GPT-4o-mini
+                          </p>
+                        </div>
                       </div>
                     </div>
 
