@@ -34,6 +34,13 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
     }
   }, [selectedCompanyId, configLoaded]);
 
+  // Carregar análise automaticamente quando IA está habilitada
+  useEffect(() => {
+    if (aiEnabled && aiConfigSaved && selectedCompanyId && !analysisResults) {
+      demonstrateAiAnalysis();
+    }
+  }, [aiEnabled, aiConfigSaved, selectedCompanyId, analysisResults]);
+
   const loadExistingConfig = async () => {
     try {
       const { data, error } = await supabase
@@ -395,6 +402,11 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
                     <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>IA não está habilitada</p>
                     <p className="text-sm">Configure a IA na aba "Configuração" para ver análises</p>
+                  </div>
+                ) : loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p>Carregando análise de dados reais...</p>
                   </div>
                 ) : !analysisResults ? (
                   <div className="text-center py-8">
