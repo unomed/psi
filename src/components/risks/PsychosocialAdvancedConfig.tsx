@@ -75,11 +75,10 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
     setLoading(true);
     
     try {
-      // Salvar configurações de IA
-      const { error } = await supabase
+      // Primeiro, tentar atualizar o registro existente
+      const { error: updateError } = await supabase
         .from('psychosocial_automation_config')
-        .upsert({
-          company_id: selectedCompanyId,
+        .update({
           ai_enabled: aiEnabled,
           ai_config: {
             openai_enabled: !!openaiApiKey,
@@ -87,9 +86,28 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
             intelligent_recommendations: intelligentRecommendations,
             risk_trend_analysis: riskTrendAnalysis
           }
-        });
+        })
+        .eq('company_id', selectedCompanyId);
 
-      if (error) throw error;
+      // Se não conseguiu atualizar (registro não existe), criar um novo
+      if (updateError && updateError.code === 'PGRST116') {
+        const { error: insertError } = await supabase
+          .from('psychosocial_automation_config')
+          .insert({
+            company_id: selectedCompanyId,
+            ai_enabled: aiEnabled,
+            ai_config: {
+              openai_enabled: !!openaiApiKey,
+              predictive_analysis: predictiveAnalysis,
+              intelligent_recommendations: intelligentRecommendations,
+              risk_trend_analysis: riskTrendAnalysis
+            }
+          });
+        
+        if (insertError) throw insertError;
+      } else if (updateError) {
+        throw updateError;
+      }
 
       setAiConfigSaved(true);
       toast.success("Configurações de IA salvas com sucesso!");
