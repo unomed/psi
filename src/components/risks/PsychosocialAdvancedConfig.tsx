@@ -132,38 +132,71 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
   };
 
   const demonstrateAiAnalysis = async () => {
+    console.log('[IA ANÁLISE] Iniciando análise...', { aiEnabled, selectedCompanyId });
+    
     if (!aiEnabled) {
       toast.error("Habilite a IA primeiro para ver análises");
       return;
     }
 
-    // Verificar se há dados reais de avaliação para a empresa
-    const { data: assessments, error } = await supabase
-      .from('assessment_responses')
-      .select(`
-        *,
-        employees!inner(company_id, name, sector_id, role_id),
-        sectors(name),
-        roles(name)
-      `)
-      .eq('employees.company_id', selectedCompanyId)
-      .not('completed_at', 'is', null)
-      .limit(10);
+    setLoading(true);
 
-    if (error || !assessments || assessments.length === 0) {
-      toast.info("Nenhuma avaliação encontrada para esta empresa. Complete algumas avaliações primeiro para ver análises reais.");
-      return;
+    try {
+      console.log('[IA ANÁLISE] Buscando dados de avaliação...');
+      
+      // Verificar se há dados reais de avaliação para a empresa
+      const { data: assessments, error } = await supabase
+        .from('assessment_responses')
+        .select(`
+          *,
+          employees!inner(
+            company_id, 
+            name, 
+            sector_id, 
+            role_id,
+            sectors(name),
+            roles(name)
+          )
+        `)
+        .eq('employees.company_id', selectedCompanyId)
+        .not('completed_at', 'is', null)
+        .limit(10);
+
+      console.log('[IA ANÁLISE] Resultado da query:', { assessments, error, count: assessments?.length });
+
+      if (error) {
+        console.error('[IA ANÁLISE] Erro na query:', error);
+        toast.error("Erro ao buscar dados de avaliações: " + error.message);
+        return;
+      }
+
+      if (!assessments || assessments.length === 0) {
+        console.log('[IA ANÁLISE] Nenhuma avaliação encontrada');
+        toast.info("Nenhuma avaliação encontrada para esta empresa. Complete algumas avaliações primeiro para ver análises reais.");
+        return;
+      }
+
+      console.log('[IA ANÁLISE] Processando dados...', assessments);
+
+      // Processar dados reais em vez de usar dados fictícios
+      const realAnalysis = processRealAssessmentData(assessments);
+      console.log('[IA ANÁLISE] Análise processada:', realAnalysis);
+      
+      setAnalysisResults(realAnalysis);
+      toast.success(`Análise concluída! ${assessments.length} avaliações processadas.`);
+
+    } catch (err) {
+      console.error('[IA ANÁLISE] Erro geral:', err);
+      toast.error("Erro ao executar análise: " + String(err));
+    } finally {
+      setLoading(false);
     }
-
-    // Processar dados reais em vez de usar dados fictícios
-    const realAnalysis = processRealAssessmentData(assessments);
-    setAnalysisResults(realAnalysis);
   };
 
   const processRealAssessmentData = (assessments: any[]) => {
     // Agrupar por setor e calcular estatísticas reais
     const sectorStats = assessments.reduce((acc, assessment) => {
-      const sectorName = assessment.sectors?.name || 'Sem setor';
+      const sectorName = assessment.employees?.sectors?.name || 'Sem setor';
       const score = assessment.raw_score || 0;
       
       if (!acc[sectorName]) {
