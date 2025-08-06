@@ -19,9 +19,13 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { action, company_id, openai_key } = await req.json();
+    
+    console.log(`[OpenAI Key Manager] Action: ${action}, Company: ${company_id}`);
+
 
     if (action === 'save') {
       // Salvar chave OpenAI de forma segura
+      console.log(`[OpenAI Key Manager] Saving key for company: ${company_id}`);
       const encryptedKey = btoa(openai_key); // Simples encoding - em produção usar criptografia real
 
       const { error } = await supabase
@@ -56,6 +60,7 @@ serve(async (req) => {
 
     } else if (action === 'check') {
       // Verificar se chave existe
+      console.log(`[OpenAI Key Manager] Checking key for company: ${company_id}`);
       const { data, error } = await supabase
         .from('psychosocial_automation_config')
         .select('openai_key_encrypted, ai_config')
@@ -72,6 +77,8 @@ serve(async (req) => {
 
       const hasKey = data?.openai_key_encrypted ? true : false;
       const configuredAt = data?.ai_config?.key_configured_at || null;
+
+      console.log(`[OpenAI Key Manager] Company ${company_id} has key: ${hasKey}`);
 
       return new Response(
         JSON.stringify({ 

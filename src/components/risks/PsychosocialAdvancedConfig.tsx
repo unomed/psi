@@ -32,10 +32,21 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
   // Carregar configurações existentes
   useEffect(() => {
     if (selectedCompanyId && !configLoaded) {
+      console.log('Loading config for company:', selectedCompanyId);
       loadExistingConfig();
       checkOpenaiConfiguration();
     }
   }, [selectedCompanyId, configLoaded]);
+
+  // Reset estados quando empresa muda
+  useEffect(() => {
+    if (selectedCompanyId) {
+      setOpenaiConfigured(false);
+      setAiConfigSaved(false);
+      setAnalysisResults(null);
+      setConfigLoaded(false);
+    }
+  }, [selectedCompanyId]);
 
   // Carregar análise automaticamente quando IA está habilitada
   useEffect(() => {
@@ -68,7 +79,13 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
   };
 
   const checkOpenaiConfiguration = async () => {
+    if (!selectedCompanyId) {
+      console.log('No company selected, skipping OpenAI check');
+      return;
+    }
+
     try {
+      console.log('Checking OpenAI config for company:', selectedCompanyId);
       const { data, error } = await supabase.functions.invoke('manage-openai-key', {
         body: {
           action: 'check',
@@ -76,11 +93,15 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
         }
       });
 
+      console.log('OpenAI check response:', data);
+
       if (data?.success) {
         setOpenaiConfigured(data.configured);
+        console.log('OpenAI configured for company', selectedCompanyId, ':', data.configured);
       }
     } catch (error) {
       console.error('Erro ao verificar configuração OpenAI:', error);
+      setOpenaiConfigured(false);
     }
   };
 
@@ -90,8 +111,14 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
       return;
     }
 
+    if (!selectedCompanyId) {
+      toast.error("Nenhuma empresa selecionada");
+      return;
+    }
+
     setSavingOpenaiKey(true);
     try {
+      console.log('Saving OpenAI key for company:', selectedCompanyId);
       const { data, error } = await supabase.functions.invoke('manage-openai-key', {
         body: {
           action: 'save',
@@ -100,10 +127,15 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
         }
       });
 
+      console.log('Save response:', data);
+
       if (data?.success) {
         setOpenaiConfigured(true);
         setOpenaiApiKey(""); // Limpar campo por segurança
-        toast.success("Chave OpenAI configurada com sucesso!");
+        toast.success(`Chave OpenAI configurada com sucesso para a empresa!`);
+        
+        // Recarregar configuração para confirmar
+        await checkOpenaiConfiguration();
       } else {
         toast.error("Erro ao salvar chave OpenAI");
       }
@@ -118,7 +150,7 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
   if (!selectedCompanyId) {
     return (
       <div className="text-center p-8">
-        <p className="text-muted-foreground">Selecione uma empresa para configurações avançadas</p>
+        <p className="text-muted-foreground">⚠️ Selecione uma empresa para configurações avançadas</p>
       </div>
     );
   }
