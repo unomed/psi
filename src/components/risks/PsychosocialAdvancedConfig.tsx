@@ -20,6 +20,8 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
   const [aiEnabled, setAiEnabled] = useState(false);
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [aiConfigSaved, setAiConfigSaved] = useState(false);
+  const [openaiConfigured, setOpenaiConfigured] = useState(false);
+  const [savingOpenaiKey, setSavingOpenaiKey] = useState(false);
   const [predictiveAnalysis, setPredictiveAnalysis] = useState(true);
   const [intelligentRecommendations, setIntelligentRecommendations] = useState(true);
   const [riskTrendAnalysis, setRiskTrendAnalysis] = useState(true);
@@ -31,6 +33,7 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
   useEffect(() => {
     if (selectedCompanyId && !configLoaded) {
       loadExistingConfig();
+      checkOpenaiConfiguration();
     }
   }, [selectedCompanyId, configLoaded]);
 
@@ -61,6 +64,54 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
       setConfigLoaded(true);
+    }
+  };
+
+  const checkOpenaiConfiguration = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-openai-key', {
+        body: {
+          action: 'check',
+          company_id: selectedCompanyId
+        }
+      });
+
+      if (data?.success) {
+        setOpenaiConfigured(data.configured);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar configuração OpenAI:', error);
+    }
+  };
+
+  const saveOpenaiKey = async () => {
+    if (!openaiApiKey.trim()) {
+      toast.error("Por favor, insira a chave API do OpenAI");
+      return;
+    }
+
+    setSavingOpenaiKey(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-openai-key', {
+        body: {
+          action: 'save',
+          company_id: selectedCompanyId,
+          openai_key: openaiApiKey.trim()
+        }
+      });
+
+      if (data?.success) {
+        setOpenaiConfigured(true);
+        setOpenaiApiKey(""); // Limpar campo por segurança
+        toast.success("Chave OpenAI configurada com sucesso!");
+      } else {
+        toast.error("Erro ao salvar chave OpenAI");
+      }
+    } catch (error) {
+      console.error('Erro ao salvar chave OpenAI:', error);
+      toast.error("Erro ao salvar chave OpenAI");
+    } finally {
+      setSavingOpenaiKey(false);
     }
   };
 
@@ -335,26 +386,61 @@ export function PsychosocialAdvancedConfig({ selectedCompanyId }: PsychosocialAd
                       <div className="flex items-center gap-2">
                         <Brain className="h-5 w-5 text-blue-600" />
                         <h4 className="font-medium">Integração OpenAI (Opcional)</h4>
+                        {openaiConfigured && <Badge variant="secondary" className="bg-green-100 text-green-800">Configurado</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Para análises mais avançadas, você pode integrar com a API do OpenAI. 
                         Deixe em branco para usar apenas análise estatística interna.
                       </p>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="openai_key">Configuração OpenAI</Label>
-                        <div className="p-3 bg-blue-50 rounded-lg border">
-                          <p className="text-sm text-blue-700 mb-2">
-                            <strong>✅ Segurança Garantida:</strong> Sua chave OpenAI é armazenada de forma segura nos Supabase Edge Function Secrets.
-                          </p>
-                          <p className="text-xs text-blue-600">
-                            • Configure uma vez nas configurações do Supabase<br/>
-                            • Nunca exposta no frontend<br/>
-                            • Criptografada e protegida<br/>
-                            • Análise AI-powered com GPT-4o-mini
+                      {!openaiConfigured ? (
+                        <div className="space-y-3">
+                          <Label htmlFor="openai_key">Chave API OpenAI</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="openai_key"
+                              type="password"
+                              placeholder="sk-..."
+                              value={openaiApiKey}
+                              onChange={(e) => setOpenaiApiKey(e.target.value)}
+                              className="flex-1"
+                            />
+                            <Button 
+                              type="button"
+                              onClick={saveOpenaiKey}
+                              disabled={savingOpenaiKey || !openaiApiKey.trim()}
+                              variant="outline"
+                            >
+                              {savingOpenaiKey ? "Salvando..." : "Salvar"}
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Sua chave será armazenada de forma segura e criptografada
                           </p>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                          <p className="text-sm text-green-700 mb-2">
+                            <strong>✅ OpenAI Configurado:</strong> Chave API salva com segurança
+                          </p>
+                          <p className="text-xs text-green-600">
+                            • Armazenada de forma criptografada<br/>
+                            • Análise AI-enhanced ativa<br/>
+                            • Usando modelo GPT-4o-mini
+                          </p>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => {
+                              setOpenaiConfigured(false);
+                              setOpenaiApiKey("");
+                            }}
+                          >
+                            Reconfigurar
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Funcionalidades de IA */}

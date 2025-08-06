@@ -14,6 +14,8 @@ serve(async (req) => {
   try {
     const { company_id, assessment_data } = await req.json()
     
+    console.log('[AI Analysis] Starting analysis for company:', company_id)
+    
     // Verificar autenticação
     const authHeader = req.headers.get('Authorization')!
     const supabase = createClient(
@@ -76,9 +78,24 @@ serve(async (req) => {
     // Processar análise estatística básica
     const basicAnalysis = processBasicAnalysis(assessments)
 
+    // Buscar chave OpenAI da empresa
+    let openaiKey = null
+    try {
+      const { data: keyData } = await supabase.functions.invoke('manage-openai-key', {
+        body: {
+          action: 'get',
+          company_id
+        }
+      })
+      openaiKey = keyData?.key || null
+    } catch (error) {
+      console.log('[AI Analysis] Could not get OpenAI key:', error.message)
+    }
+
+    console.log('[AI Analysis] OpenAI key available:', !!openaiKey)
+
     // Se há chave OpenAI, fazer análise avançada
     let enhancedAnalysis = basicAnalysis
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
     
     if (openaiKey && config.ai_config?.openai_enabled) {
       try {
