@@ -1777,6 +1777,7 @@ export type Database = {
           id: string
           notification_enabled: boolean
           notification_recipients: Json | null
+          openai_key_encrypted: string | null
           processing_delay_minutes: number | null
           updated_at: string
         }
@@ -1792,6 +1793,7 @@ export type Database = {
           id?: string
           notification_enabled?: boolean
           notification_recipients?: Json | null
+          openai_key_encrypted?: string | null
           processing_delay_minutes?: number | null
           updated_at?: string
         }
@@ -1807,6 +1809,7 @@ export type Database = {
           id?: string
           notification_enabled?: boolean
           notification_recipients?: Json | null
+          openai_key_encrypted?: string | null
           processing_delay_minutes?: number | null
           updated_at?: string
         }
